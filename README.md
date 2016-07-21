@@ -1,3 +1,9 @@
+Status of Master
+================
+
+[![Build Status](https://travis-ci.org/opprop/checker-framework-inference.png?branch=master)](https://travis-ci.org/opprop/checker-framework-inference)
+
+
 Checker Framework Inference README
 ==================================
 
@@ -41,13 +47,13 @@ NOTE: gradle on Ubuntu 14.10 hard-codes JAVA_HOME. To change this, edit
     [ -n "$JAVA_HOME" ] || export JAVA_HOME=/usr/lib/jvm/default-java
 
 Building
-------------
+--------
 
 To build:
     gradle dist
 
 Execution
-------------
+---------
 
 Verify you have all of the requirements.
 

@@ -213,8 +213,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
     public VariableSlot getOrCreatePolyVar(Tree tree) {
         VariableSlot polyVar = treeToPolyVar.get(tree);
         if (polyVar == null) {
-            polyVar = new VariableSlot(AnnotationLocation.MISSING_LOCATION, slotManager.nextId());
-            slotManager.addVariable(polyVar);
+            polyVar = slotManager.createVariableSlot(treeToLocation(tree));
             treeToPolyVar.put(tree, polyVar);
         }
 
@@ -258,13 +257,13 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * @return A new VariableSlot corresponding to tree
      */
     private VariableSlot createVariable(final AnnotationLocation location) {
-        final VariableSlot variable = new VariableSlot(location, slotManager.nextId());
-        slotManager.addVariable(variable);
-        return variable;
+        final VariableSlot variableSlot = slotManager
+                .createVariableSlot(location);
+        return variableSlot;
     }
 
     public ConstantSlot createConstant(final AnnotationMirror value, final Tree tree) {
-        final ConstantSlot constantSlot = createConstant(value, treeToLocation(tree));
+        final ConstantSlot constantSlot = createConstant(value);
 
 //        if (path != null) {
 //            Element element = inferenceTypeFactory.getTreeUtils().getElement(path);
@@ -278,10 +277,9 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         return constantSlot;
     }
 
-    public ConstantSlot createConstant(final AnnotationMirror value, final AnnotationLocation location) {
-        final ConstantSlot variable = new ConstantSlot(value, location, slotManager.nextId());
-        slotManager.addVariable(variable);
-        return variable;
+    public ConstantSlot createConstant(final AnnotationMirror value) {
+        final ConstantSlot constantSlot = slotManager.createConstantSlot(value);
+        return constantSlot;
     }
 
     /**
@@ -318,8 +316,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         ExistentialVariableSlot existentialVariable = idsToExistentialSlots.get(idPair);
 
         if (existentialVariable == null) {
-            existentialVariable = new ExistentialVariableSlot(slotManager.nextId(), potentialVariable, alternativeSlot);
-            slotManager.addVariable(existentialVariable);
+            existentialVariable = slotManager.createExistentialVariableSlot(potentialVariable, alternativeSlot);
             idsToExistentialSlots.put(idPair, existentialVariable);
         } //else
 
@@ -535,9 +532,8 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * the type.
      */
     public VariableSlot addImpliedPrimaryVariable(AnnotatedTypeMirror atm, final AnnotationLocation location) {
-        VariableSlot variable = new VariableSlot(location, slotManager.nextId());
+        VariableSlot variable = slotManager.createVariableSlot(location);
         atm.addAnnotation(slotManager.getAnnotation(variable));
-        slotManager.addVariable(variable);
 
         AnnotationMirror realAnno = atm.getAnnotationInHierarchy(unqualified);
         if (realAnno != null && !InferenceQualifierHierarchy.isUnqualified(realAnno)) {

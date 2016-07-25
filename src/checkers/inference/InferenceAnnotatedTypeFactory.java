@@ -1,5 +1,26 @@
 package checkers.inference;
 
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.logging.Logger;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeVariable;
+
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAnalysis;
@@ -28,26 +49,13 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.logging.Logger;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeVariable;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
 
 import checkers.inference.dataflow.InferenceAnalysis;
 import checkers.inference.model.CombVariableSlot;
@@ -57,14 +65,6 @@ import checkers.inference.model.VariableSlot;
 import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.ConstantToVariableAnnotator;
 import checkers.inference.util.InferenceUtil;
-
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MemberSelectTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
 
 /**
  * InferenceAnnotatedTypeFactory is responsible for creating AnnotatedTypeMirrors that are annotated with
@@ -142,7 +142,8 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.slotManager = slotManager;
         this.constraintManager = constraintManager;
 
-        variableAnnotator = new VariableAnnotator(this, realTypeFactory, realChecker, slotManager, constraintManager);
+        variableAnnotator = createVariableAnnotator(this, realTypeFactory,
+                realChecker, slotManager, constraintManager);
         bytecodeTypeAnnotator = new BytecodeTypeAnnotator(this, realTypeFactory);
 
         unqualified = new AnnotationBuilder(processingEnv, Unqualified.class).build();
@@ -171,6 +172,20 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(new ImplicitsTreeAnnotator(this), new InferenceTreeAnnotator(this,
                 realChecker, realTypeFactory, variableAnnotator, slotManager));
+    }
+
+    /**
+     * Create instance of VariableAnnotator. Specific type system should
+     * override this method if it has its own implementation of
+     * VariableAnnotator
+     */
+    public VariableAnnotator createVariableAnnotator(
+            InferenceAnnotatedTypeFactory inferenceTypeFactory,
+            BaseAnnotatedTypeFactory realTypeFactory,
+            InferrableChecker realChecker, SlotManager slotManager,
+            ConstraintManager constraintManager) {
+        return new VariableAnnotator(inferenceTypeFactory, realTypeFactory,
+                realChecker, slotManager, constraintManager);
     }
 
     public AnnotationMirror getUnqualified() {

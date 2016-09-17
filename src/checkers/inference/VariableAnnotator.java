@@ -1,5 +1,23 @@
 package checkers.inference;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.logging.Logger;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.TypeKind;
+
 import org.checkerframework.framework.qual.Unqualified;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -21,24 +39,6 @@ import org.checkerframework.javacutil.InternalUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.logging.Logger;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.type.TypeKind;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ArrayTypeTree;
@@ -652,7 +652,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         case IDENTIFIER:
             VariableSlot primary = addPrimaryVariable(adt, tree);
             handleWasRawDeclaredTypes(adt);
-            addDeclarationConstraints(getOrCreateDeclBound(adt), primary);
+            handleInstantiationConstraint(adt, primary);
             break;
 
         case VARIABLE:
@@ -680,7 +680,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
 
             if (typeParamTree.getBounds().isEmpty()) {
                 primary = addPrimaryVariable(adt, tree);
-                addDeclarationConstraints(getOrCreateDeclBound(adt), primary);
+                handleInstantiationConstraint(adt, primary);
                 // TODO: HANDLE MISSING EXTENDS BOUND?
             } else {
                 visit(adt, typeParamTree.getBounds().get(0));
@@ -696,7 +696,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             if (((MemberSelectTree) tree).getExpression().getKind() != Tree.Kind.IDENTIFIER) {
                 visit(adt.getEnclosingType(), ((MemberSelectTree) tree).getExpression());
             }
-            addDeclarationConstraints(getOrCreateDeclBound(adt), primary);
+            handleInstantiationConstraint(adt, primary);
             break;
 
         case PARAMETERIZED_TYPE:
@@ -736,7 +736,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
                     visit(typeArg, treeArgs.get(i));
                 }
             }
-            addDeclarationConstraints(getOrCreateDeclBound(newAdt), primary);
+            handleInstantiationConstraint(newAdt, primary);
             break;
 
         default:
@@ -823,8 +823,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
 
         visitTogether(classType.getTypeArguments(), classTree.getTypeParameters());
 
-        VariableSlot varSlot = getOrCreateDeclBound(classType);
-        classType.addAnnotation(slotManager.getAnnotation(varSlot));
+        handleClassDeclarationBound(classType);
 
         if (classType.getAnnotationInHierarchy(unqualified) == null) {
             classType.addAnnotation(unqualified);
@@ -838,13 +837,68 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
     }
 
     /**
-     * I BELIEVE THIS METHOD IS NO LONGER NEEDED BECAUSE WE DON'T HAVE SEMANTICS FOR the extends LOCATION
-     * ON A CLASS IN THE CHECKER FRAMEWORK.  Mike Ernst, Javier Thaine, Werner Deitl, and Suzanne Millstein have an
-     * email entitled "Annotation on Class Name" that covers this.  But the gist is, Werner does not see the
-     * need for an annotation on the extends bound and we currently have no semantics for it.
+     * Add class declaration bound. If there is no existing declaration bound
+     * annotation on this class declaration, create one; Otherwise, get it from
+     * classDeclAnnos. Not all type systems need class declaration bound. Type
+     * system specific VariableAnnotator should override this method if they
+     * need different behaviors
      *
-     * Note, if we have on on the extends bound, you can also have one on every implemented interface.  Which
-     * are other locations we don't have sematnics for.
+     * @param classType
+     *            AnnotatedDeclaredType that corresponds to declaration of a
+     *            class
+     */
+    protected void handleClassDeclarationBound(
+            AnnotatedDeclaredType classType) {
+        VariableSlot boundSlot = getOrCreateDeclBound(classType);
+        // Add the VarAnnot associated with boundSlot to classType
+        classType.addAnnotation(slotManager.getAnnotation(boundSlot));
+    }
+
+    /**
+     * This method create subtype constraint between class declaration bound and
+     * instantiation of the class. Example:
+     * <p>
+     * @1
+     * </p>
+     * <p>
+     * class Bound{
+     * </p>
+     * <p>
+     * }
+     * </p>
+     * <p>
+     * new @2 Bound()
+     * </p>
+     *
+     * Then @2 <: @1 is added.Not all type system needs declaration constraints,
+     * for example, Generic Universe Type system. Type systems should override
+     * this method if they need different behaviors
+     *
+     * @param adt
+     *            AnnotatedDeclaredType from the invocation of a class
+     * @param instantiationSlot
+     *            VariableSlot that represents the instantiation annotation of a
+     *            class
+     */
+    protected void handleInstantiationConstraint(AnnotatedDeclaredType adt,
+            VariableSlot instantiationSlot) {
+        // From the invocation of a class, get the declaration bound of its
+        // class declaration
+        VariableSlot boundSlot = getOrCreateDeclBound(adt);
+        constraintManager.addSubtypeConstraint(instantiationSlot, boundSlot);
+    }
+
+    /**
+     * I BELIEVE THIS METHOD IS NO LONGER NEEDED BECAUSE WE DON'T HAVE SEMANTICS
+     * FOR the extends LOCATION ON A CLASS IN THE CHECKER FRAMEWORK. Mike Ernst,
+     * Javier Thaine, Werner Deitl, and Suzanne Millstein have an email entitled
+     * "Annotation on Class Name" that covers this. But the gist is, Werner does
+     * not see the need for an annotation on the extends bound and we currently
+     * have no semantics for it.
+     *
+     * Note, if we have on on the extends bound, you can also have one on every
+     * implemented interface. Which are other locations we don't have sematnics
+     * for.
      */
     private AnnotationLocation createImpliedExtendsLocation(ClassTree classTree) {
         // TODO: THIS CAN BE CREATED ONCE THIS IS FIXED: https://github.com/typetools/annotation-tools/issues/100
@@ -1643,32 +1697,45 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
     }
 
     /**
-     * This method returns the annotation that may or may not be placed on the class declaration for type.
-     * If it does not already exist, this method creates the annotation and stores it in classDeclAnnos.
+     * This method returns the annotation that may or may not be placed on the
+     * class declaration for type. If it does not already exist, this method
+     * creates the annotation and stores it in classDeclAnnos.
+     *
+     * @param type
+     *            AnnotatedDeclaredType of the declaration/invocation of a
+     *            class/interface, which we will use to create new declaration
+     *            bound annotation on its class declaration
+     * @return VariableSlot that represents the declaration bound of this class
+     *
      */
     private VariableSlot getOrCreateDeclBound(AnnotatedDeclaredType type) {
 
+        // Get the TypeElement of this AnnotatedDeclaredTypee first
         TypeElement classDecl = (TypeElement) type.getUnderlyingType().asElement();
 
-        VariableSlot topConstant = getTopConstant();
         VariableSlot declSlot = classDeclAnnos.get(classDecl);
+        // Not declSlot exists yet.
         if (declSlot == null) {
             Tree decl = inferenceTypeFactory.declarationFromElement(classDecl);
             if (decl != null) {
+                // If there is ClassTree,i.e., an explicit class declaration, in
+                // the source code of this TypeElement, create a
+                // PotentialVariableSlot to represent its bound
                 VariableSlot potentialDeclSlot = createVariable(decl);
-                declSlot = getOrCreateExistentialVariable(potentialDeclSlot, topConstant);
+                declSlot = getOrCreateExistentialVariable(potentialDeclSlot, getTopConstant());
                 classDeclAnnos.put(classDecl, potentialDeclSlot);
 
             } else {
-                declSlot = topConstant;
+                // If no explicit class declaration in the source
+                // code corresponds to this TypeElement,ClassTree is null. Then
+                // use the top qualifier of the realtypefactory. If we use Java
+                // provided classes, such as String, Object, this case will be
+                // covered
+                declSlot = getTopConstant();
             }
         }
 
         return declSlot;
-    }
-
-    private void addDeclarationConstraints(VariableSlot declSlot, VariableSlot instanceSlot) {
-        constraintManager.addSubtypeConstraint(instanceSlot, declSlot);
     }
 
     public void clearTreeInfo() {

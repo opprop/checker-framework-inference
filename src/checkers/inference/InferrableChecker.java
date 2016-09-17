@@ -52,6 +52,14 @@ public interface InferrableChecker {
      */
     boolean withCombineConstraints();
 
+    /**
+     * Boolean flag to indicate whether or not to introduce ExistentialVariableSlot
+     * Notice that withCombineConstraints() and this method CANNOT return true at the
+     * same time.
+     * TODO support existential and viewpoint adaptation at the same time
+     */
+    boolean withExistentialVariables();
+
     CFTransfer createInferenceTransferFunction(InferenceAnalysis analysis);
 
     CFAnalysis createInferenceAnalysis(

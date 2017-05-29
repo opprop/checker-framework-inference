@@ -7,7 +7,7 @@ before-install:
 services:
   - docker
 
-martix:
+matrix:
 env:
   - JDKVER=jdk7
   - JDKVER=jdk8

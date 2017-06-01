@@ -2,7 +2,6 @@ package checkers.inference.model;
 
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.javacutil.AnnotationUtils;

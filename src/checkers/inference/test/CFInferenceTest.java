@@ -40,7 +40,7 @@ public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
     }
 
     public String getPathToInferenceScript() {
-        return "./scripts/inference";
+        return System.getProperty("inference.script");
     }
 
     @Override

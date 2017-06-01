@@ -20,8 +20,8 @@ fi
 distDir=$myDir"/../dist"
 classpath="$distDir"/checker.jar:"$distDir"/plume.jar:"$distDir"/checker-framework-inference.jar
 
-if [ "$thrid_party_checker_classpath" != "" ] ; then
-    classpath=${classpath}:${thrid_party_checker_classpath}
+if [ "$external_checker_classpath" != "" ] ; then
+    classpath=${classpath}:${external_checker_classpath}
 fi
 
 

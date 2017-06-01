@@ -159,7 +159,7 @@ def toPackageClasspath = files(
 sourceSets {
     main {
         java {
-            srcDir "src"
+            srcDirs = ["src", "tests"]
         }
 
         resources {

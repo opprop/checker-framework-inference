@@ -39,7 +39,7 @@ public class ConstraintManager {
 
     public void init(InferenceAnnotatedTypeFactory inferenceTypeFactory) {
         this.inferenceTypeFactory = inferenceTypeFactory;
-        this.realQualHierarchy = inferenceTypeFactory.getQualifierHierarchy();
+        this.realQualHierarchy = inferenceTypeFactory.getRealQualifierHierarchy();
         this.visitorState = inferenceTypeFactory.getVisitorState();
         this.checker = inferenceTypeFactory.getContext().getChecker();
     }

@@ -158,6 +158,10 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    public QualifierHierarchy getRealQualifierHierarchy() {
+        return realTypeFactory.getQualifierHierarchy();
+    }
+
     @Override
     protected CFAnalysis createFlowAnalysis(List<Pair<VariableElement, CFValue>> fieldValues) {
         return realChecker.createInferenceAnalysis(inferenceChecker, this, fieldValues, slotManager, constraintManager, realChecker);

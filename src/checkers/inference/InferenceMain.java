@@ -303,7 +303,7 @@ public class InferenceMain {
         if (inferenceTypeFactory == null) {
             inferenceTypeFactory = realChecker.createInferenceATF(inferenceChecker, getRealChecker(),
                     getRealTypeFactory(), getSlotManager(), getConstraintManager());
-            this.getConstraintManager().init(inferenceTypeFactory, getRealTypeFactory());
+            this.getConstraintManager().init(inferenceTypeFactory);
             logger.finer("Created InferenceAnnotatedTypeFactory");
         }
         return inferenceTypeFactory;

@@ -2,6 +2,7 @@ package checkers.inference.model;
 
 import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -32,13 +33,13 @@ public class ConstraintManager {
 
     private SourceChecker checker;
 
-    private QualifierHierarchy qualHierarchy;
+    private QualifierHierarchy realQualHierarchy;
 
     private VisitorState visitorState;
 
-    public void init(InferenceAnnotatedTypeFactory inferenceTypeFactory) {
+    public void init(InferenceAnnotatedTypeFactory inferenceTypeFactory, AnnotatedTypeFactory realTypeFactory) {
         this.inferenceTypeFactory = inferenceTypeFactory;
-        this.qualHierarchy = inferenceTypeFactory.getQualifierHierarchy();
+        this.realQualHierarchy = realTypeFactory.getQualifierHierarchy();
         this.visitorState = inferenceTypeFactory.getVisitorState();
         this.checker = inferenceTypeFactory.getContext().getChecker();
     }
@@ -70,7 +71,7 @@ public class ConstraintManager {
             ConstantSlot subConstant = (ConstantSlot) subtype;
             ConstantSlot superConstant = (ConstantSlot) supertype;
 
-            if (!qualHierarchy.isSubtype(subConstant.getValue(), superConstant.getValue())) {
+            if (!realQualHierarchy.isSubtype(subConstant.getValue(), superConstant.getValue())) {
                 checker.report(Result.failure("subtype.type.incompatible", subtype, supertype),
                         visitorState.getPath().getLeaf());
             }
@@ -118,8 +119,8 @@ public class ConstraintManager {
         if (first instanceof ConstantSlot && second instanceof ConstantSlot) {
             ConstantSlot firstConstant = (ConstantSlot) first;
             ConstantSlot secondConstant = (ConstantSlot) second;
-            if (!qualHierarchy.isSubtype(firstConstant.getValue(), secondConstant.getValue())
-                    && !qualHierarchy.isSubtype(secondConstant.getValue(), firstConstant.getValue())) {
+            if (!realQualHierarchy.isSubtype(firstConstant.getValue(), secondConstant.getValue())
+                    && !realQualHierarchy.isSubtype(secondConstant.getValue(), firstConstant.getValue())) {
                 checker.report(Result.failure("comparable.type.incompatible", first, second),
                         visitorState.getPath().getLeaf());
             }
@@ -162,10 +163,10 @@ public class ConstraintManager {
 
     public void addSubtypeConstraint(Slot subtype, Slot supertype) {
         if ((subtype instanceof ConstantSlot)
-                && this.qualHierarchy.getTopAnnotations().contains(((ConstantSlot) subtype).getValue())) {
+                && this.realQualHierarchy.getTopAnnotations().contains(((ConstantSlot) subtype).getValue())) {
             this.addEqualityConstraint(supertype, (ConstantSlot) subtype);
         } else if ((supertype instanceof ConstantSlot)
-                && this.qualHierarchy.getBottomAnnotations().contains(
+                && this.realQualHierarchy.getBottomAnnotations().contains(
                         ((ConstantSlot) supertype).getValue())) {
             this.addEqualityConstraint(subtype, (ConstantSlot) supertype);
         } else {

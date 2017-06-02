@@ -320,7 +320,7 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
-            if (checker instanceof IFlowSinkChecker) {
+            if (start.toString().contains("Sink")) {
                 return NOSINK;
             } else {
                 return ANYSOURCE;
@@ -336,7 +336,7 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         @Override
         public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
-            if (checker instanceof IFlowSinkChecker) {
+            if (start.toString().contains("Sink")) {
                 return ANYSINK;
             } else {
                 return NOSOURCE;

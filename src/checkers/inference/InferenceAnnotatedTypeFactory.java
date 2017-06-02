@@ -158,6 +158,10 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    /**
+     * Get the real qualifier hierarchy from {@link #realTypeFactory}.
+     * @return the real qualifier hierarchy.
+     */
     public QualifierHierarchy getRealQualifierHierarchy() {
         return realTypeFactory.getQualifierHierarchy();
     }

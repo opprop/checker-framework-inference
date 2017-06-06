@@ -208,6 +208,7 @@ dependencies {
 }
 
 //Switch the Javac used to the JSR308
+/*
 tasks.compileJava {
   description = 'Compiles this project using the jsr308 compiler.'
   options.fork = true
@@ -219,6 +220,7 @@ tasks.compileJava {
   }
   options.forkOptions.executable="$jsr308_langtools/dist/bin/javac"
 }
+*/
 
 //Exclude parts of the build directory that don't include classes from being packaged in
 //the jar file.  

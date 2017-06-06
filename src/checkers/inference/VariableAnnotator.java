@@ -137,7 +137,8 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
     private final AnnotationMirror varAnnot;
     //A single top in the target type system
     private final AnnotationMirror realTop;
-
+    // Use existential variableslot and constraints or not
+    private final boolean withExistentialVariables;
 
 
     private final ExistentialVariableInserter existentialInserter;
@@ -160,6 +161,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         this.idsToExistentialSlots = new HashMap<>();
         this.classDeclAnnos = new HashMap<>();
         this.realChecker = realChecker;
+        this.withExistentialVariables = realChecker.withExistentialVariables();
         this.constraintManager = constraintManager;
 
         this.varAnnot = new AnnotationBuilder(typeFactory.getProcessingEnv(), VarAnnot.class).build();
@@ -422,37 +424,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             annotateElementFromStore(varElem, typeVar);
             return;
         }
-
-        AnnotationMirror explicitPrimary = null;
-        if (treeToVarAnnoPair.containsKey(typeTree)) {
-            potentialVariable = treeToVarAnnoPair.get(typeTree).first;
-            typeVar.clearAnnotations();  //might have a primary annotation lingering around
-                                         // (that would removed in the else clause)
-
-        } else {
-            //element from use and see if we already have this as a local var or field?
-            //if(tree.getKind() == ) //TODO: GOTTA FIGURE OUT IDENTIFIER STUFF
-            if (!typeVar.getAnnotations().isEmpty()) {
-                if (typeVar.getAnnotations().size() > 2) {
-                    ErrorReporter.errorAbort("There should be only 1 or 2 primary annotation on the typevar: \n"
-                                           + "typeVar=" + typeVar + "\n"
-                                           + "tree=" + tree + "\n");
-                }
-                typeVar.clearAnnotations();
-            }
-
-            potentialVariable = createVariable(typeTree);
-            final Pair<VariableSlot, Set<? extends AnnotationMirror>> varATMPair = Pair
-                    .<VariableSlot, Set<? extends AnnotationMirror>> of(
-                    potentialVariable, typeVar.getAnnotations());
-            treeToVarAnnoPair.put(typeTree, varATMPair);
-
-            // TODO: explicitPrimary is null at this point! Someone needs to set it.
-            if (explicitPrimary != null) {
-                constraintManager.addEqualityConstraint(potentialVariable, slotManager.getSlot(explicitPrimary));
-            }
-        }
-
+        // Handle alternative slot first, because it's guaranteed to exist
         final Element typeVarDeclElem = typeVar.getUnderlyingType().asElement();
         final AnnotatedTypeMirror typeVarDecl;
         if (!elementToAtm.containsKey(typeVarDeclElem)) {
@@ -469,7 +441,44 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
 //            }
         }
 
-        existentialInserter.insert(potentialVariable, typeVar, typeVarDecl);
+        if(!withExistentialVariables){
+            // Don't allow existential variables, so directly use atm of the corresponding Element
+            CopyUtil.copyAnnotations(typeVarDecl, typeVar);
+        }else{
+            // Allow existential variables. Handle potential slot(overwriting annotation)
+            AnnotationMirror explicitPrimary = null;
+            if (treeToVarAnnoPair.containsKey(typeTree)) {
+                // If we already have the potential variable slot corresponding to this typeTree, load it.
+                potentialVariable = treeToVarAnnoPair.get(typeTree).first;
+                typeVar.clearAnnotations();// Clear annotations before inserting existential variable slots?
+
+            } else {
+                // Otherwise, create a fresh potential variable slot]
+                //element from use and see if we already have this as a local var or field?
+                //if(tree.getKind() == ) //TODO: GOTTA FIGURE OUT IDENTIFIER STUFF
+                if (!typeVar.getAnnotations().isEmpty()) {
+                    if (typeVar.getAnnotations().size() > 2) {
+                        ErrorReporter.errorAbort("There should be only 1 or 2 primary annotation on the typevar: \n"
+                                               + "typeVar=" + typeVar + "\n"
+                                               + "tree=" + tree + "\n");
+                    }
+                    typeVar.clearAnnotations();
+                }
+
+                potentialVariable = createVariable(typeTree);
+                final Pair<VariableSlot, Set<? extends AnnotationMirror>> varATMPair = Pair
+                        .<VariableSlot, Set<? extends AnnotationMirror>> of(
+                        potentialVariable, typeVar.getAnnotations());
+                treeToVarAnnoPair.put(typeTree, varATMPair);
+
+                // TODO: explicitPrimary is null at this point! Someone needs to set it.
+                if (explicitPrimary != null) {
+                    constraintManager.addEqualityConstraint(potentialVariable, slotManager.getSlot(explicitPrimary));
+                }
+            }
+            // Finally, insert existential variable slot using existentialInserter
+            existentialInserter.insert(potentialVariable, typeVar, typeVarDecl);
+        }
     }
 
     //TODO JB: I think this means we don't need the isUpperBoundOfTypeParam parameter above
@@ -1618,25 +1627,64 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
     }
 
     /**
-     * This method returns the annotation that may or may not be placed on the class declaration for type.
-     * If it does not already exist, this method creates the annotation and stores it in classDeclAnnos.
+     * This method returns the annotation that may or may not be placed on the
+     * class declaration for type. If it does not already exist, this method
+     * creates the annotation and stores it in classDeclAnnos.
+     *
+     * @param type
+     *            AnnotatedDeclaredType of the declaration/invocation of a
+     *            class/interface, which we will use to create new declaration
+     *            bound annotation on its class declaration
+     * @return VariableSlot that represents the declaration bound of this class.
+     *         It can be ConstantSlot, if the class declaration is pre-annotated
+     *         /no explicit class declaration exists; Or
+     *         VariableSlot(existential) if no pre-annotation exists on it
+     *
      */
     private VariableSlot getOrCreateDeclBound(AnnotatedDeclaredType type) {
 
+        // Get the TypeElement of this AnnotatedDeclaredTypee first
         TypeElement classDecl = (TypeElement) type.getUnderlyingType().asElement();
-
-        VariableSlot topConstant = getTopConstant();
+        // Get the annotated declared type of the corresponding class declaration.
+        AnnotatedDeclaredType classDeclATM = inferenceTypeFactory.fromElement(classDecl);
         VariableSlot declSlot = classDeclAnnos.get(classDecl);
-        if (declSlot == null) {
+
+        if (!classDeclAnnos.containsKey(classDecl)) {
+            // No declaration slot exists yet.
             Tree decl = inferenceTypeFactory.declarationFromElement(classDecl);
             if (decl != null) {
-                VariableSlot potentialDeclSlot = createVariable(decl);
-                declSlot = getOrCreateExistentialVariable(potentialDeclSlot, topConstant);
-                classDeclAnnos.put(classDecl, potentialDeclSlot);
+                // If there is ClassTree,i.e., an explicit class declaration,
+                // there might or might not be pre-annotation on it. So, there
+                // are two cases:
+                if (classDeclATM != null && classDeclATM.getAnnotations().iterator().hasNext()) {
+                    // Class declaration is pre-annotated, so load that annotation.
+                    AnnotationMirror classDeclAM = classDeclATM.getAnnotations().iterator().next();
+                    declSlot = slotManager.createConstantSlot(classDeclAM);
+                    classDeclAnnos.put(classDecl, declSlot);
+                } else {
+                    // No annotation on class declaration. Create a
+                    // potential VariableSlot to annotated it, and an
+                    // existential VariableSlot to represent its bound
+                    if(withExistentialVariables){
+                        VariableSlot potentialDeclSlot = createVariable(decl);
+                        declSlot = getOrCreateExistentialVariable(potentialDeclSlot, getTopConstant());
+                        classDeclAnnos.put(classDecl, potentialDeclSlot);
+                    }else{
+                        declSlot=getTopConstant();
+                        classDeclAnnos.put(classDecl, getTopConstant());
+                    }
+                }
 
             } else {
-                declSlot = topConstant;
+                // If no explicit class declaration in the source
+                // code corresponds to this TypeElement,ClassTree is null. Then
+                // use the top qualifier of the realtypefactory. If we use Java
+                // provided classes, such as String, Object, this case will be
+                // covered
+                declSlot = getTopConstant();
             }
+        } else {
+            // Skip. Since the declaration slot is already in cache.
         }
 
         return declSlot;

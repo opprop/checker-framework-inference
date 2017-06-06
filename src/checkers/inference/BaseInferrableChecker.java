@@ -74,6 +74,11 @@ public abstract class BaseInferrableChecker extends InferenceChecker implements 
     }
 
     @Override
+    public boolean withExistentialVariables() {
+        return true;
+    }
+
+    @Override
     public boolean isConstant(Tree node) {
         return false;
     }

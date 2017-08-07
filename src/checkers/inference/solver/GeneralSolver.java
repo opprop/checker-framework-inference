@@ -73,7 +73,7 @@ public class GeneralSolver implements InferenceSolver {
             Collection<Constraint> constraints, QualifierHierarchy qualHierarchy,
             ProcessingEnvironment processingEnvironment) {
 
-        InferenceSolution solution = null;
+        Map<Integer, AnnotationMirror> inferResult = null;
 
         configureSolverArgs(configuration);
         configureLattice(qualHierarchy);
@@ -84,15 +84,15 @@ public class GeneralSolver implements InferenceSolver {
             constraintGraph = generateGraph(slots, constraints, processingEnvironment);
             final long graphBuildingEnd = System.currentTimeMillis();
             StatisticRecorder.record(StatisticKey.GRAPH_GENERATION_TIME, (graphBuildingEnd - graphBuildingStart));
-            solution = graphSolve(constraintGraph, configuration, slots, constraints, qualHierarchy,
+            inferResult = graphSolve(constraintGraph, configuration, slots, constraints, qualHierarchy,
                     processingEnvironment, defaultSerializer);
         } else {
             realBackEnd = createBackEnd(backEndType, configuration, slots, constraints, qualHierarchy,
                     processingEnvironment, lattice, defaultSerializer);
-            solution = solve();
+            inferResult = solve();
         }
 
-        if (solution == null) {
+        if (inferResult == null) {
             // Solution should never be null.
             ErrorReporter.errorAbort("Null solution detected!");
         }
@@ -103,8 +103,40 @@ public class GeneralSolver implements InferenceSolver {
                     useGraph, solveInParallel);
             PrintUtils.writeStatistic(StatisticRecorder.getStatistic(), modelRecord, backEndType,
                     useGraph, solveInParallel);
+            postStatistic(constraints, slots, inferResult);
         }
-        return solution;
+
+        postVerification(constraints, slots, inferResult, qualHierarchy);
+
+        return new DefaultInferenceSolution(inferResult);
+    }
+
+    /**
+     * Process post-statistics on constraints, slots, and inference result after solver gives a solution.
+     *
+     * Sub-classes may override this method to perform customized statistics.
+     *
+     * @param constraints List of Constraints to be satisfied
+     * @param slots List of solts used in inference
+     * @param inferResult Map from slot id to inference solution for that slot
+     */
+    protected void postStatistic(final Collection<Constraint> constraints, final Collection<Slot> slots,
+            final Map<Integer, AnnotationMirror> inferResult) {
+        // Intentionally empty.
+    }
+
+    /**
+     * Process post-verification on the inference result.
+     *
+     * Sub-classes may override this method to perform customized verifications.
+     * @param constraints List of Constraints to be satisfied
+     * @param slots List of solts used in inference
+     * @param inferResult Map from slot id to inference solution for that slot
+     * @param qualifierHierarchy Target QualifierHierarchy
+     */
+    protected void postVerification(final Collection<Constraint> constraints, final Collection<Slot> slots,
+            final Map<Integer, AnnotationMirror> inferResult, final QualifierHierarchy qualifierHierarchy) {
+        // Intentionally empty.
     }
 
     /**
@@ -212,14 +244,14 @@ public class GeneralSolver implements InferenceSolver {
      * 
      * @return an InferenceSolution for the given slots/constraints
      */
-    protected InferenceSolution solve() {
+    protected Map<Integer, AnnotationMirror> solve() {
         solvingStart = System.currentTimeMillis();
         Map<Integer, AnnotationMirror> result = realBackEnd.solve();
         solvingEnd = System.currentTimeMillis();
         StatisticRecorder.record(StatisticKey.OVERALL_NOGRAPH_SOLVING_TIME, (solvingEnd - solvingStart));
         StatisticRecorder.record(StatisticKey.ANNOTATOIN_SIZE, (long) result.size());
         PrintUtils.printResult(result);
-        return new DefaultInferenceSolution(result);
+        return result;
     }
 
     /**
@@ -235,7 +267,7 @@ public class GeneralSolver implements InferenceSolver {
      * @param defaultSerializer
      * @return an InferenceSolution for the given slots/constraints
      */
-    protected InferenceSolution graphSolve(ConstraintGraph constraintGraph,
+    protected Map<Integer, AnnotationMirror> graphSolve(ConstraintGraph constraintGraph,
             Map<String, String> configuration, Collection<Slot> slots,
             Collection<Constraint> constraints, QualifierHierarchy qualHierarchy,
             ProcessingEnvironment processingEnvironment, Serializer<?, ?> defaultSerializer) {
@@ -338,7 +370,7 @@ public class GeneralSolver implements InferenceSolver {
      * @param inferenceSolutionMaps
      * @return an InferenceSolution for the given slots/constraints
      */
-    protected InferenceSolution mergeSolution(List<Map<Integer, AnnotationMirror>> inferenceSolutionMaps) {
+    protected Map<Integer, AnnotationMirror> mergeSolution(List<Map<Integer, AnnotationMirror>> inferenceSolutionMaps) {
 
         Map<Integer, AnnotationMirror> result = new HashMap<>();
 
@@ -347,7 +379,7 @@ public class GeneralSolver implements InferenceSolver {
         }
         PrintUtils.printResult(result);
         StatisticRecorder.record(StatisticKey.ANNOTATOIN_SIZE, (long) result.size());
-        return new DefaultInferenceSolution(result);
+        return result;
     }
 
     /**

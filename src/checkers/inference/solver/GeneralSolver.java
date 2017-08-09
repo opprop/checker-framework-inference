@@ -73,7 +73,7 @@ public class GeneralSolver implements InferenceSolver {
             Collection<Constraint> constraints, QualifierHierarchy qualHierarchy,
             ProcessingEnvironment processingEnvironment) {
 
-        Map<Integer, AnnotationMirror> inferResult = null;
+        Map<Integer, AnnotationMirror> inferredResult = null;
 
         configureSolverArgs(configuration);
         configureLattice(qualHierarchy);
@@ -84,15 +84,15 @@ public class GeneralSolver implements InferenceSolver {
             constraintGraph = generateGraph(slots, constraints, processingEnvironment);
             final long graphBuildingEnd = System.currentTimeMillis();
             StatisticRecorder.record(StatisticKey.GRAPH_GENERATION_TIME, (graphBuildingEnd - graphBuildingStart));
-            inferResult = graphSolve(constraintGraph, configuration, slots, constraints, qualHierarchy,
+            inferredResult = graphSolve(constraintGraph, configuration, slots, constraints, qualHierarchy,
                     processingEnvironment, defaultSerializer);
         } else {
             realBackEnd = createBackEnd(backEndType, configuration, slots, constraints, qualHierarchy,
                     processingEnvironment, lattice, defaultSerializer);
-            inferResult = solve();
+            inferredResult = solve();
         }
 
-        if (inferResult == null) {
+        if (inferredResult == null) {
             // Solution should never be null.
             ErrorReporter.errorAbort("Null solution detected!");
         }
@@ -103,12 +103,12 @@ public class GeneralSolver implements InferenceSolver {
                     useGraph, solveInParallel);
             PrintUtils.writeStatistic(StatisticRecorder.getStatistic(), modelRecord, backEndType,
                     useGraph, solveInParallel);
-            postStatistic(constraints, slots, inferResult);
+            postStatistic(constraints, slots, inferredResult);
         }
 
-        postVerification(constraints, slots, inferResult, qualHierarchy);
+        verifyInferredSolution(constraints, slots, inferredResult, qualHierarchy);
 
-        return new DefaultInferenceSolution(inferResult);
+        return new DefaultInferenceSolution(inferredResult);
     }
 
     /**
@@ -126,16 +126,16 @@ public class GeneralSolver implements InferenceSolver {
     }
 
     /**
-     * Process post-verification on the inference result.
+     * Verify if the inferred solution is consistent with given constraints.
      *
      * Sub-classes may override this method to perform customized verifications.
      * @param constraints List of Constraints to be satisfied
      * @param slots List of solts used in inference
-     * @param inferResult Map from slot id to inference solution for that slot
-     * @param qualifierHierarchy Target QualifierHierarchy
+     * @param inferredResult Map from slot id to inference solution for that slot
+     * @param realQualifierHierarchy Target real qualifierHierarchy
      */
-    protected void postVerification(final Collection<Constraint> constraints, final Collection<Slot> slots,
-            final Map<Integer, AnnotationMirror> inferResult, final QualifierHierarchy qualifierHierarchy) {
+    protected void verifyInferredSolution(final Collection<Constraint> constraints, final Collection<Slot> slots,
+            final Map<Integer, AnnotationMirror> inferredResult, final QualifierHierarchy realQualifierHierarchy) {
         // Intentionally empty.
     }
 

@@ -49,7 +49,7 @@ public class DataflowGeneralSolver extends GeneralSolver {
     private ProcessingEnvironment processingEnvironment;
 
     @Override
-    protected InferenceSolution graphSolve(ConstraintGraph constraintGraph,
+    protected Map<Integer, AnnotationMirror> graphSolve(ConstraintGraph constraintGraph,
             Map<String, String> configuration, Collection<Slot> slots,
             Collection<Constraint> constraints, QualifierHierarchy qualHierarchy,
             ProcessingEnvironment processingEnvironment, Serializer<?, ?> defaultSerializer) {
@@ -100,7 +100,7 @@ public class DataflowGeneralSolver extends GeneralSolver {
     }
 
     @Override
-    protected InferenceSolution mergeSolution(List<Map<Integer, AnnotationMirror>> inferenceSolutionMaps) {
+    protected Map<Integer, AnnotationMirror> mergeSolution(List<Map<Integer, AnnotationMirror>> inferenceSolutionMaps) {
         Map<Integer, AnnotationMirror> result = new HashMap<>();
         Map<Integer, Set<AnnotationMirror>> dataflowResults = new HashMap<>();
 
@@ -144,7 +144,7 @@ public class DataflowGeneralSolver extends GeneralSolver {
 
         PrintUtils.printResult(result);
         StatisticRecorder.record(StatisticKey.ANNOTATOIN_SIZE, (long) result.size());
-        return new DefaultInferenceSolution(result);
+        return result;
     }
 
     @Override

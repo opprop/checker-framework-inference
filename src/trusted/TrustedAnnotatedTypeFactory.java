@@ -1,8 +1,11 @@
 package trusted;
 
+import java.lang.annotation.Annotation;
+import java.util.Set;
+
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.type.*;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.TreeUtils;
@@ -22,6 +25,11 @@ public class TrustedAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 super.createTreeAnnotator(),
                 new TrustedTreeAnnotator()
         );
+    }
+
+    @Override
+    protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
+        return getBundledTypeQualifiersWithoutPolyAll();
     }
 
     private class TrustedTreeAnnotator extends TreeAnnotator {

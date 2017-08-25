@@ -12,6 +12,7 @@ import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
+import org.checkerframework.framework.flow.CFAbstractValue;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -76,8 +77,14 @@ public class InferenceAnalysis extends CFAnalysis {
     public CFValue defaultCreateAbstractValue(CFAbstractAnalysis<CFValue, ?, ?> analysis,
                                               Set<AnnotationMirror> annos,
                                               TypeMirror underlyingType) {
-
-        if (annos.size() == 0 && underlyingType.getKind() != TypeKind.TYPEVAR) {
+        if (!CFAbstractValue.validateSet(annos, underlyingType, qualifierHierarchy)) {
+            // TODO: Figure out why we have real qualifiers in the store while using an inferenceATF perform the analysis.
+            logger.fine("Encountered invalid type: "
+                    + underlyingType
+                    + " annotations: "
+                    + PluginUtil.join(", ", annos));
+            return null;
+        } else if (annos.size() == 0 && underlyingType.getKind() != TypeKind.TYPEVAR) {
             // This happens for currently for class declarations.
             logger.fine("Found type with no inferenceAnnotations. Returning null. Type found: "
                     + underlyingType.toString());

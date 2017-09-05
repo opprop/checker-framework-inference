@@ -156,12 +156,8 @@ public class DefaultSlotManager implements SlotManager {
         // We need to build the AnntotationBuilder each time because AnnotationBuilders are only allowed to build their annotations once
         if (slotClass.equals(VariableSlot.class) || slotClass.equals(ExistentialVariableSlot.class)
                 || slotClass.equals(RefinementVariableSlot.class) || slotClass.equals(CombVariableSlot.class)
-                || slotClass.equals(ConstantSlot.class)) {
+                || slotClass.equals(ConstantSlot.class) || slotClass.equals(ConstantSlot.class)) {
             return convertVariable((VariableSlot) slot, new AnnotationBuilder(processingEnvironment, VarAnnot.class));
-        }
-
-        if (slotClass.equals(ConstantSlot.class)) {
-            return ((ConstantSlot) slot).getValue();
         }
 
         throw new IllegalArgumentException("Slot type unrecognized( " + slot.getClass() + ") Slot=" + slot.toString() );

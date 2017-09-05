@@ -18,6 +18,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.inference.model.CombVariableSlot;
+import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.ConstraintManager;
 import checkers.inference.model.Slot;
 import checkers.inference.qual.VarAnnot;
@@ -237,10 +238,12 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
         }
         assert a1 != null && a2 != null : "leastUpperBound accepts only NonNull types! 1 (" + a1 + " ) a2 (" + a2 + ")";
 
+        QualifierHierarchy realQualifierHierarhcy = inferenceMain.getRealTypeFactory().getQualifierHierarchy();
         //for some reason LUB compares all annotations even if they are not in the same sub-hierarchy
         if (!isVarAnnot(a1)) {
             if (!isVarAnnot(a2)) {
-                return super.leastUpperBound(a1, a2);
+                // Delegate to real qualifier hierarchy.
+                return realQualifierHierarhcy.leastUpperBound(a1, a2);
             } else {
                 return null;
             }
@@ -252,11 +255,24 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
         final Slot slot1 = slotMgr.getSlot(a1);
         final Slot slot2 = slotMgr.getSlot(a2);
         if (slot1 != slot2) {
-            final CombVariableSlot mergeVariableSlot = slotMgr.createCombVariableSlot(slot1, slot2);
-            constraintMgr.addSubtypeConstraint(slot1, mergeVariableSlot);
-            constraintMgr.addSubtypeConstraint(slot2, mergeVariableSlot);
+            if ((slot1 instanceof ConstantSlot) && (slot2 instanceof ConstantSlot)) {
+                // If both slots are constant slots, using real qualifier hierarchy to compute the LUB,
+                // then return a VarAnnot represent the constant LUB.
+                // (Because we passing in two VarAnnots that represent constant slots, so it is consistent
+                // to also return a VarAnnot that represents the constant LUB of these two constants.)
+                AnnotationMirror realAnno1 = ((ConstantSlot) slot1).getValue();
+                AnnotationMirror realAnno2 = ((ConstantSlot) slot2).getValue();
 
-            return slotMgr.getAnnotation(mergeVariableSlot);
+                AnnotationMirror realLub = realQualifierHierarhcy.leastUpperBound(realAnno1, realAnno2);
+                Slot constantSlot = slotMgr.createConstantSlot(realLub);
+                return slotMgr.getAnnotation(constantSlot);
+            } else {
+                final CombVariableSlot mergeVariableSlot = slotMgr.createCombVariableSlot(slot1, slot2);
+                constraintMgr.addSubtypeConstraint(slot1, mergeVariableSlot);
+                constraintMgr.addSubtypeConstraint(slot2, mergeVariableSlot);
+
+                return slotMgr.getAnnotation(mergeVariableSlot);
+            }
         } else {
             return slotMgr.getAnnotation(slot1);
         }

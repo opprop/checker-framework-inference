@@ -64,14 +64,16 @@ public class InferenceValue extends CFValue {
         Slot slot2 = getEffectiveSlot(other);
 
         if (slot1 instanceof ConstantSlot && slot2 instanceof ConstantSlot) {
+            AnnotationMirror anno1 = slotManager.getAnnotation(slot1);
+            AnnotationMirror anno2 = slotManager.getAnnotation(slot2);
             final AnnotationMirror
-                    lub = qualifierHierarchy.leastUpperBound(((ConstantSlot) slot1).getValue(), ((ConstantSlot) slot2).getValue());
+                    lub = qualifierHierarchy.leastUpperBound(anno1, anno2);
 
-            //keep the annotations in the Unqualified/real type system;
             return analysis.createAbstractValue(Collections.singleton(lub), getLubType(other, null));
 
         } else {
-
+            //TODO: Could we fully delegate the LUB computation responsibility to qualifierHierarchy?
+            // What is the reason of having different LUB computation between qualifierHeirarchy and here?
             VariableSlot mergeSlot = createMergeVar(slot1, slot2);
             if (InferenceMain.isHackMode(mergeSlot == null)) {
                 Set<AnnotationMirror> copiedAnnos = AnnotationUtils.createAnnotationSet();

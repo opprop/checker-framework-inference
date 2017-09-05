@@ -1,18 +1,11 @@
 package checkers.inference;
 
-import org.checkerframework.framework.util.PluginUtil;
-
-import org.checkerframework.framework.util.CheckerMain;
-
+import checkers.inference.InferenceLauncher.Mode;
+import checkers.inference.model.serialization.JsonSerializerSolver;
+import checkers.inference.solver.MaxSat2TypeSolver;
 import interning.InterningChecker;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
+import org.checkerframework.framework.util.CheckerMain;
+import org.checkerframework.framework.util.PluginUtil;
 import ostrusted.OsTrustedChecker;
 import plume.Option;
 import plume.OptionGroup;
@@ -23,9 +16,15 @@ import sparta.checkers.propagation.IFlowSinkSolver;
 import sparta.checkers.propagation.IFlowSourceSolver;
 import sparta.checkers.sat.SinkSolver;
 import sparta.checkers.sat.SourceSolver;
-import checkers.inference.InferenceLauncher.Mode;
-import checkers.inference.model.serialization.JsonSerializerSolver;
-import checkers.inference.solver.MaxSat2TypeSolver;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Options for the InferenceLauncher and InferenceMain (though InferenceMain uses only the subset
@@ -112,7 +111,7 @@ public class InferenceOptions {
     //------------------------------------------------------
     @OptionGroup("Debugging")
 
-    @Option("[Level] set the log level (from Java logging)")
+    @Option("[Level] set the log4j level (all|debug|info|warn|error|fatal|off). [default debug]")
     public static String logLevel;
 
     @Option(value="-p Print all commands before executing them")
@@ -223,6 +222,13 @@ public class InferenceOptions {
             }
         }
 
+        if (logLevel != null) {
+            Set<String> validLogLevels = new HashSet<>(Arrays.asList("all","debug","info","warn","error","fatal","off"));
+            if (!validLogLevels.contains(logLevel)) {
+                errors.add("Could not recognize log level: " + logLevel + "\n"
+                    + "valid levels: all, debug, info, warn, error, fatal, off");
+            }
+        }
         return new InitStatus(options, errors, help);
     }
 

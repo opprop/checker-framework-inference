@@ -1,5 +1,10 @@
 package checkers.inference;
 
+import checkers.inference.model.CombVariableSlot;
+import checkers.inference.model.ConstraintManager;
+import checkers.inference.model.Slot;
+import checkers.inference.qual.VarAnnot;
+import checkers.inference.util.InferenceUtil;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
@@ -7,21 +12,12 @@ import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
+import javax.lang.model.element.AnnotationMirror;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-
-import checkers.inference.model.CombVariableSlot;
-import checkers.inference.model.ConstraintManager;
-import checkers.inference.model.Slot;
-import checkers.inference.qual.VarAnnot;
-import checkers.inference.util.InferenceUtil;
 
 /**
  * A qualifier hierarchy that generates constraints rather than evaluating them.  Calls to isSubtype
@@ -190,7 +186,7 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
         final AnnotationMirror lhsVarAnnot = findVarAnnot(lhsAnnos);
 
         if (InferenceMain.isHackMode((rhsVarAnnot == null || lhsAnnos == null))) {
-                InferenceMain.getInstance().logger.warning(
+                InferenceMain.getInstance().logger.warn(
                     "Hack:InferenceQualifierHierarchy:165:\n"
                   + "    rhs=" + PluginUtil.join(", ", rhsAnnos) + "\n"
                   + "    lhs=" + PluginUtil.join(", ", lhsAnnos ));
@@ -229,7 +225,7 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
     @Override
     public AnnotationMirror leastUpperBound(final AnnotationMirror a1, final AnnotationMirror a2) {
         if (InferenceMain.isHackMode( (a1 == null || a2 == null))) {
-            InferenceMain.getInstance().logger.warning(
+            InferenceMain.getInstance().logger.warn(
                     "Hack:InferenceQualifierHierarchy:204\n"
                   + "a1=" + a1 + "\n"
                   + "a2=" + a2);

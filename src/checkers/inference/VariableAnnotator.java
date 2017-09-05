@@ -1,44 +1,21 @@
 package checkers.inference;
 
-import org.checkerframework.framework.type.AnnotatedTypeFactory;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
-import org.checkerframework.framework.util.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.ErrorReporter;
-import org.checkerframework.javacutil.InternalUtils;
-import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypesUtils;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.logging.Logger;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
-import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
-import javax.lang.model.element.TypeParameterElement;
-import javax.lang.model.type.TypeKind;
-
+import annotations.io.ASTIndex;
+import annotations.io.ASTPath;
+import annotations.io.ASTRecord;
+import checkers.inference.model.AnnotationLocation;
+import checkers.inference.model.AnnotationLocation.AstPathLocation;
+import checkers.inference.model.AnnotationLocation.ClassDeclLocation;
+import checkers.inference.model.ConstantSlot;
+import checkers.inference.model.ConstraintManager;
+import checkers.inference.model.ExistentialVariableSlot;
+import checkers.inference.model.Slot;
+import checkers.inference.model.VariableSlot;
+import checkers.inference.qual.VarAnnot;
+import checkers.inference.util.ASTPathUtil;
+import checkers.inference.util.ConstantToVariableAnnotator;
+import checkers.inference.util.CopyUtil;
+import checkers.inference.util.InferenceUtil;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.BinaryTree;
@@ -60,23 +37,44 @@ import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
 import com.sun.tools.javac.tree.JCTree;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedNullType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
+import org.checkerframework.framework.util.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.InternalUtils;
+import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
-import annotations.io.ASTIndex;
-import annotations.io.ASTPath;
-import annotations.io.ASTRecord;
-import checkers.inference.model.AnnotationLocation;
-import checkers.inference.model.AnnotationLocation.AstPathLocation;
-import checkers.inference.model.AnnotationLocation.ClassDeclLocation;
-import checkers.inference.model.ConstantSlot;
-import checkers.inference.model.ConstraintManager;
-import checkers.inference.model.ExistentialVariableSlot;
-import checkers.inference.model.Slot;
-import checkers.inference.model.VariableSlot;
-import checkers.inference.qual.VarAnnot;
-import checkers.inference.util.ASTPathUtil;
-import checkers.inference.util.ConstantToVariableAnnotator;
-import checkers.inference.util.CopyUtil;
-import checkers.inference.util.InferenceUtil;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.TypeParameterElement;
+import javax.lang.model.type.TypeKind;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 /**
  *  VariableAnnotator takes a type and the tree that the type represents.  It determines what locations on the tree
@@ -89,7 +87,7 @@ import checkers.inference.util.InferenceUtil;
  */
 public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
 
-    private static final Logger logger = Logger.getLogger(VariableAnnotator.class.getName());
+    private static final Log logger = LogFactory.getLog(VariableAnnotator.class.getName());
 
     private final InferenceAnnotatedTypeFactory inferenceTypeFactory;
     private final SlotManager slotManager;
@@ -244,7 +242,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
                 .<VariableSlot, Set<? extends AnnotationMirror>> of(varSlot,
                 AnnotationUtils.createAnnotationSet());
         treeToVarAnnoPair.put(tree, varATMPair);
-        logger.fine("Created variable for tree:\n" + varSlot.getId() + " => " + tree);
+        logger.info("Created variable for tree:\n" + varSlot.getId() + " => " + tree);
         return varSlot;
     }
 
@@ -279,7 +277,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
                 .<VariableSlot, Set<? extends AnnotationMirror>> of((VariableSlot) constantSlot,
                         annotations);
         treeToVarAnnoPair.put(tree, varATMPair);
-        logger.fine("Created variable for tree:\n" + constantSlot.getId() + " => " + tree);
+        logger.info("Created variable for tree:\n" + constantSlot.getId() + " => " + tree);
         return constantSlot;
     }
 
@@ -552,7 +550,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             constraintManager.addEqualityConstraint(slotManager.getSlot(realAnno), variable);
         }
 
-        logger.fine("Created implied variable for type:\n" + atm + " => " + location);
+        logger.info("Created implied variable for type:\n" + atm + " => " + location);
 
         return variable;
     }
@@ -781,7 +779,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
                 AnnotationLocation location = createImpliedExtendsLocation(classTree);
                 extendsSlot = createVariable(location);
                 extendsMissingTrees.put(classElement, extendsSlot);
-                logger.fine("Created variable for implicit extends on class:\n" +
+                logger.info("Created variable for implicit extends on class:\n" +
                         extendsSlot.getId() + " => " + classElement + " (extends Object)");
 
             } else {
@@ -834,7 +832,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      */
     private AnnotationLocation createImpliedExtendsLocation(ClassTree classTree) {
         // TODO: THIS CAN BE CREATED ONCE THIS IS FIXED: https://github.com/typetools/annotation-tools/issues/100
-        InferenceMain.getInstance().logger.warning("Hack:VariableAnnotator::createImpliedExtendsLocation(classTree) not implemented");
+        InferenceMain.getInstance().logger.warn("Hack:VariableAnnotator::createImpliedExtendsLocation(classTree) not implemented");
         return AnnotationLocation.MISSING_LOCATION;
     }
 
@@ -1226,7 +1224,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
                     AnnotationLocation location = createImpliedExtendsLocation(typeParameterTree);
                     extendsSlot = createVariable(location);
                     extendsMissingTrees.put(typeVarElement, extendsSlot);
-                    logger.fine("Created variable for implicit extends on type parameter:\n" +
+                    logger.info("Created variable for implicit extends on type parameter:\n" +
                             extendsSlot.getId() + " => " + typeVarElement + " (extends Object)");
 
                 } else {
@@ -1430,7 +1428,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
                 }
 
                 receiverMissingTrees.put(methodElem, receiverType.deepCopy());
-                logger.fine("Created variable for implicit receiver on method:\n" + methodElem + "=>" + receiverType);
+                logger.info("Created variable for implicit receiver on method:\n" + methodElem + "=>" + receiverType);
 
 
             } else {

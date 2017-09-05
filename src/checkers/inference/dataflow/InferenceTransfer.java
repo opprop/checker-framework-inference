@@ -1,5 +1,21 @@
 package checkers.inference.dataflow;
 
+import checkers.inference.InferenceAnnotatedTypeFactory;
+import checkers.inference.InferenceMain;
+import checkers.inference.SlotManager;
+import checkers.inference.VariableAnnotator;
+import checkers.inference.model.AnnotationLocation;
+import checkers.inference.model.ExistentialVariableSlot;
+import checkers.inference.model.RefinementVariableSlot;
+import checkers.inference.model.Slot;
+import checkers.inference.model.VariableSlot;
+import checkers.inference.util.InferenceUtil;
+import com.sun.source.tree.CompoundAssignmentTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.UnaryTree;
+import com.sun.source.tree.VariableTree;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -17,27 +33,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVari
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 
+import javax.lang.model.type.TypeKind;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
-
-import javax.lang.model.type.TypeKind;
-
-import com.sun.source.tree.CompoundAssignmentTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.UnaryTree;
-import com.sun.source.tree.VariableTree;
-
-import checkers.inference.InferenceAnnotatedTypeFactory;
-import checkers.inference.InferenceMain;
-import checkers.inference.SlotManager;
-import checkers.inference.VariableAnnotator;
-import checkers.inference.model.AnnotationLocation;
-import checkers.inference.model.ExistentialVariableSlot;
-import checkers.inference.model.RefinementVariableSlot;
-import checkers.inference.model.Slot;
-import checkers.inference.model.VariableSlot;
-import checkers.inference.util.InferenceUtil;
 
 /**
  *
@@ -53,7 +51,7 @@ import checkers.inference.util.InferenceUtil;
  */
 public class InferenceTransfer extends CFTransfer {
 
-    private static final Logger logger = Logger.getLogger(InferenceTransfer.class.getName());
+    private static final Log logger = LogFactory.getLog(InferenceTransfer.class.getName());
 
     // Keep a cache of tree's that we have created refinement variables so that we do
     // not create multiple. A tree can be evaluated multiple times due to loops.
@@ -207,7 +205,7 @@ public class InferenceTransfer extends CFTransfer {
 
         Slot slotToRefine = getInferenceAnalysis().getSlotManager().getVariableSlot(atm);
 
-        logger.fine("Creating refinement variable for tree: " + assignmentTree);
+        logger.info("Creating refinement variable for tree: " + assignmentTree);
         RefinementVariableSlot refVar;
         if (createdRefinementVariables.containsKey(assignmentTree)) {
             refVar = createdRefinementVariables.get(assignmentTree);
@@ -325,7 +323,7 @@ public class InferenceTransfer extends CFTransfer {
         final ExistentialVariableSlot upperBoundSlot = (ExistentialVariableSlot) upperBoundBaseSlot;
         final ExistentialVariableSlot lowerBoundSlot = (ExistentialVariableSlot) lowerBoundBaseSlot;
 
-        logger.fine("Creating type variable refinement variable for tree: " + assignmentTree);
+        logger.info("Creating type variable refinement variable for tree: " + assignmentTree);
         final RefinementVariableSlot upperBoundRefVar;
         final RefinementVariableSlot lowerBoundRefVar;
         if (createdTypeVarRefinementVariables.containsKey(assignmentTree)) {

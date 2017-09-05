@@ -1,5 +1,6 @@
 package checkers.inference;
 
+import checkers.inference.model.Slot;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.DefaultRawnessComparer;
@@ -9,8 +10,6 @@ import org.checkerframework.framework.type.StructuralEqualityComparer;
 import org.checkerframework.javacutil.ErrorReporter;
 
 import javax.lang.model.element.AnnotationMirror;
-
-import checkers.inference.model.Slot;
 
 /**
  *  The InferenceTypeHierarchy along with the InferenceQualifierHierarchy is responsible for
@@ -77,7 +76,7 @@ class InferenceEqualityComparer extends StructuralEqualityComparer {
 
         // TODO: HackMode
         if (InferenceMain.isHackMode((varAnnot1 == null || varAnnot2 == null))) {
-            InferenceMain.getInstance().logger.warning(
+            InferenceMain.getInstance().logger.warn(
                 "Hack:InferenceTYpeHierarchy:66\n"
               + "type1=" + type1 + "\n"
               + "type2=" + type2 + "\n"

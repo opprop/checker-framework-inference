@@ -126,6 +126,7 @@
             <sysproperty key="emit.test.debug" value="${should.emit.debug.str}"/>
             <sysproperty key="path.afu.scripts" value="${path.afu.scripts.str}"/>
             <sysproperty key="path.inference.script" value="${path.inference.script.str}"/>
+            <sysproperty key="log4j.ignoreTCL" value="true"/>
 
             <formatter type="xml"/>
             <formatter type="brief" usefile="false"/>

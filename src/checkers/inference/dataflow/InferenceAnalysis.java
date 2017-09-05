@@ -1,15 +1,11 @@
 package checkers.inference.dataflow;
 
-import java.util.IdentityHashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Logger;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-
+import checkers.inference.InferenceChecker;
+import checkers.inference.InferrableChecker;
+import checkers.inference.SlotManager;
+import checkers.inference.model.ConstraintManager;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAnalysis;
@@ -21,10 +17,13 @@ import org.checkerframework.framework.util.PluginUtil;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 
-import checkers.inference.InferenceChecker;
-import checkers.inference.InferrableChecker;
-import checkers.inference.SlotManager;
-import checkers.inference.model.ConstraintManager;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
+import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Set;
 
 /**
  * InferenceAnalysis tweaks dataflow for Checker-Framework-Inference.
@@ -47,7 +46,7 @@ import checkers.inference.model.ConstraintManager;
  */
 public class InferenceAnalysis extends CFAnalysis {
 
-    private static final Logger logger = Logger.getLogger(InferenceAnalysis.class.getName());
+    private static final Log logger = LogFactory.getLog(InferenceAnalysis.class.getName());
     private SlotManager slotManager;
     private ConstraintManager constraintManager;
     private InferrableChecker realChecker;
@@ -79,7 +78,7 @@ public class InferenceAnalysis extends CFAnalysis {
 
         if (annos.size() == 0 && underlyingType.getKind() != TypeKind.TYPEVAR) {
             // This happens for currently for class declarations.
-            logger.fine("Found type with no inferenceAnnotations. Returning null. Type found: "
+            logger.info("Found type with no inferenceAnnotations. Returning null. Type found: "
                     + underlyingType.toString());
             return null;
         } else if (annos.size() > 2) {

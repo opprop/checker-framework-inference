@@ -36,6 +36,15 @@
     <orderEntry type="module" module-name="javacutil" />
     <orderEntry type="module" module-name="plume-lib" />
     <orderEntry type="module-library">
+      <library name="commons-logging-1.2.jar">
+        <CLASSES>
+          <root url="file://dist/commons-logging-1.2.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
       <library name="gson-1.7.2.jar">
         <CLASSES>
           <root url="file://dist/gson-1.7.2.jar" />
@@ -84,6 +93,15 @@
       <library name="org.ow2.sat4j.pb-2.3.4.jar">
         <CLASSES>
           <root url="file://dist/org.ow2.sat4j.pb-2.3.4.jar" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library">
+      <library name="log4j-1.2.16.jar">
+        <CLASSES>
+          <root url="file://dist/log4j-1.2.16.jar" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />

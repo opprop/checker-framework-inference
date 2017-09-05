@@ -1,19 +1,5 @@
 package checkers.inference.solver;
 
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationUtils;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-
 import checkers.inference.DefaultInferenceSolution;
 import checkers.inference.InferenceMain;
 import checkers.inference.InferenceSolution;
@@ -25,6 +11,18 @@ import checkers.inference.model.ExistentialConstraint;
 import checkers.inference.model.Slot;
 import checkers.inference.model.SubtypeConstraint;
 import checkers.inference.model.VariableSlot;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.AnnotationUtils;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * InferenceSolver FloodSolver implementation
@@ -182,7 +180,7 @@ public class PropagationSolver implements InferenceSolver {
                     addEntryToMap(subTypePropagation, (VariableSlot) subtype.getSupertype(), (VariableSlot) subtype.getSubtype(), constraint);
                 }
             } else if (constraint instanceof ExistentialConstraint) {
-                InferenceMain.getInstance().logger.warning("PropagationSolver: Existential constraint found.  Inferred annotations may not type check ");
+                InferenceMain.getInstance().logger.warn("PropagationSolver: Existential constraint found.  Inferred annotations may not type check ");
             }
         }
     }

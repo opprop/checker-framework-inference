@@ -1,24 +1,5 @@
 package sparta.checkers.propagation;
 
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.AnnotationBuilder;
-
-import java.lang.annotation.Annotation;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.logging.Logger;
-
-import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.ExecutableElement;
-
 import checkers.inference.DefaultInferenceSolution;
 import checkers.inference.InferenceSolution;
 import checkers.inference.InferenceSolver;
@@ -29,8 +10,27 @@ import checkers.inference.model.Slot;
 import checkers.inference.model.Slot.Kind;
 import checkers.inference.model.SubtypeConstraint;
 import checkers.inference.model.VariableSlot;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.AnnotationBuilder;
 import sparta.checkers.qual.Sink;
 import sparta.checkers.qual.Source;
+
+import javax.annotation.processing.ProcessingEnvironment;
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.ExecutableElement;
+import java.lang.annotation.Annotation;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.logging.Logger;
 
 /**
  * Solver for solving Strings for @Source and @Sink annotations.
@@ -59,7 +59,7 @@ import sparta.checkers.qual.Source;
  */
 public abstract class IFlowSolver implements InferenceSolver {
 
-    private static final Logger logger = Logger.getLogger(Logger.class.getName());
+    private static final Log logger = LogFactory.getLog(Logger.class.getName());
 
     private static final String PRINT_EMPTY_SINKS_KEY="print-empty-sinks";
     private static final String PRINT_EMPTY_SOURCES_KEY="print-empty-sources";

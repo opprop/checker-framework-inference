@@ -4,6 +4,22 @@ package checkers.inference;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 */
 
+import checkers.inference.model.ConstantSlot;
+import checkers.inference.model.ConstraintManager;
+import checkers.inference.model.RefinementVariableSlot;
+import checkers.inference.model.Slot;
+import checkers.inference.model.VariableSlot;
+import checkers.inference.qual.VarAnnot;
+import checkers.inference.util.InferenceUtil;
+import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.ThrowTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 import org.checkerframework.framework.qual.Unqualified;
@@ -21,32 +37,15 @@ import org.checkerframework.framework.util.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.logging.Logger;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-
-import checkers.inference.model.ConstantSlot;
-import checkers.inference.model.ConstraintManager;
-import checkers.inference.model.RefinementVariableSlot;
-import checkers.inference.model.Slot;
-import checkers.inference.model.VariableSlot;
-import checkers.inference.qual.VarAnnot;
-import checkers.inference.util.InferenceUtil;
-
-import com.sun.source.tree.CatchTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodTree;
-import com.sun.source.tree.ThrowTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.VariableTree;
 
 
 /**
@@ -67,7 +66,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         Factory extends BaseAnnotatedTypeFactory>
         extends BaseTypeVisitor<Factory> {
 
-    private static final Logger logger = Logger.getLogger(InferenceVisitor.class.getName());
+    private static final Log logger = LogFactory.getLog(InferenceVisitor.class.getName());
 
     /* One design alternative would have been to use two separate subclasses instead of the boolean.
      * However, this separates the inference and checking implementation of a method.
@@ -137,10 +136,10 @@ public class InferenceVisitor<Checker extends InferenceChecker,
 
         if (el == null) {
             // TODO: prims not annotated in UTS, others might
-            logger.warning("InferenceVisitor::doesNotContain: no annotation in type: " + ty);
+            logger.warn("No annotation in type: " + ty);
         } else {
             if (!InferenceMain.getInstance().isPerformingFlow()) {
-                logger.fine("InferenceVisitor::doesNotContain: Inequality constraint constructor invocation(s).");
+                logger.info("Inequality constraint constructor invocation(s).");
             }
 
             ConstraintManager cm = InferenceMain.getInstance().getConstraintManager();
@@ -206,10 +205,10 @@ public class InferenceVisitor<Checker extends InferenceChecker,
 
             if (el == null) {
                 // TODO: prims not annotated in UTS, others might
-                logger.warning("InferenceVisitor::mainIs: no annotation in type: " + ty);
+                logger.warn("InferenceVisitor::mainIs: no annotation in type: " + ty);
             } else {
                 if (!InferenceMain.getInstance().isPerformingFlow()) {
-                    logger.fine("InferenceVisitor::mainIs: Subtype constraint constructor invocation(s).");
+                    logger.info("InferenceVisitor::mainIs: Subtype constraint constructor invocation(s).");
                     InferenceMain.getInstance().getConstraintManager().addSubtypeConstraint(el, slotManager.getSlot(mod));
                 }
             }
@@ -232,10 +231,10 @@ public class InferenceVisitor<Checker extends InferenceChecker,
 
             if (el == null) {
                 // TODO: prims not annotated in UTS, others might
-                logger.warning("InferenceVisitor::isNoneOf: no annotation in type: " + ty);
+                logger.warn("InferenceVisitor::isNoneOf: no annotation in type: " + ty);
             } else {
                 if (!InferenceMain.getInstance().isPerformingFlow()) {
-                    logger.fine("InferenceVisitor::mainIsNoneOf: Inequality constraint constructor invocation(s).");
+                    logger.info("InferenceVisitor::mainIsNoneOf: Inequality constraint constructor invocation(s).");
 
                     for (AnnotationMirror mod : mods) {
                         InferenceMain.getInstance().getConstraintManager().addInequalityConstraint(el, slotManager.getSlot(mod));
@@ -269,10 +268,10 @@ public class InferenceVisitor<Checker extends InferenceChecker,
 
             if (el == null) {
                 // TODO: prims not annotated in UTS, others might
-                logger.warning("InferenceVisitor::mainIs: no annotation in type: " + sourceType);
+                logger.warn("InferenceVisitor::mainIs: no annotation in type: " + sourceType);
             } else {
                 if (!InferenceMain.getInstance().isPerformingFlow()) {
-                    logger.fine("InferenceVisitor::mainIs: Equality constraint constructor invocation(s).");
+                    logger.info("InferenceVisitor::mainIs: Equality constraint constructor invocation(s).");
                     InferenceMain.getInstance().getConstraintManager()
                             .addEqualityConstraint(el, slotManager.getSlot(target));
                 }
@@ -297,10 +296,10 @@ public class InferenceVisitor<Checker extends InferenceChecker,
 
             if (el == null) {
                 // TODO: prims not annotated in UTS, others might
-                logger.warning("InferenceVisitor::isNoneOf: no annotation in type: " + targets);
+                logger.warn("InferenceVisitor::isNoneOf: no annotation in type: " + targets);
             } else {
                 if (!InferenceMain.getInstance().isPerformingFlow()) {
-                    logger.fine("InferenceVisitor::mainIsNoneOf: Inequality constraint constructor invocation(s).");
+                    logger.info("InferenceVisitor::mainIsNoneOf: Inequality constraint constructor invocation(s).");
 
                     for (AnnotationMirror mod : targets) {
                         InferenceMain.getInstance().getConstraintManager()
@@ -326,10 +325,10 @@ public class InferenceVisitor<Checker extends InferenceChecker,
 
             if (el1 == null || el2 == null) {
                 // TODO: prims not annotated in UTS, others might
-                logger.warning("InferenceVisitor::areComparable: no annotation on type: " + ty1 + " or " + ty2);
+                logger.warn("InferenceVisitor::areComparable: no annotation on type: " + ty1 + " or " + ty2);
             } else {
                 if (!InferenceMain.getInstance().isPerformingFlow()) {
-                    logger.fine("InferenceVisitor::areComparable: Comparable constraint constructor invocation.");
+                    logger.info("InferenceVisitor::areComparable: Comparable constraint constructor invocation.");
                     InferenceMain.getInstance().getConstraintManager().addComparableConstraint(el1, el2);
                 }
             }
@@ -348,10 +347,10 @@ public class InferenceVisitor<Checker extends InferenceChecker,
 
             if (el1 == null || el2 == null) {
                 // TODO: prims not annotated in UTS, others might
-                logger.warning("InferenceVisitor::areEqual: no annotation on type: " + ty1 + " or " + ty2);
+                logger.warn("InferenceVisitor::areEqual: no annotation on type: " + ty1 + " or " + ty2);
             } else {
                 if (!InferenceMain.getInstance().isPerformingFlow()) {
-                    logger.fine("InferenceVisitor::areEqual: Equality constraint constructor invocation.");
+                    logger.info("InferenceVisitor::areEqual: Equality constraint constructor invocation.");
                     InferenceMain.getInstance().getConstraintManager().addEqualityConstraint(el1, el2);
                 }
             }
@@ -575,7 +574,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                                                   final ConstraintManager constraintManager) {
         Slot sup = slotManager.getVariableSlot(varType);
         Slot sub = slotManager.getVariableSlot(valueType);
-        logger.fine("InferenceVisitor::commonAssignmentCheck: Equality constraint for qualifiers sub: " + sub + " sup: " + sup);
+        logger.info("InferenceVisitor::commonAssignmentCheck: Equality constraint for qualifiers sub: " + sub + " sup: " + sup);
 
         // Equality between the refvar and the value
         constraintManager.addEqualityConstraint(sup, sub);
@@ -667,7 +666,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                     }
 
                     Slot sub = slotManager.getVariableSlot(upperBound);
-                    logger.fine("InferenceVisitor::commonAssignmentCheck: Equality constraint for qualifiers sub: " + sub + " sup: " + sup);
+                    logger.info("InferenceVisitor::commonAssignmentCheck: Equality constraint for qualifiers sub: " + sub + " sup: " + sup);
 
                     // Equality between the refvar and the value
                     constraintManager.addEqualityConstraint(sup, sub);

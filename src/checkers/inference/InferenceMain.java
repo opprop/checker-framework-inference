@@ -1,7 +1,19 @@
 package checkers.inference;
 
+import checkers.inference.InferenceOptions.InitStatus;
+import checkers.inference.model.AnnotationLocation;
+import checkers.inference.model.Constraint;
+import checkers.inference.model.ConstraintManager;
+import checkers.inference.model.VariableSlot;
+import checkers.inference.qual.VarAnnot;
+import checkers.inference.util.InferenceUtil;
+import checkers.inference.util.JaifBuilder;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.log4j.Level;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 
+import javax.lang.model.element.AnnotationMirror;
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -13,19 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-
-import javax.lang.model.element.AnnotationMirror;
-
-import checkers.inference.InferenceOptions.InitStatus;
-import checkers.inference.model.AnnotationLocation;
-import checkers.inference.model.Constraint;
-import checkers.inference.model.ConstraintManager;
-import checkers.inference.model.VariableSlot;
-import checkers.inference.qual.VarAnnot;
-import checkers.inference.util.InferenceUtil;
-import checkers.inference.util.JaifBuilder;
 
 /**
  * InferenceMain is the central coordinator to the inference system.
@@ -63,7 +62,7 @@ import checkers.inference.util.JaifBuilder;
 
 public class InferenceMain {
 
-    public final Logger logger = Logger.getLogger(InferenceMain.class.getName());
+    public final Log logger = LogFactory.getLog(InferenceMain.class.getName());
 
     /**
      * Return the single instance of this class.
@@ -121,7 +120,7 @@ public class InferenceMain {
      */
     public InferenceMain() {
         if (inferenceMainInstance != null) {
-            logger.warning("Only a single instance of InferenceMain should ever be created!");
+            logger.warn("Only a single instance of InferenceMain should ever be created!");
         }
         inferenceMainInstance = this;
         resultHandler = new DefaultResultHandler(logger);
@@ -137,7 +136,11 @@ public class InferenceMain {
      * Kick off the inference process.
      */
     public void run() {
-        logger.finer("Starting InferenceMain");
+        if (InferenceOptions.logLevel != null) {
+            InferenceUtil.setLoggingLevel(Level.toLevel(InferenceOptions.logLevel));
+        }
+
+        logger.info("Starting InferenceMain");
 
         // Start up javac
         startCheckerFramework();
@@ -161,12 +164,6 @@ public class InferenceMain {
             checkerFrameworkArgs.addAll(parseCfArgs());
         }
 
-        if (InferenceOptions.logLevel == null) {
-            InferenceUtil.setLoggingLevel(Level.FINE);
-        } else {
-            InferenceUtil.setLoggingLevel(Level.parse(InferenceOptions.logLevel));
-        }
-
         if (InferenceOptions.hacks) {
             hackMode = true;
         }
@@ -179,7 +176,7 @@ public class InferenceMain {
             checkerFrameworkArgs.addAll(Arrays.asList(InferenceOptions.javaFiles));
         }
 
-        logger.fine(String.format("Starting checker framework with options: %s", checkerFrameworkArgs));
+        logger.info(String.format("Starting checker framework with options: %s", checkerFrameworkArgs));
 
         StringWriter javacoutput = new StringWriter();
         boolean success = CheckerFrameworkUtil.invokeCheckerFramework(checkerFrameworkArgs.toArray(new String[checkerFrameworkArgs.size()]),
@@ -197,7 +194,7 @@ public class InferenceMain {
      */
     public void recordInferenceCheckerInstance(InferenceChecker inferenceChecker) {
         this.inferenceChecker = inferenceChecker;
-        logger.finer("Received InferenceChecker callback");
+        logger.info("Received InferenceChecker callback");
     }
 
     /**
@@ -243,7 +240,7 @@ public class InferenceMain {
             writer.println(jaif);
 
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Failed to write out jaif file!", e);
+            logger.fatal("Failed to write out jaif file!", e);
         }
     }
 
@@ -278,7 +275,7 @@ public class InferenceMain {
     public InferenceVisitor<?, ? extends BaseAnnotatedTypeFactory> getVisitor() {
         if (visitor == null) {
             visitor = getRealChecker().createVisitor(inferenceChecker, getInferenceTypeFactory(), true);
-            logger.finer("Created InferenceVisitor");
+            logger.info("Created InferenceVisitor");
         }
         return visitor;
     }
@@ -290,9 +287,9 @@ public class InferenceMain {
                         InferenceOptions.checker, true, ClassLoader.getSystemClassLoader()).newInstance();
                 realChecker.init(inferenceChecker.getProcessingEnvironment());
                 realChecker.initChecker();
-                logger.finer(String.format("Created real checker: %s", realChecker));
+                logger.info(String.format("Created real checker: %s", realChecker));
             } catch (Throwable e) {
-              logger.log(Level.SEVERE, "Error instantiating checker class \"" + InferenceOptions.checker + "\".", e);
+              logger.fatal("Error instantiating checker class \"" + InferenceOptions.checker + "\".", e);
               System.exit(5);
           }
         }
@@ -304,7 +301,7 @@ public class InferenceMain {
             inferenceTypeFactory = realChecker.createInferenceATF(inferenceChecker, getRealChecker(),
                     getRealTypeFactory(), getSlotManager(), getConstraintManager());
             this.getConstraintManager().init(inferenceTypeFactory);
-            logger.finer("Created InferenceAnnotatedTypeFactory");
+            logger.info("Created InferenceAnnotatedTypeFactory");
         }
         return inferenceTypeFactory;
     }
@@ -320,7 +317,7 @@ public class InferenceMain {
     public BaseAnnotatedTypeFactory getRealTypeFactory() {
         if (realTypeFactory == null) {
             realTypeFactory = getRealChecker().createRealTypeFactory();
-            logger.finer(String.format("Created real type factory: %s", realTypeFactory));
+            logger.info(String.format("Created real type factory: %s", realTypeFactory));
         }
         return realTypeFactory;
     }
@@ -329,7 +326,7 @@ public class InferenceMain {
         if (slotManager == null ) {
             slotManager = new DefaultSlotManager(inferenceChecker.getProcessingEnvironment(),
                     realTypeFactory.getSupportedTypeQualifiers(), true );
-            logger.finer("Created slot manager" + slotManager);
+            logger.info("Created slot manager" + slotManager);
         }
         return slotManager;
     }
@@ -338,10 +335,10 @@ public class InferenceMain {
         try {
             InferenceSolver solver = (InferenceSolver) Class.forName(
                     InferenceOptions.solver, true, ClassLoader.getSystemClassLoader()).newInstance();
-            logger.finer("Created solver: " + solver);
+            logger.info("Created solver: " + solver);
             return solver;
         } catch (Throwable e) {
-            logger.log(Level.SEVERE, "Error instantiating solver class \"" + InferenceOptions.solver + "\".", e);
+            logger.fatal("Error instantiating solver class \"" + InferenceOptions.solver + "\".", e);
             System.exit(5);
             return null; // Dead code
         }
@@ -422,7 +419,7 @@ public class InferenceMain {
             if (traces[2].getMethodName().equals("isHackMode")) {
                 hackLocation = traces[3];
             }
-            getInstance().logger.warning("Encountered hack: " + hackLocation);
+            getInstance().logger.warn("Encountered hack: " + hackLocation);
             return true;
         } else {
             return false;
@@ -435,16 +432,16 @@ public class InferenceMain {
 
     protected static class DefaultResultHandler implements ResultHandler {
 
-        private final Logger logger;
+        private final Log logger;
 
-        public DefaultResultHandler(Logger logger) {
+        public DefaultResultHandler(Log logger) {
             this.logger = logger;
         }
 
         @Override
         public void handleCompilerResult(boolean success, String javacOutStr) {
             if (!success) {
-                logger.severe("Error return code from javac! Quitting.");
+                logger.fatal("Error return code from javac! Quitting.");
                 logger.info(javacOutStr);
                 System.exit(1);
             }

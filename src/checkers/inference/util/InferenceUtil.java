@@ -1,5 +1,12 @@
 package checkers.inference.util;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.VariableTree;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
@@ -7,6 +14,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 
+import javax.lang.model.element.AnnotationMirror;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Enumeration;
@@ -15,19 +23,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
-import java.util.logging.Level;
 import java.util.logging.LogManager;
-import java.util.logging.Logger;
-
-import javax.lang.model.element.AnnotationMirror;
-
-import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.IdentifierTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.VariableTree;
 
 public class InferenceUtil {
 
@@ -251,27 +248,7 @@ public class InferenceUtil {
      * Set the root logging level and handler level.
      */
     public static void setLoggingLevel(Level level) {
-        Logger root = Logger.getLogger("");
-        root.setLevel(level);
-
-        // Handler for console (reuse it if it already exists)
-        Handler consoleHandler = null;
-        //see if there is already a console handler
-        for (Handler handler : root.getHandlers()) {
-            if (handler instanceof ConsoleHandler) {
-                //found the console handler
-                consoleHandler = handler;
-                break;
-            }
-        }
-
-        if (consoleHandler == null) {
-            //there was no console handler found, create a new one
-            consoleHandler = new ConsoleHandler();
-            root.addHandler(consoleHandler);
-        }
-        //set the console handler to fine:
-        consoleHandler.setLevel(level);
+        Logger.getRootLogger().setLevel(level);
     }
 
     public static void flushAllLoggers(boolean flushSystemOut) {

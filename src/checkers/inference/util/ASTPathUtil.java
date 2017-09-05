@@ -1,5 +1,13 @@
 package checkers.inference.util;
 
+import annotations.io.ASTIndex;
+import annotations.io.ASTPath;
+import annotations.io.ASTRecord;
+import com.sun.source.tree.Tree;
+import com.sun.source.tree.Tree.Kind;
+import com.sun.source.util.TreePath;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -18,15 +26,6 @@ import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 
 import java.util.IdentityHashMap;
-import java.util.logging.Logger;
-
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.util.TreePath;
-
-import annotations.io.ASTIndex;
-import annotations.io.ASTPath;
-import annotations.io.ASTRecord;
 
 /**
  * ASTPathUtil is a collection of utilities to create ASTRecord for existing trees, as well
@@ -34,7 +33,7 @@ import annotations.io.ASTRecord;
  */
 public class ASTPathUtil {
 
-    protected static final Logger logger = Logger.getLogger(ASTPathUtil.class.getName());
+    protected static final Log logger = LogFactory.getLog(ASTPathUtil.class.getName());
 
 
     public static final String AFU_CONSTRUCTOR_ID = "<init>()V";
@@ -60,11 +59,11 @@ public class ASTPathUtil {
         if (ASTIndex.indexOf(pathToNode.getCompilationUnit()).containsKey(node)) {
             ASTRecord record = ASTIndex.indexOf(pathToNode.getCompilationUnit()).get(node);
             if (record == null) {
-                logger.warning("ASTIndex returned null for record: " + node);
+                logger.warn("ASTIndex returned null for record: " + node);
             }
             return record;
         } else {
-            logger.fine("Did not find ASTRecord for node: " + node);
+            logger.info("Did not find ASTRecord for node: " + node);
             return null;
         }
     }

@@ -127,7 +127,7 @@ public class InferenceLauncher {
         options.addAll(Arrays.asList(javaFiles));
 
         final CheckerMain checkerMain = new CheckerMain(InferenceOptions.checkerJar, options);
-        checkerMain.addToRuntimeClasspath(getInferenceRuntimeJars());
+        checkerMain.addToRuntimeBootclasspath(getInferenceRuntimeBootJars());
 
         if (InferenceOptions.printCommands) {
             outStream.println("Running typecheck command:");
@@ -154,17 +154,16 @@ public class InferenceLauncher {
         argList.addAll(getMemoryArgs());
 
         argList.add("-classpath");
-        argList.add(getInferenceRuntimeClassPath());
+        argList.add(System.getProperty("java.class.path"));
 
         if (InferenceOptions.debug != null) {
             argList.add("-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=" + InferenceOptions.debug);
         }
 
+        argList.add(getInferenceRuntimeBootclassPath());
         argList.addAll(
                 Arrays.asList(
-                        "-ea", "-ea:checkers.inference...", 
-                        // TODO: enable assertions.
-                        "-da:org.checkerframework.framework.flow...",
+                        "-ea", "-ea:checkers.inference...",
                         "checkers.inference.InferenceMain",
                         "--checker", InferenceOptions.checker)
         );
@@ -351,9 +350,9 @@ public class InferenceLauncher {
 
     /**
      * @return the paths to the set of jars that are needed to be placed on
-     * the classpath of the process running inference
+     * the bootclasspath of the process running inference
      */
-    protected List<String> getInferenceRuntimeJars() {
+    protected List<String> getInferenceRuntimeBootJars() {
         final File distDir = InferenceOptions.pathToThisJar.getParentFile();
         String jdkJarName = PluginUtil.getJdkJarName();
 
@@ -369,16 +368,10 @@ public class InferenceLauncher {
     }
 
     //what's used to run the compiler
-    protected String getInferenceRuntimeClassPath() {
-        List<String> filePaths = getInferenceRuntimeJars();
+    protected String getInferenceRuntimeBootclassPath() {
+        List<String> filePaths = getInferenceRuntimeBootJars();
         filePaths.add(InferenceOptions.targetclasspath);
-
-        String systemClasspath = System.getProperty("java.class.path");
-        if (!systemClasspath.isEmpty()) {
-            filePaths.add(systemClasspath);
-        }
-
-        return PluginUtil.join(File.pathSeparator, filePaths);
+        return "-Xbootclasspath/p:" + PluginUtil.join(File.pathSeparator, filePaths);
     }
 
     //what the compiler compiles against

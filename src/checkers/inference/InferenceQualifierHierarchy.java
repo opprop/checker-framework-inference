@@ -242,8 +242,7 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
         //for some reason LUB compares all annotations even if they are not in the same sub-hierarchy
         if (!isVarAnnot(a1)) {
             if (!isVarAnnot(a2)) {
-                // Delegate to real qualifier hierarchy.
-                return realQualifierHierarhcy.leastUpperBound(a1, a2);
+                return super.leastUpperBound(a1, a2);
             } else {
                 return null;
             }

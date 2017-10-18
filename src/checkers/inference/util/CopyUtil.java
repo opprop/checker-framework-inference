@@ -10,6 +10,7 @@ import static javax.lang.model.type.TypeKind.TYPEVAR;
 import static javax.lang.model.type.TypeKind.VOID;
 import static javax.lang.model.type.TypeKind.WILDCARD;
 import static javax.lang.model.type.TypeKind.INTERSECTION;
+import static javax.lang.model.type.TypeKind.UNION;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
@@ -17,6 +18,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclared
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.javacutil.ErrorReporter;
 
@@ -189,6 +191,40 @@ public class CopyUtil {
             //copy annotations in corresponding super types
             for (Entry<DeclaredType, AnnotatedDeclaredType> entry : fromSuperTypesMap.entrySet()) {
                 copyAnnotationsImpl(entry.getValue(), toSuperTypesMap.get(entry.getKey()), copyMethod, visited);
+            }
+        } else if (fromKind == UNION && toKind == UNION) {
+            AnnotatedUnionType fromUnion = (AnnotatedUnionType) from;
+            AnnotatedUnionType toUnion = (AnnotatedUnionType) to;
+
+            List<AnnotatedDeclaredType> fromAlternatives = fromUnion.getAlternatives();
+            List<AnnotatedDeclaredType> toAlternatives = toUnion.getAlternatives();
+
+            if (fromAlternatives.size() != toAlternatives.size()) {
+                ErrorReporter.errorAbort("unequal alternatives when copying UNION to UNION type! from: " + fromUnion + " to: " + toUnion);
+            }
+
+            // check equality between from's alternatives and to's alternatives
+            Map<DeclaredType, AnnotatedDeclaredType> fromAlternativesMap = new HashMap<>();
+            Map<DeclaredType, AnnotatedDeclaredType> toAlternativesMap = new HashMap<>();
+
+            for (AnnotatedDeclaredType alternative : fromAlternatives) {
+                fromAlternativesMap.put(alternative.getUnderlyingType(), alternative);
+            }
+            for (AnnotatedDeclaredType alternative : toAlternatives) {
+                toAlternativesMap.put(alternative.getUnderlyingType(), alternative);
+            }
+
+            assert fromAlternativesMap.size() == toAlternativesMap.size();
+
+            for (DeclaredType underlyingType : fromAlternativesMap.keySet()) {
+                if (!toAlternativesMap.containsKey(underlyingType)) {
+                    ErrorReporter.errorAbort("unequal alternatives when copying UNION to UNION type! from: " + fromUnion + " to: " + toUnion);
+                }
+            }
+
+          //copy annotations in corresponding alternatives
+            for (Entry<DeclaredType, AnnotatedDeclaredType> entry : fromAlternativesMap.entrySet()) {
+                copyAnnotationsImpl(entry.getValue(), toAlternativesMap.get(entry.getKey()), copyMethod, visited);
             }
         } else {
             ErrorReporter.errorAbort("InferenceUtils.copyAnnotationsImpl: unhandled getKind results: " + from +

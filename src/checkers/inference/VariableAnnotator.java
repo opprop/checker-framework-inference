@@ -558,14 +558,13 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
     }
 
     /**
-     * Given an atm, replace it's real annotation from pre-annotated code and implicits from the underlying type system,
-     * by the equivalent varAnnotation, or creating a new VarAnnotation for it if doesn't have any eixiting annotaions.
+     * Given an atm, replace its real annotation from pre-annotated code and implicit from the underlying type system
+     * by the equivalent varAnnotation, or creating a new VarAnnotation for it if doesn't have any existing annotations.
      */
     private VariableSlot replaceOrCreateEquivalentVarAnno(AnnotatedTypeMirror atm, Tree tree, final AnnotationLocation location) {
         VariableSlot varSlot = null;
         AnnotationMirror realQualifier = null;
 
-        // Create constraints for pre-annotated code and constant slots when the variable slot is created.
         AnnotationMirror existinVar = atm.getAnnotationInHierarchy(varAnnot);
         if (existinVar != null) {
             varSlot = slotManager.getVariableSlot(atm);

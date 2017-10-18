@@ -21,6 +21,7 @@ import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.ConstraintManager;
 import checkers.inference.model.Slot;
+import checkers.inference.model.VariableSlot;
 import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.InferenceUtil;
 
@@ -266,9 +267,24 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
                 Slot constantSlot = slotMgr.createConstantSlot(realLub);
                 return slotMgr.getAnnotation(constantSlot);
             } else {
-                final CombVariableSlot mergeVariableSlot = slotMgr.createCombVariableSlot(slot1, slot2);
-                constraintMgr.addSubtypeConstraint(slot1, mergeVariableSlot);
-                constraintMgr.addSubtypeConstraint(slot2, mergeVariableSlot);
+                VariableSlot var1 = (VariableSlot) slot1;
+                VariableSlot var2 = (VariableSlot) slot2;
+
+                final CombVariableSlot mergeVariableSlot = slotMgr.createCombVariableSlot(var1, var1);
+
+//                // First leave this being comment out, to see if we really still need this hack.
+//                if (InferenceMain.isHackMode(mergeVariableSlot == null)) {
+//                    return slotMgr.getAnnotation(slot1);
+//                }
+
+                constraintMgr.addSubtypeConstraint(var1, mergeVariableSlot);
+                constraintMgr.addSubtypeConstraint(var1, mergeVariableSlot);
+
+                // Track the merge information.
+                //TODO: Refine the interface of adding a new merged Slot.
+                //      It is reallly really bad and confusing to leak a private final set then add some elements into it.
+                var1.getMergedToSlots().add(mergeVariableSlot);
+                var2.getMergedToSlots().add(mergeVariableSlot);
 
                 return slotMgr.getAnnotation(mergeVariableSlot);
             }

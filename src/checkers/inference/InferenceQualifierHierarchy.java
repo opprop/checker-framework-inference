@@ -292,8 +292,8 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
                     constraintMgr.addSubtypeConstraint(var1, mergeVariableSlot);
                     constraintMgr.addSubtypeConstraint(var2, mergeVariableSlot);
 
-                    var1.getMergedToSlots().add(mergeVariableSlot);
-                    var2.getMergedToSlots().add(mergeVariableSlot);
+                    var1.addMergedToSlot(mergeVariableSlot);
+                    var2.addMergedToSlot(mergeVariableSlot);
 
                     return slotMgr.getAnnotation(mergeVariableSlot);
                 }

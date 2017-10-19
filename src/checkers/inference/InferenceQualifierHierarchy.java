@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.ConstantSlot;
@@ -270,29 +271,49 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
                 VariableSlot var1 = (VariableSlot) slot1;
                 VariableSlot var2 = (VariableSlot) slot2;
 
-                final CombVariableSlot mergeVariableSlot = slotMgr.createCombVariableSlot(var1, var1);
+                if (var1 == var2) {
+                    // They are the same slot.
+                    return slotMgr.getAnnotation(var1);
 
-//                // First leave this being comment out, to see if we really still need this hack.
-//                if (InferenceMain.isHackMode(mergeVariableSlot == null)) {
-//                    return slotMgr.getAnnotation(slot1);
-//                }
+                } else if (!Collections.disjoint(var1.getMergedToSlots(), var2.getMergedToSlots())) {
+                    // They have common merge variables, return the annotations on one of the common merged variables.
+                    Slot commonMergedSlot = getOneIntersected(var1.getMergedToSlots(), var2.getMergedToSlots());
+                    return slotMgr.getAnnotation(commonMergedSlot);
 
-                constraintMgr.addSubtypeConstraint(var1, mergeVariableSlot);
-                constraintMgr.addSubtypeConstraint(var1, mergeVariableSlot);
+                } else if (var1.isMergedTo(var2)) {
+                    // var2 is a merge variable that var1 has been merged to. So just return annotation on var2.
+                    return slotMgr.getAnnotation(var2);
+                } else if (var2.isMergedTo(var1)) {
+                    // Vice versa.
+                    return slotMgr.getAnnotation(var1);
+                } else {
+                    // Create a new merge variable for var1 and var2.
+                    final CombVariableSlot mergeVariableSlot = slotMgr.createCombVariableSlot(var1, var2);
+                    constraintMgr.addSubtypeConstraint(var1, mergeVariableSlot);
+                    constraintMgr.addSubtypeConstraint(var2, mergeVariableSlot);
 
-                // Track the merge information.
-                //TODO: Refine the interface of adding a new merged Slot.
-                //      It is reallly really bad and confusing to leak a private final set then add some elements into it.
-                var1.getMergedToSlots().add(mergeVariableSlot);
-                var2.getMergedToSlots().add(mergeVariableSlot);
+                    var1.getMergedToSlots().add(mergeVariableSlot);
+                    var2.getMergedToSlots().add(mergeVariableSlot);
 
-                return slotMgr.getAnnotation(mergeVariableSlot);
+                    return slotMgr.getAnnotation(mergeVariableSlot);
+                }
             }
         } else {
             return slotMgr.getAnnotation(slot1);
         }
     }
 
+    /**
+     * @return The first element found in both set1 and set2. Otherwise return null.
+     */
+    private <T> T getOneIntersected(Set<T> set1, Set<T> set2) {
+        for (T refVar : set1) {
+            if (set2.contains(refVar)) {
+                return refVar;
+            }
+        }
+        return null;
+    }
 
     //================================================================================
     // TODO Both of these are probably wrong for inference. We really want a new VarAnnot for that position.

@@ -571,8 +571,8 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         } else if (!atm.getAnnotations().isEmpty()) {
             realQualifier = atm.getAnnotationInHierarchy(realTop);
             if (realQualifier == null) {
-                atm.addAnnotation(realTop);
-                realQualifier = realTop;
+                ErrorReporter.errorAbort("The annotation(s) on the given type is neither VarAnno nor real qualifier!"
+                        + "Atm is: " + atm + " annotations: " + atm.getAnnotations());
             }
             varSlot = constantToVariableAnnotator.createConstantSlot(realQualifier);
         } else if (tree != null && realChecker.isConstant(tree) ) {

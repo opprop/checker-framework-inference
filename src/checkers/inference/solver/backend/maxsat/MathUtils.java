@@ -1,6 +1,4 @@
-package checkers.inference.solver.backend.maxsatbackend;
-
-import javax.lang.model.element.AnnotationMirror;
+package checkers.inference.solver.backend.maxsat;
 
 import checkers.inference.solver.frontend.Lattice;
 
@@ -12,16 +10,9 @@ import checkers.inference.solver.frontend.Lattice;
  */
 public class MathUtils {
 
-    public static int mapIdToMatrixEntry(int id, AnnotationMirror type, Lattice lattice) {
-        int column = lattice.typeToInt.get(type) + 1;
-        int row = id - 1;
-        int length = lattice.numTypes;
-        return column + row * length;
-    }
-
-    public static int mapIdToMatrixEntry(int id, int type, Lattice lattice) {
-        int column = type + 1;
-        int row = id - 1;
+    public static int mapIdToMatrixEntry(int varId, int typeInt, Lattice lattice) {
+        int column = typeInt + 1;
+        int row = varId - 1;
         int length = lattice.numTypes;
         return column + row * length;
     }

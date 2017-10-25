@@ -28,13 +28,13 @@ import checkers.inference.model.Constraint;
 import checkers.inference.model.Serializer;
 import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
-import checkers.inference.solver.backend.BackEnd;
-import checkers.inference.solver.backend.BackEndType;
+import checkers.inference.solver.backend.SolverAdapter;
+import checkers.inference.solver.backend.SolverType;
+import checkers.inference.solver.backend.FormatTranslator;
 import checkers.inference.solver.constraintgraph.ConstraintGraph;
 import checkers.inference.solver.constraintgraph.GraphBuilder;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.frontend.LatticeBuilder;
-import checkers.inference.solver.frontend.TwoQualifiersLattice;
 import checkers.inference.solver.util.Constants;
 import checkers.inference.solver.util.Constants.SolverArg;
 import checkers.inference.solver.util.Constants.SlotType;
@@ -52,15 +52,15 @@ import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
  *
  */
 
-public class GeneralSolver implements InferenceSolver {
+public class SolverEngine implements InferenceSolver {
 
-    protected BackEndType backEndType;
+    protected SolverType solverType;
     protected boolean useGraph;
     protected boolean solveInParallel;
     protected boolean collectStatistic;
     protected Lattice lattice;
     protected ConstraintGraph constraintGraph;
-    protected BackEnd<?, ?> realBackEnd;
+    protected SolverAdapter<?> underlyingSolver;
 
     // Timing variables:
     private long solvingStart;
@@ -74,8 +74,8 @@ public class GeneralSolver implements InferenceSolver {
         InferenceSolution solution = null;
 
         configureSolverArgs(configuration);
-        configureLattice(qualHierarchy);
-        Serializer<?, ?> defaultSerializer = createSerializer(backEndType, lattice);
+        configureLattice(qualHierarchy, slots);
+        FormatTranslator<?, ?, ?> defaultFormatTranslator = createFormatTranslator(solverType, lattice);
 
         if (useGraph) {
             final long graphBuildingStart = System.currentTimeMillis();
@@ -83,10 +83,10 @@ public class GeneralSolver implements InferenceSolver {
             final long graphBuildingEnd = System.currentTimeMillis();
             StatisticRecorder.record(StatisticKey.GRAPH_GENERATION_TIME, (graphBuildingEnd - graphBuildingStart));
             solution = graphSolve(constraintGraph, configuration, slots, constraints, qualHierarchy,
-                    processingEnvironment, defaultSerializer);
+                    processingEnvironment, defaultFormatTranslator);
         } else {
-            realBackEnd = createBackEnd(backEndType, configuration, slots, constraints, qualHierarchy,
-                    processingEnvironment, lattice, defaultSerializer);
+            underlyingSolver = createSolverAdapter(solverType, configuration, slots, constraints, qualHierarchy,
+                    processingEnvironment, lattice, defaultFormatTranslator);
             solution = solve();
         }
 
@@ -97,9 +97,9 @@ public class GeneralSolver implements InferenceSolver {
 
         if (collectStatistic) {
             Map<String, Integer> modelRecord = recordSlotConstraintSize(slots, constraints);
-            PrintUtils.printStatistic(StatisticRecorder.getStatistic(), modelRecord, backEndType,
+            PrintUtils.printStatistic(StatisticRecorder.getStatistic(), modelRecord, solverType,
                     useGraph, solveInParallel);
-            PrintUtils.writeStatistic(StatisticRecorder.getStatistic(), modelRecord, backEndType,
+            PrintUtils.writeStatistic(StatisticRecorder.getStatistic(), modelRecord, solverType,
                     useGraph, solveInParallel);
         }
         return solution;
@@ -113,14 +113,14 @@ public class GeneralSolver implements InferenceSolver {
      */
     private void configureSolverArgs(final Map<String, String> configuration) {
 
-        final String backEndName = configuration.get(SolverArg.backEndType.name());
+        final String solverName = configuration.get(SolverArg.solver.name());
         final String useGraph = configuration.get(SolverArg.useGraph.name());
         final String solveInParallel = configuration.get(SolverArg.solveInParallel.name());
         final String collectStatistic = configuration.get(SolverArg.collectStatistic.name());
 
-        backEndType = backEndName == null ? BackEndType.MAXSAT : BackEndType.getBackEndType(backEndName);
-        if (backEndType == null) {
-            ErrorReporter.errorAbort("Back end \"" + backEndName + "\" has not been implemented yet.");
+        solverType = solverName == null ? SolverType.MAXSAT : SolverType.getSolverType(solverName);
+        if (solverType == null) {
+            ErrorReporter.errorAbort("Integration of solver \"" + solverName + "\" has not been implemented yet.");
         }
 
         if (useGraph == null || useGraph.equals(Constants.TRUE)) {
@@ -130,7 +130,7 @@ public class GeneralSolver implements InferenceSolver {
             this.useGraph = false;
         }
 
-        if (backEndType.equals(BackEndType.LOGIQL)) {
+        if (solverType.equals(SolverType.LOGIQL)) {
             // Configure solving strategy.
             this.solveInParallel = false;
         } else if (solveInParallel == null || solveInParallel.equals(Constants.TRUE)) {
@@ -148,32 +148,27 @@ public class GeneralSolver implements InferenceSolver {
 
         // Sanitize the configuration if it needs.
         sanitizeConfiguration();
-        System.out.println("Configuration: \nback end type: " + this.backEndType.simpleName + "; \nuseGraph: "
+        System.out.println("Configuration: \nsolver: " + this.solverType.simpleName + "; \nuseGraph: "
                 + this.useGraph + "; \nsolveInParallel: " + this.solveInParallel + ".");
     }
 
-    protected void configureLattice(QualifierHierarchy qualHierarchy) {
+    protected void configureLattice(QualifierHierarchy qualHierarchy, Collection<Slot> slots) {
         LatticeBuilder latticeBuilder = new LatticeBuilder();
-        lattice = latticeBuilder.buildLattice(qualHierarchy);
-    }
-
-    protected TwoQualifiersLattice createTwoQualifierLattice(AnnotationMirror top, AnnotationMirror bottom) {
-        LatticeBuilder latticeBuilder = new LatticeBuilder();
-        return latticeBuilder.buildTwoTypeLattice(top, bottom);
+        lattice = latticeBuilder.buildLattice(qualHierarchy, slots);
     }
 
     /**
-     * This method create the default serializer for a given backEndType.
+     * This method creates the default translator for a given backEndType.
      *
      * If customized serialization logic is needed, one can override this method and
-     * return a customized serializer corresponding to the given backEndType.
+     * return a customized translator corresponding to the given backEndType.
      *
-     * @param backEndType the backEndType that serializer will associate with.
+     * @param solverType the type of solver that translator will associate with.
      * @param lattice the target type qualifier lattice.
-     * @return A Serializer compatible with the given backEndType.
+     * @return A Translator compatible with the given solver type.
      */
-    protected Serializer<?, ?> createSerializer(BackEndType backEndType, Lattice lattice) {
-            return backEndType.createDefaultSerializer(lattice);
+    protected FormatTranslator<?, ?, ?> createFormatTranslator(SolverType solverType, Lattice lattice) {
+            return solverType.createDefaultFormatTranslator(lattice);
     }
 
     protected ConstraintGraph generateGraph(Collection<Slot> slots, Collection<Constraint> constraints,
@@ -183,12 +178,12 @@ public class GeneralSolver implements InferenceSolver {
         return constraintGraph;
     }
 
-    protected BackEnd<?, ?> createBackEnd(BackEndType backEndType, Map<String, String> configuration,
+    protected SolverAdapter<?> createSolverAdapter(SolverType solverType, Map<String, String> configuration,
             Collection<Slot> slots, Collection<Constraint> constraints,
             QualifierHierarchy qualHierarchy, ProcessingEnvironment processingEnvironment,
-            Lattice lattice, Serializer<?, ?> defaultSerializer) {
-            return backEndType.createBackEnd(configuration, slots,
-                    constraints, qualHierarchy, processingEnvironment, lattice, defaultSerializer);
+            Lattice lattice, FormatTranslator<?, ?, ?> formatTranslator) {
+            return solverType.createSolverAdapter(configuration, slots,
+                    constraints, qualHierarchy, processingEnvironment, lattice, formatTranslator);
     }
 
     /**
@@ -199,7 +194,7 @@ public class GeneralSolver implements InferenceSolver {
      */
     protected InferenceSolution solve() {
         solvingStart = System.currentTimeMillis();
-        Map<Integer, AnnotationMirror> result = realBackEnd.solve();
+        Map<Integer, AnnotationMirror> result = underlyingSolver.solve();
         solvingEnd = System.currentTimeMillis();
         StatisticRecorder.record(StatisticKey.OVERALL_NOGRAPH_SOLVING_TIME, (solvingEnd - solvingStart));
         StatisticRecorder.record(StatisticKey.ANNOTATOIN_SIZE, (long) result.size());
@@ -217,71 +212,71 @@ public class GeneralSolver implements InferenceSolver {
      * @param constraints
      * @param qualHierarchy
      * @param processingEnvironment
-     * @param defaultSerializer
+     * @param formatTranslator
      * @return an InferenceSolution for the given slots/constraints
      */
     protected InferenceSolution graphSolve(ConstraintGraph constraintGraph,
             Map<String, String> configuration, Collection<Slot> slots,
             Collection<Constraint> constraints, QualifierHierarchy qualHierarchy,
-            ProcessingEnvironment processingEnvironment, Serializer<?, ?> defaultSerializer) {
+            ProcessingEnvironment processingEnvironment, FormatTranslator<?, ?, ?> formatTranslator) {
 
-        List<BackEnd<?, ?>> backEnds = new ArrayList<BackEnd<?, ?>>();
+        List<SolverAdapter<?>> underlyingSolvers = new ArrayList<SolverAdapter<?>>();
         StatisticRecorder.record(StatisticKey.GRAPH_SIZE, (long) constraintGraph.getIndependentPath().size());
 
         for (Set<Constraint> independentConstraints : constraintGraph.getIndependentPath()) {
-            backEnds.add(createBackEnd(backEndType, configuration, slots, independentConstraints,
-                    qualHierarchy, processingEnvironment, lattice, defaultSerializer));
+            underlyingSolvers.add(createSolverAdapter(solverType, configuration, slots, independentConstraints,
+                    qualHierarchy, processingEnvironment, lattice, formatTranslator));
         }
         // Clear constraint graph in order to save memory.
         this.constraintGraph = null;
-        return mergeSolution(solve(backEnds));
+        return mergeSolution(solve(underlyingSolvers));
     }
 
     /**
      * This method is called by graphSolve, and according to the boolean value
      * solveInParallel, corresponding solve method will be called.
      * 
-     * @param backEnds
+     * @param underlyingSolvers
      * @return A list of Map that contains solutions from all back ends.
      */
-    protected List<Map<Integer, AnnotationMirror>> solve(List<BackEnd<?, ?>> backEnds) {
+    protected List<Map<Integer, AnnotationMirror>> solve(List<SolverAdapter<?>> underlyingSolvers) {
 
         List<Map<Integer, AnnotationMirror>> inferenceSolutionMaps = new LinkedList<Map<Integer, AnnotationMirror>>();
 
-        if (backEnds.size() > 0) {
+        if (underlyingSolvers.size() > 0) {
             if (solveInParallel) {
                 try {
-                    inferenceSolutionMaps = solveInparallel(backEnds);
+                    inferenceSolutionMaps = solveInparallel(underlyingSolvers);
                 } catch (InterruptedException | ExecutionException e) {
                     e.printStackTrace();
                 }
             } else {
-                inferenceSolutionMaps = solveInSequential(backEnds);
+                inferenceSolutionMaps = solveInSequential(underlyingSolvers);
             }
         }
         return inferenceSolutionMaps;
     }
 
     /**
-     * This method is called if user wants to call all back ends in parallel.
+     * This method is called if user wants to call all underlying solvers in parallel.
      * 
-     * @param backEnds
-     * @return A list of Map that contains solutions from all back ends.
+     * @param underlyingSolvers
+     * @return A list of Map that contains solutions from all underlying solvers.
      * @throws InterruptedException
      * @throws ExecutionException
      */
-    protected List<Map<Integer, AnnotationMirror>> solveInparallel(List<BackEnd<?, ?>> backEnds)
+    protected List<Map<Integer, AnnotationMirror>> solveInparallel(List<SolverAdapter<?>> underlyingSolvers)
             throws InterruptedException, ExecutionException {
 
         ExecutorService service = Executors.newFixedThreadPool(30);
         List<Future<Map<Integer, AnnotationMirror>>> futures = new ArrayList<Future<Map<Integer, AnnotationMirror>>>();
 
         solvingStart = System.currentTimeMillis();
-        for (final BackEnd<?, ?> backEnd : backEnds) {
+        for (final SolverAdapter<?> underlyingSolver : underlyingSolvers) {
             Callable<Map<Integer, AnnotationMirror>> callable = new Callable<Map<Integer, AnnotationMirror>>() {
                 @Override
                 public Map<Integer, AnnotationMirror> call() throws Exception {
-                    return backEnd.solve();
+                    return underlyingSolver.solve();
                 }
             };
             futures.add(service.submit(callable));
@@ -299,18 +294,18 @@ public class GeneralSolver implements InferenceSolver {
     }
 
     /**
-     * This method is called if user wants to call all back ends in sequential.
+     * This method is called if user wants to call all underlying solvers in sequence.
      * 
-     * @param backEnds
-     * @return A list of Map that contains solutions from all back ends.
+     * @param underlyingSolvers
+     * @return A list of Map that contains solutions from all underlying solvers.
      */
-    protected List<Map<Integer, AnnotationMirror>> solveInSequential(List<BackEnd<?, ?>> backEnds) {
+    protected List<Map<Integer, AnnotationMirror>> solveInSequential(List<SolverAdapter<?>> underlyingSolvers) {
 
         List<Map<Integer, AnnotationMirror>> solutions = new ArrayList<>();
 
         solvingStart = System.currentTimeMillis();
-        for (final BackEnd<?, ?> backEnd : backEnds) {
-            solutions.add(backEnd.solve());
+        for (final SolverAdapter<?> underlyingSolver : underlyingSolvers) {
+            solutions.add(underlyingSolver.solve());
         }
         solvingEnd = System.currentTimeMillis();
         StatisticRecorder.record(StatisticKey.OVERALL_SEQUENTIAL_SOLVING_TIME, (solvingEnd - solvingStart));
@@ -318,7 +313,7 @@ public class GeneralSolver implements InferenceSolver {
     }
 
     /**
-     * This method merges all solutions from all back ends.
+     * This method merges all solutions from all underlying solvers.
      * 
      * @param inferenceSolutionMaps
      * @return an InferenceSolution for the given slots/constraints

@@ -17,13 +17,16 @@ import checkers.inference.solver.backend.logiqlbackend.LogiQLSerializer;
 import checkers.inference.solver.backend.maxsatbackend.LingelingBackEnd;
 import checkers.inference.solver.backend.maxsatbackend.MaxSatBackEnd;
 import checkers.inference.solver.backend.maxsatbackend.MaxSatSerializer;
+import checkers.inference.solver.backend.z3backend.Z3BitVectorSerializer;
+import checkers.inference.solver.backend.z3backend.Z3Backend;
 import checkers.inference.solver.frontend.Lattice;
 
 public enum BackEndType {
 
     MAXSAT("MaxSAT", MaxSatBackEnd.class, MaxSatSerializer.class), 
     LINGELING("Lingeling", LingelingBackEnd.class, MaxSatSerializer.class), 
-    LOGIQL("LogiQL", LogiQLBackEnd.class, LogiQLSerializer.class);
+    LOGIQL("LogiQL", LogiQLBackEnd.class, LogiQLSerializer.class),
+    Z3("Z3", Z3Backend.class, Z3BitVectorSerializer.class);
 
     public final String simpleName;
     public final Class<? extends BackEnd<?, ?>> backEndClass;
@@ -37,6 +40,12 @@ public enum BackEndType {
     }
 
     public Serializer<?, ?> createDefaultSerializer(Lattice lattice) {
+        if (this == BackEndType.Z3) {
+            ErrorReporter.errorAbort(
+                    "Z3BitVectorSerializer needs a specific implementation for your type system!"
+                    + " Please extends Z3BitVectorSerializer class and provide your implementation of Z3BitVectorCodec.");
+        }
+
         Constructor<?> cons;
         try {
             cons = serializerClass.getConstructor(Lattice.class);

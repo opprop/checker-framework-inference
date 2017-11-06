@@ -59,7 +59,9 @@ import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol.ClassSymbol;
 import com.sun.tools.javac.code.Symbol.MethodSymbol;
+import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.tree.JCTree;
+import com.sun.tools.javac.util.Context;
 
 import annotations.io.ASTIndex;
 import annotations.io.ASTPath;
@@ -67,6 +69,8 @@ import annotations.io.ASTRecord;
 import checkers.inference.model.AnnotationLocation;
 import checkers.inference.model.AnnotationLocation.AstPathLocation;
 import checkers.inference.model.AnnotationLocation.ClassDeclLocation;
+import checkers.inference.model.tree.FakeExtendsBoundTree;
+import checkers.inference.model.tree.FakeTreeBuilder;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.ConstraintManager;
 import checkers.inference.model.ExistentialVariableSlot;
@@ -138,6 +142,8 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
     //A single top in the target type system
     private final AnnotationMirror realTop;
 
+    private final FakeTreeBuilder fakeTreeBuilder;
+
 
 
     private final ExistentialVariableInserter existentialInserter;
@@ -161,6 +167,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         this.classDeclAnnos = new HashMap<>();
         this.realChecker = realChecker;
         this.constraintManager = constraintManager;
+        this.fakeTreeBuilder = new FakeTreeBuilder((JavacProcessingEnvironment) inferenceTypeFactory.getProcessingEnv());
 
         this.varAnnot = new AnnotationBuilder(typeFactory.getProcessingEnv(), VarAnnot.class).build();
         this.realTop = realTypeFactory.getQualifierHierarchy().getTopAnnotations().iterator().next();
@@ -1299,17 +1306,17 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         final WildcardTree wildcardTree = (WildcardTree) tree;
         final Tree.Kind wildcardKind = wildcardTree.getKind();
         if (wildcardKind == Tree.Kind.UNBOUNDED_WILDCARD) {
-            addPrimaryVariable(wildcardType, tree);
-
-            //TODO: Add missing extends bounds
+            FakeExtendsBoundTree fakeExtendsBoundTree = fakeTreeBuilder.createFakeExtendsBoundTree(wildcardTree);
+            addPrimaryVariable(wildcardType.getSuperBound(), tree);
+            addPrimaryVariable(wildcardType.getExtendsBound(), fakeExtendsBoundTree);
 
         } else if (wildcardKind == Tree.Kind.EXTENDS_WILDCARD) {
-            addPrimaryVariable(wildcardType, tree);
+            addPrimaryVariable(wildcardType.getSuperBound(), tree);
             visit(wildcardType.getExtendsBound(), ((WildcardTree) tree).getBound());
 
         } else if (wildcardKind == Tree.Kind.SUPER_WILDCARD) {
             addPrimaryVariable(wildcardType.getExtendsBound(), tree);
-            visit(wildcardType.getExtendsBound(), ((WildcardTree) tree).getBound());
+            visit(wildcardType.getSuperBound(), ((WildcardTree) tree).getBound());
         }
 
         return null;

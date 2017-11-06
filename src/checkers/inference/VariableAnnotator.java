@@ -1306,7 +1306,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         final WildcardTree wildcardTree = (WildcardTree) tree;
         final Tree.Kind wildcardKind = wildcardTree.getKind();
         if (wildcardKind == Tree.Kind.UNBOUNDED_WILDCARD) {
-            ArtificialExtendsBoundTree artificialExtendsBoundTree = artificialTreeBuilder.createFakeExtendsBoundTree(wildcardTree);
+            ArtificialExtendsBoundTree artificialExtendsBoundTree = artificialTreeBuilder.createArtificialExtendsBoundTree(wildcardTree);
             addPrimaryVariable(wildcardType.getSuperBound(), tree);
             addPrimaryVariable(wildcardType.getExtendsBound(), artificialExtendsBoundTree);
 

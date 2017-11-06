@@ -13,7 +13,7 @@ public class ArtificialTreeBuilder {
         this.processingEnvironment = processingEnvironment;
     }
 
-    public ArtificialExtendsBoundTree createFakeExtendsBoundTree(WildcardTree wildcardTree) {
+    public ArtificialExtendsBoundTree createArtificialExtendsBoundTree(WildcardTree wildcardTree) {
         Name objectName = Names.instance(processingEnvironment.getContext()).java_lang_Object;
         return new ArtificialExtendsBoundTree(objectName, wildcardTree);
     }

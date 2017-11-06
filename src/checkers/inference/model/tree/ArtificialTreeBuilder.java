@@ -5,16 +5,16 @@ import com.sun.tools.javac.processing.JavacProcessingEnvironment;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
 
-public class FakeTreeBuilder {
+public class ArtificialTreeBuilder {
 
     private final JavacProcessingEnvironment processingEnvironment;
 
-    public FakeTreeBuilder(JavacProcessingEnvironment processingEnvironment) {
+    public ArtificialTreeBuilder(JavacProcessingEnvironment processingEnvironment) {
         this.processingEnvironment = processingEnvironment;
     }
 
-    public FakeExtendsBoundTree createFakeExtendsBoundTree(WildcardTree wildcardTree) {
+    public ArtificialExtendsBoundTree createFakeExtendsBoundTree(WildcardTree wildcardTree) {
         Name objectName = Names.instance(processingEnvironment.getContext()).java_lang_Object;
-        return new FakeExtendsBoundTree(objectName, wildcardTree);
+        return new ArtificialExtendsBoundTree(objectName, wildcardTree);
     }
 }

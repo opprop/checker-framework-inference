@@ -4,11 +4,11 @@ import com.sun.source.tree.WildcardTree;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
 import com.sun.tools.javac.util.Name;
 
-public class FakeExtendsBoundTree extends JCIdent {
+public class ArtificialExtendsBoundTree extends JCIdent {
 
     private final WildcardTree boundedWildcard;
 
-    public FakeExtendsBoundTree(Name name, WildcardTree wildcardTree) {
+    public ArtificialExtendsBoundTree(Name name, WildcardTree wildcardTree) {
         super(name, null);
         boundedWildcard = wildcardTree;
     }
@@ -19,8 +19,8 @@ public class FakeExtendsBoundTree extends JCIdent {
 
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof FakeExtendsBoundTree) &&
-                (this.boundedWildcard.equals(((FakeExtendsBoundTree) obj).getBoundedWildcard()));
+        return (obj instanceof ArtificialExtendsBoundTree) &&
+                (this.boundedWildcard.equals(((ArtificialExtendsBoundTree) obj).getBoundedWildcard()));
     }
 
     @Override

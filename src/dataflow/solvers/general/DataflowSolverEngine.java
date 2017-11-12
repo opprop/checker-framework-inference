@@ -72,15 +72,15 @@ public class DataflowSolverEngine extends SolverEngine {
                     AnnotationMirror DATAFLOWTOP = DataflowUtils.createDataflowAnnotation(
                             DataflowUtils.convert(dataflowValues), processingEnvironment);
                     TwoQualifiersLattice latticeFor2 = new LatticeBuilder().buildTwoTypeLattice(DATAFLOWTOP, DATAFLOWBOTTOM);
-                    FormatTranslator<?, ?, ?> translator = createFormatTranslator(solverType, latticeFor2);
-                    solvers.add(createSolverAdapter(solverType, configuration, slots, entry.getValue(),
+                    FormatTranslator<?, ?, ?> translator = createFormatTranslator(solverName, latticeFor2);
+                    solvers.add(createSolverAdapter(solverName, configuration, slots, entry.getValue(),
                             processingEnvironment, latticeFor2, translator));
                 } else if (dataflowRoots.length == 1) {
                     AnnotationMirror DATAFLOWTOP = DataflowUtils.createDataflowAnnotationForByte(
                             DataflowUtils.convert(dataflowRoots), processingEnvironment);
                     TwoQualifiersLattice latticeFor2 = new LatticeBuilder().buildTwoTypeLattice(DATAFLOWTOP, DATAFLOWBOTTOM);
-                    FormatTranslator<?, ?, ?> translator = createFormatTranslator(solverType, latticeFor2);
-                    solvers.add(createSolverAdapter(solverType, configuration, slots, entry.getValue(),
+                    FormatTranslator<?, ?, ?> translator = createFormatTranslator(solverName, latticeFor2);
+                    solvers.add(createSolverAdapter(solverName, configuration, slots, entry.getValue(),
                             processingEnvironment, latticeFor2, translator));
                 }
             }

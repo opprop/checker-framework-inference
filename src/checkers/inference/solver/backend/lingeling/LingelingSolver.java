@@ -1,4 +1,4 @@
-package checkers.inference.solver.backend.maxsat;
+package checkers.inference.solver.backend.lingeling;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,6 +19,8 @@ import org.sat4j.core.VecInt;
 
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
+import checkers.inference.solver.backend.maxsat.MaxSatFormatTranslator;
+import checkers.inference.solver.backend.maxsat.MaxSatSolver;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.StatisticRecorder;
 import checkers.inference.solver.util.StatisticRecorder.StatisticKey;

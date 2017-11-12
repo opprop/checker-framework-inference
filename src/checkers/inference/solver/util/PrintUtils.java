@@ -8,7 +8,6 @@ import java.util.Map;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.inference.InferenceMain;
-import checkers.inference.solver.backend.SolverType;
 import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 
 /**
@@ -77,7 +76,7 @@ public class PrintUtils {
     }
 
     private static StringBuilder buildStatistic(Map<StatisticKey, Long> statistic,
-            Map<String, Integer> modelRecord, SolverType solverType, boolean useGraph,
+            Map<String, Integer> modelRecord, String solverName, boolean useGraph,
             boolean solveInParallel) {
 
         StringBuilder statisticsText = new StringBuilder();
@@ -94,10 +93,10 @@ public class PrintUtils {
             buildStatisticText(statistic, basicInfo, StatisticKey.GRAPH_SIZE);
         }
 
-        if (solverType.equals(SolverType.MAXSAT) || solverType.equals(SolverType.LINGELING)) {
+        if (solverName.equals("maxsat") || solverName.equals("lingeling")) {
             buildStatisticText(statistic, basicInfo, StatisticKey.CNF_VARIABLE_SIZE);
             buildStatisticText(statistic, basicInfo, StatisticKey.CNF_CLAUSE_SIZE);
-        } else if (solverType.equals(SolverType.LOGIQL)) {
+        } else if (solverName.equals("logiql")) {
             buildStatisticText(statistic, basicInfo, StatisticKey.LOGIQL_PREDICATE_SIZE);
             buildStatisticText(statistic, basicInfo, StatisticKey.LOGIQL_DATA_SIZE);
         }
@@ -115,12 +114,12 @@ public class PrintUtils {
             buildStatisticText(statistic, timingInfo, StatisticKey.OVERALL_NOGRAPH_SOLVING_TIME);
         }
 
-        if (solverType.equals(SolverType.MAXSAT) || solverType.equals(SolverType.LINGELING)) {
+        if (solverName.equals("maxsat") || solverName.equals("lingeling")) {
             buildStatisticText(StatisticKey.SAT_SERIALIZATION_TIME.toString().toLowerCase(),
                     StatisticRecorder.satSerializationTime.get(), timingInfo);
             buildStatisticText(StatisticKey.SAT_SOLVING_TIME.toString().toLowerCase(),
                     StatisticRecorder.satSolvingTime.get(), timingInfo);
-        } else if (solverType.equals(SolverType.LINGELING)) {
+        } else if (solverName.equals("lingeling")) {
             buildStatisticText(statistic, timingInfo, StatisticKey.LOGIQL_SERIALIZATION_TIME);
             buildStatisticText(statistic, timingInfo, StatisticKey.LOGIQL_SOLVING_TIME);
         }
@@ -140,9 +139,9 @@ public class PrintUtils {
      * @param solveInParallel
      */
     public static void printStatistic(Map<StatisticKey, Long> statistic,
-            Map<String, Integer> modelRecord, SolverType solverType, boolean useGraph,
+            Map<String, Integer> modelRecord, String solverName, boolean useGraph,
             boolean solveInParallel) {
-        StringBuilder statisticsTest = buildStatistic(statistic, modelRecord, solverType, useGraph,
+        StringBuilder statisticsTest = buildStatistic(statistic, modelRecord, solverName, useGraph,
                 solveInParallel);
         System.out.println("\n/***********************Statistic start*************************/");
         System.out.println(statisticsTest);
@@ -151,9 +150,9 @@ public class PrintUtils {
     }
 
     public static void writeStatistic(Map<StatisticKey, Long> statistic,
-            Map<String, Integer> modelRecord, SolverType solverType, boolean useGraph,
+            Map<String, Integer> modelRecord, String solverName, boolean useGraph,
             boolean solveInParallel) {
-        StringBuilder statisticsTest = buildStatistic(statistic, modelRecord, solverType, useGraph,
+        StringBuilder statisticsTest = buildStatistic(statistic, modelRecord, solverName, useGraph,
                 solveInParallel);
         String writePath = new File(new File("").getAbsolutePath()).toString() + "/statistic.txt";
         try {

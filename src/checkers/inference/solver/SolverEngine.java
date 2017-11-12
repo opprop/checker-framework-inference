@@ -28,7 +28,8 @@ import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.solver.backend.SolverAdapter;
-import checkers.inference.solver.backend.SolverType;
+import checkers.inference.solver.backend.SolverFactory;
+import checkers.inference.solver.backend.DefaultSolverFactory;
 import checkers.inference.solver.backend.FormatTranslator;
 import checkers.inference.solver.constraintgraph.ConstraintGraph;
 import checkers.inference.solver.constraintgraph.GraphBuilder;
@@ -53,17 +54,26 @@ import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 
 public class SolverEngine implements InferenceSolver {
 
-    protected SolverType solverType;
     protected boolean useGraph;
     protected boolean solveInParallel;
     protected boolean collectStatistic;
     protected Lattice lattice;
     protected ConstraintGraph constraintGraph;
     protected SolverAdapter<?> underlyingSolver;
+    protected String solverName;
+    protected final SolverFactory solverFactory;
 
     // Timing variables:
     private long solvingStart;
     private long solvingEnd;
+
+    public SolverEngine() {
+        solverFactory = createSolverFactory();
+    }
+
+    protected SolverFactory createSolverFactory() {
+        return new DefaultSolverFactory();
+    }
 
     @Override
     public InferenceSolution solve(Map<String, String> configuration, Collection<Slot> slots,
@@ -74,7 +84,7 @@ public class SolverEngine implements InferenceSolver {
 
         configureSolverArgs(configuration);
         configureLattice(qualHierarchy, slots);
-        FormatTranslator<?, ?, ?> formatTranslator = createFormatTranslator(solverType, lattice);
+        FormatTranslator<?, ?, ?> formatTranslator = createFormatTranslator(solverName, lattice);
 
         if (useGraph) {
             final long graphBuildingStart = System.currentTimeMillis();
@@ -84,7 +94,7 @@ public class SolverEngine implements InferenceSolver {
             solution = graphSolve(constraintGraph, configuration, slots, constraints, qualHierarchy,
                     processingEnvironment, formatTranslator);
         } else {
-            underlyingSolver = createSolverAdapter(solverType, configuration, slots, constraints,
+            underlyingSolver = createSolverAdapter(solverName, configuration, slots, constraints,
                     processingEnvironment, lattice, formatTranslator);
             solution = solve();
         }
@@ -96,9 +106,9 @@ public class SolverEngine implements InferenceSolver {
 
         if (collectStatistic) {
             Map<String, Integer> modelRecord = recordSlotConstraintSize(slots, constraints);
-            PrintUtils.printStatistic(StatisticRecorder.getStatistic(), modelRecord, solverType,
+            PrintUtils.printStatistic(StatisticRecorder.getStatistic(), modelRecord, solverName,
                     useGraph, solveInParallel);
-            PrintUtils.writeStatistic(StatisticRecorder.getStatistic(), modelRecord, solverType,
+            PrintUtils.writeStatistic(StatisticRecorder.getStatistic(), modelRecord, solverName,
                     useGraph, solveInParallel);
         }
         return solution;
@@ -112,26 +122,23 @@ public class SolverEngine implements InferenceSolver {
      */
     private void configureSolverArgs(final Map<String, String> configuration) {
 
-        final String solverName = configuration.get(SolverArg.solver.name());
+        solverName = configuration.get(SolverArg.solver.name());
         final String useGraph = configuration.get(SolverArg.useGraph.name());
         final String solveInParallel = configuration.get(SolverArg.solveInParallel.name());
         final String collectStatistic = configuration.get(SolverArg.collectStatistic.name());
 
-        solverType = solverName == null ? SolverType.MAXSAT : SolverType.getSolverType(solverName);
-        if (solverType == null) {
-            ErrorReporter.errorAbort("Integration of solver \"" + solverName + "\" has not been implemented yet.");
-        }
+        solverName = solverName == null ? "maxsat" : solverName;
 
         this.useGraph = useGraph == null || useGraph.equals(Constants.TRUE);
 
-        this.solveInParallel = !solverType.equals(SolverType.LOGIQL)
+        this.solveInParallel = !solverName.equals("lingeling")
                 && (solveInParallel == null || solveInParallel.equals(Constants.TRUE));
 
         this.collectStatistic = collectStatistic != null && !collectStatistic.equals(Constants.FALSE);
 
         // Sanitize the configuration if it needs.
         sanitizeConfiguration();
-        System.out.println("Configuration: \nsolver: " + this.solverType.simpleName + "; \nuseGraph: "
+        System.out.println("Configuration: \nsolver: " + solverName + "; \nuseGraph: "
                 + this.useGraph + "; \nsolveInParallel: " + this.solveInParallel + ".");
     }
 
@@ -150,8 +157,8 @@ public class SolverEngine implements InferenceSolver {
      * @param lattice the target type qualifier lattice.
      * @return A Translator compatible with the given solver type.
      */
-    protected FormatTranslator<?, ?, ?> createFormatTranslator(SolverType solverType, Lattice lattice) {
-            return solverType.createDefaultFormatTranslator(lattice);
+    protected FormatTranslator<?, ?, ?> createFormatTranslator(String solverName, Lattice lattice) {
+            return solverFactory.createFormatTranslator(solverName, lattice);
     }
 
     protected ConstraintGraph generateGraph(Collection<Slot> slots, Collection<Constraint> constraints,
@@ -161,11 +168,11 @@ public class SolverEngine implements InferenceSolver {
         return constraintGraph;
     }
 
-    protected SolverAdapter<?> createSolverAdapter(SolverType solverType, Map<String, String> configuration,
+    protected SolverAdapter<?> createSolverAdapter(String solverName, Map<String, String> configuration,
             Collection<Slot> slots, Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment,
             Lattice lattice, FormatTranslator<?, ?, ?> formatTranslator) {
-            return solverType.createSolverAdapter(configuration, slots,
-                    constraints, processingEnvironment, lattice, formatTranslator);
+            return solverFactory.createSolverAdapter(solverName, configuration,
+                    slots, constraints, processingEnvironment, lattice, formatTranslator);
     }
 
     /**
@@ -206,7 +213,7 @@ public class SolverEngine implements InferenceSolver {
         StatisticRecorder.record(StatisticKey.GRAPH_SIZE, (long) constraintGraph.getIndependentPath().size());
 
         for (Set<Constraint> independentConstraints : constraintGraph.getIndependentPath()) {
-            underlyingSolvers.add(createSolverAdapter(solverType, configuration, slots, independentConstraints,
+            underlyingSolvers.add(createSolverAdapter(solverName, configuration, slots, independentConstraints,
                     processingEnvironment, lattice, formatTranslator));
         }
         // Clear constraint graph in order to save memory.

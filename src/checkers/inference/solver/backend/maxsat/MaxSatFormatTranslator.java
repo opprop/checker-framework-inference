@@ -444,7 +444,7 @@ public class MaxSatFormatTranslator implements FormatTranslator<VecInt[], VecInt
      *
      * @param clauses
      */
-    protected void generateOneHotClauses(List<VecInt> clauses, Integer varSlotId) {
+    public void generateOneHotClauses(List<VecInt> clauses, Integer varSlotId) {
         int[] leastOneIsTrue = new int[lattice.numTypes];
         for (Integer i : intToType.keySet()) {
             leastOneIsTrue[i] = MathUtils.mapIdToMatrixEntry(varSlotId, i.intValue(), lattice);

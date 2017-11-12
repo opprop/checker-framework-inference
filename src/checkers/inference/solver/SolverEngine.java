@@ -1,40 +1,23 @@
 package checkers.inference.solver;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.AnnotationMirror;
 
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.ErrorReporter;
 
-import checkers.inference.DefaultInferenceSolution;
 import checkers.inference.InferenceSolution;
 import checkers.inference.InferenceSolver;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
-import checkers.inference.solver.backend.SolverAdapter;
 import checkers.inference.solver.backend.SolverFactory;
+import checkers.inference.solver.backend.strategy.SolveStrategy;
+import checkers.inference.solver.backend.strategy.StrategyReflectiveFactory;
 import checkers.inference.solver.backend.DefaultSolverFactory;
-import checkers.inference.solver.backend.FormatTranslator;
-import checkers.inference.solver.constraintgraph.ConstraintGraph;
-import checkers.inference.solver.constraintgraph.GraphBuilder;
-import checkers.inference.solver.frontend.Lattice;
-import checkers.inference.solver.frontend.LatticeBuilder;
 import checkers.inference.solver.util.Constants;
 import checkers.inference.solver.util.Constants.SolverArg;
 import checkers.inference.solver.util.Constants.SlotType;
@@ -53,19 +36,9 @@ import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
  */
 
 public class SolverEngine implements InferenceSolver {
-
-    protected boolean useGraph;
-    protected boolean solveInParallel;
     protected boolean collectStatistic;
-    protected Lattice lattice;
-    protected ConstraintGraph constraintGraph;
-    protected SolverAdapter<?> underlyingSolver;
-    protected String solverName;
     protected final SolverFactory solverFactory;
-
-    // Timing variables:
-    private long solvingStart;
-    private long solvingEnd;
+    protected String strategyName;
 
     public SolverEngine() {
         solverFactory = createSolverFactory();
@@ -73,6 +46,10 @@ public class SolverEngine implements InferenceSolver {
 
     protected SolverFactory createSolverFactory() {
         return new DefaultSolverFactory();
+    }
+
+    protected SolveStrategy createSolveStrategy(String strategyName) {
+        return StrategyReflectiveFactory.createSolveStrategy(strategyName);
     }
 
     @Override
@@ -83,21 +60,10 @@ public class SolverEngine implements InferenceSolver {
         InferenceSolution solution = null;
 
         configureSolverArgs(configuration);
-        configureLattice(qualHierarchy, slots);
-        FormatTranslator<?, ?, ?> formatTranslator = createFormatTranslator(solverName, lattice);
 
-        if (useGraph) {
-            final long graphBuildingStart = System.currentTimeMillis();
-            constraintGraph = generateGraph(slots, constraints, processingEnvironment);
-            final long graphBuildingEnd = System.currentTimeMillis();
-            StatisticRecorder.record(StatisticKey.GRAPH_GENERATION_TIME, (graphBuildingEnd - graphBuildingStart));
-            solution = graphSolve(constraintGraph, configuration, slots, constraints, qualHierarchy,
-                    processingEnvironment, formatTranslator);
-        } else {
-            underlyingSolver = createSolverAdapter(solverName, configuration, slots, constraints,
-                    processingEnvironment, lattice, formatTranslator);
-            solution = solve();
-        }
+        //TODO: Add solve timing statistic.
+        SolveStrategy solveStrategy = createSolveStrategy(strategyName);
+        solution = solveStrategy.solve(configuration, slots, constraints, qualHierarchy, processingEnvironment);
 
         if (solution == null) {
             // Solution should never be null.
@@ -106,11 +72,10 @@ public class SolverEngine implements InferenceSolver {
 
         if (collectStatistic) {
             Map<String, Integer> modelRecord = recordSlotConstraintSize(slots, constraints);
-            PrintUtils.printStatistic(StatisticRecorder.getStatistic(), modelRecord, solverName,
-                    useGraph, solveInParallel);
-            PrintUtils.writeStatistic(StatisticRecorder.getStatistic(), modelRecord, solverName,
-                    useGraph, solveInParallel);
+            PrintUtils.printStatistic(StatisticRecorder.getStatistic(), modelRecord);
+            PrintUtils.writeStatistic(StatisticRecorder.getStatistic(), modelRecord);
         }
+
         return solution;
     }
 
@@ -121,202 +86,13 @@ public class SolverEngine implements InferenceSolver {
      * @param configuration
      */
     private void configureSolverArgs(final Map<String, String> configuration) {
-
-        solverName = configuration.get(SolverArg.solver.name());
-        final String useGraph = configuration.get(SolverArg.useGraph.name());
-        final String solveInParallel = configuration.get(SolverArg.solveInParallel.name());
+       this.strategyName = configuration.get(SolverArg.solveStrategy.name());
         final String collectStatistic = configuration.get(SolverArg.collectStatistic.name());
-
-        solverName = solverName == null ? "maxsat" : solverName;
-
-        this.useGraph = useGraph == null || useGraph.equals(Constants.TRUE);
-
-        this.solveInParallel = !solverName.equals("lingeling")
-                && (solveInParallel == null || solveInParallel.equals(Constants.TRUE));
-
         this.collectStatistic = collectStatistic != null && !collectStatistic.equals(Constants.FALSE);
 
         // Sanitize the configuration if it needs.
         sanitizeConfiguration();
-        System.out.println("Configuration: \nsolver: " + solverName + "; \nuseGraph: "
-                + this.useGraph + "; \nsolveInParallel: " + this.solveInParallel + ".");
-    }
-
-    protected void configureLattice(QualifierHierarchy qualHierarchy, Collection<Slot> slots) {
-        LatticeBuilder latticeBuilder = new LatticeBuilder();
-        lattice = latticeBuilder.buildLattice(qualHierarchy, slots);
-    }
-
-    /**
-     * This method creates the default translator for a given backEndType.
-     *
-     * If customized serialization logic is needed, one can override this method and
-     * return a customized translator corresponding to the given backEndType.
-     *
-     * @param solverType the type of solver that translator will associate with.
-     * @param lattice the target type qualifier lattice.
-     * @return A Translator compatible with the given solver type.
-     */
-    protected FormatTranslator<?, ?, ?> createFormatTranslator(String solverName, Lattice lattice) {
-            return solverFactory.createFormatTranslator(solverName, lattice);
-    }
-
-    protected ConstraintGraph generateGraph(Collection<Slot> slots, Collection<Constraint> constraints,
-            ProcessingEnvironment processingEnvironment) {
-        GraphBuilder graphBuilder = new GraphBuilder(slots, constraints);
-        ConstraintGraph constraintGraph = graphBuilder.buildGraph();
-        return constraintGraph;
-    }
-
-    protected SolverAdapter<?> createSolverAdapter(String solverName, Map<String, String> configuration,
-            Collection<Slot> slots, Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment,
-            Lattice lattice, FormatTranslator<?, ?, ?> formatTranslator) {
-            return solverFactory.createSolverAdapter(solverName, configuration,
-                    slots, constraints, processingEnvironment, lattice, formatTranslator);
-    }
-
-    /**
-     * This method is called when user doesn't separate constraints. Only one
-     * back end will be created.
-     * 
-     * @return an InferenceSolution for the given slots/constraints
-     */
-    protected InferenceSolution solve() {
-        solvingStart = System.currentTimeMillis();
-        Map<Integer, AnnotationMirror> result = underlyingSolver.solve();
-        solvingEnd = System.currentTimeMillis();
-        StatisticRecorder.record(StatisticKey.OVERALL_NOGRAPH_SOLVING_TIME, (solvingEnd - solvingStart));
-        StatisticRecorder.record(StatisticKey.ANNOTATOIN_SIZE, (long) result.size());
-        PrintUtils.printResult(result);
-        return new DefaultInferenceSolution(result);
-    }
-
-    /**
-     * This method is called when user separates constraints, so that a list of
-     * back end is created for all components.
-     * 
-     * @param constraintGraph
-     * @param configuration
-     * @param slots
-     * @param constraints
-     * @param qualHierarchy
-     * @param processingEnvironment
-     * @param formatTranslator
-     * @return an InferenceSolution for the given slots/constraints
-     */
-    protected InferenceSolution graphSolve(ConstraintGraph constraintGraph,
-            Map<String, String> configuration, Collection<Slot> slots,
-            Collection<Constraint> constraints, QualifierHierarchy qualHierarchy,
-            ProcessingEnvironment processingEnvironment, FormatTranslator<?, ?, ?> formatTranslator) {
-
-        List<SolverAdapter<?>> underlyingSolvers = new ArrayList<SolverAdapter<?>>();
-        StatisticRecorder.record(StatisticKey.GRAPH_SIZE, (long) constraintGraph.getIndependentPath().size());
-
-        for (Set<Constraint> independentConstraints : constraintGraph.getIndependentPath()) {
-            underlyingSolvers.add(createSolverAdapter(solverName, configuration, slots, independentConstraints,
-                    processingEnvironment, lattice, formatTranslator));
-        }
-        // Clear constraint graph in order to save memory.
-        this.constraintGraph = null;
-        return mergeSolution(solve(underlyingSolvers));
-    }
-
-    /**
-     * This method is called by graphSolve, and according to the boolean value
-     * solveInParallel, corresponding solve method will be called.
-     * 
-     * @param underlyingSolvers
-     * @return A list of Map that contains solutions from all back ends.
-     */
-    protected List<Map<Integer, AnnotationMirror>> solve(List<SolverAdapter<?>> underlyingSolvers) {
-
-        List<Map<Integer, AnnotationMirror>> inferenceSolutionMaps = new LinkedList<Map<Integer, AnnotationMirror>>();
-
-        if (underlyingSolvers.size() > 0) {
-            if (solveInParallel) {
-                try {
-                    inferenceSolutionMaps = solveInparallel(underlyingSolvers);
-                } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                inferenceSolutionMaps = solveInSequential(underlyingSolvers);
-            }
-        }
-        return inferenceSolutionMaps;
-    }
-
-    /**
-     * This method is called if user wants to call all underlying solvers in parallel.
-     * 
-     * @param underlyingSolvers
-     * @return A list of Map that contains solutions from all underlying solvers.
-     * @throws InterruptedException
-     * @throws ExecutionException
-     */
-    protected List<Map<Integer, AnnotationMirror>> solveInparallel(List<SolverAdapter<?>> underlyingSolvers)
-            throws InterruptedException, ExecutionException {
-
-        ExecutorService service = Executors.newFixedThreadPool(30);
-        List<Future<Map<Integer, AnnotationMirror>>> futures = new ArrayList<Future<Map<Integer, AnnotationMirror>>>();
-
-        solvingStart = System.currentTimeMillis();
-        for (final SolverAdapter<?> underlyingSolver : underlyingSolvers) {
-            Callable<Map<Integer, AnnotationMirror>> callable = new Callable<Map<Integer, AnnotationMirror>>() {
-                @Override
-                public Map<Integer, AnnotationMirror> call() throws Exception {
-                    return underlyingSolver.solve();
-                }
-            };
-            futures.add(service.submit(callable));
-        }
-        service.shutdown();
-
-        List<Map<Integer, AnnotationMirror>> solutions = new ArrayList<>();
-
-        for (Future<Map<Integer, AnnotationMirror>> future : futures) {
-            solutions.add(future.get());
-        }
-        solvingEnd = System.currentTimeMillis();
-        StatisticRecorder.record(StatisticKey.OVERALL_PARALLEL_SOLVING_TIME, (solvingEnd - solvingStart));
-        return solutions;
-    }
-
-    /**
-     * This method is called if user wants to call all underlying solvers in sequence.
-     * 
-     * @param underlyingSolvers
-     * @return A list of Map that contains solutions from all underlying solvers.
-     */
-    protected List<Map<Integer, AnnotationMirror>> solveInSequential(List<SolverAdapter<?>> underlyingSolvers) {
-
-        List<Map<Integer, AnnotationMirror>> solutions = new ArrayList<>();
-
-        solvingStart = System.currentTimeMillis();
-        for (final SolverAdapter<?> underlyingSolver : underlyingSolvers) {
-            solutions.add(underlyingSolver.solve());
-        }
-        solvingEnd = System.currentTimeMillis();
-        StatisticRecorder.record(StatisticKey.OVERALL_SEQUENTIAL_SOLVING_TIME, (solvingEnd - solvingStart));
-        return solutions;
-    }
-
-    /**
-     * This method merges all solutions from all underlying solvers.
-     * 
-     * @param inferenceSolutionMaps
-     * @return an InferenceSolution for the given slots/constraints
-     */
-    protected InferenceSolution mergeSolution(List<Map<Integer, AnnotationMirror>> inferenceSolutionMaps) {
-
-        Map<Integer, AnnotationMirror> result = new HashMap<>();
-
-        for (Map<Integer, AnnotationMirror> inferenceSolutionMap : inferenceSolutionMaps) {
-            result.putAll(inferenceSolutionMap);
-        }
-        PrintUtils.printResult(result);
-        StatisticRecorder.record(StatisticKey.ANNOTATOIN_SIZE, (long) result.size());
-        return new DefaultInferenceSolution(result);
+        System.out.println("Configuration: \n solveStrategy: " + strategyName);
     }
 
     /**

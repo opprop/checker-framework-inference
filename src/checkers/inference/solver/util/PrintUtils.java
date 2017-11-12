@@ -76,8 +76,7 @@ public class PrintUtils {
     }
 
     private static StringBuilder buildStatistic(Map<StatisticKey, Long> statistic,
-            Map<String, Integer> modelRecord, String solverName, boolean useGraph,
-            boolean solveInParallel) {
+            Map<String, Integer> modelRecord) {
 
         StringBuilder statisticsText = new StringBuilder();
         StringBuilder basicInfo = new StringBuilder();
@@ -88,40 +87,6 @@ public class PrintUtils {
         buildStatisticText(statistic, basicInfo, StatisticKey.CONSTRAINT_SIZE);
         for (Map.Entry<String, Integer> entry : modelRecord.entrySet()) {
             buildStatisticText(entry.getKey(), entry.getValue(), basicInfo);
-        }
-        if (useGraph) {
-            buildStatisticText(statistic, basicInfo, StatisticKey.GRAPH_SIZE);
-        }
-
-        if (solverName.equals("maxsat") || solverName.equals("lingeling")) {
-            buildStatisticText(statistic, basicInfo, StatisticKey.CNF_VARIABLE_SIZE);
-            buildStatisticText(statistic, basicInfo, StatisticKey.CNF_CLAUSE_SIZE);
-        } else if (solverName.equals("logiql")) {
-            buildStatisticText(statistic, basicInfo, StatisticKey.LOGIQL_PREDICATE_SIZE);
-            buildStatisticText(statistic, basicInfo, StatisticKey.LOGIQL_DATA_SIZE);
-        }
-        buildStatisticText(statistic, basicInfo, StatisticKey.ANNOTATOIN_SIZE);
-        
-        // Timing info
-        if (useGraph) {
-            buildStatisticText(statistic, timingInfo, StatisticKey.GRAPH_GENERATION_TIME);
-            if (solveInParallel) {
-                buildStatisticText(statistic, timingInfo, StatisticKey.OVERALL_PARALLEL_SOLVING_TIME);
-            } else {
-                buildStatisticText(statistic, timingInfo, StatisticKey.OVERALL_SEQUENTIAL_SOLVING_TIME);
-            }
-        } else {
-            buildStatisticText(statistic, timingInfo, StatisticKey.OVERALL_NOGRAPH_SOLVING_TIME);
-        }
-
-        if (solverName.equals("maxsat") || solverName.equals("lingeling")) {
-            buildStatisticText(StatisticKey.SAT_SERIALIZATION_TIME.toString().toLowerCase(),
-                    StatisticRecorder.satSerializationTime.get(), timingInfo);
-            buildStatisticText(StatisticKey.SAT_SOLVING_TIME.toString().toLowerCase(),
-                    StatisticRecorder.satSolvingTime.get(), timingInfo);
-        } else if (solverName.equals("lingeling")) {
-            buildStatisticText(statistic, timingInfo, StatisticKey.LOGIQL_SERIALIZATION_TIME);
-            buildStatisticText(statistic, timingInfo, StatisticKey.LOGIQL_SOLVING_TIME);
         }
 
         statisticsText.append(basicInfo);
@@ -139,10 +104,8 @@ public class PrintUtils {
      * @param solveInParallel
      */
     public static void printStatistic(Map<StatisticKey, Long> statistic,
-            Map<String, Integer> modelRecord, String solverName, boolean useGraph,
-            boolean solveInParallel) {
-        StringBuilder statisticsTest = buildStatistic(statistic, modelRecord, solverName, useGraph,
-                solveInParallel);
+            Map<String, Integer> modelRecord) {
+        StringBuilder statisticsTest = buildStatistic(statistic, modelRecord);
         System.out.println("\n/***********************Statistic start*************************/");
         System.out.println(statisticsTest);
         System.out.flush();
@@ -150,10 +113,8 @@ public class PrintUtils {
     }
 
     public static void writeStatistic(Map<StatisticKey, Long> statistic,
-            Map<String, Integer> modelRecord, String solverName, boolean useGraph,
-            boolean solveInParallel) {
-        StringBuilder statisticsTest = buildStatistic(statistic, modelRecord, solverName, useGraph,
-                solveInParallel);
+            Map<String, Integer> modelRecord) {
+        StringBuilder statisticsTest = buildStatistic(statistic, modelRecord);
         String writePath = new File(new File("").getAbsolutePath()).toString() + "/statistic.txt";
         try {
             PrintWriter pw = new PrintWriter(writePath);

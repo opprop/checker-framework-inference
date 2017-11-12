@@ -9,7 +9,7 @@ package checkers.inference.solver.util;
 public class Constants {
 
     public enum SolverArg {
-        solver, useGraph, solveInParallel, collectStatistic;
+        solver, solveStrategy, solveInParallel, collectStatistic;
     }
 
     public enum SlotType {

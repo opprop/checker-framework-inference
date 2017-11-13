@@ -19,7 +19,7 @@ public class DefaultSolverFactory implements SolverFactory {
 
     private SolverAdapterInfo getSolverAdapterInfo(String solverName) {
         final String solverPackageName = BACKEND_PACKAGE_PATH + "." + solverName;
-        final String solverAdapterInfoClassName = solverName.substring(0, 1).toUpperCase() + solverName.substring(1) + "SolverAdapterInfo";
+        final String solverAdapterInfoClassName = solverName.substring(0, 1).toUpperCase() + solverName.substring(1) + "SolverInfo";
 
         try {
             Class<?> SolverAdapterInfoClass = Class.forName(solverPackageName + "." + solverAdapterInfoClassName);

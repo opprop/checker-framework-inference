@@ -19,7 +19,6 @@ import checkers.inference.solver.backend.DefaultSolverFactory;
 import checkers.inference.solver.backend.SolverFactory;
 import checkers.inference.solver.strategy.SolveStrategy;
 import checkers.inference.solver.strategy.StrategyReflectiveFactory;
-import checkers.inference.solver.util.Constants.SlotType;
 import checkers.inference.solver.util.PrintUtils;
 import checkers.inference.solver.util.SolverOptions;
 import checkers.inference.solver.util.StatisticRecorder;
@@ -129,19 +128,21 @@ public class SolverEngine implements InferenceSolver {
         StatisticRecorder.record(StatisticKey.SLOTS_SIZE, (long) slots.size());
         Map<String, Integer> modelMap = new LinkedHashMap<>();
 
+        final String CONSTANT_SLOT_NAME = ConstantSlot.class.getSimpleName();
+        final String VARIABLE_SLOT_NAME = VariableSlot.class.getSimpleName();
         for (Slot slot : slots) {
             if (slot instanceof ConstantSlot) {
-                if (!modelMap.containsKey(SlotType.ConstantSlot.name())) {
-                    modelMap.put(SlotType.ConstantSlot.name(), 1);
+                if (!modelMap.containsKey(CONSTANT_SLOT_NAME)) {
+                    modelMap.put(CONSTANT_SLOT_NAME, 1);
                 } else {
-                    modelMap.put(SlotType.ConstantSlot.name(), modelMap.get(SlotType.ConstantSlot.name()) + 1);
+                    modelMap.put(CONSTANT_SLOT_NAME, modelMap.get(CONSTANT_SLOT_NAME) + 1);
                 }
 
             } else if (slot instanceof VariableSlot) {
-                if (!modelMap.containsKey(SlotType.VariableSlot.name())) {
-                    modelMap.put(SlotType.VariableSlot.name(), 1);
+                if (!modelMap.containsKey(VARIABLE_SLOT_NAME)) {
+                    modelMap.put(VARIABLE_SLOT_NAME, 1);
                 } else {
-                    modelMap.put(SlotType.VariableSlot.name(), modelMap.get(SlotType.VariableSlot.name()) + 1);
+                    modelMap.put(VARIABLE_SLOT_NAME, modelMap.get(VARIABLE_SLOT_NAME) + 1);
                 }
             }
         }

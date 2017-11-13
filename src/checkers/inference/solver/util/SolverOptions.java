@@ -19,8 +19,8 @@ public class SolverOptions {
      * @param argName the name of the given argument.
      * @return the string value for a given argument name.
      */
-    public String getArg(String argName) {
-        return options.get(argName);
+    public String getArg(SolverArg arg) {
+        return options.get(arg.getName());
     }
 
     /**
@@ -30,8 +30,8 @@ public class SolverOptions {
      * @return true if the lower case of the string value of this argument equals to "true",
      * otherwise return false.
      */
-    public boolean getBoolArg(String argName) {
-        String argValue = options.get(argName);
+    public boolean getBoolArg(SolverArg arg) {
+        String argValue = options.get(arg.getName());
         return argValue != null && argValue.toLowerCase().equals("true");
     }
 }

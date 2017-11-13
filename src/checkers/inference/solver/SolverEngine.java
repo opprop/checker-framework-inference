@@ -20,6 +20,7 @@ import checkers.inference.solver.backend.SolverFactory;
 import checkers.inference.solver.strategy.SolveStrategy;
 import checkers.inference.solver.strategy.StrategyReflectiveFactory;
 import checkers.inference.solver.util.PrintUtils;
+import checkers.inference.solver.util.SolverArg;
 import checkers.inference.solver.util.SolverOptions;
 import checkers.inference.solver.util.StatisticRecorder;
 import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
@@ -43,9 +44,14 @@ public class SolverEngine implements InferenceSolver {
         solverFactory = createSolverFactory();
     }
 
-    protected enum SolverEngineArg {
+    protected enum SolverEngineArg implements SolverArg {
         solveStrategy,
         collectStatistic;
+
+        @Override
+        public String getName() {
+            return this.name();
+        }
     }
 
     protected SolverFactory createSolverFactory() {
@@ -92,9 +98,9 @@ public class SolverEngine implements InferenceSolver {
      * @param configuration
      */
     private void configureSolverArgs(SolverOptions solverOptions) {
-       final String strategyName = solverOptions.getArg(SolverEngineArg.solveStrategy.name());
+       final String strategyName = solverOptions.getArg(SolverEngineArg.solveStrategy);
        this.strategyName = strategyName == null ? "plain" : strategyName;
-       this.collectStatistic = solverOptions.getBoolArg(SolverEngineArg.collectStatistic.name());
+       this.collectStatistic = solverOptions.getBoolArg(SolverEngineArg.collectStatistic);
 
         // Sanitize the configuration if it needs.
         sanitizeConfiguration();

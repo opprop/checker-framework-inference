@@ -31,14 +31,20 @@ import checkers.inference.solver.constraintgraph.GraphBuilder;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.frontend.LatticeBuilder;
 import checkers.inference.solver.util.PrintUtils;
+import checkers.inference.solver.util.SolverArg;
 import checkers.inference.solver.util.SolverOptions;
 import checkers.inference.solver.util.StatisticRecorder;
 import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 
 public class GraphSolveStrategy extends AbstractSolveStrategy implements SolveStrategy {
 
-    enum GraphSolveStrategyArg {
+    enum GraphSolveStrategyArg implements SolverArg {
         solveInParallel;
+
+        @Override
+        public String getName() {
+            return this.name();
+        }
     }
     public GraphSolveStrategy(SolverFactory solverFactory) {
         super(solverFactory);
@@ -50,8 +56,8 @@ public class GraphSolveStrategy extends AbstractSolveStrategy implements SolveSt
             ProcessingEnvironment processingEnvironment) {
 
         //TODO: Remove the coupling of using SolverFactoryArg.
-        final boolean solveInParallel = !"lingeling".equals(solverOptions.getArg(SolverFactoryArg.solver.name()))
-                && solverOptions.getBoolArg(GraphSolveStrategyArg.solveInParallel.name());
+        final boolean solveInParallel = !"lingeling".equals(solverOptions.getArg(SolverFactoryArg.solver))
+                && solverOptions.getBoolArg(GraphSolveStrategyArg.solveInParallel);
 
         // Build graph
         final long graphBuildingStart = System.currentTimeMillis();

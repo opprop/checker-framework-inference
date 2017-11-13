@@ -7,15 +7,21 @@ import javax.annotation.processing.ProcessingEnvironment;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
 import checkers.inference.solver.frontend.Lattice;
+import checkers.inference.solver.util.SolverArg;
 import checkers.inference.solver.util.SolverOptions;
 
 public interface SolverFactory {
 
-    public enum SolverFactoryArg {
+    public enum SolverFactoryArg implements SolverArg {
         /**
          * Name of the solver.
          */
         solver;
+
+        @Override
+        public String getName() {
+            return this.name();
+        }
     }
 
     SolverAdapter<?> createSolverAdapter(SolverOptions solverOptions,

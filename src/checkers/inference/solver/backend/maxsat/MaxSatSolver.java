@@ -24,6 +24,7 @@ import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.Slot;
 import checkers.inference.solver.backend.SolverAdapter;
 import checkers.inference.solver.frontend.Lattice;
+import checkers.inference.solver.util.SolverArg;
 import checkers.inference.solver.util.SolverOptions;
 import checkers.inference.solver.util.StatisticRecorder;
 import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
@@ -37,11 +38,16 @@ import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
  */
 public class MaxSatSolver extends SolverAdapter<MaxSatFormatTranslator> {
 
-    protected enum MaxSatSolverArg {
+    protected enum MaxSatSolverArg implements SolverArg {
         /**
          * Whether should print the CNF formulas.
          */
         outputCNF;
+
+        @Override
+        public String getName() {
+            return this.name();
+        }
     }
 
     protected final SlotManager slotManager;
@@ -186,7 +192,7 @@ public class MaxSatSolver extends SolverAdapter<MaxSatFormatTranslator> {
     }
 
     protected boolean shouldOutputCNF() {
-        return solverOptions.getBoolArg(MaxSatSolverArg.outputCNF.name());
+        return solverOptions.getBoolArg(MaxSatSolverArg.outputCNF);
     }
 
     /**

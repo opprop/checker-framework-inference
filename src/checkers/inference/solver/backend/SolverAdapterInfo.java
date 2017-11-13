@@ -1,6 +1,6 @@
 package checkers.inference.solver.backend;
 
-public interface SolverConfiguration {
+public interface SolverAdapterInfo {
 
     Class<? extends SolverAdapter<?>> getSolverAdapterClass();
 

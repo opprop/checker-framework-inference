@@ -1,14 +1,15 @@
-package checkers.inference.solver.backend.maxsat;
+package checkers.inference.solver.backend.lingeling;
 
 import checkers.inference.solver.backend.FormatTranslator;
 import checkers.inference.solver.backend.SolverAdapter;
-import checkers.inference.solver.backend.SolverConfiguration;
+import checkers.inference.solver.backend.SolverAdapterInfo;
+import checkers.inference.solver.backend.maxsat.MaxSatFormatTranslator;
 
-public class MaxsatSolverConfiguration implements SolverConfiguration {
+public class LingelingSolverInfo implements SolverAdapterInfo {
 
     @Override
     public Class<? extends SolverAdapter<?>> getSolverAdapterClass() {
-        return MaxSatSolver.class;
+        return LingelingSolver.class;
     }
 
     @Override

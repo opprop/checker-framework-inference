@@ -17,13 +17,13 @@ public class DefaultSolverFactory implements SolverFactory {
 
     private final String BACKEND_PACKAGE_PATH = DefaultSolverFactory.class.getPackage().getName();
 
-    private SolverConfiguration getSolverConfiguration(String solverName) {
+    private SolverAdapterInfo getSolverAdapterInfo(String solverName) {
         final String solverPackageName = BACKEND_PACKAGE_PATH + "." + solverName;
-        final String solverConfigClassName = solverName.substring(0, 1).toUpperCase() + solverName.substring(1) + "SolverConfiguration";
+        final String solverAdapterInfoClassName = solverName.substring(0, 1).toUpperCase() + solverName.substring(1) + "SolverAdapterInfo";
 
         try {
-            Class<?> solverConfigurationClass = Class.forName(solverPackageName + "." + solverConfigClassName);
-            return (SolverConfiguration) solverConfigurationClass.getConstructor().newInstance();
+            Class<?> SolverAdapterInfoClass = Class.forName(solverPackageName + "." + solverAdapterInfoClassName);
+            return (SolverAdapterInfo) SolverAdapterInfoClass.getConstructor().newInstance();
         } catch (Exception e) {
             ErrorReporter.errorAbort("Exceptions happends when getting the solver configuration for " + solverName, e);
             return null;
@@ -38,11 +38,11 @@ public class DefaultSolverFactory implements SolverFactory {
         String solverName = solverOptions.getArg(SolverFactoryArg.solver.name());
         // Set default solver to maxsat, if a null solverName passed in.
         solverName = solverName == null ? "maxsat" : solverName;
-        SolverConfiguration solverConfiguration = getSolverConfiguration(solverName);
+        SolverAdapterInfo solverAdapterInfo = getSolverAdapterInfo(solverName);
 
         try {
-            Constructor<?> solverAdpaterCons = solverConfiguration.getSolverAdapterClass().getConstructor(SolverOptions.class, Collection.class,
-                    Collection.class, ProcessingEnvironment.class, solverConfiguration.getFormatTranslatorClass(), Lattice.class);
+            Constructor<?> solverAdpaterCons = solverAdapterInfo.getSolverAdapterClass().getConstructor(SolverOptions.class, Collection.class,
+                    Collection.class, ProcessingEnvironment.class, solverAdapterInfo.getFormatTranslatorClass(), Lattice.class);
 
             return (SolverAdapter<?>) solverAdpaterCons.newInstance(solverOptions, slots, constraints,
                     processingEnvironment, formatTranslator, lattice);
@@ -58,8 +58,8 @@ public class DefaultSolverFactory implements SolverFactory {
         // Set default solver to maxsat, if a null solverName passed in.
         solverName = solverName == null ? "maxsat" : solverName;
 
-        final SolverConfiguration solverConfiguration = getSolverConfiguration(solverName);
-        final Class<?> formatTranslatorClass = solverConfiguration.getFormatTranslatorClass();
+        final SolverAdapterInfo solverAdapterInfo = getSolverAdapterInfo(solverName);
+        final Class<?> formatTranslatorClass = solverAdapterInfo.getFormatTranslatorClass();
 
         if (Modifier.isAbstract(formatTranslatorClass.getModifiers())) {
             ErrorReporter.errorAbort("Error: " + solverName + " doesn't have default format translator, type systems must provide their own implementation!");

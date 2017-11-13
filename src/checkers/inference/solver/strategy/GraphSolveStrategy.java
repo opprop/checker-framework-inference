@@ -1,4 +1,4 @@
-package checkers.inference.solver.backend.strategy;
+package checkers.inference.solver.strategy;
 
 import java.util.ArrayList;
 import java.util.Collection;

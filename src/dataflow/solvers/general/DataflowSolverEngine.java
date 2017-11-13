@@ -1,7 +1,7 @@
 package dataflow.solvers.general;
 
 import checkers.inference.solver.SolverEngine;
-import checkers.inference.solver.backend.strategy.SolveStrategy;
+import checkers.inference.solver.strategy.SolveStrategy;
 
 /**
  * DataflowGeneralSolver is the solver for dataflow type system. It encode

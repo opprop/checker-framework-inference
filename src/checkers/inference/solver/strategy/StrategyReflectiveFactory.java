@@ -1,4 +1,4 @@
-package checkers.inference.solver.backend.strategy;
+package checkers.inference.solver.strategy;
 
 import org.checkerframework.javacutil.ErrorReporter;
 

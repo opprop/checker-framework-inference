@@ -54,7 +54,7 @@ public class SolverEngine implements InferenceSolver {
     }
 
     protected SolveStrategy createSolveStrategy(String strategyName) {
-        return StrategyReflectiveFactory.createSolveStrategy(strategyName);
+        return StrategyReflectiveFactory.createSolveStrategy(strategyName, solverFactory);
     }
 
     @Override
@@ -99,7 +99,7 @@ public class SolverEngine implements InferenceSolver {
 
         // Sanitize the configuration if it needs.
         sanitizeConfiguration();
-        System.out.println("Configuration: \n solveStrategy: " + strategyName);
+        System.out.println("Configuration: \n solveStrategy: " + this.strategyName);
     }
 
     /**

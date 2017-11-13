@@ -14,10 +14,13 @@ public class DataflowSolverEngine extends SolverEngine {
 
     @Override
     protected SolveStrategy createSolveStrategy(String strategyName) {
-        if (strategyName.equals("graph")) {
-            return new DataflowGraphSolveStrategy(solverFactory);
-        } else {
-            return super.createSolveStrategy(strategyName);
+        switch(strategyName) {
+            case "graph": {
+                return new DataflowGraphSolveStrategy(solverFactory);
+            }
+            default: {
+                return super.createSolveStrategy(strategyName);
+            }
         }
     }
 

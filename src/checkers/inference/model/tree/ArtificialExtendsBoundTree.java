@@ -1,15 +1,16 @@
 package checkers.inference.model.tree;
 
+import org.checkerframework.dataflow.util.HashCodeUtils;
+
 import com.sun.source.tree.WildcardTree;
 import com.sun.tools.javac.tree.JCTree.JCIdent;
-import com.sun.tools.javac.util.Name;
 
 public class ArtificialExtendsBoundTree extends JCIdent {
 
     private final WildcardTree boundedWildcard;
 
-    public ArtificialExtendsBoundTree(Name name, WildcardTree wildcardTree) {
-        super(name, null);
+    public ArtificialExtendsBoundTree(WildcardTree wildcardTree) {
+        super(null, null);
         boundedWildcard = wildcardTree;
     }
 
@@ -25,6 +26,6 @@ public class ArtificialExtendsBoundTree extends JCIdent {
 
     @Override
     public int hashCode() {
-        return boundedWildcard.hashCode();
+        return HashCodeUtils.hash("artificial", boundedWildcard);
     }
 }

@@ -25,36 +25,33 @@ import checkers.inference.model.Slot;
 import checkers.inference.solver.backend.FormatTranslator;
 import checkers.inference.solver.backend.SolverAdapter;
 import checkers.inference.solver.backend.SolverFactory;
+import checkers.inference.solver.backend.SolverFactory.SolverFactoryArg;
 import checkers.inference.solver.constraintgraph.ConstraintGraph;
 import checkers.inference.solver.constraintgraph.GraphBuilder;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.frontend.LatticeBuilder;
-import checkers.inference.solver.util.Constants;
 import checkers.inference.solver.util.PrintUtils;
+import checkers.inference.solver.util.SolverOptions;
 import checkers.inference.solver.util.StatisticRecorder;
-import checkers.inference.solver.util.Constants.SolverArg;
 import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 
 public class GraphSolveStrategy extends AbstractSolveStrategy implements SolveStrategy {
 
+    enum GraphSolveStrategyArg {
+        solveInParallel;
+    }
     public GraphSolveStrategy(SolverFactory solverFactory) {
         super(solverFactory);
     }
 
     @Override
-    public InferenceSolution solve(Map<String, String> configuration, Collection<Slot> slots,
+    public InferenceSolution solve(SolverOptions solverOptions, Collection<Slot> slots,
             Collection<Constraint> constraints, QualifierHierarchy qualHierarchy,
             ProcessingEnvironment processingEnvironment) {
 
-        //TODO: Refactor way of parsing configuration.
-        // Parsing configuration.
-        String solverName = configuration.get(SolverArg.solver.name());
-        solverName = solverName == null ? "maxsat" : solverName;
-
-        final boolean solveInParallel = !solverName.equals("lingeling")
-                && (configuration.get(SolverArg.solveInParallel.name()) == null ||
-                configuration.get(SolverArg.solveInParallel.name()).equals(Constants.TRUE));
-
+        //TODO: Remove the coupling of using SolverFactoryArg.
+        final boolean solveInParallel = !"lingeling".equals(solverOptions.getArg(SolverFactoryArg.solver.name()))
+                && solverOptions.getBoolArg(GraphSolveStrategyArg.solveInParallel.name());
 
         // Build graph
         final long graphBuildingStart = System.currentTimeMillis();
@@ -62,8 +59,8 @@ public class GraphSolveStrategy extends AbstractSolveStrategy implements SolveSt
         final long graphBuildingEnd = System.currentTimeMillis();
 
         // Separate constraint graph, and assign each separated sub-graph to a underlying solver to solve.
-        List<SolverAdapter<?>> separatedGraphSolvers = separateGraph(constraintGraph, solverName,
-                configuration, slots, constraints, qualHierarchy, processingEnvironment);
+        List<SolverAdapter<?>> separatedGraphSolvers = separateGraph(constraintGraph, solverOptions,
+                slots, constraints, qualHierarchy, processingEnvironment);
 
         // Solving.
         List<Map<Integer, AnnotationMirror>> inferenceSolutionMaps = new LinkedList<Map<Integer, AnnotationMirror>>();
@@ -106,16 +103,15 @@ public class GraphSolveStrategy extends AbstractSolveStrategy implements SolveSt
      * @return a list of underlying solvers, each of them responsible for solving a separated
      * sub-graph from the given constraint graph.
      */
-    protected List<SolverAdapter<?>> separateGraph(ConstraintGraph constraintGraph, String solverName,
-            Map<String, String> configuration, Collection<Slot> slots,
-            Collection<Constraint> constraints, QualifierHierarchy qualHierarchy,
-            ProcessingEnvironment processingEnvironment) {
+    protected List<SolverAdapter<?>> separateGraph(ConstraintGraph constraintGraph, SolverOptions solverOptions,
+            Collection<Slot> slots, Collection<Constraint> constraints,
+            QualifierHierarchy qualHierarchy, ProcessingEnvironment processingEnvironment) {
         Lattice lattice = new LatticeBuilder().buildLattice(qualHierarchy, slots);
-        FormatTranslator<?, ?, ?> formatTranslator = solverFactory.createFormatTranslator(solverName, lattice);
+        FormatTranslator<?, ?, ?> formatTranslator = solverFactory.createFormatTranslator(solverOptions, lattice);
         List<SolverAdapter<?>> separatedGraphSovlers = new ArrayList<>();
 
         for (Set<Constraint> independentConstraints : constraintGraph.getIndependentPath()) {
-            separatedGraphSovlers.add(solverFactory.createSolverAdapter(solverName, configuration, slots, independentConstraints,
+            separatedGraphSovlers.add(solverFactory.createSolverAdapter(solverOptions, slots, independentConstraints,
                     processingEnvironment, lattice, formatTranslator));
         }
 

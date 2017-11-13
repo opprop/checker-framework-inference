@@ -22,6 +22,7 @@ import checkers.inference.model.Slot;
 import checkers.inference.solver.backend.maxsat.MaxSatFormatTranslator;
 import checkers.inference.solver.backend.maxsat.MaxSatSolver;
 import checkers.inference.solver.frontend.Lattice;
+import checkers.inference.solver.util.SolverOptions;
 import checkers.inference.solver.util.StatisticRecorder;
 import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 
@@ -44,10 +45,10 @@ public class LingelingSolver extends MaxSatSolver {
     private long serializationStart;
     private long serializationEnd;
 
-    public LingelingSolver(Map<String, String> configuration, Collection<Slot> slots,
+    public LingelingSolver(SolverOptions solverOptions, Collection<Slot> slots,
             Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment,
             MaxSatFormatTranslator formatTranslator, Lattice lattice) {
-        super(configuration, slots, constraints, processingEnvironment, formatTranslator,
+        super(solverOptions, slots, constraints, processingEnvironment, formatTranslator,
                 lattice);
     }
 

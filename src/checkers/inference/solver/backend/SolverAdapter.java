@@ -13,6 +13,7 @@ import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.solver.frontend.Lattice;
+import checkers.inference.solver.util.SolverOptions;
 
 /**
  * SolverAdapter adapts a concrete underlying solver. This class is the super class
@@ -39,9 +40,9 @@ import checkers.inference.solver.frontend.Lattice;
 public abstract class SolverAdapter<T extends FormatTranslator<?, ?, ?>> {
 
     /**
-     * String key value pairs to configure the solver
+     * SolverOptions, an argument manager for getting options from user.
      */
-    protected final Map<String, String> configuration;
+    protected final SolverOptions solverOptions;
 
     /**
      * Collection of all slots will be used by underlying solver
@@ -71,9 +72,9 @@ public abstract class SolverAdapter<T extends FormatTranslator<?, ?, ?>> {
      */
     protected final Lattice lattice;
 
-    public SolverAdapter(Map<String, String> configuration, Collection<Slot> slots,
+    public SolverAdapter(SolverOptions solverOptions, Collection<Slot> slots,
             Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment, T formatTranslator, Lattice lattice) {
-        this.configuration = configuration;
+        this.solverOptions = solverOptions;
         this.slots = slots;
         this.constraints = constraints;
         this.processingEnvironment = processingEnvironment;
@@ -97,7 +98,7 @@ public abstract class SolverAdapter<T extends FormatTranslator<?, ?, ?>> {
     public abstract Map<Integer, AnnotationMirror> solve();
 
     /**
-     * Calls serializer to convert constraints into the corresponding encoding
+     * Calls formatTranslator to convert constraints into the corresponding encoding
      * form. See {@link checkers.inference.solver.backend.maxsat.MaxSatSolver#convertAll()}} for an example.
      */
     protected abstract void convertAll();

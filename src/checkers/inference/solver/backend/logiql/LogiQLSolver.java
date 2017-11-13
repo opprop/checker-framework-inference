@@ -16,6 +16,7 @@ import checkers.inference.model.Slot;
 import checkers.inference.solver.backend.SolverAdapter;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.NameUtils;
+import checkers.inference.solver.util.SolverOptions;
 import checkers.inference.solver.util.StatisticRecorder;
 import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 
@@ -37,10 +38,10 @@ public class LogiQLSolver extends SolverAdapter<LogiQLFormatTranslator> {
     private long serializationEnd;
     private long solvingStart;
     private long solvingEnd;
-    public LogiQLSolver(Map<String, String> configuration, Collection<Slot> slots,
+    public LogiQLSolver(SolverOptions solverOptions, Collection<Slot> slots,
             Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment,
             LogiQLFormatTranslator formatTranslator, Lattice lattice) {
-        super(configuration, slots, constraints, processingEnvironment, formatTranslator,
+        super(solverOptions, slots, constraints, processingEnvironment, formatTranslator,
                 lattice);
         logiqldata.mkdir();
     }

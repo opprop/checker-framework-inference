@@ -22,6 +22,7 @@ import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.Slot;
 import checkers.inference.solver.backend.SolverAdapter;
 import checkers.inference.solver.frontend.Lattice;
+import checkers.inference.solver.util.SolverOptions;
 
 public class Z3Solver extends SolverAdapter<Z3BitVectorFormatTranslator>{
 
@@ -30,10 +31,10 @@ public class Z3Solver extends SolverAdapter<Z3BitVectorFormatTranslator>{
     protected final Z3BitVectorCodec z3BitVectorCodec;
 
 
-    public Z3Solver(Map<String, String> configuration, Collection<Slot> slots,
+    public Z3Solver(SolverOptions solverOptions, Collection<Slot> slots,
             Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment,
             Z3BitVectorFormatTranslator z3FormatTranslator, Lattice lattice) {
-        super(configuration, slots, constraints, processingEnvironment, z3FormatTranslator, lattice);
+        super(solverOptions, slots, constraints, processingEnvironment, z3FormatTranslator, lattice);
         context = new Context();
         solver = context.mkOptimize();
         z3FormatTranslator.initContext(context);

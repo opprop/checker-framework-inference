@@ -24,6 +24,7 @@ import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.Slot;
 import checkers.inference.solver.backend.SolverAdapter;
 import checkers.inference.solver.frontend.Lattice;
+import checkers.inference.solver.util.SolverOptions;
 import checkers.inference.solver.util.StatisticRecorder;
 import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 
@@ -36,6 +37,13 @@ import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
  */
 public class MaxSatSolver extends SolverAdapter<MaxSatFormatTranslator> {
 
+    protected enum MaxSatSolverArg {
+        /**
+         * Whether should print the CNF formulas.
+         */
+        outputCNF;
+    }
+
     protected final SlotManager slotManager;
     protected final List<VecInt> hardClauses = new LinkedList<VecInt>();
     protected final List<VecInt> softClauses = new LinkedList<VecInt>();
@@ -47,10 +55,10 @@ public class MaxSatSolver extends SolverAdapter<MaxSatFormatTranslator> {
     protected long solvingStart;
     protected long solvingEnd;
 
-    public MaxSatSolver(Map<String, String> configuration, Collection<Slot> slots,
+    public MaxSatSolver(SolverOptions solverOptions, Collection<Slot> slots,
             Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment,
             MaxSatFormatTranslator formatTranslator, Lattice lattice) {
-        super(configuration, slots, constraints, processingEnvironment, formatTranslator,
+        super(solverOptions, slots, constraints, processingEnvironment, formatTranslator,
                 lattice);
         this.slotManager = InferenceMain.getInstance().getSlotManager();
 
@@ -178,8 +186,7 @@ public class MaxSatSolver extends SolverAdapter<MaxSatFormatTranslator> {
     }
 
     protected boolean shouldOutputCNF() {
-        String outputCNF = configuration.get("outputCNF");
-        return outputCNF != null && outputCNF.equals("true");
+        return solverOptions.getBoolArg(MaxSatSolverArg.outputCNF.name());
     }
 
     /**

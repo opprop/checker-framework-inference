@@ -30,6 +30,7 @@ import checkers.inference.solver.constraintgraph.Vertex;
 import checkers.inference.solver.frontend.LatticeBuilder;
 import checkers.inference.solver.frontend.TwoQualifiersLattice;
 import checkers.inference.solver.util.PrintUtils;
+import checkers.inference.solver.util.SolverOptions;
 import checkers.inference.solver.util.StatisticRecorder;
 import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 import dataflow.DataflowAnnotatedTypeFactory;
@@ -47,16 +48,16 @@ public class DataflowGraphSolveStrategy extends GraphSolveStrategy {
     }
 
     @Override
-    public InferenceSolution solve(Map<String, String> configuration, Collection<Slot> slots,
+    public InferenceSolution solve(SolverOptions solverOptions, Collection<Slot> slots,
             Collection<Constraint> constraints, QualifierHierarchy qualHierarchy,
             ProcessingEnvironment processingEnvironment) {
         this.processingEnvironment = processingEnvironment;
-        return super.solve(configuration, slots, constraints, qualHierarchy, processingEnvironment);
+        return super.solve(solverOptions, slots, constraints, qualHierarchy, processingEnvironment);
     }
 
     @Override
-    protected List<SolverAdapter<?>> separateGraph(ConstraintGraph constraintGraph, String solverName,
-            Map<String, String> configuration, Collection<Slot> slots, Collection<Constraint> constraints,
+    protected List<SolverAdapter<?>> separateGraph(ConstraintGraph constraintGraph, SolverOptions solverOptions,
+            Collection<Slot> slots, Collection<Constraint> constraints,
             QualifierHierarchy qualHierarchy, ProcessingEnvironment processingEnvironment) {
         AnnotationMirror DATAFLOW = AnnotationBuilder.fromClass(processingEnvironment.getElementUtils(), DataFlow.class);
         AnnotationMirror DATAFLOWBOTTOM = AnnotationBuilder.fromClass(processingEnvironment.getElementUtils(),
@@ -76,15 +77,15 @@ public class DataflowGraphSolveStrategy extends GraphSolveStrategy {
                     AnnotationMirror DATAFLOWTOP = DataflowUtils.createDataflowAnnotation(
                             DataflowUtils.convert(dataflowValues), processingEnvironment);
                     TwoQualifiersLattice latticeFor2 = new LatticeBuilder().buildTwoTypeLattice(DATAFLOWTOP, DATAFLOWBOTTOM);
-                    FormatTranslator<?, ?, ?> translator = solverFactory.createFormatTranslator(solverName, latticeFor2);
-                    solvers.add(solverFactory.createSolverAdapter(solverName, configuration, slots, entry.getValue(),
+                    FormatTranslator<?, ?, ?> translator = solverFactory.createFormatTranslator(solverOptions, latticeFor2);
+                    solvers.add(solverFactory.createSolverAdapter(solverOptions, slots, entry.getValue(),
                             processingEnvironment, latticeFor2, translator));
                 } else if (dataflowRoots.length == 1) {
                     AnnotationMirror DATAFLOWTOP = DataflowUtils.createDataflowAnnotationForByte(
                             DataflowUtils.convert(dataflowRoots), processingEnvironment);
                     TwoQualifiersLattice latticeFor2 = new LatticeBuilder().buildTwoTypeLattice(DATAFLOWTOP, DATAFLOWBOTTOM);
-                    FormatTranslator<?, ?, ?> translator = solverFactory.createFormatTranslator(solverName, latticeFor2);
-                    solvers.add(solverFactory.createSolverAdapter(solverName, configuration, slots, entry.getValue(),
+                    FormatTranslator<?, ?, ?> translator = solverFactory.createFormatTranslator(solverOptions, latticeFor2);
+                    solvers.add(solverFactory.createSolverAdapter(solverOptions, slots, entry.getValue(),
                             processingEnvironment, latticeFor2, translator));
                 }
             }

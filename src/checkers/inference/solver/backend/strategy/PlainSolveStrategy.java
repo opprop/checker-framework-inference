@@ -17,7 +17,7 @@ import checkers.inference.solver.backend.SolverAdapter;
 import checkers.inference.solver.backend.SolverFactory;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.frontend.LatticeBuilder;
-import checkers.inference.solver.util.Constants.SolverArg;
+import checkers.inference.solver.util.SolverOptions;
 
 public class PlainSolveStrategy extends AbstractSolveStrategy implements SolveStrategy {
 
@@ -26,19 +26,15 @@ public class PlainSolveStrategy extends AbstractSolveStrategy implements SolveSt
     }
 
     @Override
-    public InferenceSolution solve(Map<String, String> configuration, Collection<Slot> slots,
+    public InferenceSolution solve(SolverOptions solverOptions, Collection<Slot> slots,
             Collection<Constraint> constraints, QualifierHierarchy qualHierarchy,
             ProcessingEnvironment processingEnvironment) {
 
-        //TODO: Refactor way of parsing configuration.
-        String solverName = configuration.get(SolverArg.solver.name());
-        solverName = solverName == null ? "maxsat" : solverName;
-
         Lattice lattice = new LatticeBuilder().buildLattice(qualHierarchy, slots);
 
-        FormatTranslator<?, ?, ?> formatTranslator = solverFactory.createFormatTranslator(solverName, lattice);
-        SolverAdapter<?> underlyingSolver = solverFactory.createSolverAdapter(solverName, configuration,
-                slots, constraints, processingEnvironment, lattice, formatTranslator);
+        FormatTranslator<?, ?, ?> formatTranslator = solverFactory.createFormatTranslator(solverOptions, lattice);
+        SolverAdapter<?> underlyingSolver = solverFactory.createSolverAdapter(solverOptions, slots, constraints,
+                processingEnvironment, lattice, formatTranslator);
 
         Map<Integer, AnnotationMirror> result = underlyingSolver.solve();
 

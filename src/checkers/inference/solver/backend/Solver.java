@@ -37,7 +37,7 @@ import checkers.inference.solver.util.SolverOptions;
  *
  * @param <T> type of FormatTranslator required by this SolverAdapter
  */
-public abstract class SolverAdapter<T extends FormatTranslator<?, ?, ?>> {
+public abstract class Solver<T extends FormatTranslator<?, ?, ?>> {
 
     /**
      * SolverOptions, an argument manager for getting options from user.
@@ -72,7 +72,7 @@ public abstract class SolverAdapter<T extends FormatTranslator<?, ?, ?>> {
      */
     protected final Lattice lattice;
 
-    public SolverAdapter(SolverOptions solverOptions, Collection<Slot> slots,
+    public Solver(SolverOptions solverOptions, Collection<Slot> slots,
             Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment, T formatTranslator, Lattice lattice) {
         this.solverOptions = solverOptions;
         this.slots = slots;

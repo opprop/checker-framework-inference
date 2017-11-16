@@ -10,9 +10,9 @@ public class StrategyReflectiveFactory {
 
     public static SolveStrategy createSolveStrategy(String strategy, SolverFactory solverFactory) {
         // Set default strategy to plain solve strategy.
-        strategy = strategy == null ? "plain" : strategy;
+        strategy = strategy == null ? "Plain" : strategy;
 
-        final String strategyClassName = strategy.substring(0, 1).toUpperCase() + strategy.substring(1) + "SolveStrategy";
+        final String strategyClassName = strategy + "SolveStrategy";
 
         try {
             Class<?> solverStrategyClass = Class.forName(STRATEGY_PACKAGE_NAME + "." + strategyClassName);

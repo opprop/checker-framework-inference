@@ -37,12 +37,8 @@ import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 
 public class SolverEngine implements InferenceSolver {
     protected boolean collectStatistic;
-    protected final SolverFactory solverFactory;
     protected String strategyName;
 
-    public SolverEngine() {
-        solverFactory = createSolverFactory();
-    }
 
     protected enum SolverEngineArg implements SolverArg {
         solveStrategy,
@@ -59,6 +55,7 @@ public class SolverEngine implements InferenceSolver {
     }
 
     protected SolveStrategy createSolveStrategy(String strategyName) {
+        SolverFactory solverFactory = createSolverFactory();
         return StrategyReflectiveFactory.createSolveStrategy(strategyName, solverFactory);
     }
 

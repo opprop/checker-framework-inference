@@ -23,7 +23,7 @@ import checkers.inference.InferenceSolution;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
 import checkers.inference.solver.backend.FormatTranslator;
-import checkers.inference.solver.backend.SolverAdapter;
+import checkers.inference.solver.backend.Solver;
 import checkers.inference.solver.backend.SolverFactory;
 import checkers.inference.solver.backend.SolverFactory.SolverFactoryArg;
 import checkers.inference.solver.constraintgraph.ConstraintGraph;
@@ -65,7 +65,7 @@ public class GraphSolveStrategy extends AbstractSolveStrategy implements SolveSt
         final long graphBuildingEnd = System.currentTimeMillis();
 
         // Separate constraint graph, and assign each separated sub-graph to a underlying solver to solve.
-        List<SolverAdapter<?>> separatedGraphSolvers = separateGraph(constraintGraph, solverOptions,
+        List<Solver<?>> separatedGraphSolvers = separateGraph(constraintGraph, solverOptions,
                 slots, constraints, qualHierarchy, processingEnvironment);
 
         // Solving.
@@ -109,15 +109,16 @@ public class GraphSolveStrategy extends AbstractSolveStrategy implements SolveSt
      * @return a list of underlying solvers, each of them responsible for solving a separated
      * sub-graph from the given constraint graph.
      */
-    protected List<SolverAdapter<?>> separateGraph(ConstraintGraph constraintGraph, SolverOptions solverOptions,
+    protected List<Solver<?>> separateGraph(ConstraintGraph constraintGraph, SolverOptions solverOptions,
             Collection<Slot> slots, Collection<Constraint> constraints,
             QualifierHierarchy qualHierarchy, ProcessingEnvironment processingEnvironment) {
         Lattice lattice = new LatticeBuilder().buildLattice(qualHierarchy, slots);
-        FormatTranslator<?, ?, ?> formatTranslator = solverFactory.createFormatTranslator(solverOptions, lattice);
-        List<SolverAdapter<?>> separatedGraphSovlers = new ArrayList<>();
+        List<Solver<?>> separatedGraphSovlers = new ArrayList<>();
+
+        FormatTranslator<?, ?, ?> formatTranslator = solverFactory.createFormatTranslator(solverOptions, lattice, verifier);
 
         for (Set<Constraint> independentConstraints : constraintGraph.getIndependentPath()) {
-            separatedGraphSovlers.add(solverFactory.createSolverAdapter(solverOptions, slots, independentConstraints,
+            separatedGraphSovlers.add(solverFactory.createSolver(solverOptions, slots, independentConstraints,
                     processingEnvironment, lattice, formatTranslator));
         }
 
@@ -132,14 +133,14 @@ public class GraphSolveStrategy extends AbstractSolveStrategy implements SolveSt
      * @throws InterruptedException
      * @throws ExecutionException
      */
-    protected List<Map<Integer, AnnotationMirror>> solveInparallel(List<SolverAdapter<?>> underlyingSolvers)
+    protected List<Map<Integer, AnnotationMirror>> solveInparallel(List<Solver<?>> underlyingSolvers)
             throws InterruptedException, ExecutionException {
 
         ExecutorService service = Executors.newFixedThreadPool(30);
         List<Future<Map<Integer, AnnotationMirror>>> futures = new ArrayList<Future<Map<Integer, AnnotationMirror>>>();
 
         long solvingStart = System.currentTimeMillis();
-        for (final SolverAdapter<?> underlyingSolver : underlyingSolvers) {
+        for (final Solver<?> underlyingSolver : underlyingSolvers) {
             Callable<Map<Integer, AnnotationMirror>> callable = new Callable<Map<Integer, AnnotationMirror>>() {
                 @Override
                 public Map<Integer, AnnotationMirror> call() throws Exception {
@@ -168,12 +169,12 @@ public class GraphSolveStrategy extends AbstractSolveStrategy implements SolveSt
      * @param underlyingSolvers
      * @return A list of Map that contains solutions from all underlying solvers.
      */
-    protected List<Map<Integer, AnnotationMirror>> solveInSequential(List<SolverAdapter<?>> underlyingSolvers) {
+    protected List<Map<Integer, AnnotationMirror>> solveInSequential(List<Solver<?>> underlyingSolvers) {
 
         List<Map<Integer, AnnotationMirror>> solutions = new ArrayList<>();
 
         long solvingStart = System.currentTimeMillis();
-        for (final SolverAdapter<?> underlyingSolver : underlyingSolvers) {
+        for (final Solver<?> underlyingSolver : underlyingSolvers) {
             solutions.add(underlyingSolver.solve());
         }
         long solvingEnd = System.currentTimeMillis();

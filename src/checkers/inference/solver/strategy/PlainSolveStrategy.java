@@ -13,7 +13,7 @@ import checkers.inference.InferenceSolution;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
 import checkers.inference.solver.backend.FormatTranslator;
-import checkers.inference.solver.backend.SolverAdapter;
+import checkers.inference.solver.backend.Solver;
 import checkers.inference.solver.backend.SolverFactory;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.frontend.LatticeBuilder;
@@ -32,8 +32,8 @@ public class PlainSolveStrategy extends AbstractSolveStrategy implements SolveSt
 
         Lattice lattice = new LatticeBuilder().buildLattice(qualHierarchy, slots);
 
-        FormatTranslator<?, ?, ?> formatTranslator = solverFactory.createFormatTranslator(solverOptions, lattice);
-        SolverAdapter<?> underlyingSolver = solverFactory.createSolverAdapter(solverOptions, slots, constraints,
+        FormatTranslator<?, ?, ?> formatTranslator = solverFactory.createFormatTranslator(solverOptions, lattice, verifier);
+        Solver<?> underlyingSolver = solverFactory.createSolver(solverOptions, slots, constraints,
                 processingEnvironment, lattice, formatTranslator);
 
         Map<Integer, AnnotationMirror> result = underlyingSolver.solve();

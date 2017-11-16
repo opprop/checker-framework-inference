@@ -21,11 +21,11 @@ import com.microsoft.z3.Optimize;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.Slot;
-import checkers.inference.solver.backend.SolverAdapter;
+import checkers.inference.solver.backend.Solver;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.SolverOptions;
 
-public class Z3Solver extends SolverAdapter<Z3BitVectorFormatTranslator>{
+public class Z3Solver extends Solver<Z3BitVectorFormatTranslator>{
 
     protected final Context context;
     protected final Optimize solver;

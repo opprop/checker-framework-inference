@@ -13,7 +13,7 @@ import javax.lang.model.element.AnnotationMirror;
 
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
-import checkers.inference.solver.backend.SolverAdapter;
+import checkers.inference.solver.backend.Solver;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.NameUtils;
 import checkers.inference.solver.util.SolverOptions;
@@ -29,7 +29,7 @@ import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
  * @author jianchu
  *
  */
-public class LogiQLSolver extends SolverAdapter<LogiQLFormatTranslator> {
+public class LogiQLSolver extends Solver<LogiQLFormatTranslator> {
 
     private final StringBuilder logiQLText = new StringBuilder();
     private final File logiqldata = new File(new File("").getAbsolutePath() + "/logiqldata");

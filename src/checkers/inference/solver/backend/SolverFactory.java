@@ -9,6 +9,7 @@ import checkers.inference.model.Slot;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.SolverArg;
 import checkers.inference.solver.util.SolverOptions;
+import checkers.inference.util.ConstraintVerifier;
 
 public interface SolverFactory {
 
@@ -24,10 +25,10 @@ public interface SolverFactory {
         }
     }
 
-    SolverAdapter<?> createSolverAdapter(SolverOptions solverOptions,
+    Solver<?> createSolver(SolverOptions solverOptions,
             Collection<Slot> slots, Collection<Constraint> constraints,
             ProcessingEnvironment processingEnvironment, Lattice lattice,
             FormatTranslator<?, ?, ?> formatTranslator);
 
-    FormatTranslator<?, ?, ?> createFormatTranslator(SolverOptions solverOptions, Lattice lattice);
+    FormatTranslator<?, ?, ?> createFormatTranslator(SolverOptions solverOptions, Lattice lattice, ConstraintVerifier verifier);
 }

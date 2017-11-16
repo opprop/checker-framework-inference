@@ -16,7 +16,7 @@ public class DefaultSolverFactory implements SolverFactory {
 
     private final String BACKEND_PACKAGE_PATH = DefaultSolverFactory.class.getPackage().getName();
 
-    private DefaultSolverFactory getUnderlyingSolverFactory(String solverName) {
+    private SolverFactory getUnderlyingSolverFactory(String solverName) {
         final String solverPackageName = BACKEND_PACKAGE_PATH + "." + solverName.toLowerCase();
         final String solverFactoryClassName = solverName + "SolverFactory";
 
@@ -36,7 +36,7 @@ public class DefaultSolverFactory implements SolverFactory {
         String solverName = solverOptions.getArg(SolverFactoryArg.solver);
         // Set default solver to maxsat, if a null solverName passed in.
         solverName = solverName == null ? "MaxSat" : solverName;
-        DefaultSolverFactory underlyingSolverFactory = getUnderlyingSolverFactory(solverName);
+        SolverFactory underlyingSolverFactory = getUnderlyingSolverFactory(solverName);
         return underlyingSolverFactory.createSolver(solverOptions, slots, constraints, processingEnvironment, lattice, formatTranslator);
     }
 
@@ -46,7 +46,7 @@ public class DefaultSolverFactory implements SolverFactory {
         String solverName = solverOptions.getArg(SolverFactoryArg.solver);
         // Set default solver to maxsat, if a null solverName passed in.
         solverName = solverName == null ? "MaxSat" : solverName;
-        DefaultSolverFactory underlyingSolverFactory = getUnderlyingSolverFactory(solverName);
+        SolverFactory underlyingSolverFactory = getUnderlyingSolverFactory(solverName);
         return underlyingSolverFactory.createFormatTranslator(solverOptions, lattice, verifier);
     }
 

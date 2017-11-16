@@ -154,8 +154,7 @@ public class InferenceMain {
                 "-Xmaxwarns", "1000",
                 "-Xmaxerrs", "1000",
                 "-XDignore.symbol.file",
-                "-AprintErrorStack",
-                "-Awarns"));
+                "-AprintErrorStack"));
 
         if (InferenceOptions.cfArgs != null) {
             checkerFrameworkArgs.addAll(parseCfArgs());
@@ -316,7 +315,6 @@ public class InferenceMain {
      * this to the attention of future programmers.  We would make it private if it weren't for the fact that
      * we need the realTypeFactory qualifiers in getSupportedQualifierTypes and it is called in the super class.
      */
-    @Deprecated
     public BaseAnnotatedTypeFactory getRealTypeFactory() {
         if (realTypeFactory == null) {
             realTypeFactory = getRealChecker().createRealTypeFactory();

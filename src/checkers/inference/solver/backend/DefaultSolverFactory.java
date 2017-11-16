@@ -22,7 +22,7 @@ public class DefaultSolverFactory implements SolverFactory {
 
         try {
             Class<?> SolverFactoryClass = Class.forName(solverPackageName + "." + solverFactoryClassName);
-            return (DefaultSolverFactory) SolverFactoryClass.getConstructor().newInstance();
+            return (SolverFactory) SolverFactoryClass.getConstructor().newInstance();
         } catch (Exception e) {
             ErrorReporter.errorAbort("Exceptions happends when getting the solver factory for " + solverName, e);
             return null;

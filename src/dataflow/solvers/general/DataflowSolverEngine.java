@@ -3,7 +3,7 @@ package dataflow.solvers.general;
 import checkers.inference.InferenceMain;
 import checkers.inference.solver.SolverEngine;
 import checkers.inference.solver.backend.SolverFactory;
-import checkers.inference.solver.strategy.SolveStrategy;
+import checkers.inference.solver.strategy.solvingStrategy;
 
 /**
  * DataflowGeneralSolver is the solver for dataflow type system. It encode
@@ -15,14 +15,14 @@ import checkers.inference.solver.strategy.SolveStrategy;
 public class DataflowSolverEngine extends SolverEngine {
 
     @Override
-    protected SolveStrategy createSolveStrategy(String strategyName) {
+    protected solvingStrategy createSolvingStrategy(String strategyName) {
         switch(strategyName) {
             case "graph": {
                 SolverFactory solverFactory = createSolverFactory();
-                return new DataflowGraphSolveStrategy(solverFactory);
+                return new DataflowGraphSolvingStrategy(solverFactory);
             }
             default: {
-                return super.createSolveStrategy(strategyName);
+                return super.createSolvingStrategy(strategyName);
             }
         }
     }

@@ -17,7 +17,7 @@ import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.solver.backend.DefaultSolverFactory;
 import checkers.inference.solver.backend.SolverFactory;
-import checkers.inference.solver.strategy.SolveStrategy;
+import checkers.inference.solver.strategy.solvingStrategy;
 import checkers.inference.solver.strategy.StrategyReflectiveFactory;
 import checkers.inference.solver.util.PrintUtils;
 import checkers.inference.solver.util.SolverArg;
@@ -41,7 +41,7 @@ public class SolverEngine implements InferenceSolver {
 
 
     protected enum SolverEngineArg implements SolverArg {
-        solveStrategy,
+        solvingStrategy,
         collectStatistic;
 
         @Override
@@ -54,9 +54,9 @@ public class SolverEngine implements InferenceSolver {
         return new DefaultSolverFactory();
     }
 
-    protected SolveStrategy createSolveStrategy(String strategyName) {
+    protected solvingStrategy createSolvingStrategy(String strategyName) {
         SolverFactory solverFactory = createSolverFactory();
-        return StrategyReflectiveFactory.createSolveStrategy(strategyName, solverFactory);
+        return StrategyReflectiveFactory.createSolvingStrategy(strategyName, solverFactory);
     }
 
     @Override
@@ -71,8 +71,8 @@ public class SolverEngine implements InferenceSolver {
         configureSolverArgs(solverOptions);
 
         //TODO: Add solve timing statistic.
-        SolveStrategy solveStrategy = createSolveStrategy(strategyName);
-        solution = solveStrategy.solve(solverOptions, slots, constraints, qualHierarchy, processingEnvironment);
+        solvingStrategy solvingStrategy = createSolvingStrategy(strategyName);
+        solution = solvingStrategy.solve(solverOptions, slots, constraints, qualHierarchy, processingEnvironment);
 
         if (solution == null) {
             // Solution should never be null.
@@ -95,7 +95,7 @@ public class SolverEngine implements InferenceSolver {
      * @param configuration
      */
     private void configureSolverArgs(SolverOptions solverOptions) {
-       final String strategyName = solverOptions.getArg(SolverEngineArg.solveStrategy);
+       final String strategyName = solverOptions.getArg(SolverEngineArg.solvingStrategy);
        this.strategyName = strategyName == null ? "plain" : strategyName;
        this.collectStatistic = solverOptions.getBoolArg(SolverEngineArg.collectStatistic);
 

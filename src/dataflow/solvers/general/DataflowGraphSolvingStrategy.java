@@ -28,7 +28,7 @@ import checkers.inference.solver.constraintgraph.GraphBuilder;
 import checkers.inference.solver.constraintgraph.Vertex;
 import checkers.inference.solver.frontend.LatticeBuilder;
 import checkers.inference.solver.frontend.TwoQualifiersLattice;
-import checkers.inference.solver.strategy.GraphSolveStrategy;
+import checkers.inference.solver.strategy.GraphSolvingStrategy;
 import checkers.inference.solver.util.PrintUtils;
 import checkers.inference.solver.util.SolverOptions;
 import checkers.inference.solver.util.StatisticRecorder;
@@ -39,11 +39,11 @@ import dataflow.qual.DataFlowInferenceBottom;
 import dataflow.qual.DataFlowTop;
 import dataflow.util.DataflowUtils;
 
-public class DataflowGraphSolveStrategy extends GraphSolveStrategy {
+public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
 
     protected ProcessingEnvironment processingEnvironment;
 
-    public DataflowGraphSolveStrategy(SolverFactory solverFactory) {
+    public DataflowGraphSolvingStrategy(SolverFactory solverFactory) {
         super(solverFactory);
     }
 

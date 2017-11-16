@@ -8,15 +8,15 @@ public class StrategyReflectiveFactory {
 
     private static final String STRATEGY_PACKAGE_NAME = StrategyReflectiveFactory.class.getPackage().getName();
 
-    public static SolveStrategy createSolveStrategy(String strategy, SolverFactory solverFactory) {
+    public static solvingStrategy createSolvingStrategy(String strategy, SolverFactory solverFactory) {
         // Set default strategy to plain solve strategy.
         strategy = strategy == null ? "Plain" : strategy;
 
-        final String strategyClassName = strategy + "SolveStrategy";
+        final String strategyClassName = strategy + "SolvingStrategy";
 
         try {
             Class<?> solverStrategyClass = Class.forName(STRATEGY_PACKAGE_NAME + "." + strategyClassName);
-            return (SolveStrategy) solverStrategyClass.getConstructor(SolverFactory.class).newInstance(solverFactory);
+            return (solvingStrategy) solverStrategyClass.getConstructor(SolverFactory.class).newInstance(solverFactory);
         } catch (Exception e) {
             ErrorReporter.errorAbort("Exceptions happends when creating " + strategy + " solve strategy!", e);
             return null;

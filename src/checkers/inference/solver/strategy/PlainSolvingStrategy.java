@@ -19,9 +19,9 @@ import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.frontend.LatticeBuilder;
 import checkers.inference.solver.util.SolverOptions;
 
-public class PlainSolveStrategy extends AbstractSolveStrategy implements SolveStrategy {
+public class PlainSolvingStrategy extends AbstractSolvingStrategy implements solvingStrategy {
 
-    public PlainSolveStrategy(SolverFactory solverFactory) {
+    public PlainSolvingStrategy(SolverFactory solverFactory) {
         super(solverFactory);
     }
 

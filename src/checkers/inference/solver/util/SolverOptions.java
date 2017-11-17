@@ -20,7 +20,7 @@ public class SolverOptions {
      * @return the string value for a given argument name.
      */
     public String getArg(SolverArg arg) {
-        return options.get(arg.getName());
+        return options.get(arg.name());
     }
 
     /**
@@ -31,7 +31,7 @@ public class SolverOptions {
      * otherwise return false.
      */
     public boolean getBoolArg(SolverArg arg) {
-        String argValue = options.get(arg.getName());
+        String argValue = options.get(arg.name());
         return argValue != null && argValue.toLowerCase().equals("true");
     }
 }

@@ -18,11 +18,6 @@ public interface SolverFactory {
          * Name of the solver.
          */
         solver;
-
-        @Override
-        public String getName() {
-            return this.name();
-        }
     }
 
     Solver<?> createSolver(SolverOptions solverOptions,

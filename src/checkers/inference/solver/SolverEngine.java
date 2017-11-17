@@ -43,11 +43,6 @@ public class SolverEngine implements InferenceSolver {
     protected enum SolverEngineArg implements SolverArg {
         solvingStrategy,
         collectStatistic;
-
-        @Override
-        public String getName() {
-            return this.name();
-        }
     }
 
     protected SolverFactory createSolverFactory() {

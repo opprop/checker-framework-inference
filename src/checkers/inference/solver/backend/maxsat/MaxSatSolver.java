@@ -43,11 +43,6 @@ public class MaxSatSolver extends Solver<MaxSatFormatTranslator> {
          * Whether should print the CNF formulas.
          */
         outputCNF;
-
-        @Override
-        public String getName() {
-            return this.name();
-        }
     }
 
     protected final SlotManager slotManager;

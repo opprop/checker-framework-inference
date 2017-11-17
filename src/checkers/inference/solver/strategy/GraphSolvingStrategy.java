@@ -40,12 +40,8 @@ public class GraphSolvingStrategy extends AbstractSolvingStrategy implements sol
 
     enum GraphSolveStrategyArg implements SolverArg {
         solveInParallel;
-
-        @Override
-        public String getName() {
-            return this.name();
-        }
     }
+
     public GraphSolvingStrategy(SolverFactory solverFactory) {
         super(solverFactory);
     }

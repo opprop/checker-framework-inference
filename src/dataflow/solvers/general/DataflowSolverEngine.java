@@ -28,7 +28,7 @@ public class DataflowSolverEngine extends SolverEngine {
 
     @Override
     protected void sanitizeConfiguration() {
-        if (!"graph".equals(strategyName)) {
+        if (!NameUtils.getStrategyName(GraphSolvingStrategy.class).equals(strategyName)) {
             InferenceMain.getInstance().logger.warning("Dataflow type system must use graph solve strategy."
                     + "Change strategy from " + strategyName + " to graph.");
             strategyName = "graph";

@@ -36,7 +36,7 @@ import checkers.inference.solver.util.SolverOptions;
 import checkers.inference.solver.util.StatisticRecorder;
 import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 
-public class GraphSolvingStrategy extends AbstractSolvingStrategy implements solvingStrategy {
+public class GraphSolvingStrategy extends AbstractSolvingStrategy implements SolvingStrategy {
 
     enum GraphSolveStrategyArg implements SolverArg {
         solveInParallel;

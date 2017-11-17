@@ -4,7 +4,7 @@ import checkers.inference.InferenceMain;
 import checkers.inference.solver.backend.SolverFactory;
 import checkers.inference.util.ConstraintVerifier;
 
-public abstract class AbstractSolvingStrategy implements solvingStrategy {
+public abstract class AbstractSolvingStrategy implements SolvingStrategy {
 
     protected final SolverFactory solverFactory;
     //TODO: where is the best place for referring this verifier?

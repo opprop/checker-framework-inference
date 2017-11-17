@@ -11,7 +11,7 @@ import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
 import checkers.inference.solver.util.SolverOptions;
 
-public interface solvingStrategy {
+public interface SolvingStrategy {
 
     InferenceSolution solve(SolverOptions solverOptions, Collection<Slot> slots,
             Collection<Constraint> constraints, QualifierHierarchy qualHierarchy,

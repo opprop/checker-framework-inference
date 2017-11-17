@@ -17,8 +17,10 @@ import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.solver.backend.DefaultSolverFactory;
 import checkers.inference.solver.backend.SolverFactory;
-import checkers.inference.solver.strategy.solvingStrategy;
+import checkers.inference.solver.strategy.PlainSolvingStrategy;
+import checkers.inference.solver.strategy.SolvingStrategy;
 import checkers.inference.solver.strategy.StrategyReflectiveFactory;
+import checkers.inference.solver.util.NameUtils;
 import checkers.inference.solver.util.PrintUtils;
 import checkers.inference.solver.util.SolverArg;
 import checkers.inference.solver.util.SolverOptions;
@@ -49,13 +51,13 @@ public class SolverEngine implements InferenceSolver {
         return new DefaultSolverFactory();
     }
 
-    protected solvingStrategy createSolvingStrategy(String strategyName) {
+    protected SolvingStrategy createSolvingStrategy() {
         SolverFactory solverFactory = createSolverFactory();
         return StrategyReflectiveFactory.createSolvingStrategy(strategyName, solverFactory);
     }
 
     @Override
-    public InferenceSolution solve(Map<String, String> configuration, Collection<Slot> slots,
+    public final InferenceSolution solve(Map<String, String> configuration, Collection<Slot> slots,
             Collection<Constraint> constraints, QualifierHierarchy qualHierarchy,
             ProcessingEnvironment processingEnvironment) {
 
@@ -66,7 +68,7 @@ public class SolverEngine implements InferenceSolver {
         configureSolverArgs(solverOptions);
 
         //TODO: Add solve timing statistic.
-        solvingStrategy solvingStrategy = createSolvingStrategy(strategyName);
+        SolvingStrategy solvingStrategy = createSolvingStrategy();
         solution = solvingStrategy.solve(solverOptions, slots, constraints, qualHierarchy, processingEnvironment);
 
         if (solution == null) {
@@ -84,19 +86,19 @@ public class SolverEngine implements InferenceSolver {
     }
 
     /**
-     * This method configures following arguments: backEndType, useGraph,
-     * solveInParallel, and collectStatistic
+     * This method configures following arguments: solving strategy, and collectStatistic.
      * 
      * @param configuration
      */
     private void configureSolverArgs(SolverOptions solverOptions) {
-       final String strategyName = solverOptions.getArg(SolverEngineArg.solvingStrategy);
-       this.strategyName = strategyName == null ? "plain" : strategyName;
-       this.collectStatistic = solverOptions.getBoolArg(SolverEngineArg.collectStatistic);
+        String strategyName = solverOptions.getArg(SolverEngineArg.solvingStrategy);
+        this.strategyName = strategyName == null ?
+                NameUtils.removeSuffix(PlainSolvingStrategy.class.getSimpleName(), SolvingStrategy.class.getName())
+                : strategyName;
 
+        this.collectStatistic = solverOptions.getBoolArg(SolverEngineArg.collectStatistic);
         // Sanitize the configuration if it needs.
         sanitizeConfiguration();
-        System.out.println("Configuration: \n solveStrategy: " + this.strategyName);
     }
 
     /**

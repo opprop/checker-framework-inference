@@ -4,6 +4,9 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 
+import checkers.inference.solver.backend.Solver;
+import checkers.inference.solver.strategy.SolvingStrategy;
+
 public class NameUtils {
 
     public static String getSimpleName(AnnotationMirror annoMirror) {
@@ -14,19 +17,24 @@ public class NameUtils {
 
 
     /**
-     * Remove suffix from the given source string.
+     * Given a strategy class, return the strategy name by removing the common naming suffix.
+     * E.g. Given PlainSolvingStrategy, this method return "Plain".
      *
-     * If the source string doesn't has the given suffix, then return the original source string,
-     * without any changes.
-     * @param source the source string that contains a suffix
-     * @param suffix the suffix to be removed from source
-     * @return the string that is trimmed the suffix from source.
      */
-    public static String removeSuffix(String source, String suffix) {
-        if (source == null || !source.endsWith(suffix)) {
-            return source;
-        }
+    public static String getStrategyName(Class<? extends SolvingStrategy> strategyClass) {
+        final String strategyClassName = strategyClass.getSimpleName();
+        final String strategySuffix = SolvingStrategy.class.getSimpleName();
+        return strategyClassName.substring(0, strategyClassName.length() - strategySuffix.length());
+    }
 
-       return source.substring(0, source.length() - suffix.length());
+    /**
+     * Given a solver class, return the solver name by removing the common naming suffix.
+     * E.g. Given MaxSatSolver, this method return "MaxSat".
+     *
+     */
+    public static String getSolverName(Class<? extends Solver<?>> solverClass) {
+        final String solverClassName = solverClass.getSimpleName();
+        final String solverSuffix = Solver.class.getSimpleName();
+        return solverClassName.substring(0, solverClassName.length() - solverSuffix.length());
     }
 }

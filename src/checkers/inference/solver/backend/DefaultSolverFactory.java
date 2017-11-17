@@ -37,9 +37,7 @@ public class DefaultSolverFactory implements SolverFactory {
             Lattice lattice, FormatTranslator<?, ?, ?> formatTranslator) {
         String solverName = solverOptions.getArg(SolverFactoryArg.solver);
         // Set default solver to maxsat, if a null solverName passed in.
-        solverName = solverName == null ?
-                NameUtils.removeSuffix(MaxSatSolver.class.getSimpleName(),Solver.class.getSimpleName())
-                : solverName;
+        solverName = solverName == null ? NameUtils.getSolverName(MaxSatSolver.class) : solverName;
         SolverFactory underlyingSolverFactory = getUnderlyingSolverFactory(solverName);
         return underlyingSolverFactory.createSolver(solverOptions, slots, constraints, processingEnvironment, lattice, formatTranslator);
     }
@@ -49,9 +47,7 @@ public class DefaultSolverFactory implements SolverFactory {
             ConstraintVerifier verifier) {
         String solverName = solverOptions.getArg(SolverFactoryArg.solver);
         // Set default solver to maxsat, if a null solverName passed in.
-        solverName = solverName == null ?
-                NameUtils.removeSuffix(MaxSatSolver.class.getSimpleName(),Solver.class.getSimpleName())
-                : solverName;
+        solverName = solverName == null ? NameUtils.getSolverName(MaxSatSolver.class) : solverName;
 
         SolverFactory underlyingSolverFactory = getUnderlyingSolverFactory(solverName);
         return underlyingSolverFactory.createFormatTranslator(solverOptions, lattice, verifier);

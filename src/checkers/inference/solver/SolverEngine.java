@@ -93,7 +93,7 @@ public class SolverEngine implements InferenceSolver {
     private void configureSolverArgs(SolverOptions solverOptions) {
         String strategyName = solverOptions.getArg(SolverEngineArg.solvingStrategy);
         this.strategyName = strategyName == null ?
-                NameUtils.removeSuffix(PlainSolvingStrategy.class.getSimpleName(), SolvingStrategy.class.getName())
+                NameUtils.getStrategyName(PlainSolvingStrategy.class)
                 : strategyName;
 
         this.collectStatistic = solverOptions.getBoolArg(SolverEngineArg.collectStatistic);

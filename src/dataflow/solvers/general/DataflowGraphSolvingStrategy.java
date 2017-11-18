@@ -20,7 +20,6 @@ import checkers.inference.InferenceMain;
 import checkers.inference.InferenceSolution;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
-import checkers.inference.solver.backend.FormatTranslator;
 import checkers.inference.solver.backend.Solver;
 import checkers.inference.solver.backend.SolverFactory;
 import checkers.inference.solver.constraintgraph.ConstraintGraph;
@@ -77,16 +76,14 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
                     AnnotationMirror DATAFLOWTOP = DataflowUtils.createDataflowAnnotation(
                             DataflowUtils.convert(dataflowValues), processingEnvironment);
                     TwoQualifiersLattice latticeFor2 = new LatticeBuilder().buildTwoTypeLattice(DATAFLOWTOP, DATAFLOWBOTTOM);
-                    FormatTranslator<?, ?, ?> formatTranslator = solverFactory.createFormatTranslator(solverOptions, latticeFor2, verifier);
                     solvers.add(solverFactory.createSolver(solverOptions, slots, entry.getValue(),
-                            processingEnvironment, latticeFor2, formatTranslator));
+                            processingEnvironment, latticeFor2, verifier));
                 } else if (dataflowRoots.length == 1) {
                     AnnotationMirror DATAFLOWTOP = DataflowUtils.createDataflowAnnotationForByte(
                             DataflowUtils.convert(dataflowRoots), processingEnvironment);
                     TwoQualifiersLattice latticeFor2 = new LatticeBuilder().buildTwoTypeLattice(DATAFLOWTOP, DATAFLOWBOTTOM);
-                    FormatTranslator<?, ?, ?> formatTranslator = solverFactory.createFormatTranslator(solverOptions, latticeFor2, verifier);
                     solvers.add(solverFactory.createSolver(solverOptions, slots, entry.getValue(),
-                            processingEnvironment, latticeFor2, formatTranslator));
+                            processingEnvironment, latticeFor2, verifier));
                 }
             }
         }

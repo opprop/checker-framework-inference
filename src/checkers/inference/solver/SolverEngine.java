@@ -15,11 +15,10 @@ import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
-import checkers.inference.solver.backend.DefaultSolverFactory;
 import checkers.inference.solver.backend.SolverFactory;
+import checkers.inference.solver.backend.maxsat.MaxSatSolver;
 import checkers.inference.solver.strategy.PlainSolvingStrategy;
 import checkers.inference.solver.strategy.SolvingStrategy;
-import checkers.inference.solver.strategy.StrategyReflectiveFactory;
 import checkers.inference.solver.util.NameUtils;
 import checkers.inference.solver.util.PrintUtils;
 import checkers.inference.solver.util.SolverArg;
@@ -40,20 +39,43 @@ import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 public class SolverEngine implements InferenceSolver {
     protected boolean collectStatistic;
     protected String strategyName;
+    protected String solverName;
 
 
-    protected enum SolverEngineArg implements SolverArg {
+    public enum SolverEngineArg implements SolverArg {
         solvingStrategy,
+        solver,
         collectStatistic;
     }
 
+    private final String BACKEND_PACKAGE_PATH = SolverFactory.class.getPackage().getName();
+    private final String STRATEGY_PACKAGE_NAME = SolvingStrategy.class.getPackage().getName();
+
     protected SolverFactory createSolverFactory() {
-        return new DefaultSolverFactory();
+        final String solverPackageName = BACKEND_PACKAGE_PATH + "." + solverName.toLowerCase();
+        final String solverFactoryClassName = solverName + "SolverFactory";
+
+        try {
+            Class<?> SolverFactoryClass = Class.forName(solverPackageName + "." + solverFactoryClassName);
+            return (SolverFactory) SolverFactoryClass.getConstructor().newInstance();
+        } catch (Exception e) {
+            ErrorReporter.errorAbort("Exceptions happends when creating the solver factory for " + solverName, e);
+            // Dead code.
+            return null;
+        }
     }
 
     protected SolvingStrategy createSolvingStrategy() {
         SolverFactory solverFactory = createSolverFactory();
-        return StrategyReflectiveFactory.createSolvingStrategy(strategyName, solverFactory);
+        final String strategyClassName = strategyName + "SolvingStrategy";
+
+        try {
+            Class<?> solverStrategyClass = Class.forName(STRATEGY_PACKAGE_NAME + "." + strategyClassName);
+            return (SolvingStrategy) solverStrategyClass.getConstructor(SolverFactory.class).newInstance(solverFactory);
+        } catch (Exception e) {
+            ErrorReporter.errorAbort("Exceptions happends when creating " + strategyName + " solving strategy!", e);
+            return null;
+        }
     }
 
     @Override
@@ -95,6 +117,11 @@ public class SolverEngine implements InferenceSolver {
         this.strategyName = strategyName == null ?
                 NameUtils.getStrategyName(PlainSolvingStrategy.class)
                 : strategyName;
+
+        String solverName = solverOptions.getArg(SolverEngineArg.solver);
+        this.solverName = solverName == null ?
+                NameUtils.getSolverName(MaxSatSolver.class)
+                : solverName;
 
         this.collectStatistic = solverOptions.getBoolArg(SolverEngineArg.collectStatistic);
         // Sanitize the configuration if it needs.

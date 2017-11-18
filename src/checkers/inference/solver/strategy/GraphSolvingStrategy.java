@@ -22,10 +22,9 @@ import checkers.inference.DefaultInferenceSolution;
 import checkers.inference.InferenceSolution;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
-import checkers.inference.solver.backend.FormatTranslator;
+import checkers.inference.solver.SolverEngine.SolverEngineArg;
 import checkers.inference.solver.backend.Solver;
 import checkers.inference.solver.backend.SolverFactory;
-import checkers.inference.solver.backend.SolverFactory.SolverFactoryArg;
 import checkers.inference.solver.constraintgraph.ConstraintGraph;
 import checkers.inference.solver.constraintgraph.GraphBuilder;
 import checkers.inference.solver.frontend.Lattice;
@@ -51,8 +50,8 @@ public class GraphSolvingStrategy extends AbstractSolvingStrategy implements Sol
             Collection<Constraint> constraints, QualifierHierarchy qualHierarchy,
             ProcessingEnvironment processingEnvironment) {
 
-        //TODO: Remove the coupling of using SolverFactoryArg.
-        final boolean solveInParallel = !"lingeling".equals(solverOptions.getArg(SolverFactoryArg.solver))
+        //TODO: Remove the coupling of using SolverEngineArg.
+        final boolean solveInParallel = !"lingeling".equals(solverOptions.getArg(SolverEngineArg.solver))
                 && solverOptions.getBoolArg(GraphSolveStrategyArg.solveInParallel);
 
         // Build graph
@@ -111,11 +110,9 @@ public class GraphSolvingStrategy extends AbstractSolvingStrategy implements Sol
         Lattice lattice = new LatticeBuilder().buildLattice(qualHierarchy, slots);
         List<Solver<?>> separatedGraphSovlers = new ArrayList<>();
 
-        FormatTranslator<?, ?, ?> formatTranslator = solverFactory.createFormatTranslator(solverOptions, lattice, verifier);
-
         for (Set<Constraint> independentConstraints : constraintGraph.getIndependentPath()) {
             separatedGraphSovlers.add(solverFactory.createSolver(solverOptions, slots, independentConstraints,
-                    processingEnvironment, lattice, formatTranslator));
+                    processingEnvironment, lattice, verifier));
         }
 
         return separatedGraphSovlers;

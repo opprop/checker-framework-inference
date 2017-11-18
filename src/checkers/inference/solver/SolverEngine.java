@@ -126,7 +126,7 @@ public class SolverEngine implements InferenceSolver {
             ErrorReporter.errorAbort("Integration of solver \"" + solverName + "\" has not been implemented yet.");
         }
 
-        this.useGraph = useGraph == null || useGraph.equals(Constants.TRUE);
+        this.useGraph = Constants.TRUE.equals(useGraph);
 
         this.solveInParallel = !solverType.equals(SolverType.LOGIQL)
                 && (solveInParallel == null || solveInParallel.equals(Constants.TRUE));

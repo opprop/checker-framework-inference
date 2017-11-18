@@ -19,7 +19,6 @@ public class LogiQLSolverFactory implements SolverFactory {
     public Solver<?> createSolver(SolverOptions solverOptions, Collection<Slot> slots,
             Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment, Lattice lattice,
             FormatTranslator<?, ?, ?> formatTranslator) {
-        // TODO Auto-generated method stub
         return new LogiQLSolver(solverOptions, slots, constraints, processingEnvironment, (LogiQLFormatTranslator) formatTranslator, lattice);
     }
 

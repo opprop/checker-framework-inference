@@ -31,7 +31,7 @@ public class DataflowSolverEngine extends SolverEngine {
         if (!NameUtils.getStrategyName(GraphSolvingStrategy.class).equals(strategyName)) {
             InferenceMain.getInstance().logger.warning("Dataflow type system must use graph solve strategy."
                     + "Change strategy from " + strategyName + " to graph.");
-            strategyName = "graph";
+            strategyName = NameUtils.getStrategyName(GraphSolvingStrategy.class);
         }
     }
 }

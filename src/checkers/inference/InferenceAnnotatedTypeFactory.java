@@ -142,7 +142,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.slotManager = slotManager;
         this.constraintManager = constraintManager;
 
-        variableAnnotator = new VariableAnnotator(this, realTypeFactory, realChecker, slotManager, constraintManager);
+        variableAnnotator = createVariableAnnotator(realTypeFactory, realChecker, slotManager, constraintManager);
         bytecodeTypeAnnotator = new BytecodeTypeAnnotator(this, realTypeFactory);
 
         varAnnot = new AnnotationBuilder(processingEnv, VarAnnot.class).build();
@@ -155,6 +155,11 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (this.getClass().equals(InferenceAnnotatedTypeFactory.class)) {
             this.postInit();
         }
+    }
+
+    protected VariableAnnotator createVariableAnnotator(BaseAnnotatedTypeFactory realTypeFactory, InferrableChecker realChecker,
+                                                        SlotManager slotManager, ConstraintManager constraintManager) {
+        return new VariableAnnotator(this, realTypeFactory, realChecker, slotManager, constraintManager);
     }
 
     /**

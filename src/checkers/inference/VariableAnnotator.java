@@ -1299,8 +1299,11 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         final WildcardTree wildcardTree = (WildcardTree) tree;
         final Tree.Kind wildcardKind = wildcardTree.getKind();
         if (wildcardKind == Tree.Kind.UNBOUNDED_WILDCARD) {
-            ArtificialExtendsBoundTree artificialExtendsBoundTree = new ArtificialExtendsBoundTree(wildcardTree);
+            // Visit super bound, use the wild card type tree to represents the superbound.
             addPrimaryVariable(wildcardType.getSuperBound(), tree);
+
+            // Visit extend bound, construct an artificial extends bound tree to represent the extendbound.
+            ArtificialExtendsBoundTree artificialExtendsBoundTree = new ArtificialExtendsBoundTree(wildcardTree);
             addPrimaryVariable(wildcardType.getExtendsBound(), artificialExtendsBoundTree);
 
         } else if (wildcardKind == Tree.Kind.EXTENDS_WILDCARD) {

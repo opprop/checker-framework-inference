@@ -22,7 +22,7 @@ import checkers.inference.solver.strategy.SolvingStrategy;
 import checkers.inference.solver.util.NameUtils;
 import checkers.inference.solver.util.PrintUtils;
 import checkers.inference.solver.util.SolverArg;
-import checkers.inference.solver.util.SolverOptions;
+import checkers.inference.solver.util.SolverEnvironment;
 import checkers.inference.solver.util.StatisticRecorder;
 import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 
@@ -87,13 +87,13 @@ public class SolverEngine implements InferenceSolver {
             Collection<Constraint> constraints, QualifierHierarchy qualHierarchy,
             ProcessingEnvironment processingEnvironment) {
 
-        SolverOptions solverOptions = new SolverOptions(configuration);
+        SolverEnvironment solverEnvironment = new SolverEnvironment(configuration, processingEnvironment);
 
-        configureSolverEngineArgs(solverOptions);
+        configureSolverEngineArgs(solverEnvironment);
 
         //TODO: Add solve timing statistic.
         SolvingStrategy solvingStrategy = createSolvingStrategy();
-        InferenceSolution solution = solvingStrategy.solve(solverOptions, slots, constraints, qualHierarchy, processingEnvironment);
+        InferenceSolution solution = solvingStrategy.solve(solverEnvironment, slots, constraints, qualHierarchy);
 
         if (solution == null) {
             // Solution should never be null.
@@ -114,18 +114,18 @@ public class SolverEngine implements InferenceSolver {
      * 
      * @param configuration
      */
-    private void configureSolverEngineArgs(SolverOptions solverOptions) {
-        String strategyName = solverOptions.getArg(SolverEngineArg.solvingStrategy);
+    private void configureSolverEngineArgs(SolverEnvironment solverEnvironment) {
+        String strategyName = solverEnvironment.getArg(SolverEngineArg.solvingStrategy);
         this.strategyName = strategyName == null ?
                 NameUtils.getStrategyName(PlainSolvingStrategy.class)
                 : strategyName;
 
-        String solverName = solverOptions.getArg(SolverEngineArg.solver);
+        String solverName = solverEnvironment.getArg(SolverEngineArg.solver);
         this.solverName = solverName == null ?
                 NameUtils.getSolverName(MaxSatSolver.class)
                 : solverName;
 
-        this.collectStatistic = solverOptions.getBoolArg(SolverEngineArg.collectStatistic);
+        this.collectStatistic = solverEnvironment.getBoolArg(SolverEngineArg.collectStatistic);
         // Sanitize the configuration if it needs.
         sanitizeSolverEngineArgs();
     }

@@ -29,7 +29,7 @@ import checkers.inference.solver.frontend.LatticeBuilder;
 import checkers.inference.solver.frontend.TwoQualifiersLattice;
 import checkers.inference.solver.strategy.GraphSolvingStrategy;
 import checkers.inference.solver.util.PrintUtils;
-import checkers.inference.solver.util.SolverOptions;
+import checkers.inference.solver.util.SolverEnvironment;
 import checkers.inference.solver.util.StatisticRecorder;
 import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 import dataflow.DataflowAnnotatedTypeFactory;
@@ -47,17 +47,16 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
     }
 
     @Override
-    public InferenceSolution solve(SolverOptions solverOptions, Collection<Slot> slots,
-            Collection<Constraint> constraints, QualifierHierarchy qualHierarchy,
-            ProcessingEnvironment processingEnvironment) {
-        this.processingEnvironment = processingEnvironment;
-        return super.solve(solverOptions, slots, constraints, qualHierarchy, processingEnvironment);
+    public InferenceSolution solve(SolverEnvironment solverEnvironment, Collection<Slot> slots,
+            Collection<Constraint> constraints, QualifierHierarchy qualHierarchy) {
+        this.processingEnvironment = solverEnvironment.processingEnvironment;
+        return super.solve(solverEnvironment, slots, constraints, qualHierarchy);
     }
 
     @Override
-    protected List<Solver<?>> separateGraph(ConstraintGraph constraintGraph, SolverOptions solverOptions,
+    protected List<Solver<?>> separateGraph(SolverEnvironment solverEnvironment, ConstraintGraph constraintGraph,
             Collection<Slot> slots, Collection<Constraint> constraints,
-            QualifierHierarchy qualHierarchy, ProcessingEnvironment processingEnvironment) {
+            QualifierHierarchy qualHierarchy) {
         AnnotationMirror DATAFLOW = AnnotationBuilder.fromClass(processingEnvironment.getElementUtils(), DataFlow.class);
         AnnotationMirror DATAFLOWBOTTOM = AnnotationBuilder.fromClass(processingEnvironment.getElementUtils(),
                 DataFlowInferenceBottom.class);
@@ -76,14 +75,12 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
                     AnnotationMirror DATAFLOWTOP = DataflowUtils.createDataflowAnnotation(
                             DataflowUtils.convert(dataflowValues), processingEnvironment);
                     TwoQualifiersLattice latticeFor2 = new LatticeBuilder().buildTwoTypeLattice(DATAFLOWTOP, DATAFLOWBOTTOM);
-                    solvers.add(solverFactory.createSolver(solverOptions, slots, entry.getValue(),
-                            processingEnvironment, latticeFor2));
+                    solvers.add(solverFactory.createSolver(solverEnvironment, slots, entry.getValue(), latticeFor2));
                 } else if (dataflowRoots.length == 1) {
                     AnnotationMirror DATAFLOWTOP = DataflowUtils.createDataflowAnnotationForByte(
                             DataflowUtils.convert(dataflowRoots), processingEnvironment);
                     TwoQualifiersLattice latticeFor2 = new LatticeBuilder().buildTwoTypeLattice(DATAFLOWTOP, DATAFLOWBOTTOM);
-                    solvers.add(solverFactory.createSolver(solverOptions, slots, entry.getValue(),
-                            processingEnvironment, latticeFor2));
+                    solvers.add(solverFactory.createSolver(solverEnvironment, slots, entry.getValue(), latticeFor2));
                 }
             }
         }

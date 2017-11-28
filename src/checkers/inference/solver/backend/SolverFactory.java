@@ -2,13 +2,11 @@ package checkers.inference.solver.backend;
 
 import java.util.Collection;
 
-import javax.annotation.processing.ProcessingEnvironment;
-
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
-import checkers.inference.solver.frontend.Lattice;
-import checkers.inference.solver.util.SolverOptions;
 import checkers.inference.solver.SolverEngine;
+import checkers.inference.solver.frontend.Lattice;
+import checkers.inference.solver.util.SolverEnvironment;
 
 /**
  * Factory class for creating an underlying solver.
@@ -31,7 +29,6 @@ import checkers.inference.solver.SolverEngine;
  */
 public interface SolverFactory {
 
-    Solver<?> createSolver(SolverOptions solverOptions,
-            Collection<Slot> slots, Collection<Constraint> constraints,
-            ProcessingEnvironment processingEnvironment, Lattice lattice);
+    Solver<?> createSolver(SolverEnvironment solverOptions,
+            Collection<Slot> slots, Collection<Constraint> constraints, Lattice lattice);
 }

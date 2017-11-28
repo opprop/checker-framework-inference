@@ -3,15 +3,23 @@ package checkers.inference.solver.util;
 import java.util.Collections;
 import java.util.Map;
 
-public class SolverOptions {
+import javax.annotation.processing.ProcessingEnvironment;
+
+public class SolverEnvironment {
 
     /**
      * Map of configuration. Key is argument name, value is argument value.
      */
     private final Map<String, String> options;
 
-    public SolverOptions(final Map<String, String> configuration) {
+    /**
+     * Processing environment providing by the tool framework.
+     */
+    public final ProcessingEnvironment processingEnvironment;
+
+    public SolverEnvironment(final Map<String, String> configuration, ProcessingEnvironment processingEnvironment) {
         this.options = Collections.unmodifiableMap(configuration);
+        this.processingEnvironment = processingEnvironment;
     }
 
     /**

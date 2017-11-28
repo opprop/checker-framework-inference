@@ -22,7 +22,7 @@ import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.Slot;
 import checkers.inference.solver.backend.Solver;
 import checkers.inference.solver.frontend.Lattice;
-import checkers.inference.solver.util.SolverOptions;
+import checkers.inference.solver.util.SolverEnvironment;
 
 public class Z3Solver extends Solver<Z3BitVectorFormatTranslator>{
 
@@ -31,10 +31,9 @@ public class Z3Solver extends Solver<Z3BitVectorFormatTranslator>{
     protected final Z3BitVectorCodec z3BitVectorCodec;
 
 
-    public Z3Solver(SolverOptions solverOptions, Collection<Slot> slots,
-            Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment,
-            Z3BitVectorFormatTranslator z3FormatTranslator, Lattice lattice) {
-        super(solverOptions, slots, constraints, processingEnvironment, z3FormatTranslator, lattice);
+    public Z3Solver(SolverEnvironment solverEnvironment, Collection<Slot> slots,
+            Collection<Constraint> constraints, Z3BitVectorFormatTranslator z3FormatTranslator, Lattice lattice) {
+        super(solverEnvironment, slots, constraints, z3FormatTranslator, lattice);
         context = new Context();
         solver = context.mkOptimize();
         z3FormatTranslator.initContext(context);
@@ -90,7 +89,7 @@ public class Z3Solver extends Solver<Z3BitVectorFormatTranslator>{
                 ErrorReporter.errorAbort("Wrong solution type detected: All solution must be type of BitVecNum, but get: " + constInterp.getClass());
             }
 
-            result.put(slotId, formatTranslator.decodeSolution((BitVecNum) constInterp, processingEnvironment));
+            result.put(slotId, formatTranslator.decodeSolution((BitVecNum) constInterp, solverEnvironment.processingEnvironment));
         }
 
         return result;

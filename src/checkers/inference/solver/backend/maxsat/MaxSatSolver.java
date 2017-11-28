@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
 import org.sat4j.core.VecInt;
@@ -25,7 +24,7 @@ import checkers.inference.model.Slot;
 import checkers.inference.solver.backend.Solver;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.SolverArg;
-import checkers.inference.solver.util.SolverOptions;
+import checkers.inference.solver.util.SolverEnvironment;
 import checkers.inference.solver.util.StatisticRecorder;
 import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 
@@ -56,10 +55,9 @@ public class MaxSatSolver extends Solver<MaxSatFormatTranslator> {
     protected long solvingStart;
     protected long solvingEnd;
 
-    public MaxSatSolver(SolverOptions solverOptions, Collection<Slot> slots,
-            Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment,
-            MaxSatFormatTranslator formatTranslator, Lattice lattice) {
-        super(solverOptions, slots, constraints, processingEnvironment, formatTranslator,
+    public MaxSatSolver(SolverEnvironment solverEnvironment, Collection<Slot> slots,
+            Collection<Constraint> constraints, MaxSatFormatTranslator formatTranslator, Lattice lattice) {
+        super(solverEnvironment, slots, constraints, formatTranslator,
                 lattice);
         this.slotManager = InferenceMain.getInstance().getSlotManager();
 
@@ -167,7 +165,7 @@ public class MaxSatSolver extends Solver<MaxSatFormatTranslator> {
             if (var > 0) {
                 var = var - 1;
                 int slotId = MathUtils.getSlotId(var, lattice);
-                AnnotationMirror type = formatTranslator.decodeSolution(var, processingEnvironment);
+                AnnotationMirror type = formatTranslator.decodeSolution(var, solverEnvironment.processingEnvironment);
                 result.put(slotId, type);
             }
         }
@@ -187,7 +185,7 @@ public class MaxSatSolver extends Solver<MaxSatFormatTranslator> {
     }
 
     protected boolean shouldOutputCNF() {
-        return solverOptions.getBoolArg(MaxSatSolverArg.outputCNF);
+        return solverEnvironment.getBoolArg(MaxSatSolverArg.outputCNF);
     }
 
     /**

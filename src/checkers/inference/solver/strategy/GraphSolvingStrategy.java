@@ -31,7 +31,7 @@ import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.frontend.LatticeBuilder;
 import checkers.inference.solver.util.PrintUtils;
 import checkers.inference.solver.util.SolverArg;
-import checkers.inference.solver.util.SolverOptions;
+import checkers.inference.solver.util.SolverEnvironment;
 import checkers.inference.solver.util.StatisticRecorder;
 import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 
@@ -46,22 +46,21 @@ public class GraphSolvingStrategy extends AbstractSolvingStrategy implements Sol
     }
 
     @Override
-    public InferenceSolution solve(SolverOptions solverOptions, Collection<Slot> slots,
-            Collection<Constraint> constraints, QualifierHierarchy qualHierarchy,
-            ProcessingEnvironment processingEnvironment) {
+    public InferenceSolution solve(SolverEnvironment solverEnvironment, Collection<Slot> slots,
+            Collection<Constraint> constraints, QualifierHierarchy qualHierarchy) {
 
         //TODO: Remove the coupling of using SolverEngineArg.
-        final boolean solveInParallel = !"lingeling".equals(solverOptions.getArg(SolverEngineArg.solver))
-                && solverOptions.getBoolArg(GraphSolveStrategyArg.solveInParallel);
+        final boolean solveInParallel = !"lingeling".equals(solverEnvironment.getArg(SolverEngineArg.solver))
+                && solverEnvironment.getBoolArg(GraphSolveStrategyArg.solveInParallel);
 
         // Build graph
         final long graphBuildingStart = System.currentTimeMillis();
-        ConstraintGraph constraintGraph = generateGraph(slots, constraints, processingEnvironment);
+        ConstraintGraph constraintGraph = generateGraph(slots, constraints, solverEnvironment.processingEnvironment);
         final long graphBuildingEnd = System.currentTimeMillis();
 
         // Separate constraint graph, and assign each separated sub-graph to a underlying solver to solve.
-        List<Solver<?>> separatedGraphSolvers = separateGraph(constraintGraph, solverOptions,
-                slots, constraints, qualHierarchy, processingEnvironment);
+        List<Solver<?>> separatedGraphSolvers = separateGraph(solverEnvironment, constraintGraph,
+                slots, constraints, qualHierarchy);
 
         // Solving.
         List<Map<Integer, AnnotationMirror>> inferenceSolutionMaps = new LinkedList<Map<Integer, AnnotationMirror>>();
@@ -104,15 +103,13 @@ public class GraphSolvingStrategy extends AbstractSolvingStrategy implements Sol
      * @return a list of underlying solvers, each of them responsible for solving a separated
      * sub-graph from the given constraint graph.
      */
-    protected List<Solver<?>> separateGraph(ConstraintGraph constraintGraph, SolverOptions solverOptions,
-            Collection<Slot> slots, Collection<Constraint> constraints,
-            QualifierHierarchy qualHierarchy, ProcessingEnvironment processingEnvironment) {
+    protected List<Solver<?>> separateGraph(SolverEnvironment solverEnvironment, ConstraintGraph constraintGraph,
+            Collection<Slot> slots, Collection<Constraint> constraints, QualifierHierarchy qualHierarchy) {
         Lattice lattice = new LatticeBuilder().buildLattice(qualHierarchy, slots);
         List<Solver<?>> separatedGraphSovlers = new ArrayList<>();
 
         for (Set<Constraint> independentConstraints : constraintGraph.getIndependentPath()) {
-            separatedGraphSovlers.add(solverFactory.createSolver(solverOptions, slots, independentConstraints,
-                    processingEnvironment, lattice));
+            separatedGraphSovlers.add(solverFactory.createSolver(solverEnvironment, slots, independentConstraints, lattice));
         }
 
         return separatedGraphSovlers;

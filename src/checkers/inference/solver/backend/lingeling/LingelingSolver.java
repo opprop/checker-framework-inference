@@ -12,7 +12,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
 import org.sat4j.core.VecInt;
@@ -22,7 +21,7 @@ import checkers.inference.model.Slot;
 import checkers.inference.solver.backend.maxsat.MaxSatFormatTranslator;
 import checkers.inference.solver.backend.maxsat.MaxSatSolver;
 import checkers.inference.solver.frontend.Lattice;
-import checkers.inference.solver.util.SolverOptions;
+import checkers.inference.solver.util.SolverEnvironment;
 import checkers.inference.solver.util.StatisticRecorder;
 import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 
@@ -45,10 +44,9 @@ public class LingelingSolver extends MaxSatSolver {
     private long serializationStart;
     private long serializationEnd;
 
-    public LingelingSolver(SolverOptions solverOptions, Collection<Slot> slots,
-            Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment,
-            MaxSatFormatTranslator formatTranslator, Lattice lattice) {
-        super(solverOptions, slots, constraints, processingEnvironment, formatTranslator,
+    public LingelingSolver(SolverEnvironment solverEnvironment, Collection<Slot> slots,
+            Collection<Constraint> constraints, MaxSatFormatTranslator formatTranslator, Lattice lattice) {
+        super(solverEnvironment, slots, constraints, formatTranslator,
                 lattice);
     }
 

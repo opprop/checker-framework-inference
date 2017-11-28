@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.inference.model.ConstantSlot;
@@ -13,7 +12,7 @@ import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.solver.frontend.Lattice;
-import checkers.inference.solver.util.SolverOptions;
+import checkers.inference.solver.util.SolverEnvironment;
 
 /**
  * SolverAdapter adapts a concrete underlying solver. This class is the super class
@@ -42,7 +41,7 @@ public abstract class Solver<T extends FormatTranslator<?, ?, ?>> {
     /**
      * SolverOptions, an argument manager for getting options from user.
      */
-    protected final SolverOptions solverOptions;
+    protected final SolverEnvironment solverEnvironment;
 
     /**
      * Collection of all slots will be used by underlying solver
@@ -53,8 +52,6 @@ public abstract class Solver<T extends FormatTranslator<?, ?, ?>> {
      * Collection of all constraints will be solved by underlying solver
      */
     protected final Collection<Constraint> constraints;
-
-    protected final ProcessingEnvironment processingEnvironment;
 
     /**
      * translator for encoding inference slots and constraints to underlying solver's constraints,
@@ -72,12 +69,11 @@ public abstract class Solver<T extends FormatTranslator<?, ?, ?>> {
      */
     protected final Lattice lattice;
 
-    public Solver(SolverOptions solverOptions, Collection<Slot> slots,
-            Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment, T formatTranslator, Lattice lattice) {
-        this.solverOptions = solverOptions;
+    public Solver(SolverEnvironment solverEnvironment, Collection<Slot> slots,
+            Collection<Constraint> constraints, T formatTranslator, Lattice lattice) {
+        this.solverEnvironment = solverEnvironment;
         this.slots = slots;
         this.constraints = constraints;
-        this.processingEnvironment = processingEnvironment;
         this.formatTranslator = formatTranslator;
         this.varSlotIds = new HashSet<Integer>();
         this.lattice = lattice;

@@ -15,7 +15,6 @@ public class NameUtils {
         return elm.getSimpleName().toString().intern();
     }
 
-
     /**
      * Given a strategy class, return the strategy name by removing the common naming suffix.
      * E.g. Given PlainSolvingStrategy, this method return "Plain".

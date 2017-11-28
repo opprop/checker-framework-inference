@@ -73,7 +73,7 @@ public class SolverEngine implements InferenceSolver {
             Class<?> solverStrategyClass = Class.forName(STRATEGY_PACKAGE_NAME + "." + strategyClassName);
             return (SolvingStrategy) solverStrategyClass.getConstructor(SolverFactory.class).newInstance(solverFactory);
         } catch (Exception e) {
-            ErrorReporter.errorAbort("Exceptions happends when creating " + strategyName + " solving strategy!", e);
+            ErrorReporter.errorAbort(e.getClass().getSimpleName() + " happends when creating [" + strategyName + "] solving strategy!", e);
             return null;
         }
     }

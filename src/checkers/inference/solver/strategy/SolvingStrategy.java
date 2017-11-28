@@ -10,9 +10,28 @@ import checkers.inference.InferenceSolution;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
 import checkers.inference.solver.util.SolverOptions;
+import checkers.inference.solver.SolverEngine;
 
+/**
+ * Define a strategy on solving constriants.
+ *
+ * Note: subclasses within the Solver Framework should follow naming conventions,
+ * in order to let {@code SolverEngine} be able to reflectively load subclass instance.
+ *
+ * Naming convention is:
+ * Package: subclasses should be created within current package checkers.inference.solver.strategy.
+ * Class name: [StrategyName]SolvingStrategy.
+ *
+ * E.g. For graph solving strategy, the class name should be: GraphSolvingStrategy.
+ *
+ * @see SolverEngine#createSolvingStrategy()
+ */
 public interface SolvingStrategy {
 
+    /**
+     * Solve the constraints by the solving strategy defined in this method.
+     *
+     */
     InferenceSolution solve(SolverOptions solverOptions, Collection<Slot> slots,
             Collection<Constraint> constraints, QualifierHierarchy qualHierarchy,
             ProcessingEnvironment processingEnvironment);

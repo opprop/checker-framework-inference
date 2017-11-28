@@ -16,15 +16,14 @@ public class LogiQLSolverFactory extends AbstractSolverFactory<LogiQLFormatTrans
 
     @Override
     public Solver<?> createSolver(SolverOptions solverOptions, Collection<Slot> slots,
-            Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment, Lattice lattice,
-            ConstraintVerifier verifier) {
-        LogiQLFormatTranslator formatTranslator = createFormatTranslator(lattice, verifier);
+            Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment, Lattice lattice) {
+        LogiQLFormatTranslator formatTranslator = createFormatTranslator(lattice);
         return new LogiQLSolver(solverOptions, slots, constraints, processingEnvironment, formatTranslator, lattice);
     }
 
     @Override
-    public LogiQLFormatTranslator createFormatTranslator(Lattice lattice, ConstraintVerifier verifier) {
-        return new LogiQLFormatTranslator(lattice, verifier);
+    public LogiQLFormatTranslator createFormatTranslator(Lattice lattice) {
+        return new LogiQLFormatTranslator(lattice);
     }
 
 }

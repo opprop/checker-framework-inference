@@ -17,16 +17,14 @@ public class LingelingSolverFactory extends AbstractSolverFactory<MaxSatFormatTr
 
     @Override
     public Solver<?> createSolver(SolverOptions solverOptions, Collection<Slot> slots,
-            Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment, Lattice lattice,
-            ConstraintVerifier verifier) {
-        MaxSatFormatTranslator formatTranslator = createFormatTranslator(lattice, verifier);
+            Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment, Lattice lattice) {
+        MaxSatFormatTranslator formatTranslator = createFormatTranslator(lattice);
         return new LingelingSolver(solverOptions, slots, constraints, processingEnvironment, formatTranslator, lattice);
     }
 
     @Override
-    protected MaxSatFormatTranslator createFormatTranslator(Lattice lattice,
-            ConstraintVerifier verifier) {
-           return new MaxSatFormatTranslator(lattice, verifier);
+    protected MaxSatFormatTranslator createFormatTranslator(Lattice lattice) {
+           return new MaxSatFormatTranslator(lattice);
     }
 
 }

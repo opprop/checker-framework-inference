@@ -39,8 +39,8 @@ public class MaxSatFormatTranslator extends AbstractFormatTranslator<VecInt[], V
      */
     protected final Map<Integer, AnnotationMirror> intToType;
 
-    public MaxSatFormatTranslator(Lattice lattice, ConstraintVerifier verifier) {
-        super(lattice, verifier);
+    public MaxSatFormatTranslator(Lattice lattice) {
+        super(lattice);
         // Initialize mappings between type and int.
         Map<AnnotationMirror, Integer>typeToIntRes = AnnotationUtils.createAnnotationMap();
         Map<Integer, AnnotationMirror> intToTypeRes = new HashMap<Integer, AnnotationMirror>();

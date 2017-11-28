@@ -14,6 +14,5 @@ public interface SolverFactory {
 
     Solver<?> createSolver(SolverOptions solverOptions,
             Collection<Slot> slots, Collection<Constraint> constraints,
-            ProcessingEnvironment processingEnvironment, Lattice lattice,
-            ConstraintVerifier verifier);
+            ProcessingEnvironment processingEnvironment, Lattice lattice);
 }

@@ -77,13 +77,13 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
                             DataflowUtils.convert(dataflowValues), processingEnvironment);
                     TwoQualifiersLattice latticeFor2 = new LatticeBuilder().buildTwoTypeLattice(DATAFLOWTOP, DATAFLOWBOTTOM);
                     solvers.add(solverFactory.createSolver(solverOptions, slots, entry.getValue(),
-                            processingEnvironment, latticeFor2, verifier));
+                            processingEnvironment, latticeFor2));
                 } else if (dataflowRoots.length == 1) {
                     AnnotationMirror DATAFLOWTOP = DataflowUtils.createDataflowAnnotationForByte(
                             DataflowUtils.convert(dataflowRoots), processingEnvironment);
                     TwoQualifiersLattice latticeFor2 = new LatticeBuilder().buildTwoTypeLattice(DATAFLOWTOP, DATAFLOWBOTTOM);
                     solvers.add(solverFactory.createSolver(solverOptions, slots, entry.getValue(),
-                            processingEnvironment, latticeFor2, verifier));
+                            processingEnvironment, latticeFor2));
                 }
             }
         }

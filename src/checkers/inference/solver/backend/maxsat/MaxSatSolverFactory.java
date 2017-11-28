@@ -10,21 +10,19 @@ import checkers.inference.solver.backend.AbstractSolverFactory;
 import checkers.inference.solver.backend.Solver;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.SolverOptions;
-import checkers.inference.util.ConstraintVerifier;
 
 public class MaxSatSolverFactory extends AbstractSolverFactory<MaxSatFormatTranslator> {
 
     @Override
     public Solver<?> createSolver(SolverOptions solverOptions, Collection<Slot> slots,
-            Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment, Lattice lattice,
-            ConstraintVerifier verifier) {
-        MaxSatFormatTranslator formatTranslator = createFormatTranslator(lattice, verifier);
+            Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment, Lattice lattice) {
+        MaxSatFormatTranslator formatTranslator = createFormatTranslator(lattice);
         return new MaxSatSolver(solverOptions, slots, constraints, processingEnvironment, formatTranslator, lattice);
     }
 
     @Override
-    public MaxSatFormatTranslator createFormatTranslator(Lattice lattice, ConstraintVerifier verifier) {
-        return new MaxSatFormatTranslator(lattice, verifier);
+    public MaxSatFormatTranslator createFormatTranslator(Lattice lattice) {
+        return new MaxSatFormatTranslator(lattice);
     }
 
 }

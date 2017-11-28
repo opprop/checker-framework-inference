@@ -32,7 +32,7 @@ public class PlainSolvingStrategy extends AbstractSolvingStrategy implements Sol
         Lattice lattice = new LatticeBuilder().buildLattice(qualHierarchy, slots);
 
         Solver<?> underlyingSolver = solverFactory.createSolver(solverOptions, slots, constraints,
-                processingEnvironment, lattice, verifier);
+                processingEnvironment, lattice);
 
         Map<Integer, AnnotationMirror> result = underlyingSolver.solve();
 

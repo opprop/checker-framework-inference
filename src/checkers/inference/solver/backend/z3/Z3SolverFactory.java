@@ -18,9 +18,8 @@ public abstract class Z3SolverFactory extends AbstractSolverFactory<Z3BitVectorF
 
     @Override
     public Solver<?> createSolver(SolverOptions solverOptions, Collection<Slot> slots,
-            Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment, Lattice lattice,
-            ConstraintVerifier verifier) {
-        Z3BitVectorFormatTranslator formatTranslator = createFormatTranslator(lattice, verifier);
+            Collection<Constraint> constraints, ProcessingEnvironment processingEnvironment, Lattice lattice) {
+        Z3BitVectorFormatTranslator formatTranslator = createFormatTranslator(lattice);
         return new Z3Solver(solverOptions, slots, constraints, processingEnvironment, formatTranslator, lattice);
     }
 }

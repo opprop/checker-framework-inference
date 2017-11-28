@@ -112,7 +112,7 @@ public class GraphSolvingStrategy extends AbstractSolvingStrategy implements Sol
 
         for (Set<Constraint> independentConstraints : constraintGraph.getIndependentPath()) {
             separatedGraphSovlers.add(solverFactory.createSolver(solverOptions, slots, independentConstraints,
-                    processingEnvironment, lattice, verifier));
+                    processingEnvironment, lattice));
         }
 
         return separatedGraphSovlers;

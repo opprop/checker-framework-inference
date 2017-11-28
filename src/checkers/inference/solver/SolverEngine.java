@@ -65,8 +65,12 @@ public class SolverEngine implements InferenceSolver {
         }
     }
 
-    protected SolvingStrategy createSolvingStrategy() {
+    protected final SolvingStrategy createSolvingStrategy() {
         SolverFactory solverFactory = createSolverFactory();
+        return createSolvingStrategy(solverFactory);
+    }
+
+    protected SolvingStrategy createSolvingStrategy(SolverFactory solverFactory) {
         final String strategyClassName = strategyName + "SolvingStrategy";
 
         try {

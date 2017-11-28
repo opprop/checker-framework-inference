@@ -17,8 +17,7 @@ import checkers.inference.solver.util.NameUtils;
 public class DataflowSolverEngine extends SolverEngine {
 
     @Override
-    protected SolvingStrategy createSolvingStrategy() {
-        SolverFactory solverFactory = createSolverFactory();
+    protected SolvingStrategy createSolvingStrategy(SolverFactory solverFactory) {
         return new DataflowGraphSolvingStrategy(solverFactory);
     }
 

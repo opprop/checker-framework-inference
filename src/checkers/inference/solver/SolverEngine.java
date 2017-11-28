@@ -85,13 +85,11 @@ public class SolverEngine implements InferenceSolver {
 
         SolverOptions solverOptions = new SolverOptions(configuration);
 
-        InferenceSolution solution = null;
-
-        configureSolverArgs(solverOptions);
+        configureSolverEngineArgs(solverOptions);
 
         //TODO: Add solve timing statistic.
         SolvingStrategy solvingStrategy = createSolvingStrategy();
-        solution = solvingStrategy.solve(solverOptions, slots, constraints, qualHierarchy, processingEnvironment);
+        InferenceSolution solution = solvingStrategy.solve(solverOptions, slots, constraints, qualHierarchy, processingEnvironment);
 
         if (solution == null) {
             // Solution should never be null.
@@ -112,7 +110,7 @@ public class SolverEngine implements InferenceSolver {
      * 
      * @param configuration
      */
-    private void configureSolverArgs(SolverOptions solverOptions) {
+    private void configureSolverEngineArgs(SolverOptions solverOptions) {
         String strategyName = solverOptions.getArg(SolverEngineArg.solvingStrategy);
         this.strategyName = strategyName == null ?
                 NameUtils.getStrategyName(PlainSolvingStrategy.class)

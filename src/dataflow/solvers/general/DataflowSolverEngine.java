@@ -18,12 +18,8 @@ public class DataflowSolverEngine extends SolverEngine {
 
     @Override
     protected SolvingStrategy createSolvingStrategy() {
-        if (NameUtils.getStrategyName(GraphSolvingStrategy.class).equals(strategyName)) {
-            SolverFactory solverFactory = createSolverFactory();
-            return new DataflowGraphSolvingStrategy(solverFactory);
-        } else {
-            return super.createSolvingStrategy();
-        }
+        SolverFactory solverFactory = createSolverFactory();
+        return new DataflowGraphSolvingStrategy(solverFactory);
     }
 
     @Override

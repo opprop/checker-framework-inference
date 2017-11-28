@@ -123,7 +123,7 @@ public class SolverEngine implements InferenceSolver {
 
         this.collectStatistic = solverOptions.getBoolArg(SolverEngineArg.collectStatistic);
         // Sanitize the configuration if it needs.
-        sanitizeConfiguration();
+        sanitizeSolverEngineArgs();
     }
 
     /**
@@ -132,7 +132,7 @@ public class SolverEngine implements InferenceSolver {
      * override this method to sanitize the configuration of solver in the
      * context of that type system.
      */
-    protected void sanitizeConfiguration() {
+    protected void sanitizeSolverEngineArgs() {
         //Intentionally empty.
     }
 

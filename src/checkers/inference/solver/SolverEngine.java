@@ -97,7 +97,7 @@ public class SolverEngine implements InferenceSolver {
 
         if (solution == null) {
             // Solution should never be null.
-            ErrorReporter.errorAbort("Null solution detected!");
+            ErrorReporter.errorAbort("Solution should never be null, but null solution detected!");
         }
 
         if (collectStatistic) {

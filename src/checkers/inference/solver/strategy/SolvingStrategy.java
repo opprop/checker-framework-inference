@@ -2,12 +2,11 @@ package checkers.inference.solver.strategy;
 
 import java.util.Collection;
 
-import org.checkerframework.framework.type.QualifierHierarchy;
-
 import checkers.inference.InferenceSolution;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
 import checkers.inference.solver.SolverEngine;
+import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.SolverEnvironment;
 
 /**
@@ -31,5 +30,5 @@ public interface SolvingStrategy {
      *
      */
     InferenceSolution solve(SolverEnvironment solverEnvironment, Collection<Slot> slots,
-            Collection<Constraint> constraints, QualifierHierarchy qualHierarchy);
+            Collection<Constraint> constraints, Lattice lattice);
 }

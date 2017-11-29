@@ -17,6 +17,8 @@ import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.solver.backend.SolverFactory;
 import checkers.inference.solver.backend.maxsat.MaxSatSolver;
+import checkers.inference.solver.frontend.Lattice;
+import checkers.inference.solver.frontend.LatticeBuilder;
 import checkers.inference.solver.strategy.PlainSolvingStrategy;
 import checkers.inference.solver.strategy.SolvingStrategy;
 import checkers.inference.solver.util.NameUtils;
@@ -92,8 +94,9 @@ public class SolverEngine implements InferenceSolver {
         configureSolverEngineArgs(solverEnvironment);
 
         //TODO: Add solve timing statistic.
+        Lattice lattice = new LatticeBuilder().buildLattice(qualHierarchy, slots);
         SolvingStrategy solvingStrategy = createSolvingStrategy();
-        InferenceSolution solution = solvingStrategy.solve(solverEnvironment, slots, constraints, qualHierarchy);
+        InferenceSolution solution = solvingStrategy.solve(solverEnvironment, slots, constraints, lattice);
 
         if (solution == null) {
             // Solution should never be null.

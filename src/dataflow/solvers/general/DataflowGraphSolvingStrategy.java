@@ -11,7 +11,6 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
-import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -25,6 +24,7 @@ import checkers.inference.solver.backend.SolverFactory;
 import checkers.inference.solver.constraintgraph.ConstraintGraph;
 import checkers.inference.solver.constraintgraph.GraphBuilder;
 import checkers.inference.solver.constraintgraph.Vertex;
+import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.frontend.LatticeBuilder;
 import checkers.inference.solver.frontend.TwoQualifiersLattice;
 import checkers.inference.solver.strategy.GraphSolvingStrategy;
@@ -48,15 +48,14 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
 
     @Override
     public InferenceSolution solve(SolverEnvironment solverEnvironment, Collection<Slot> slots,
-            Collection<Constraint> constraints, QualifierHierarchy qualHierarchy) {
+            Collection<Constraint> constraints, Lattice lattice) {
         this.processingEnvironment = solverEnvironment.processingEnvironment;
-        return super.solve(solverEnvironment, slots, constraints, qualHierarchy);
+        return super.solve(solverEnvironment, slots, constraints, lattice);
     }
 
     @Override
     protected List<Solver<?>> separateGraph(SolverEnvironment solverEnvironment, ConstraintGraph constraintGraph,
-            Collection<Slot> slots, Collection<Constraint> constraints,
-            QualifierHierarchy qualHierarchy) {
+            Collection<Slot> slots, Collection<Constraint> constraints, Lattice lattice) {
         AnnotationMirror DATAFLOW = AnnotationBuilder.fromClass(processingEnvironment.getElementUtils(), DataFlow.class);
         AnnotationMirror DATAFLOWBOTTOM = AnnotationBuilder.fromClass(processingEnvironment.getElementUtils(),
                 DataFlowInferenceBottom.class);

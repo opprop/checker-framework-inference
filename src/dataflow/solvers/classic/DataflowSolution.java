@@ -130,4 +130,9 @@ public class DataflowSolution implements InferenceSolution {
         return annotationResults.get(varId);
     }
 
+    @Override
+    public boolean isEmpty() {
+        return annotationResults.isEmpty();
+    }
+
 }

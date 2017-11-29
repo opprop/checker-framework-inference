@@ -21,5 +21,10 @@ public class DefaultInferenceSolution implements InferenceSolution {
     public AnnotationMirror getAnnotation(int variableId) {
         return varIdToAnnotation.get(variableId);
     }
+
+    @Override
+    public boolean isEmpty() {
+        return varIdToAnnotation.isEmpty();
+    }
 }
 

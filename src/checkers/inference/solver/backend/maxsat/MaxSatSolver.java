@@ -14,7 +14,10 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
+import checkers.inference.model.serialization.ToStringSerializer;
+import checkers.inference.solver.backend.FailureExplainer;
 import org.sat4j.core.VecInt;
+import org.sat4j.maxsat.SolverFactory;
 import org.sat4j.maxsat.WeightedMaxSatDecorator;
 
 import checkers.inference.InferenceMain;
@@ -26,6 +29,11 @@ import checkers.inference.solver.backend.SolverAdapter;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.StatisticRecorder;
 import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
+import org.sat4j.pb.IPBSolver;
+import org.sat4j.specs.ContradictionException;
+import org.sat4j.specs.TimeoutException;
+import org.sat4j.tools.xplain.DeletionStrategy;
+import org.sat4j.tools.xplain.Xplain;
 
 /**
  * MaxSatSolver calls MaxSatFormatTranslator that converts constraint into a list of
@@ -39,6 +47,7 @@ public class MaxSatSolver extends SolverAdapter<MaxSatFormatTranslator> {
     protected final SlotManager slotManager;
     protected final List<VecInt> hardClauses = new LinkedList<VecInt>();
     protected final List<VecInt> softClauses = new LinkedList<VecInt>();
+    protected final List<Constraint> hardConstraints = new LinkedList<>();
     protected final File CNFData = new File(new File("").getAbsolutePath() + "/cnfData");
     protected StringBuilder CNFInput = new StringBuilder();
 
@@ -107,13 +116,19 @@ public class MaxSatSolver extends SolverAdapter<MaxSatFormatTranslator> {
                 result = decode(solver.model());
                 // PrintUtils.printResult(result);
             } else {
-                System.out.println("Not solvable!");
+                // When failure happens, just initialize failureExplainer
+                failureExplainer = initializeMaxSATFailureExplainer();
             }
-
-        } catch (Throwable e) {
+        } catch (ContradictionException e) {
+            failureExplainer = initializeMaxSATFailureExplainer();
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return result;
+    }
+
+    private FailureExplainer initializeMaxSATFailureExplainer() {
+        return new MaxSATFailureExplainer(hardClauses, hardConstraints, slotManager, lattice);
     }
 
     /**
@@ -146,6 +161,7 @@ public class MaxSatSolver extends SolverAdapter<MaxSatFormatTranslator> {
                         softClauses.add(res);
                     } else {
                         hardClauses.add(res);
+                        hardConstraints.add(constraint);
                     }
                 }
             }

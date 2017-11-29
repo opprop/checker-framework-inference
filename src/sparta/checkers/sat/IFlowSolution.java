@@ -98,4 +98,8 @@ public abstract class IFlowSolution implements InferenceSolution {
         return annotationResults.get(varId);
     }
 
+    @Override
+    public boolean isEmpty() {
+        return annotationResults.isEmpty();
+    }
 }

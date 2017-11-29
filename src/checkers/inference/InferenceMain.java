@@ -142,6 +142,9 @@ public class InferenceMain {
         // Start up javac
         startCheckerFramework();
         solve();
+        if (this.solverResult.isEmpty()) {
+            // TODO Do something to stop the inferene process
+        }
         writeJaif();
     }
 

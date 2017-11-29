@@ -61,6 +61,8 @@ public abstract class SolverAdapter<T extends FormatTranslator<?, ?, ?>> {
      */
     protected final T formatTranslator;
 
+    protected FailureExplainer failureExplainer;
+
     /**
      * Set of ids of all variable solts will be used by underlying solver
      */
@@ -78,6 +80,9 @@ public abstract class SolverAdapter<T extends FormatTranslator<?, ?, ?>> {
         this.constraints = constraints;
         this.processingEnvironment = processingEnvironment;
         this.formatTranslator = formatTranslator;
+        // failureExplainer is initialized lazily. By default, it isn't initialized.
+        // Only when inference fails, failureExplainer is initialized.
+        this.failureExplainer = null;
         this.varSlotIds = new HashSet<Integer>();
         this.lattice = lattice;
     }
@@ -95,6 +100,15 @@ public abstract class SolverAdapter<T extends FormatTranslator<?, ?, ?>> {
      * See {@link checkers.inference.solver.backend.maxsat.MaxSatSolver#solve()}} for an example.
      */
     public abstract Map<Integer, AnnotationMirror> solve();
+
+    /**
+     * Returns a minimum set of constraints that don't solve.
+     *
+     * @return minimum set of constraints that don't solve
+     */
+    public Collection<Constraint> minimumUnsatisfiableConstraints() {
+        return failureExplainer == null ? null : failureExplainer.minimumUnsatisfiableConstraints();
+    }
 
     /**
      * Calls serializer to convert constraints into the corresponding encoding

@@ -98,6 +98,10 @@ public class SolverEngine implements InferenceSolver {
             ErrorReporter.errorAbort("Null solution detected!");
         }
 
+        if (solution.isEmpty()) {
+            PrintUtils.printFailure(underlyingSolver.minimumUnsatisfiableConstraints());
+        }
+
         if (collectStatistic) {
             Map<String, Integer> modelRecord = recordSlotConstraintSize(slots, constraints);
             PrintUtils.printStatistic(StatisticRecorder.getStatistic(), modelRecord, solverType,

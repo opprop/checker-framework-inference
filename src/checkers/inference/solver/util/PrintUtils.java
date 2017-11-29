@@ -3,13 +3,17 @@ package checkers.inference.solver.util;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.Map;
 
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.inference.InferenceMain;
+import checkers.inference.model.Constraint;
+import checkers.inference.model.serialization.ToStringSerializer;
 import checkers.inference.solver.backend.SolverType;
 import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
+import checkers.inference.util.SlotsPrinter;
 
 /**
  * PrintUtils contains methods for printing and writing the solved results.
@@ -181,5 +185,26 @@ public class PrintUtils {
         statisticsText.append(",");
         statisticsText.append(value);
         statisticsText.append("\n");
+    }
+
+    public static void printFailure(Collection<Constraint> mus) {
+        if (mus == null) {
+            System.out.println("The backend you used doesn't support explaining failure!");
+            return;
+        }
+
+        ToStringSerializer toStringSerializer = new ToStringSerializer(false);
+        SlotsPrinter slotsPrinter = new SlotsPrinter(toStringSerializer);
+        // Print constraints and related slots
+        System.out.println("\n=================================== Explanation Starts=================================\n");
+        System.out.println("------------- Minimum Unsatisfactory Constraints -------------\n");
+        for (Constraint constraint : mus) {
+            System.out.println("\t" + constraint.serialize(toStringSerializer) + " \n\t    " + constraint.getLocation().toString() + "\n");
+        }
+        System.out.println("------------- Related Slots -------------\n");
+        for (Constraint c : mus) {
+            c.serialize(slotsPrinter);
+        }
+        System.out.println("=================================== Explanation Ends Here ================================");
     }
 }

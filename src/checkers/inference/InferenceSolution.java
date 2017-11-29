@@ -18,5 +18,7 @@ public interface InferenceSolution {
      * doesVariableExist(id) is false.
      */
     AnnotationMirror getAnnotation(int varId);
+
+    boolean isEmpty();
 }
 

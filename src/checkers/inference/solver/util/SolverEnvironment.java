@@ -5,6 +5,14 @@ import java.util.Map;
 
 import javax.annotation.processing.ProcessingEnvironment;
 
+/**
+ * SolverEnvironment encapsulates general context that used
+ * for all phases during solving.
+ * 
+ * All components in Solver Framework should ask this class to
+ * get the general context information, includes command line
+ * arguments for solver, and the processing environment.
+ */
 public class SolverEnvironment {
 
     /**

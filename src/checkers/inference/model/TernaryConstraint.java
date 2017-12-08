@@ -7,10 +7,15 @@ package checkers.inference.model;
  * a slot to a constraint made by make or substitute out a variable. E.g.,
  *
  * <p>
- * This call makes a copy of the constraint: {@code make(getFirst(), getSecond(), getThird())}
+ * This call makes a copy of the constraint:
+ * {@code make(getFirst(), getSecond(), getThird(), getLocation()}
  *
  * <p>
- * This call modifies the first slot: {@code make(mutate(getFirst()), getSecond(), getThird())}
+ * This call modifies the first slot:
+ * {@code make(mutate(getFirst()), getSecond(), getThird(), getLocation())}
+ * 
+ * <p>
+ * Note: {@code getLocation()} is provided by {@link Constraint}
  */
 public interface TernaryConstraint {
     Slot getFirst();
@@ -18,7 +23,9 @@ public interface TernaryConstraint {
     Slot getThird();
 
     /**
-     * Make a constraint that has the same class as this constraint but using the input slots and location.
+     * Make a constraint that has the same class as this constraint but using the input slots and
+     * location.
      */
-    Constraint make(final Slot first, final Slot second, final Slot third, final AnnotationLocation location);
+    Constraint make(final Slot first, final Slot second, final Slot third,
+            final AnnotationLocation location);
 }

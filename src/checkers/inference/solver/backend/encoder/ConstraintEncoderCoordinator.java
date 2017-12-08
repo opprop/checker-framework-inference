@@ -1,6 +1,5 @@
 package checkers.inference.solver.backend.encoder;
 
-import checkers.inference.model.ArithmeticConstraint;
 import checkers.inference.model.BinaryConstraint;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.ExistentialConstraint;
@@ -10,7 +9,6 @@ import checkers.inference.model.VariableSlot;
 import checkers.inference.solver.backend.encoder.binary.BinaryConstraintEncoder;
 import checkers.inference.solver.backend.encoder.existential.ExistentialConstraintEncoder;
 import checkers.inference.solver.backend.encoder.preference.PreferenceConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.AdditionConstraintEncoder;
 import checkers.inference.solver.backend.encoder.ternary.TernaryConstraintEncoder;
 
 /**
@@ -69,27 +67,6 @@ public class ConstraintEncoderCoordinator {
                 return encoder.encodeConstant_Constant(
                         (ConstantSlot) constraint.getFirst(), (ConstantSlot) constraint.getSecond(),
                         (VariableSlot) constraint.getThird());
-        }
-        return null;
-    }
-
-    public static <ConstraintEncodingT> ConstraintEncodingT dispatch(
-            ArithmeticConstraint constraint,
-            AdditionConstraintEncoder<ConstraintEncodingT> encoder) {
-        SlotSlotCombo combo = SlotSlotCombo.valueOf(constraint);
-        switch (combo) {
-            case VARIABLE_VARIABLE:
-                return encoder.encodeVariable_Variable((VariableSlot) constraint.getLHS(),
-                        (VariableSlot) constraint.getRHS(), (VariableSlot) constraint.getResult());
-            case VARIABLE_CONSTANT:
-                return encoder.encodeVariable_Constant((VariableSlot) constraint.getLHS(),
-                        (ConstantSlot) constraint.getRHS(), (VariableSlot) constraint.getResult());
-            case CONSTANT_VARIABLE:
-                return encoder.encodeConstant_Variable((ConstantSlot) constraint.getLHS(),
-                        (VariableSlot) constraint.getRHS(), (VariableSlot) constraint.getResult());
-            case CONSTANT_CONSTANT:
-                return encoder.encodeConstant_Constant((ConstantSlot) constraint.getLHS(),
-                        (ConstantSlot) constraint.getRHS(), (VariableSlot) constraint.getResult());
         }
         return null;
     }

@@ -42,7 +42,7 @@ public class ConstraintNormalizer {
         logger.info("-- Normalization : NULL SLOT --");
         filteredConstraints = filter(filteredConstraints, new NullSlotNormalizer());
 
-        logger.info("-- Normalization : EXISTENTIAl CONSTRAINT --");
+        logger.info("-- Normalization : EXISTENTIAL CONSTRAINT --");
         ExistentialVariableNormalizer existentialNormalizer = new ExistentialVariableNormalizer();
         filteredConstraints = filter(filteredConstraints, existentialNormalizer);
         filteredConstraints.addAll(existentialNormalizer.getConstraints());

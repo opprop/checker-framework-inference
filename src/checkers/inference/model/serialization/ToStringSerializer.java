@@ -6,20 +6,25 @@ import java.util.Collections;
 import java.util.List;
 
 import javax.lang.model.type.DeclaredType;
-
+import checkers.inference.model.AdditionConstraint;
+import checkers.inference.model.ArithmeticConstraint;
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.CombineConstraint;
 import checkers.inference.model.ComparableConstraint;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
+import checkers.inference.model.DivisionConstraint;
 import checkers.inference.model.EqualityConstraint;
 import checkers.inference.model.ExistentialConstraint;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.InequalityConstraint;
+import checkers.inference.model.ModulusConstraint;
+import checkers.inference.model.MultiplicationConstraint;
 import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Serializer;
 import checkers.inference.model.Slot;
+import checkers.inference.model.SubtractionConstraint;
 import checkers.inference.model.SubtypeConstraint;
 import checkers.inference.model.VariableSlot;
 
@@ -172,6 +177,41 @@ public class ToStringSerializer implements Serializer<String, String> {
                 + " w(" + preferenceConstraint.getWeight() + " )");
         showVerboseVars = prevShowVerboseVars;
         return result;
+    }
+
+    private String serialize(ArithmeticConstraint arithmeticConstraint, String operator) {
+        boolean prevShowVerboseVars = showVerboseVars;
+        showVerboseVars = false;
+        String result = indent(arithmeticConstraint.getResult().serialize(this) + " = ( "
+                + arithmeticConstraint.getLHS().serialize(this) + " " + operator + " "
+                + arithmeticConstraint.getRHS().serialize(this) + " )");
+        showVerboseVars = prevShowVerboseVars;
+        return result;
+    }
+
+    @Override
+    public String serialize(AdditionConstraint addConstraint) {
+        return serialize(addConstraint, "+");
+    }
+
+    @Override
+    public String serialize(SubtractionConstraint subConstraint) {
+        return serialize(subConstraint, "-");
+    }
+
+    @Override
+    public String serialize(MultiplicationConstraint mulConstraint) {
+        return serialize(mulConstraint, "*");
+    }
+
+    @Override
+    public String serialize(DivisionConstraint divConstraint) {
+        return serialize(divConstraint, "/");
+    }
+
+    @Override
+    public String serialize(ModulusConstraint modConstraint) {
+        return serialize(modConstraint, "%");
     }
 
     // variables

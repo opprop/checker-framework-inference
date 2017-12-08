@@ -16,29 +16,39 @@ package checkers.inference.model;
  * Implementing classes can use the same or different types for these
  * type parameters.
  */
-public interface Serializer<S, T> {
+public interface Serializer<SlotEncodingT, ConstraintEncodingT> {
 
-    T serialize(SubtypeConstraint constraint);
+    ConstraintEncodingT serialize(SubtypeConstraint constraint);
 
-    T serialize(EqualityConstraint constraint);
+    ConstraintEncodingT serialize(EqualityConstraint constraint);
 
-    T serialize(ExistentialConstraint constraint);
+    ConstraintEncodingT serialize(InequalityConstraint constraint);
 
-    T serialize(InequalityConstraint constraint);
+    ConstraintEncodingT serialize(ComparableConstraint comparableConstraint);
 
-    S serialize(VariableSlot slot);
+    ConstraintEncodingT serialize(PreferenceConstraint preferenceConstraint);
 
-    S serialize(ConstantSlot slot);
+    ConstraintEncodingT serialize(ExistentialConstraint constraint);
 
-    S serialize(ExistentialVariableSlot slot);
+    ConstraintEncodingT serialize(CombineConstraint combineConstraint);
 
-    S serialize(RefinementVariableSlot slot);
+    ConstraintEncodingT serialize(AdditionConstraint addConstraint);
 
-    S serialize(CombVariableSlot slot);
+    ConstraintEncodingT serialize(SubtractionConstraint subConstraint);
 
-    T serialize(ComparableConstraint comparableConstraint);
+    ConstraintEncodingT serialize(MultiplicationConstraint mulConstraint);
 
-    T serialize(CombineConstraint combineConstraint);
+    ConstraintEncodingT serialize(DivisionConstraint divConstraint);
 
-    T serialize(PreferenceConstraint preferenceConstraint);
+    ConstraintEncodingT serialize(ModulusConstraint modConstraint);
+
+    SlotEncodingT serialize(VariableSlot slot);
+
+    SlotEncodingT serialize(ConstantSlot slot);
+
+    SlotEncodingT serialize(ExistentialVariableSlot slot);
+
+    SlotEncodingT serialize(RefinementVariableSlot slot);
+
+    SlotEncodingT serialize(CombVariableSlot slot);
 }

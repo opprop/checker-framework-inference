@@ -7,20 +7,24 @@ import javax.lang.model.element.AnnotationMirror;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-
+import checkers.inference.model.AdditionConstraint;
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.CombineConstraint;
 import checkers.inference.model.ComparableConstraint;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
+import checkers.inference.model.DivisionConstraint;
 import checkers.inference.model.EqualityConstraint;
 import checkers.inference.model.ExistentialConstraint;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.InequalityConstraint;
+import checkers.inference.model.ModulusConstraint;
+import checkers.inference.model.MultiplicationConstraint;
 import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Serializer;
 import checkers.inference.model.Slot;
+import checkers.inference.model.SubtractionConstraint;
 import checkers.inference.model.SubtypeConstraint;
 import checkers.inference.model.VariableSlot;
 
@@ -255,6 +259,7 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
     }
 
 
+    @SuppressWarnings("unchecked")
     @Override
     public JSONObject serialize(ExistentialConstraint constraint) {
 
@@ -323,5 +328,30 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
         // TODO: is the int showing up correctly in JSON?
         obj.put(PREFERENCE_WEIGHT, constraint.getWeight());
         return obj;
+    }
+
+    @Override
+    public JSONObject serialize(AdditionConstraint addConstraint) {
+        return null;
+    }
+
+    @Override
+    public JSONObject serialize(SubtractionConstraint subConstraint) {
+        return null;
+    }
+
+    @Override
+    public JSONObject serialize(MultiplicationConstraint mulConstraint) {
+        return null;
+    }
+
+    @Override
+    public JSONObject serialize(DivisionConstraint divConstraint) {
+        return null;
+    }
+
+    @Override
+    public JSONObject serialize(ModulusConstraint modConstraint) {
+        return null;
     }
 }

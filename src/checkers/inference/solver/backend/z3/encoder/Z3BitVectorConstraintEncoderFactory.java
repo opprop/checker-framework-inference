@@ -7,6 +7,11 @@ import checkers.inference.solver.backend.encoder.binary.InequalityConstraintEnco
 import checkers.inference.solver.backend.encoder.combine.CombineConstraintEncoder;
 import checkers.inference.solver.backend.encoder.existential.ExistentialConstraintEncoder;
 import checkers.inference.solver.backend.encoder.preference.PreferenceConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.AdditionConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.DivisionConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.ModulusConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.MultiplicationConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.SubtractionConstraintEncoder;
 import checkers.inference.solver.backend.z3.Z3BitVectorFormatTranslator;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.util.ConstraintVerifier;
@@ -63,6 +68,31 @@ public class Z3BitVectorConstraintEncoderFactory extends AbstractConstraintEncod
 
     @Override
     public ExistentialConstraintEncoder<BoolExpr> createExistentialConstraintEncoder() {
+        return null;
+    }
+
+    @Override
+    public AdditionConstraintEncoder<BoolExpr> createAdditionConstraintEncoder() {
+        return null;
+    }
+
+    @Override
+    public SubtractionConstraintEncoder<BoolExpr> createSubtractionConstraintEncoder() {
+        return null;
+    }
+
+    @Override
+    public MultiplicationConstraintEncoder<BoolExpr> createMultiplicationConstraintEncoder() {
+        return null;
+    }
+
+    @Override
+    public DivisionConstraintEncoder<BoolExpr> createDivisionConstraintEncoder() {
+        return null;
+    }
+
+    @Override
+    public ModulusConstraintEncoder<BoolExpr> createModulusConstraintEncoder() {
         return null;
     }
 }

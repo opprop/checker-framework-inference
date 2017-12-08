@@ -8,7 +8,7 @@ import java.util.Arrays;
  *
  * TODO: clarify relation to CombVariableSlot. Should we add separate types?
  */
-public class CombineConstraint extends Constraint {
+public class CombineConstraint extends Constraint implements TernaryConstraint {
 
     private final Slot target;
     private final Slot decl;
@@ -21,11 +21,6 @@ public class CombineConstraint extends Constraint {
         this.result = result;
     }
 
-    @Override
-    public <S, T> T serialize(Serializer<S, T> serializer) {
-        return serializer.serialize(this);
-    }
-
     public Slot getTarget() {
         return target;
     }
@@ -36,6 +31,34 @@ public class CombineConstraint extends Constraint {
 
     public Slot getResult() {
         return result;
+    }
+
+    @Override
+    public <S, T> T serialize(Serializer<S, T> serializer) {
+        return serializer.serialize(this);
+    }
+
+    // First = Target, Second = Declared, Third = Result
+    // See ConstraintEncoderCoordinator
+
+    @Override
+    public Slot getFirst() {
+        return getTarget();
+    }
+
+    @Override
+    public Slot getSecond() {
+        return getDeclared();
+    }
+
+    @Override
+    public Slot getThird() {
+        return getResult();
+    }
+
+    @Override
+    public Constraint make(Slot first, Slot second, Slot third, AnnotationLocation location) {
+        return new CombineConstraint(first, second, third, location);
     }
 
     @Override

@@ -50,7 +50,7 @@ public interface InferrableChecker {
      * Should inference generate variables and constraints for
      * viewpoint adaption when accessing instance members.
      */
-    boolean withCombineConstraints();
+    boolean withViewpointAdaptationConstraints();
 
     CFTransfer createInferenceTransferFunction(InferenceAnalysis analysis);
 

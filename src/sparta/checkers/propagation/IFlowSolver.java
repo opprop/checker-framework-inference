@@ -108,18 +108,18 @@ public abstract class IFlowSolver implements InferenceSolver {
                         }
                     }
                 } else if (constraint instanceof EqualityConstraint) {
-                    Slot first = ((EqualityConstraint)constraint).getFirst();
-                    Slot second = ((EqualityConstraint)constraint).getSecond();
+                    Slot lhs = ((EqualityConstraint)constraint).getLHS();
+                    Slot rhs = ((EqualityConstraint)constraint).getRHS();
 
-                    Set<String> firstPerms = getInferredSlotPermissions(first);
-                    Set<String> secondPerms = getInferredSlotPermissions(second);
+                    Set<String> lhsPerms = getInferredSlotPermissions(lhs);
+                    Set<String> rhsPerms = getInferredSlotPermissions(rhs);
 
-                    if (first.isVariable()) {
-                        changed |= firstPerms.addAll(secondPerms);
+                    if (lhs.isVariable()) {
+                        changed |= lhsPerms.addAll(rhsPerms);
                     }
 
-                    if (second.isVariable()) {
-                        changed |= secondPerms.addAll(firstPerms);
+                    if (rhs.isVariable()) {
+                        changed |= rhsPerms.addAll(lhsPerms);
                     }
                 } else {
                     logger.info("Ignoring constraint type: " + constraint.getClass());

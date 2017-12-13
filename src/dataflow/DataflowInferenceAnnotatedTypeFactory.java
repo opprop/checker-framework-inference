@@ -32,10 +32,11 @@ import dataflow.util.DataflowUtils;
 public class DataflowInferenceAnnotatedTypeFactory extends InferenceAnnotatedTypeFactory {
 
     public DataflowInferenceAnnotatedTypeFactory(InferenceChecker inferenceChecker,
-            boolean withCombineConstraints, BaseAnnotatedTypeFactory realTypeFactory,
-            InferrableChecker realChecker, SlotManager slotManager, ConstraintManager constraintManager) {
-        super(inferenceChecker, withCombineConstraints, realTypeFactory, realChecker, slotManager,
-                constraintManager);
+            boolean withViewpointAdaptationConstraints, BaseAnnotatedTypeFactory realTypeFactory,
+            InferrableChecker realChecker, SlotManager slotManager,
+            ConstraintManager constraintManager) {
+        super(inferenceChecker, withViewpointAdaptationConstraints, realTypeFactory, realChecker,
+                slotManager, constraintManager);
         postInit();
     }
 

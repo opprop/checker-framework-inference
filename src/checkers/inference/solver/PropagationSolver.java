@@ -134,19 +134,19 @@ public class PropagationSolver implements InferenceSolver {
 
             if (constraint instanceof EqualityConstraint) {
                 EqualityConstraint equality = (EqualityConstraint) constraint;
-                if (equality.getFirst() instanceof ConstantSlot) {
+                if (equality.getLHS() instanceof ConstantSlot) {
                     // Equal to a constant forces a constant
-                    AnnotationMirror value = ((ConstantSlot) equality.getFirst()).getValue();
-                    VariableSlot variable = (VariableSlot) equality.getSecond();
+                    AnnotationMirror value = ((ConstantSlot) equality.getLHS()).getValue();
+                    VariableSlot variable = (VariableSlot) equality.getRHS();
                     if (AnnotationUtils.areSame(value, top)) {
                         fixedTop.add(variable);
                     } else {
                         fixedBottom.add(variable);
                     }
-                } else if (equality.getSecond() instanceof ConstantSlot) {
+                } else if (equality.getRHS() instanceof ConstantSlot) {
                     // Equal to a constant forces a constant
-                    AnnotationMirror value = ((ConstantSlot) equality.getSecond()).getValue();
-                    VariableSlot variable = (VariableSlot) equality.getFirst();
+                    AnnotationMirror value = ((ConstantSlot) equality.getRHS()).getValue();
+                    VariableSlot variable = (VariableSlot) equality.getLHS();
                     if (AnnotationUtils.areSame(value, top)) {
                         fixedTop.add(variable);
                     } else {
@@ -154,10 +154,10 @@ public class PropagationSolver implements InferenceSolver {
                     }
                 } else {
                     // Variable equality means values of one propagates to values of the other, for both subtype and supertype
-                    addEntryToMap(superTypePropagation, (VariableSlot) equality.getFirst(), (VariableSlot) equality.getSecond(), constraint);
-                    addEntryToMap(superTypePropagation, (VariableSlot) equality.getSecond(), (VariableSlot) equality.getFirst(), constraint);
-                    addEntryToMap(subTypePropagation, (VariableSlot) equality.getFirst(), (VariableSlot) equality.getSecond(), constraint);
-                    addEntryToMap(subTypePropagation, (VariableSlot) equality.getSecond(), (VariableSlot) equality.getFirst(), constraint);
+                    addEntryToMap(superTypePropagation, (VariableSlot) equality.getLHS(), (VariableSlot) equality.getRHS(), constraint);
+                    addEntryToMap(superTypePropagation, (VariableSlot) equality.getRHS(), (VariableSlot) equality.getLHS(), constraint);
+                    addEntryToMap(subTypePropagation, (VariableSlot) equality.getLHS(), (VariableSlot) equality.getRHS(), constraint);
+                    addEntryToMap(subTypePropagation, (VariableSlot) equality.getRHS(), (VariableSlot) equality.getLHS(), constraint);
                 }
             } else if (constraint instanceof SubtypeConstraint) {
                 SubtypeConstraint subtype = (SubtypeConstraint) constraint;

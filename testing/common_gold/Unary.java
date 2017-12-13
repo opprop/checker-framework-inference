@@ -17,9 +17,9 @@ class Test {
     void concat(@VarAnnot(6) String a, @VarAnnot(7) String b) {
         String c = a + b;
     }
-// SubtypeConstraint: [VariableAnnoPos(1), CombVariableAnnoPos(4)]
-// SubtypeConstraint: [VariableAnnoPos(2), CombVariableAnnoPos(4)]
-// SubtypeConstraint: [CombVariableAnnoPos(4), VariableAnnoPos(3)]
+// SubtypeConstraint: [VariableAnnoPos(1), TernaryVariableAnnoPos(4)]
+// SubtypeConstraint: [VariableAnnoPos(2), TernaryVariableAnnoPos(4)]
+// SubtypeConstraint: [TernaryVariableAnnoPos(4), VariableAnnoPos(3)]
 
     void unary(@VarAnnot(9) int i) {
         int x = i++;

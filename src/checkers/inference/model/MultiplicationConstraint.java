@@ -6,14 +6,9 @@ package checkers.inference.model;
  */
 public class MultiplicationConstraint extends ArithmeticConstraint {
 
-    protected MultiplicationConstraint(Slot lhs, Slot rhs, Slot result,
+    protected MultiplicationConstraint(Slot leftOperand, Slot rightOperand, Slot result,
             AnnotationLocation location) {
-        super(lhs, rhs, result, location);
-    }
-
-    @Override
-    public Constraint make(Slot first, Slot second, Slot third, AnnotationLocation location) {
-        return new MultiplicationConstraint(first, second, third, location);
+        super(leftOperand, rightOperand, result, location);
     }
 
     @Override

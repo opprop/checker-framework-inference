@@ -37,7 +37,7 @@ public abstract class Slot {
     public abstract Kind getKind();
 
     public enum Kind {
-        VARIABLE, CONSTANT, REFINEMENT_VARIABLE, EXISTENTIAL_VARIABLE, COMB_VARIABLE
+        VARIABLE, CONSTANT, REFINEMENT_VARIABLE, EXISTENTIAL_VARIABLE, TERNARY_VARIABLE
     }
 
     public boolean isVariable() {

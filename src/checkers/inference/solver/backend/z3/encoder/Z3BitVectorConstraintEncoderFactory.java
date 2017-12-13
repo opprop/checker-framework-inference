@@ -4,7 +4,6 @@ import checkers.inference.solver.backend.encoder.AbstractConstraintEncoderFactor
 import checkers.inference.solver.backend.encoder.binary.ComparableConstraintEncoder;
 import checkers.inference.solver.backend.encoder.binary.EqualityConstraintEncoder;
 import checkers.inference.solver.backend.encoder.binary.InequalityConstraintEncoder;
-import checkers.inference.solver.backend.encoder.combine.CombineConstraintEncoder;
 import checkers.inference.solver.backend.encoder.existential.ExistentialConstraintEncoder;
 import checkers.inference.solver.backend.encoder.preference.PreferenceConstraintEncoder;
 import checkers.inference.solver.backend.encoder.ternary.AdditionConstraintEncoder;
@@ -12,6 +11,7 @@ import checkers.inference.solver.backend.encoder.ternary.DivisionConstraintEncod
 import checkers.inference.solver.backend.encoder.ternary.ModulusConstraintEncoder;
 import checkers.inference.solver.backend.encoder.ternary.MultiplicationConstraintEncoder;
 import checkers.inference.solver.backend.encoder.ternary.SubtractionConstraintEncoder;
+import checkers.inference.solver.backend.encoder.viewpointadaptation.ViewpointAdaptationConstraintEncoder;
 import checkers.inference.solver.backend.z3.Z3BitVectorFormatTranslator;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.util.ConstraintVerifier;
@@ -62,7 +62,7 @@ public class Z3BitVectorConstraintEncoderFactory extends AbstractConstraintEncod
     }
 
     @Override
-    public CombineConstraintEncoder<BoolExpr> createCombineConstraintEncoder() {
+    public ViewpointAdaptationConstraintEncoder<BoolExpr> createViewpointAdaptationConstraintEncoder() {
         return null;
     }
 

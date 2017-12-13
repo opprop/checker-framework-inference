@@ -1,13 +1,13 @@
 package checkers.inference.solver.backend.maxsat.encoder;
 
 import checkers.inference.solver.backend.encoder.AbstractConstraintEncoderFactory;
-import checkers.inference.solver.backend.encoder.combine.CombineConstraintEncoder;
 import checkers.inference.solver.backend.encoder.existential.ExistentialConstraintEncoder;
 import checkers.inference.solver.backend.encoder.ternary.AdditionConstraintEncoder;
 import checkers.inference.solver.backend.encoder.ternary.DivisionConstraintEncoder;
 import checkers.inference.solver.backend.encoder.ternary.ModulusConstraintEncoder;
 import checkers.inference.solver.backend.encoder.ternary.MultiplicationConstraintEncoder;
 import checkers.inference.solver.backend.encoder.ternary.SubtractionConstraintEncoder;
+import checkers.inference.solver.backend.encoder.viewpointadaptation.ViewpointAdaptationConstraintEncoder;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.util.ConstraintVerifier;
 import org.sat4j.core.VecInt;
@@ -55,7 +55,7 @@ public class MaxSATConstraintEncoderFactory extends AbstractConstraintEncoderFac
     }
 
     @Override
-    public CombineConstraintEncoder<VecInt[]> createCombineConstraintEncoder() {
+    public ViewpointAdaptationConstraintEncoder<VecInt[]> createViewpointAdaptationConstraintEncoder() {
         return null;
     }
 

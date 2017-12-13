@@ -4,7 +4,6 @@ import checkers.inference.solver.backend.encoder.binary.ComparableConstraintEnco
 import checkers.inference.solver.backend.encoder.binary.EqualityConstraintEncoder;
 import checkers.inference.solver.backend.encoder.binary.InequalityConstraintEncoder;
 import checkers.inference.solver.backend.encoder.binary.SubtypeConstraintEncoder;
-import checkers.inference.solver.backend.encoder.combine.CombineConstraintEncoder;
 import checkers.inference.solver.backend.encoder.existential.ExistentialConstraintEncoder;
 import checkers.inference.solver.backend.encoder.preference.PreferenceConstraintEncoder;
 import checkers.inference.solver.backend.encoder.ternary.AdditionConstraintEncoder;
@@ -12,6 +11,7 @@ import checkers.inference.solver.backend.encoder.ternary.DivisionConstraintEncod
 import checkers.inference.solver.backend.encoder.ternary.ModulusConstraintEncoder;
 import checkers.inference.solver.backend.encoder.ternary.MultiplicationConstraintEncoder;
 import checkers.inference.solver.backend.encoder.ternary.SubtractionConstraintEncoder;
+import checkers.inference.solver.backend.encoder.viewpointadaptation.ViewpointAdaptationConstraintEncoder;
 
 /**
  * Factory that creates constraint encoders.
@@ -24,7 +24,7 @@ import checkers.inference.solver.backend.encoder.ternary.SubtractionConstraintEn
  *     <li>{@link InequalityConstraintEncoder}</li>
  *     <li>{@link ComparableConstraintEncoder}</li>
  *     <li>{@link PreferenceConstraintEncoder}</li>
- *     <li>{@link CombineConstraintEncoder}</li>
+ *     <li>{@link ViewpointAdaptationConstraintEncoder}</li>
  *     <li>{@link ExistentialConstraintEncoder}</li>
  *     <li>{@link AdditionConstraintEncoder}</li>
  *     <li>{@link SubtractionConstraintEncoder}</li>
@@ -50,7 +50,7 @@ public interface ConstraintEncoderFactory<ConstraintEncodingT> {
 
     PreferenceConstraintEncoder<ConstraintEncodingT> createPreferenceConstraintEncoder();
 
-    CombineConstraintEncoder<ConstraintEncodingT> createCombineConstraintEncoder();
+    ViewpointAdaptationConstraintEncoder<ConstraintEncodingT> createViewpointAdaptationConstraintEncoder();
 
     ExistentialConstraintEncoder<ConstraintEncodingT> createExistentialConstraintEncoder();
 

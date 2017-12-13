@@ -21,7 +21,7 @@ import org.checkerframework.javacutil.ErrorReporter;
 import com.sun.tools.javac.util.Pair;
 
 import checkers.inference.model.AnnotationLocation;
-import checkers.inference.model.CombVariableSlot;
+import checkers.inference.model.TernaryVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.RefinementVariableSlot;
@@ -77,11 +77,11 @@ public class DefaultSlotManager implements SlotManager {
 
     /**
      * A map of {@link Pair} of {@link Slot} to {@link Integer} for caching
-     * CombVariableSlot. Each combination of receiver slot and declared slot
-     * uniquely identifies a CombVariableSlot. {@link Integer} is the id of the
-     * corresponding CombVariableSlott
+     * TernaryVariableSlot. Each combination of receiver slot and declared slot
+     * uniquely identifies a TernaryVariableSlot. {@link Integer} is the id of the
+     * corresponding TernaryVariableSlot
      */
-    private final Map<Pair<Slot, Slot>, Integer> combSlotPairCache;
+    private final Map<Pair<Slot, Slot>, Integer> ternarySlotPairCache;
 
     private final Set<Class<? extends Annotation>> realQualifiers;
     private final ProcessingEnvironment processingEnvironment;
@@ -102,7 +102,7 @@ public class DefaultSlotManager implements SlotManager {
         constantCache = AnnotationUtils.createAnnotationMap();
         locationCache = new LinkedHashMap<>();
         existentialSlotPairCache = new LinkedHashMap<>();
-        combSlotPairCache = new LinkedHashMap<>();
+        ternarySlotPairCache = new LinkedHashMap<>();
         if (storeConstants) {
             Set<? extends AnnotationMirror> mirrors = InferenceMain.getInstance().getRealTypeFactory().getQualifierHierarchy().getTypeQualifiers();
             for (AnnotationMirror am : mirrors) {
@@ -156,7 +156,7 @@ public class DefaultSlotManager implements SlotManager {
 
         // We need to build the AnntotationBuilder each time because AnnotationBuilders are only allowed to build their annotations once
         if (slotClass.equals(VariableSlot.class) || slotClass.equals(ExistentialVariableSlot.class)
-                || slotClass.equals(RefinementVariableSlot.class) || slotClass.equals(CombVariableSlot.class)
+                || slotClass.equals(RefinementVariableSlot.class) || slotClass.equals(TernaryVariableSlot.class)
                 || slotClass.equals(ConstantSlot.class)) {
             return convertVariable((VariableSlot) slot, new AnnotationBuilder(processingEnvironment, VarAnnot.class));
         }
@@ -167,9 +167,8 @@ public class DefaultSlotManager implements SlotManager {
     /**
      * Converts the given VariableSlot into an annotation using the given AnnotationBuiklder
      * @param variable VariableSlot to convert
-     * @param annotationBuilder appropriate annotation for the actual class of the VariableSlot which could be subtype
-     *                          of VariableSlot.  Eg.  CombVariableSlots use combVarBuilder which is parameterized to
-     *                          build @CombVarAnnots
+     * @param annotationBuilder appropriate annotation for the actual class of the VariableSlot
+     *        which could be subtype of VariableSlot.
      * @return An annotation representing variable
      */
     private AnnotationMirror convertVariable( final VariableSlot variable, final AnnotationBuilder annotationBuilder) {
@@ -330,18 +329,18 @@ public class DefaultSlotManager implements SlotManager {
     }
 
     @Override
-    public CombVariableSlot createCombVariableSlot(Slot receiver, Slot declared) {
-        CombVariableSlot combVariableSlot;
+    public TernaryVariableSlot createTernaryVariableSlot(Slot receiver, Slot declared) {
+        TernaryVariableSlot ternaryVariableSlot;
         Pair<Slot, Slot> pair = new Pair<>(receiver, declared);
-        if (combSlotPairCache.containsKey(pair)) {
-            int id = combSlotPairCache.get(pair);
-            combVariableSlot = (CombVariableSlot) getVariable(id);
+        if (ternarySlotPairCache.containsKey(pair)) {
+            int id = ternarySlotPairCache.get(pair);
+            ternaryVariableSlot = (TernaryVariableSlot) getVariable(id);
         } else {
-            combVariableSlot = new CombVariableSlot(null, nextId(), receiver, declared);
-            addToVariables(combVariableSlot);
-            combSlotPairCache.put(pair, combVariableSlot.getId());
+            ternaryVariableSlot = new TernaryVariableSlot(null, nextId(), receiver, declared);
+            addToVariables(ternaryVariableSlot);
+            ternarySlotPairCache.put(pair, ternaryVariableSlot.getId());
         }
-        return combVariableSlot;
+        return ternaryVariableSlot;
     }
 
     @Override

@@ -8,8 +8,8 @@ import java.util.List;
 import javax.lang.model.type.DeclaredType;
 import checkers.inference.model.AdditionConstraint;
 import checkers.inference.model.ArithmeticConstraint;
-import checkers.inference.model.CombVariableSlot;
-import checkers.inference.model.CombineConstraint;
+import checkers.inference.model.TernaryVariableSlot;
+import checkers.inference.model.ViewpointAdaptationConstraint;
 import checkers.inference.model.ComparableConstraint;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
@@ -109,7 +109,7 @@ public class ToStringSerializer implements Serializer<String, String> {
     public String serialize(EqualityConstraint constraint) {
         boolean prevShowVerboseVars = showVerboseVars;
         showVerboseVars = false;
-        String result = indent(constraint.getFirst().serialize(this) + " == " + constraint.getSecond().serialize(this));
+        String result = indent(constraint.getLHS().serialize(this) + " == " + constraint.getRHS().serialize(this));
         showVerboseVars = prevShowVerboseVars;
         return result;
     }
@@ -142,7 +142,7 @@ public class ToStringSerializer implements Serializer<String, String> {
     public String serialize(InequalityConstraint constraint) {
         boolean prevShowVerboseVars = showVerboseVars;
         showVerboseVars = false;
-        String result = indent(constraint.getFirst().serialize(this) + " != " + constraint.getSecond().serialize(this));
+        String result = indent(constraint.getLHS().serialize(this) + " != " + constraint.getRHS().serialize(this));
         showVerboseVars = prevShowVerboseVars;
         return result;
     }
@@ -151,13 +151,13 @@ public class ToStringSerializer implements Serializer<String, String> {
     public String serialize(ComparableConstraint constraint) {
         boolean prevShowVerboseVars = showVerboseVars;
         showVerboseVars = false;
-        String result = indent(constraint.getFirst().serialize(this) + " <~> " + constraint.getSecond().serialize(this));
+        String result = indent(constraint.getLHS().serialize(this) + " <~> " + constraint.getRHS().serialize(this));
         showVerboseVars = prevShowVerboseVars;
         return result;
     }
 
     @Override
-    public String serialize(CombineConstraint constraint) {
+    public String serialize(ViewpointAdaptationConstraint constraint) {
         boolean prevShowVerboseVars = showVerboseVars;
         showVerboseVars = false;
         // "\u25B7" is unicode representation of viewpoint adaptation sign |>
@@ -183,8 +183,8 @@ public class ToStringSerializer implements Serializer<String, String> {
         boolean prevShowVerboseVars = showVerboseVars;
         showVerboseVars = false;
         String result = indent(arithmeticConstraint.getResult().serialize(this) + " = ( "
-                + arithmeticConstraint.getLHS().serialize(this) + " " + operator + " "
-                + arithmeticConstraint.getRHS().serialize(this) + " )");
+                + arithmeticConstraint.getLeftOperand().serialize(this) + " " + operator + " "
+                + arithmeticConstraint.getRightOperand().serialize(this) + " )");
         showVerboseVars = prevShowVerboseVars;
         return result;
     }
@@ -270,13 +270,13 @@ public class ToStringSerializer implements Serializer<String, String> {
     }
 
     @Override
-    public String serialize(CombVariableSlot slot) {
+    public String serialize(TernaryVariableSlot slot) {
         final StringBuilder sb = new StringBuilder();
         sb.append(slot.getId());
 
         if (showVerboseVars) {
             sb.append(": merges ");
-            sb.append(Arrays.asList(slot.getFirst(), slot.getSecond()));
+            sb.append(Arrays.asList(slot.getLeftOperand(), slot.getRightOperand()));
             formatMerges(slot, sb);
             optionallyFormatAstPath(slot, sb);
         }

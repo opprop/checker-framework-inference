@@ -8,8 +8,8 @@ import javax.lang.model.element.AnnotationMirror;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import checkers.inference.model.AdditionConstraint;
-import checkers.inference.model.CombVariableSlot;
-import checkers.inference.model.CombineConstraint;
+import checkers.inference.model.TernaryVariableSlot;
+import checkers.inference.model.ViewpointAdaptationConstraint;
 import checkers.inference.model.ComparableConstraint;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
@@ -123,10 +123,10 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
     protected static final String COMP_RHS = "rhs";
     protected static final String COMP_LHS = "lhs";
 
-    protected static final String COMB_CONSTRAINT_KEY = "combine";
-    protected static final String COMB_TARGET = "target";
-    protected static final String COMB_DECL = "declared";
-    protected static final String COMB_RESULT = "result";
+    protected static final String VPA_CONSTRAINT_KEY = "viewpointadaptation";
+    protected static final String VPA_TARGET = "target";
+    protected static final String VPA_DECL = "declared";
+    protected static final String VPA_RESULT = "result";
 
     protected static final String PREFERENCE_CONSTRAINT_KEY = "preference";
     protected static final String PREFERENCE_VARIABLE = "variable";
@@ -226,7 +226,7 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
     }
 
     @Override
-    public String serialize(CombVariableSlot slot) {
+    public String serialize(TernaryVariableSlot slot) {
         return serialize((VariableSlot) slot);
     }
 
@@ -247,14 +247,14 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
     @SuppressWarnings("unchecked")
     @Override
     public JSONObject serialize(EqualityConstraint constraint) {
-        if (constraint.getFirst() == null || constraint.getSecond() == null) {
+        if (constraint.getLHS() == null || constraint.getRHS() == null) {
             return null;
         }
 
         JSONObject obj = new JSONObject();
         obj.put(CONSTRAINT_KEY, EQUALITY_CONSTRAINT_KEY);
-        obj.put(EQUALITY_LHS, constraint.getFirst().serialize(this));
-        obj.put(EQUALITY_RHS, constraint.getSecond().serialize(this));
+        obj.put(EQUALITY_LHS, constraint.getLHS().serialize(this));
+        obj.put(EQUALITY_RHS, constraint.getRHS().serialize(this));
         return obj;
     }
 
@@ -274,43 +274,43 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
     @SuppressWarnings("unchecked")
     @Override
     public JSONObject serialize(InequalityConstraint constraint) {
-        if (constraint.getFirst() == null || constraint.getSecond() == null) {
+        if (constraint.getLHS() == null || constraint.getRHS() == null) {
             return null;
         }
 
         JSONObject obj = new JSONObject();
         obj.put(CONSTRAINT_KEY, INEQUALITY_CONSTRAINT_KEY);
-        obj.put(INEQUALITY_LHS, constraint.getFirst().serialize(this));
-        obj.put(INEQUALITY_RHS, constraint.getSecond().serialize(this));
+        obj.put(INEQUALITY_LHS, constraint.getLHS().serialize(this));
+        obj.put(INEQUALITY_RHS, constraint.getRHS().serialize(this));
         return obj;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public JSONObject serialize(ComparableConstraint constraint) {
-        if (constraint.getFirst() == null || constraint.getSecond() == null) {
+        if (constraint.getLHS() == null || constraint.getRHS() == null) {
             return null;
         }
 
         JSONObject obj = new JSONObject();
         obj.put(CONSTRAINT_KEY, COMP_CONSTRAINT_KEY);
-        obj.put(COMP_LHS, constraint.getFirst().serialize(this));
-        obj.put(COMP_RHS, constraint.getSecond().serialize(this));
+        obj.put(COMP_LHS, constraint.getLHS().serialize(this));
+        obj.put(COMP_RHS, constraint.getRHS().serialize(this));
         return obj;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public JSONObject serialize(CombineConstraint constraint) {
+    public JSONObject serialize(ViewpointAdaptationConstraint constraint) {
         if (constraint.getTarget() == null || constraint.getDeclared() == null || constraint.getResult() == null) {
             return null;
         }
 
         JSONObject obj = new JSONObject();
-        obj.put(CONSTRAINT_KEY, COMB_CONSTRAINT_KEY);
-        obj.put(COMB_TARGET, constraint.getTarget().serialize(this));
-        obj.put(COMB_DECL, constraint.getDeclared().serialize(this));
-        obj.put(COMB_RESULT, constraint.getResult().serialize(this));
+        obj.put(CONSTRAINT_KEY, VPA_CONSTRAINT_KEY);
+        obj.put(VPA_TARGET, constraint.getTarget().serialize(this));
+        obj.put(VPA_DECL, constraint.getDeclared().serialize(this));
+        obj.put(VPA_RESULT, constraint.getResult().serialize(this));
         return obj;
     }
 

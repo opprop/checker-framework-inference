@@ -7,7 +7,7 @@ import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.inference.model.AnnotationLocation;
-import checkers.inference.model.CombVariableSlot;
+import checkers.inference.model.TernaryVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.RefinementVariableSlot;
@@ -69,20 +69,20 @@ public interface SlotManager {
     ConstantSlot createConstantSlot(AnnotationMirror value);
 
     /**
-     * Create new CombVariableSlot using receiver slot and declared slot, and
-     * return reference to it if no CombVariableSlot representing result of
+     * Create new TernaryVariableSlot using receiver slot and declared slot, and
+     * return reference to it if no TernaryVariableSlot representing result of
      * adapting declared slot to receiver slot exists. Otherwise, returns the
-     * existing CombVariableSlot. Receiver slot and declared slot can uniquely
-     * identify a CombVariableSlot
+     * existing TernaryVariableSlot. Receiver slot and declared slot can uniquely
+     * identify a TernaryVariableSlot
      *
      * @param receiver
      *            receiver slot
      * @param declared
      *            declared slot
-     * @return CombVariableSlot that represents the viewpoint adaptation result
+     * @return TernaryVariableSlot that represents the viewpoint adaptation result
      *         of adapting declared slot to receiver slot
      */
-    CombVariableSlot createCombVariableSlot(Slot receiver, Slot declared);
+    TernaryVariableSlot createTernaryVariableSlot(Slot receiver, Slot declared);
 
     /**
      * Create new ExistentialVariableSlot using potential slot and alternative
@@ -118,7 +118,7 @@ public interface SlotManager {
 
     /**
      * Return the Slot (or an equivalent Slot) that is represented by the given AnnotationMirror.  A RuntimeException
-     * is thrown if the annotation isn't a VarAnnot, RefVarAnnot, CombVarAnnot or a member of one of the
+     * is thrown if the annotation isn't a VarAnnot, RefVarAnnot, TernaryVarAnnot or a member of one of the
      * REAL_QUALIFIER set provided by InferenceChecker.
      * @param am The annotationMirror representing a Slot
      * @return The Slot (on an equivalent Slot) represented by annotationMirror

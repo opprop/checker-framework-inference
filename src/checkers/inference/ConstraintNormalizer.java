@@ -94,8 +94,8 @@ public class ConstraintNormalizer {
         }
 
         protected void collectConstraints(final BinaryConstraint constraint) {
-            final List<Slot> leftSlot = slotsToConditionals(constraint.getFirst());
-            final List<Slot> rightSlot = slotsToConditionals(constraint.getSecond());
+            final List<Slot> leftSlot = slotsToConditionals(constraint.getLHS());
+            final List<Slot> rightSlot = slotsToConditionals(constraint.getRHS());
             addToTree(leftSlot, rightSlot, constraint);
         }
 

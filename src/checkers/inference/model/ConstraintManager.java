@@ -10,7 +10,7 @@ import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.javacutil.ErrorReporter;
 import checkers.inference.InferenceAnnotatedTypeFactory;
 import checkers.inference.VariableAnnotator;
-import checkers.inference.model.ArithmeticConstraint.ArithmeticOp;
+import checkers.inference.model.ArithmeticConstraint.ArithmeticOperationKind;
 import checkers.inference.util.ConstraintVerifier;
 
 /**
@@ -82,60 +82,62 @@ public class ConstraintManager {
         return new SubtypeConstraint(subtype, supertype, getCurrentLocation());
     }
 
-    public EqualityConstraint createEqualityConstraint(Slot first, Slot second) {
-        if (first == null || second == null) {
-            ErrorReporter.errorAbort("Create equality constraint with null argument. Subtype: " + first
-                    + " Supertype: " + second);
+    public EqualityConstraint createEqualityConstraint(Slot lhs, Slot rhs) {
+        if (lhs == null || rhs == null) {
+            ErrorReporter.errorAbort("Create equality constraint with null argument. Subtype: "
+                    + lhs + " Supertype: " + rhs);
         }
-        if (first instanceof ConstantSlot && second instanceof ConstantSlot) {
-            ConstantSlot firstConstant = (ConstantSlot) first;
-            ConstantSlot secondConstant = (ConstantSlot) second;
-            if (!constraintVerifier.areEqual(firstConstant, secondConstant)) {
-                checker.report(Result.failure("equality.constraint.unsatisfiable", first, second),
+        if (lhs instanceof ConstantSlot && rhs instanceof ConstantSlot) {
+            ConstantSlot lhsConstant = (ConstantSlot) lhs;
+            ConstantSlot rhsConstant = (ConstantSlot) rhs;
+            if (!constraintVerifier.areEqual(lhsConstant, rhsConstant)) {
+                checker.report(Result.failure("equality.constraint.unsatisfiable", lhs, rhs),
                         visitorState.getPath().getLeaf());
             }
         }
-        return new EqualityConstraint(first, second, getCurrentLocation());
+        return new EqualityConstraint(lhs, rhs, getCurrentLocation());
     }
 
-    public InequalityConstraint createInequalityConstraint(Slot first, Slot second) {
-        if (first == null || second == null) {
+    public InequalityConstraint createInequalityConstraint(Slot lhs, Slot rhs) {
+        if (lhs == null || rhs == null) {
             ErrorReporter.errorAbort("Create inequality constraint with null argument. Subtype: "
-                    + first + " Supertype: " + second);
+                    + lhs + " Supertype: " + rhs);
         }
-        if (first instanceof ConstantSlot && second instanceof ConstantSlot) {
-            ConstantSlot firstConstant = (ConstantSlot) first;
-            ConstantSlot secondConstant = (ConstantSlot) second;
-            if (constraintVerifier.areEqual(firstConstant, secondConstant)) {
-                checker.report(Result.failure("inequality.constraint.unsatisfiable", first, second),
+        if (lhs instanceof ConstantSlot && rhs instanceof ConstantSlot) {
+            ConstantSlot lhsConstant = (ConstantSlot) lhs;
+            ConstantSlot rhsConstant = (ConstantSlot) rhs;
+            if (constraintVerifier.areEqual(lhsConstant, rhsConstant)) {
+                checker.report(Result.failure("inequality.constraint.unsatisfiable", lhs, rhs),
                         visitorState.getPath().getLeaf());
             }
         }
-        return new InequalityConstraint(first, second, getCurrentLocation());
+        return new InequalityConstraint(lhs, rhs, getCurrentLocation());
     }
 
-    public ComparableConstraint createComparableConstraint(Slot first, Slot second) {
-        if (first == null || second == null) {
+    public ComparableConstraint createComparableConstraint(Slot lhs, Slot rhs) {
+        if (lhs == null || rhs == null) {
             ErrorReporter.errorAbort("Create comparable constraint with null argument. Subtype: "
-                    + first + " Supertype: " + second);
+                    + lhs + " Supertype: " + rhs);
         }
-        if (first instanceof ConstantSlot && second instanceof ConstantSlot) {
-            ConstantSlot firstConstant = (ConstantSlot) first;
-            ConstantSlot secondConstant = (ConstantSlot) second;
-            if (!constraintVerifier.areComparable(firstConstant, secondConstant)) {
-                checker.report(Result.failure("comparable.constraint.unsatisfiable", first, second),
+        if (lhs instanceof ConstantSlot && rhs instanceof ConstantSlot) {
+            ConstantSlot lhsConstant = (ConstantSlot) lhs;
+            ConstantSlot rhsConstant = (ConstantSlot) rhs;
+            if (!constraintVerifier.areComparable(lhsConstant, rhsConstant)) {
+                checker.report(Result.failure("comparable.constraint.unsatisfiable", lhs, rhs),
                         visitorState.getPath().getLeaf());
             }
         }
-        return new ComparableConstraint(first, second, getCurrentLocation());
+        return new ComparableConstraint(lhs, rhs, getCurrentLocation());
     }
 
-    public CombineConstraint createCombineConstraint(Slot target, Slot decl, Slot result) {
+    public ViewpointAdaptationConstraint createViewpointAdaptationConstraint(Slot target, Slot decl,
+            Slot result) {
         if (target == null || decl == null || result == null) {
-            ErrorReporter.errorAbort("Create combine constraint with null argument. Target: " + target
-                    + " Decl: " + decl + " Result: " + result);
+            ErrorReporter.errorAbort(
+                    "Create viewpoint adaptation constraint with null argument. Target: " + target
+                            + " Decl: " + decl + " Result: " + result);
         }
-        return new CombineConstraint(target, decl, result, getCurrentLocation());
+        return new ViewpointAdaptationConstraint(target, decl, result, getCurrentLocation());
     }
 
     public PreferenceConstraint createPreferenceConstraint(VariableSlot variable, ConstantSlot goal,
@@ -154,38 +156,49 @@ public class ConstraintManager {
                 ifExistsConstraints, ifNotExistsConstraints, getCurrentLocation());
     }
 
-    private void commonArithmeticConstraintInputCheck(ArithmeticOp operation, Slot lhs, Slot rhs,
-            Slot result) {
-        if (lhs == null || rhs == null || result == null) {
-            ErrorReporter.errorAbort("Create " + operation + " constraint with null argument. LHS: "
-                    + lhs + " RHS: " + rhs + " Result: " + result);
+    private void commonArithmeticConstraintInputCheck(ArithmeticOperationKind operation,
+            Slot leftOperand, Slot rightOperand, Slot result) {
+        if (leftOperand == null || rightOperand == null || result == null) {
+            ErrorReporter.errorAbort("Create " + operation
+                    + " constraint with null argument. Left Operand: " + leftOperand
+                    + " Right Operand: " + rightOperand + " Result: " + result);
         }
     }
 
-    public AdditionConstraint createAdditionConstraint(Slot lhs, Slot rhs, Slot result) {
-        commonArithmeticConstraintInputCheck(ArithmeticOp.ADDITION, lhs, rhs, result);
-        return new AdditionConstraint(lhs, rhs, result, getCurrentLocation());
-    }
-
-    public SubtractionConstraint createSubtractionConstraint(Slot lhs, Slot rhs, Slot result) {
-        commonArithmeticConstraintInputCheck(ArithmeticOp.SUBTRACTION, lhs, rhs, result);
-        return new SubtractionConstraint(lhs, rhs, result, getCurrentLocation());
-    }
-
-    public MultiplicationConstraint createMultiplicationConstraint(Slot lhs, Slot rhs,
+    public AdditionConstraint createAdditionConstraint(Slot leftOperand, Slot rightOperand,
             Slot result) {
-        commonArithmeticConstraintInputCheck(ArithmeticOp.MULTIPLICATION, lhs, rhs, result);
-        return new MultiplicationConstraint(lhs, rhs, result, getCurrentLocation());
+        commonArithmeticConstraintInputCheck(ArithmeticOperationKind.ADDITION, leftOperand,
+                rightOperand, result);
+        return new AdditionConstraint(leftOperand, rightOperand, result, getCurrentLocation());
     }
 
-    public DivisionConstraint createDivisionConstraint(Slot lhs, Slot rhs, Slot result) {
-        commonArithmeticConstraintInputCheck(ArithmeticOp.DIVISION, lhs, rhs, result);
-        return new DivisionConstraint(lhs, rhs, result, getCurrentLocation());
+    public SubtractionConstraint createSubtractionConstraint(Slot leftOperand, Slot rightOperand,
+            Slot result) {
+        commonArithmeticConstraintInputCheck(ArithmeticOperationKind.SUBTRACTION, leftOperand,
+                rightOperand, result);
+        return new SubtractionConstraint(leftOperand, rightOperand, result, getCurrentLocation());
     }
 
-    public ModulusConstraint createModulusConstraint(Slot lhs, Slot rhs, Slot result) {
-        commonArithmeticConstraintInputCheck(ArithmeticOp.MODULUS, lhs, rhs, result);
-        return new ModulusConstraint(lhs, rhs, result, getCurrentLocation());
+    public MultiplicationConstraint createMultiplicationConstraint(Slot leftOperand,
+            Slot rightOperand, Slot result) {
+        commonArithmeticConstraintInputCheck(ArithmeticOperationKind.MULTIPLICATION, leftOperand,
+                rightOperand, result);
+        return new MultiplicationConstraint(
+                leftOperand, rightOperand, result, getCurrentLocation());
+    }
+
+    public DivisionConstraint createDivisionConstraint(Slot leftOperand, Slot rightOperand,
+            Slot result) {
+        commonArithmeticConstraintInputCheck(ArithmeticOperationKind.DIVISION, leftOperand,
+                rightOperand, result);
+        return new DivisionConstraint(leftOperand, rightOperand, result, getCurrentLocation());
+    }
+
+    public ModulusConstraint createModulusConstraint(Slot leftOperand, Slot rightOperand,
+            Slot result) {
+        commonArithmeticConstraintInputCheck(ArithmeticOperationKind.MODULUS, leftOperand,
+                rightOperand, result);
+        return new ModulusConstraint(leftOperand, rightOperand, result, getCurrentLocation());
     }
 
     private AnnotationLocation getCurrentLocation() {
@@ -210,20 +223,20 @@ public class ConstraintManager {
         }
     }
 
-    public void addEqualityConstraint(Slot first, Slot second) {
-        add(createEqualityConstraint(first, second));
+    public void addEqualityConstraint(Slot lhs, Slot rhs) {
+        add(createEqualityConstraint(lhs, rhs));
     }
 
-    public void addInequalityConstraint(Slot first, Slot second) {
-        add(createInequalityConstraint(first, second));
+    public void addInequalityConstraint(Slot lhs, Slot rhs) {
+        add(createInequalityConstraint(lhs, rhs));
     }
 
-    public void addComparableConstraint(Slot first, Slot second) {
-        add(createComparableConstraint(first, second));
+    public void addComparableConstraint(Slot lhs, Slot rhs) {
+        add(createComparableConstraint(lhs, rhs));
     }
 
-    public void addCombineConstraint(Slot target, Slot decl, Slot result) {
-        add(createCombineConstraint(target, decl, result));
+    public void addViewpointAdaptationConstraint(Slot target, Slot decl, Slot result) {
+        add(createViewpointAdaptationConstraint(target, decl, result));
     }
 
     public void addPreferenceConstraint(VariableSlot variable, ConstantSlot goal, int weight) {
@@ -235,23 +248,23 @@ public class ConstraintManager {
         add(createExistentialConstraint(slot, ifExistsConstraints, ifNotExistsConstraints));
     }
 
-    public void addAdditionConstraint(Slot lhs, Slot rhs, Slot result) {
-        add(createAdditionConstraint(lhs, rhs, result));
+    public void addAdditionConstraint(Slot leftOperand, Slot rightOperand, Slot result) {
+        add(createAdditionConstraint(leftOperand, rightOperand, result));
     }
 
-    public void addSubtractionConstraint(Slot lhs, Slot rhs, Slot result) {
-        add(createSubtractionConstraint(lhs, rhs, result));
+    public void addSubtractionConstraint(Slot leftOperand, Slot rightOperand, Slot result) {
+        add(createSubtractionConstraint(leftOperand, rightOperand, result));
     }
 
-    public void addMultiplicationConstraint(Slot lhs, Slot rhs, Slot result) {
-        add(createMultiplicationConstraint(lhs, rhs, result));
+    public void addMultiplicationConstraint(Slot leftOperand, Slot rightOperand, Slot result) {
+        add(createMultiplicationConstraint(leftOperand, rightOperand, result));
     }
 
-    public void addDivisionConstraint(Slot lhs, Slot rhs, Slot result) {
-        add(createDivisionConstraint(lhs, rhs, result));
+    public void addDivisionConstraint(Slot leftOperand, Slot rightOperand, Slot result) {
+        add(createDivisionConstraint(leftOperand, rightOperand, result));
     }
 
-    public void addModulusConstraint(Slot lhs, Slot rhs, Slot result) {
-        add(createModulusConstraint(lhs, rhs, result));
+    public void addModulusConstraint(Slot leftOperand, Slot rightOperand, Slot result) {
+        add(createModulusConstraint(leftOperand, rightOperand, result));
     }
 }

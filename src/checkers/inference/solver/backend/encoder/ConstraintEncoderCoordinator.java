@@ -31,18 +31,22 @@ import checkers.inference.solver.backend.encoder.ternary.TernaryConstraintEncode
  */
 public class ConstraintEncoderCoordinator {
 
-    public static <ConstraintEncodingT> ConstraintEncodingT dispatch(
-            BinaryConstraint constraint, BinaryConstraintEncoder<ConstraintEncodingT> encoder) {
+    public static <ConstraintEncodingT> ConstraintEncodingT dispatch(BinaryConstraint constraint,
+            BinaryConstraintEncoder<ConstraintEncodingT> encoder) {
         SlotSlotCombo combo = SlotSlotCombo.valueOf(constraint);
         switch (combo) {
             case VARIABLE_VARIABLE:
-                return encoder.encodeVariable_Variable((VariableSlot) constraint.getFirst(), (VariableSlot) constraint.getSecond());
+                return encoder.encodeVariable_Variable((VariableSlot) constraint.getLHS(),
+                        (VariableSlot) constraint.getRHS());
             case VARIABLE_CONSTANT:
-                return encoder.encodeVariable_Constant((VariableSlot) constraint.getFirst(), (ConstantSlot) constraint.getSecond());
+                return encoder.encodeVariable_Constant((VariableSlot) constraint.getLHS(),
+                        (ConstantSlot) constraint.getRHS());
             case CONSTANT_VARIABLE:
-                return encoder.encodeConstant_Variable((ConstantSlot) constraint.getFirst(), (VariableSlot) constraint.getSecond());
+                return encoder.encodeConstant_Variable((ConstantSlot) constraint.getLHS(),
+                        (VariableSlot) constraint.getRHS());
             case CONSTANT_CONSTANT:
-                return encoder.encodeConstant_Constant((ConstantSlot) constraint.getFirst(), (ConstantSlot) constraint.getSecond());
+                return encoder.encodeConstant_Constant((ConstantSlot) constraint.getLHS(),
+                        (ConstantSlot) constraint.getRHS());
         }
         return null;
     }
@@ -52,30 +56,34 @@ public class ConstraintEncoderCoordinator {
         SlotSlotCombo combo = SlotSlotCombo.valueOf(constraint);
         switch (combo) {
             case VARIABLE_VARIABLE:
-                return encoder.encodeVariable_Variable(
-                        (VariableSlot) constraint.getFirst(), (VariableSlot) constraint.getSecond(),
-                        (VariableSlot) constraint.getThird());
+                return encoder.encodeVariable_Variable((VariableSlot) constraint.getLeftOperand(),
+                        (VariableSlot) constraint.getRightOperand(),
+                        (VariableSlot) constraint.getResult());
             case VARIABLE_CONSTANT:
-                return encoder.encodeVariable_Constant(
-                        (VariableSlot) constraint.getFirst(), (ConstantSlot) constraint.getSecond(),
-                        (VariableSlot) constraint.getThird());
+                return encoder.encodeVariable_Constant((VariableSlot) constraint.getLeftOperand(),
+                        (ConstantSlot) constraint.getRightOperand(),
+                        (VariableSlot) constraint.getResult());
             case CONSTANT_VARIABLE:
-                return encoder.encodeConstant_Variable(
-                        (ConstantSlot) constraint.getFirst(), (VariableSlot) constraint.getSecond(),
-                        (VariableSlot) constraint.getThird());
+                return encoder.encodeConstant_Variable((ConstantSlot) constraint.getLeftOperand(),
+                        (VariableSlot) constraint.getRightOperand(),
+                        (VariableSlot) constraint.getResult());
             case CONSTANT_CONSTANT:
-                return encoder.encodeConstant_Constant(
-                        (ConstantSlot) constraint.getFirst(), (ConstantSlot) constraint.getSecond(),
-                        (VariableSlot) constraint.getThird());
+                return encoder.encodeConstant_Constant((ConstantSlot) constraint.getLeftOperand(),
+                        (ConstantSlot) constraint.getRightOperand(),
+                        (VariableSlot) constraint.getResult());
         }
         return null;
     }
 
-    public static <ConstraintEncodingT> ConstraintEncodingT redirect(PreferenceConstraint constraint, PreferenceConstraintEncoder<ConstraintEncodingT> encoder) {
+    public static <ConstraintEncodingT> ConstraintEncodingT redirect(
+            PreferenceConstraint constraint,
+            PreferenceConstraintEncoder<ConstraintEncodingT> encoder) {
         return encoder.encode(constraint);
     }
 
-    public static <ConstraintEncodingT> ConstraintEncodingT redirect(ExistentialConstraint constraint, ExistentialConstraintEncoder<ConstraintEncodingT> encoder) {
+    public static <ConstraintEncodingT> ConstraintEncodingT redirect(
+            ExistentialConstraint constraint,
+            ExistentialConstraintEncoder<ConstraintEncodingT> encoder) {
         return encoder.encode(constraint);
     }
 }

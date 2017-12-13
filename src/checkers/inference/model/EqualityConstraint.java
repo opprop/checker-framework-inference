@@ -26,19 +26,19 @@ import java.util.Arrays;
  */
 public class EqualityConstraint extends Constraint implements BinaryConstraint {
 
-    private final Slot first;
-    private final Slot second;
+    private final Slot lhs;
+    private final Slot rhs;
 
-    protected EqualityConstraint(Slot first, Slot second) {
-        super(Arrays.asList(first, second));
-        this.first = first;
-        this.second = second;
+    protected EqualityConstraint(Slot lhs, Slot rhs) {
+        super(Arrays.asList(lhs, rhs));
+        this.lhs = lhs;
+        this.rhs = rhs;
     }
 
-    protected EqualityConstraint(Slot first, Slot second, AnnotationLocation location) {
-        super(Arrays.asList(first, second));
-        this.first = first;
-        this.second = second;
+    protected EqualityConstraint(Slot lhs, Slot rhs, AnnotationLocation location) {
+        super(Arrays.asList(lhs, rhs));
+        this.lhs = lhs;
+        this.rhs = rhs;
     }
 
     @Override
@@ -47,25 +47,25 @@ public class EqualityConstraint extends Constraint implements BinaryConstraint {
     }
 
     @Override
-    public Slot getFirst() {
-        return first;
+    public Slot getLHS() {
+        return lhs;
     }
 
     @Override
-    public Slot getSecond() {
-        return second;
+    public Slot getRHS() {
+        return rhs;
     }
 
     @Override
-    public Constraint make(Slot first, Slot second) {
-        return new EqualityConstraint(first, second);
+    public Constraint make(Slot lhs, Slot rhs) {
+        return new EqualityConstraint(lhs, rhs);
     }
 
     @Override
     public int hashCode() {
         int result = 1;
-        result = result + ((first == null) ? 0 : first.hashCode());
-        result = result + ((second == null) ? 0 : second.hashCode());
+        result = result + ((lhs == null) ? 0 : lhs.hashCode());
+        result = result + ((rhs == null) ? 0 : rhs.hashCode());
         return result;
     }
 
@@ -78,8 +78,8 @@ public class EqualityConstraint extends Constraint implements BinaryConstraint {
         if (getClass() != obj.getClass())
             return false;
         EqualityConstraint other = (EqualityConstraint) obj;
-        if ((first.equals(other.first) && second.equals(other.second))
-                || (first.equals(other.second) && (second.equals(other.first)))) {
+        if ((lhs.equals(other.lhs) && rhs.equals(other.rhs))
+                || (lhs.equals(other.rhs) && (rhs.equals(other.lhs)))) {
             return true;
         } else {
             return false;

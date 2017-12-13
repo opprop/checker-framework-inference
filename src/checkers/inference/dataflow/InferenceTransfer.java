@@ -72,7 +72,7 @@ public class InferenceTransfer extends CFTransfer {
     }
 
     /**
-     * A CombVariable from the results of ternary will be created already by the visiting stage.
+     * A TernaryVariable from the results of ternary will be created already by the visiting stage.
      * For RefinementVariables, we don't want to try to get the result value nor LUB between sides.
      *
      */
@@ -100,7 +100,7 @@ public class InferenceTransfer extends CFTransfer {
         AnnotatedTypeMirror atm;
         if (targetTree != null) {
             // Try to use the target tree if possible.
-            // Getting the Type of a tree for a desugared compound assignment returns a comb variable
+            // Getting the Type of a tree for a desugared compound assignment returns a ternary variable
             // which is not what we want to make a refinement variable of.
             atm = typeFactory.getAnnotatedType(targetTree);
         } else {
@@ -178,7 +178,7 @@ public class InferenceTransfer extends CFTransfer {
         AnnotatedTypeMirror atm;
         if (targetTree != null) {
             // Try to use the target tree if possible.
-            // Getting the Type of a tree for a desugared compound assignment returns a comb variable
+            // Getting the Type of a tree for a desugared compound assignment returns a ternary variable
             // which is not what we want to make a refinement variable of.
             atm = typeFactory.getAnnotatedType(targetTree);
         } else {

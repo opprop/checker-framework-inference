@@ -2,7 +2,7 @@ package checkers.inference.solver;
 
 import checkers.inference.InferenceSolution;
 import checkers.inference.InferenceSolver;
-import checkers.inference.model.CombVariableSlot;
+import checkers.inference.model.TernaryVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.ExistentialVariableSlot;
@@ -92,7 +92,7 @@ public class DebugSolver implements InferenceSolver {
         typeToSlots.put(VariableSlot.class, new ArrayList<Slot>());
         typeToSlots.put(RefinementVariableSlot.class, new ArrayList<Slot>());
         typeToSlots.put(ExistentialVariableSlot.class, new ArrayList<Slot>());
-        typeToSlots.put(CombVariableSlot.class, new ArrayList<Slot>());
+        typeToSlots.put(TernaryVariableSlot.class, new ArrayList<Slot>());
         typeToSlots.put(ConstantSlot.class, new ArrayList<Slot>());
 
         for (final Slot slot : slots) {

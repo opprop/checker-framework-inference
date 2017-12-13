@@ -91,7 +91,7 @@ public class SubtypeConstraint extends Constraint implements BinaryConstraint {
      * @return getSubtype
      */
     @Override
-    public Slot getFirst() {
+    public Slot getLHS() {
         return getSubtype();
     }
 
@@ -99,12 +99,12 @@ public class SubtypeConstraint extends Constraint implements BinaryConstraint {
      * @return getSupertype
      */
     @Override
-    public Slot getSecond() {
+    public Slot getRHS() {
         return getSupertype();
     }
 
     @Override
-    public Constraint make(Slot first, Slot second) {
-        return new SubtypeConstraint(first, second);
+    public Constraint make(Slot subtype, Slot supertype) {
+        return new SubtypeConstraint(subtype, supertype);
     }
 }

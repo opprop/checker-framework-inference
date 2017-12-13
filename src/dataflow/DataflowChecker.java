@@ -51,7 +51,7 @@ public class DataflowChecker extends BaseInferrableChecker {
             InferrableChecker realChecker, BaseAnnotatedTypeFactory realTypeFactory,
             SlotManager slotManager, ConstraintManager constraintManager) {
         DataflowInferenceAnnotatedTypeFactory dataflowInferenceTypeFactory = new DataflowInferenceAnnotatedTypeFactory(
-                inferenceChecker, realChecker.withCombineConstraints(), realTypeFactory, realChecker,
+                inferenceChecker, realChecker.withViewpointAdaptationConstraints(), realTypeFactory, realChecker,
                 slotManager, constraintManager);
         return dataflowInferenceTypeFactory;
     }

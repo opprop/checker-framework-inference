@@ -9,8 +9,8 @@ import org.sat4j.core.VecInt;
 
 import checkers.inference.SlotManager;
 import checkers.inference.model.AdditionConstraint;
-import checkers.inference.model.CombVariableSlot;
-import checkers.inference.model.CombineConstraint;
+import checkers.inference.model.TernaryVariableSlot;
+import checkers.inference.model.ViewpointAdaptationConstraint;
 import checkers.inference.model.ComparableConstraint;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
@@ -109,7 +109,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
                 };
             }
 
-        }.accept(constraint.getFirst(), constraint.getSecond(), constraint);
+        }.accept(constraint.getLHS(), constraint.getRHS(), constraint);
 
     }
 
@@ -142,7 +142,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
                 };
             }
 
-        }.accept(constraint.getFirst(), constraint.getSecond(), constraint);
+        }.accept(constraint.getLHS(), constraint.getRHS(), constraint);
     }
 
 
@@ -236,7 +236,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
     }
 
     @Override
-    public VecInt[] serialize(CombVariableSlot slot) {
+    public VecInt[] serialize(TernaryVariableSlot slot) {
         // doesn't really mean anything
         return null;
     }
@@ -254,7 +254,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
     }
 
     @Override
-    public VecInt[] serialize(CombineConstraint combineConstraint) {
+    public VecInt[] serialize(ViewpointAdaptationConstraint viewpointAdaptationConstraint) {
         // does this just say that the result is a subtype of the other 2?
         // not sure what this means
         return emptyClauses;

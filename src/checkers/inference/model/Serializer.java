@@ -30,7 +30,7 @@ public interface Serializer<SlotEncodingT, ConstraintEncodingT> {
 
     ConstraintEncodingT serialize(ExistentialConstraint constraint);
 
-    ConstraintEncodingT serialize(CombineConstraint combineConstraint);
+    ConstraintEncodingT serialize(ViewpointAdaptationConstraint viewpointAdaptationConstraint);
 
     ConstraintEncodingT serialize(AdditionConstraint addConstraint);
 
@@ -50,5 +50,5 @@ public interface Serializer<SlotEncodingT, ConstraintEncodingT> {
 
     SlotEncodingT serialize(RefinementVariableSlot slot);
 
-    SlotEncodingT serialize(CombVariableSlot slot);
+    SlotEncodingT serialize(TernaryVariableSlot slot);
 }

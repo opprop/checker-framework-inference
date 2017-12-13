@@ -51,7 +51,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 
 import checkers.inference.dataflow.InferenceAnalysis;
-import checkers.inference.model.CombVariableSlot;
+import checkers.inference.model.TernaryVariableSlot;
 import checkers.inference.model.ConstraintManager;
 import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
@@ -99,7 +99,7 @@ import com.sun.source.tree.Tree;
  */
 public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
-    private final boolean withCombineConstraints;
+    private final boolean withViewpointAdaptationConstraints;
     protected final VariableAnnotator variableAnnotator;
     protected final BaseAnnotatedTypeFactory realTypeFactory;
 
@@ -128,7 +128,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public InferenceAnnotatedTypeFactory(
             InferenceChecker inferenceChecker,
-            boolean withCombineConstraints,
+            boolean withViewpointAdaptationConstraints,
             BaseAnnotatedTypeFactory realTypeFactory,
             InferrableChecker realChecker,
             SlotManager slotManager,
@@ -136,7 +136,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         super(inferenceChecker, true);
 
-        this.withCombineConstraints = withCombineConstraints;
+        this.withViewpointAdaptationConstraints = withViewpointAdaptationConstraints;
         this.realTypeFactory = realTypeFactory;
         this.inferenceChecker = inferenceChecker;
         this.realChecker = realChecker;
@@ -287,17 +287,17 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         AnnotatedTypeMirror declType = this.getAnnotatedType(element);
 
-        if (withCombineConstraints) {
+        if (withViewpointAdaptationConstraints) {
             /*if (InferenceMain.DEBUG(this)) {
-                println("InferenceAnnotatedTypeFactory::postAsMemberOf: Combine constraint.")
+                println("InferenceAnnotatedTypeFactory::postAsMemberOf: Viewpoint Adaptation constraint.")
             }*/
             Slot recvSlot = slotManager.getVariableSlot(owner);
             Slot declSlot = slotManager.getVariableSlot(declType);
-            final CombVariableSlot combSlot = slotManager
-                    .createCombVariableSlot(recvSlot, declSlot);
-            constraintManager.addCombineConstraint(recvSlot, declSlot, combSlot);
+            final TernaryVariableSlot ternarySlot =
+                    slotManager.createTernaryVariableSlot(recvSlot, declSlot);
+            constraintManager.addViewpointAdaptationConstraint(recvSlot, declSlot, ternarySlot);
 
-            type.replaceAnnotation(slotManager.getAnnotation(combSlot));
+            type.replaceAnnotation(slotManager.getAnnotation(ternarySlot));
         }
     }
 
@@ -319,9 +319,9 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             final AnnotatedTypeVariable declaredTypeParam = (AnnotatedTypeVariable) declaredTypeParameters.get(i);
             result.add(new AnnotatedTypeParameterBounds(declaredTypeParam.getUpperBound(), declaredTypeParam.getLowerBound()));
 
-            // TODO: Original InferenceAnnotatedTypeFactory#typeVariablesFromUse would create a combine constraint
+            // TODO: Original InferenceAnnotatedTypeFactory#typeVariablesFromUse would create a viewpoint adaptation constraint
             // TODO: between the useType and the effectiveUpperBound of the declaredTypeParameter
-            // TODO: and then copy the annotations from the type with the CombVars to the declared type
+            // TODO: and then copy the annotations from the type with the TernaryVars to the declared type
         }
 
         return result;
@@ -330,7 +330,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * @see org.checkerframework.checker.type.AnnotatedTypeFactory#methodFromUse(com.sun.source.tree.MethodInvocationTree)
      * TODO: This is essentially the default implementation of AnnotatedTypeFactory.methodFromUse with a space to later
-     * TODO: add comb constraints.  One difference is how the receiver is gotten.  Perhaps we should just
+     * TODO: add ternary constraints.  One difference is how the receiver is gotten.  Perhaps we should just
      * TODO: change getSelfType?  But I am not sure where getSelfType is used yet
      * @param methodInvocationTree
      * @return
@@ -341,7 +341,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                               "Current path:\n" + this.visitorState.getPath();
         final ExecutableElement methodElem = TreeUtils.elementFromUse(methodInvocationTree);
 
-        // TODO: Used in comb constraints, going to leave it in to ensure the element has been visited
+        // TODO: Used in ternary constraints, going to leave it in to ensure the element has been visited
         final AnnotatedExecutableType methodType = getAnnotatedType(methodElem);
 
         final ExpressionTree methodSelectExpression = methodInvocationTree.getMethodSelect();
@@ -383,7 +383,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     /**
      * TODO: Similar but not the same as AnnotatedTypeFactory.constructorFromUse with space set aside from
-     * TODO: comb constraints, track down the differences with constructorFromUse
+     * TODO: ternary constraints, track down the differences with constructorFromUse
      * Note: super() and this() calls
      * @see org.checkerframework.checker.type.AnnotatedTypeFactory#constructorFromUse(com.sun.source.tree.NewClassTree)
      *

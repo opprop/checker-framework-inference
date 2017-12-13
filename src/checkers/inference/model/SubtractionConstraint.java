@@ -5,13 +5,9 @@ package checkers.inference.model;
  */
 public class SubtractionConstraint extends ArithmeticConstraint {
 
-    protected SubtractionConstraint(Slot lhs, Slot rhs, Slot result, AnnotationLocation location) {
-        super(lhs, rhs, result, location);
-    }
-
-    @Override
-    public Constraint make(Slot first, Slot second, Slot third, AnnotationLocation location) {
-        return new SubtractionConstraint(first, second, third, location);
+    protected SubtractionConstraint(Slot leftOperand, Slot rightOperand, Slot result,
+            AnnotationLocation location) {
+        super(leftOperand, rightOperand, result, location);
     }
 
     @Override

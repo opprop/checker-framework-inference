@@ -290,7 +290,7 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
         final Element varElem = TreeUtils.elementFromDeclaration(varTree);
 
         // TODO: THIS AND THE VISIT BINARY COULD INSTEAD BE PUT AT THE TOP OF THE VISIT METHOD OF VariableAnnotator
-        // TODO: AS SPECIAL CASES, THIS WOULD MEAN WE COULD LEAVE storeElementType and addPrimaryCombVar AS PRIVATE
+        // TODO: AS SPECIAL CASES, THIS WOULD MEAN WE COULD LEAVE storeElementType and addPrimaryTernaryVar AS PRIVATE
         // This happens here, unlike all the other stores because then we would have to add this code
         // to every atm/varTree combination, thoughts?
         switch (varElem.getKind()) {

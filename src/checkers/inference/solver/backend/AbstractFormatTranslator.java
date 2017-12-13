@@ -4,8 +4,8 @@ import com.microsoft.z3.Optimize;
 import checkers.inference.InferenceMain;
 import checkers.inference.model.AdditionConstraint;
 import checkers.inference.model.BinaryConstraint;
-import checkers.inference.model.CombVariableSlot;
-import checkers.inference.model.CombineConstraint;
+import checkers.inference.model.TernaryVariableSlot;
+import checkers.inference.model.ViewpointAdaptationConstraint;
 import checkers.inference.model.ComparableConstraint;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.DivisionConstraint;
@@ -28,7 +28,6 @@ import checkers.inference.solver.backend.encoder.binary.ComparableConstraintEnco
 import checkers.inference.solver.backend.encoder.binary.EqualityConstraintEncoder;
 import checkers.inference.solver.backend.encoder.binary.InequalityConstraintEncoder;
 import checkers.inference.solver.backend.encoder.binary.SubtypeConstraintEncoder;
-import checkers.inference.solver.backend.encoder.combine.CombineConstraintEncoder;
 import checkers.inference.solver.backend.encoder.existential.ExistentialConstraintEncoder;
 import checkers.inference.solver.backend.encoder.preference.PreferenceConstraintEncoder;
 import checkers.inference.solver.backend.encoder.ternary.AdditionConstraintEncoder;
@@ -37,6 +36,7 @@ import checkers.inference.solver.backend.encoder.ternary.ModulusConstraintEncode
 import checkers.inference.solver.backend.encoder.ternary.MultiplicationConstraintEncoder;
 import checkers.inference.solver.backend.encoder.ternary.SubtractionConstraintEncoder;
 import checkers.inference.solver.backend.encoder.ternary.TernaryConstraintEncoder;
+import checkers.inference.solver.backend.encoder.viewpointadaptation.ViewpointAdaptationConstraintEncoder;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.util.ConstraintVerifier;
 
@@ -121,9 +121,9 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
     protected PreferenceConstraintEncoder<ConstraintEncodingT> preferenceConstraintEncoder;
 
     /**
-     * {@code CombineConstraintEncoder} to which encoding of {@link CombineConstraint} is delegated.
+     * {@code ViewpointAdaptationConstraintEncoder} to which encoding of {@link ViewpointAdaptationConstraint} is delegated.
      */
-    protected CombineConstraintEncoder<ConstraintEncodingT> combineConstraintEncoder;
+    protected ViewpointAdaptationConstraintEncoder<ConstraintEncodingT> viewpointAdaptationConstraintEncoder;
 
     /**
      * {@code ExistentialConstraintEncoder} to which encoding of {@link ExistentialConstraint} is delegated.
@@ -174,7 +174,7 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
         inequalityConstraintEncoder = encoderFactory.createInequalityConstraintEncoder();
         comparableConstraintEncoder = encoderFactory.createComparableConstraintEncoder();
         preferenceConstraintEncoder = encoderFactory.createPreferenceConstraintEncoder();
-        combineConstraintEncoder = encoderFactory.createCombineConstraintEncoder();
+        viewpointAdaptationConstraintEncoder = encoderFactory.createViewpointAdaptationConstraintEncoder();
         existentialConstraintEncoder = encoderFactory.createExistentialConstraintEncoder();
         additionConstraintEncoder = encoderFactory.createAdditionConstraintEncoder();
         subtractionConstraintEncoder = encoderFactory.createSubtractionConstraintEncoder();
@@ -236,8 +236,8 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
     }
 
     @Override
-    public ConstraintEncodingT serialize(CombineConstraint combineConstraint) {
-        return dispatch(combineConstraint, combineConstraintEncoder);
+    public ConstraintEncodingT serialize(ViewpointAdaptationConstraint viewpointAdaptationConstraint) {
+        return dispatch(viewpointAdaptationConstraint, viewpointAdaptationConstraintEncoder);
     }
 
     @Override
@@ -286,7 +286,7 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
     }
 
     @Override
-    public SlotEncodingT serialize(CombVariableSlot slot) {
+    public SlotEncodingT serialize(TernaryVariableSlot slot) {
         return null;
     }
 }

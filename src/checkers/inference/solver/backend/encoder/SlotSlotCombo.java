@@ -8,8 +8,8 @@ import checkers.inference.solver.backend.encoder.ternary.TernaryConstraintEncode
 
 /**
  * Enum that models combination of slots in a {@link BinaryConstraint} and {@link TernaryConstraint}
- * (in this case, it's the combination of {@link TernaryConstraint#getFirst()} and
- * {@link TernaryConstraint#getSecond()}).
+ * (in this case, it's the combination of {@link TernaryConstraint#getLeftOperand()} and
+ * {@link TernaryConstraint#getRightOperand()}).
  *
  * <p>
  * {@link BinaryConstraintEncoder} and {@link TernaryConstraintEncoder} need to know the combination
@@ -64,7 +64,7 @@ public enum SlotSlotCombo {
      * @see BinaryConstraint
      */
     public static SlotSlotCombo valueOf(BinaryConstraint binaryConstraint) {
-        return valueOf(binaryConstraint.getFirst(), binaryConstraint.getSecond());
+        return valueOf(binaryConstraint.getLHS(), binaryConstraint.getRHS());
     }
 
     /**
@@ -76,7 +76,7 @@ public enum SlotSlotCombo {
      * @see TernaryConstraint
      */
     public static SlotSlotCombo valueOf(TernaryConstraint ternaryConstraint) {
-        return valueOf(ternaryConstraint.getFirst(), ternaryConstraint.getSecond());
+        return valueOf(ternaryConstraint.getLeftOperand(), ternaryConstraint.getRightOperand());
     }
 
     private static SlotSlotCombo valueOf(Slot fst, Slot snd) {

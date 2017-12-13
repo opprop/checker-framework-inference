@@ -26,7 +26,7 @@ import checkers.inference.model.VariableSlot;
 /**
  * InferenceValue extends CFValue for inference.
  *
- * leastUpperBound, creates CombVariables to represent
+ * leastUpperBound, creates TernaryVariables to represent
  * the join of two VarAnnots.
  *
  * @author mcarthur
@@ -110,7 +110,7 @@ public class InferenceValue extends CFValue {
      *
      * With a declared type and its refinement variable, we want to use the refinement variable.
      *
-     * If one variable has been merged to a comb variable, we want to use the comb
+     * If one variable has been merged to a ternary variable, we want to use the ternary
      * variable that was merged to.
      *
      * If any refinement variables for one variable has been merged to the other, we want the other.

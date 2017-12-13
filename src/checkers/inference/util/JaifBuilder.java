@@ -127,7 +127,7 @@ public class JaifBuilder {
                 if (method.getReturnType().isArray()) {
                     result += method.getReturnType().getComponentType().getSimpleName() + "[]";
                 } else if (method.getReturnType().isPrimitive() || method.getReturnType()
-                        .getCanonicalName().contentEquals("java.lang.String")) {
+                        .getCanonicalName().contentEquals(String.class.getCanonicalName())) {
                     result += method.getReturnType().getSimpleName();
                 } else {
                     result += method.getReturnType().getCanonicalName();

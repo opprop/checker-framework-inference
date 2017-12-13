@@ -10,6 +10,7 @@ import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.javacutil.ErrorReporter;
 import checkers.inference.InferenceAnnotatedTypeFactory;
 import checkers.inference.VariableAnnotator;
+import checkers.inference.model.ArithmeticConstraint.ArithmeticOp;
 import checkers.inference.util.ConstraintVerifier;
 
 /**
@@ -153,7 +154,7 @@ public class ConstraintManager {
                 ifExistsConstraints, ifNotExistsConstraints, getCurrentLocation());
     }
 
-    private void commonArithmeticConstraintInputCheck(String operation, Slot lhs, Slot rhs,
+    private void commonArithmeticConstraintInputCheck(ArithmeticOp operation, Slot lhs, Slot rhs,
             Slot result) {
         if (lhs == null || rhs == null || result == null) {
             ErrorReporter.errorAbort("Create " + operation + " constraint with null argument. LHS: "
@@ -162,28 +163,28 @@ public class ConstraintManager {
     }
 
     public AdditionConstraint createAdditionConstraint(Slot lhs, Slot rhs, Slot result) {
-        commonArithmeticConstraintInputCheck("addition", lhs, rhs, result);
+        commonArithmeticConstraintInputCheck(ArithmeticOp.ADDITION, lhs, rhs, result);
         return new AdditionConstraint(lhs, rhs, result, getCurrentLocation());
     }
 
     public SubtractionConstraint createSubtractionConstraint(Slot lhs, Slot rhs, Slot result) {
-        commonArithmeticConstraintInputCheck("subtraction", lhs, rhs, result);
+        commonArithmeticConstraintInputCheck(ArithmeticOp.SUBTRACTION, lhs, rhs, result);
         return new SubtractionConstraint(lhs, rhs, result, getCurrentLocation());
     }
 
     public MultiplicationConstraint createMultiplicationConstraint(Slot lhs, Slot rhs,
             Slot result) {
-        commonArithmeticConstraintInputCheck("multiplication", lhs, rhs, result);
+        commonArithmeticConstraintInputCheck(ArithmeticOp.MULTIPLICATION, lhs, rhs, result);
         return new MultiplicationConstraint(lhs, rhs, result, getCurrentLocation());
     }
 
     public DivisionConstraint createDivisionConstraint(Slot lhs, Slot rhs, Slot result) {
-        commonArithmeticConstraintInputCheck("division", lhs, rhs, result);
+        commonArithmeticConstraintInputCheck(ArithmeticOp.DIVISION, lhs, rhs, result);
         return new DivisionConstraint(lhs, rhs, result, getCurrentLocation());
     }
 
     public ModulusConstraint createModulusConstraint(Slot lhs, Slot rhs, Slot result) {
-        commonArithmeticConstraintInputCheck("modulus", lhs, rhs, result);
+        commonArithmeticConstraintInputCheck(ArithmeticOp.MODULUS, lhs, rhs, result);
         return new ModulusConstraint(lhs, rhs, result, getCurrentLocation());
     }
 

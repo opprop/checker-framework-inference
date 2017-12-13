@@ -1,8 +1,6 @@
 package checkers.inference.model;
 
 import java.util.Arrays;
-import org.checkerframework.javacutil.ErrorReporter;
-import com.sun.source.tree.Tree.Kind;
 
 /**
  * Represents a constraint between the result of an arithmetic operation between two operands.
@@ -13,6 +11,10 @@ import com.sun.source.tree.Tree.Kind;
  * This abstract class defines the fields and accessors shared by all arithmetic operations.
  */
 public abstract class ArithmeticConstraint extends Constraint implements TernaryConstraint {
+
+    public enum ArithmeticOp {
+        ADDITION, SUBTRACTION, MULTIPLICATION, DIVISION, MODULUS
+    }
 
     private final Slot lefthandside;
     private final Slot righthandside;
@@ -64,18 +66,17 @@ public abstract class ArithmeticConstraint extends Constraint implements Ternary
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ArithmeticConstraint other = (ArithmeticConstraint) obj;
-        if (lefthandside.equals(other.lefthandside) && righthandside.equals(other.righthandside)
-                && result.equals(other.result)) {
-            return true;
-        } else {
+        }
+        if (obj == null) {
             return false;
         }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        ArithmeticConstraint other = (ArithmeticConstraint) obj;
+        return lefthandside.equals(other.lefthandside) && righthandside.equals(other.righthandside)
+                && result.equals(other.result);
     }
 }

@@ -110,6 +110,9 @@ public class JaifBuilder {
      * @return the header
      */
     private String buildAnnotationHeader(Class<? extends Annotation> annotation) {
+        // TODO: rewrite this method from scratch. We don't account for all possible cases of
+        // outputs at this moment (eg annotation-field arrays). A clean rewrite should
+        // exercise and be tested for all valid annotation field types.
         String result = "";
         String packageName = annotation.getPackage().toString();
         result += packageName + ":\n";

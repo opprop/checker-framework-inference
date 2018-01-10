@@ -34,6 +34,9 @@ import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
  * arguments, creates corresponding solving strategy and solver factory, invokes
  * strategy and returns the solution.
  * 
+ * @see SolverFactory
+ * @see SolvingStrategy
+ *
  * @author jianchu
  *
  */

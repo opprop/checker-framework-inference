@@ -57,6 +57,7 @@ import checkers.inference.model.VariableSlot;
 import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.ConstantToVariableAnnotator;
 import checkers.inference.util.InferenceUtil;
+import checkers.inference.util.defaults.InferenceQualifierDefaults;
 
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
@@ -191,6 +192,11 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public TreeAnnotator createTreeAnnotator() {
         return new ListTreeAnnotator(new ImplicitsTreeAnnotator(this), new InferenceTreeAnnotator(this,
                 realChecker, realTypeFactory, variableAnnotator, slotManager));
+    }
+
+    @Override
+    protected QualifierDefaults createQualifierDefaults() {
+        return new InferenceQualifierDefaults(elements, this);
     }
 
     public AnnotationMirror getVarAnnot() {
@@ -521,7 +527,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         // typeAnnotator.visit(type, null);
-        // defaults.annotate(tree, type);
+         defaults.annotate(tree, type);
 
         if (iUseFlow) {
             CFValue as = getInferredValueFor(tree);

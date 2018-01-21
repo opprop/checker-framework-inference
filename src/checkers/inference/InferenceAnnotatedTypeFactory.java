@@ -204,7 +204,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     public ConstantToVariableAnnotator getNewConstantToVariableAnnotator() {
-        return new ConstantToVariableAnnotator(realTop, varAnnot, variableAnnotator, slotManager);
+        return new ConstantToVariableAnnotator(realTop, varAnnot);
     }
 
     @Override

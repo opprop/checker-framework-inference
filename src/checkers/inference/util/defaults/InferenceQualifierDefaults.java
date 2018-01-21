@@ -9,10 +9,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.defaults.Default;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 
-import checkers.inference.InferenceMain;
-import checkers.inference.SlotManager;
-import checkers.inference.model.ConstantSlot;
 import checkers.inference.qual.VarAnnot;
+import checkers.inference.util.ConstantToVariableAnnotator;
 
 public class InferenceQualifierDefaults extends QualifierDefaults {
 
@@ -28,19 +26,15 @@ public class InferenceQualifierDefaults extends QualifierDefaults {
 
     public class InferenceDefaultApplierElement extends DefaultApplierElement {
 
-        private final SlotManager slotManager;
-
         public InferenceDefaultApplierElement(AnnotatedTypeFactory atypeFactory, Element scope,
                 AnnotatedTypeMirror type, boolean applyToTypeVar) {
             super(atypeFactory, scope, type, applyToTypeVar);
-            this.slotManager = InferenceMain.getInstance().getSlotManager();
         }
 
         @Override
         public void applyDefault(Default def) {
             this.location = def.location;
-            ConstantSlot constantSlot = slotManager.createConstantSlot(def.anno);
-            AnnotationMirror equivalentVarAnno = slotManager.getAnnotation(constantSlot);
+            AnnotationMirror equivalentVarAnno = ConstantToVariableAnnotator.createEquivalentVarAnno(def.anno);
             impl.visit(type, equivalentVarAnno);
         }
 

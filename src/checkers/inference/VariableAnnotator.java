@@ -166,8 +166,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
                                                                    varAnnot, this);
 
         this.impliedTypeAnnotator = new ImpliedTypeAnnotator(inferenceTypeFactory, slotManager, existentialInserter);
-        this.constantToVariableAnnotator = new ConstantToVariableAnnotator(realTop, varAnnot, this,
-                                                                           slotManager);
+        this.constantToVariableAnnotator = new ConstantToVariableAnnotator(realTop, varAnnot);
     }
 
 
@@ -262,7 +261,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
     }
 
     public ConstantSlot createConstant(final AnnotationMirror value, final Tree tree) {
-        final ConstantSlot constantSlot = createConstant(value);
+        final ConstantSlot constantSlot = slotManager.createConstantSlot(value);
 
 //        if (path != null) {
 //            Element element = inferenceTypeFactory.getTreeUtils().getElement(path);
@@ -277,11 +276,6 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
                         annotations);
         treeToVarAnnoPair.put(tree, varATMPair);
         logger.fine("Created variable for tree:\n" + constantSlot.getId() + " => " + tree);
-        return constantSlot;
-    }
-
-    public ConstantSlot createConstant(final AnnotationMirror value) {
-        final ConstantSlot constantSlot = slotManager.createConstantSlot(value);
         return constantSlot;
     }
 
@@ -513,7 +507,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             AnnotationLocation location = treeToLocation(tree);
             variable = replaceOrCreateEquivalentVarAnno(atm, tree, location);
             final Pair<VariableSlot, Set<? extends AnnotationMirror>> varATMPair = Pair
-                    .<VariableSlot, Set<? extends AnnotationMirror>> of(variable,
+                    .of(variable,
                     AnnotationUtils.createAnnotationSet());
 
             treeToVarAnnoPair.put(tree, varATMPair);

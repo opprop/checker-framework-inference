@@ -589,7 +589,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * @see checkers.inference.VariableAnnotator#annotateElementFromStore
      */
     public void storeElementType(final Element element, final AnnotatedTypeMirror atm) {
-        elementToAtm.put(element, atm);
+        elementToAtm.put(element, atm.shallowCopy(true));
     }
 
     /**

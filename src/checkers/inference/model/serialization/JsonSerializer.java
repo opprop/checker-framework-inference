@@ -142,6 +142,15 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
     protected static final String EXISTENTIAL_THEN = "then";
     protected static final String EXISTENTIAL_ELSE = "else";
 
+    protected static final String ADDITION_CONSTRAINT_KEY = "addition";
+    protected static final String SUBTRACTION_CONSTRAINT_KEY = "subtraction";
+    protected static final String MULTIPLICATION_CONSTRAINT_KEY = "multiplication";
+    protected static final String DIVISION_CONSTRAINT_KEY = "division";
+    protected static final String MODULUS_CONSTRAINT_KEY = "modulus";
+    protected static final String ARITH_LEFT_OPERAND = "left_operand";
+    protected static final String ARITH_RIGHT_OPERAND = "right_operand";
+    protected static final String ARITH_RESULT = "result";
+
     protected static final String VERSION = "2";
 
     protected static final String VAR_PREFIX = "var:";
@@ -330,28 +339,83 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
         return obj;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public JSONObject serialize(AdditionConstraint addConstraint) {
-        return null;
+    public JSONObject serialize(AdditionConstraint constraint) {
+        if (constraint.getLeftOperand() == null || constraint.getRightOperand() == null
+                || constraint.getResult() == null) {
+            return null;
+        }
+
+        JSONObject obj = new JSONObject();
+        obj.put(CONSTRAINT_KEY, ADDITION_CONSTRAINT_KEY);
+        obj.put(ARITH_LEFT_OPERAND, constraint.getLeftOperand().serialize(this));
+        obj.put(ARITH_RIGHT_OPERAND, constraint.getRightOperand().serialize(this));
+        obj.put(ARITH_RESULT, constraint.getResult().serialize(this));
+        return obj;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public JSONObject serialize(SubtractionConstraint subConstraint) {
-        return null;
+    public JSONObject serialize(SubtractionConstraint constraint) {
+        if (constraint.getLeftOperand() == null || constraint.getRightOperand() == null
+                || constraint.getResult() == null) {
+            return null;
+        }
+
+        JSONObject obj = new JSONObject();
+        obj.put(CONSTRAINT_KEY, SUBTRACTION_CONSTRAINT_KEY);
+        obj.put(ARITH_LEFT_OPERAND, constraint.getLeftOperand().serialize(this));
+        obj.put(ARITH_RIGHT_OPERAND, constraint.getRightOperand().serialize(this));
+        obj.put(ARITH_RESULT, constraint.getResult().serialize(this));
+        return obj;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public JSONObject serialize(MultiplicationConstraint mulConstraint) {
-        return null;
+    public JSONObject serialize(MultiplicationConstraint constraint) {
+        if (constraint.getLeftOperand() == null || constraint.getRightOperand() == null
+                || constraint.getResult() == null) {
+            return null;
+        }
+
+        JSONObject obj = new JSONObject();
+        obj.put(CONSTRAINT_KEY, MULTIPLICATION_CONSTRAINT_KEY);
+        obj.put(ARITH_LEFT_OPERAND, constraint.getLeftOperand().serialize(this));
+        obj.put(ARITH_RIGHT_OPERAND, constraint.getRightOperand().serialize(this));
+        obj.put(ARITH_RESULT, constraint.getResult().serialize(this));
+        return obj;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public JSONObject serialize(DivisionConstraint divConstraint) {
-        return null;
+    public JSONObject serialize(DivisionConstraint constraint) {
+        if (constraint.getLeftOperand() == null || constraint.getRightOperand() == null
+                || constraint.getResult() == null) {
+            return null;
+        }
+
+        JSONObject obj = new JSONObject();
+        obj.put(CONSTRAINT_KEY, DIVISION_CONSTRAINT_KEY);
+        obj.put(ARITH_LEFT_OPERAND, constraint.getLeftOperand().serialize(this));
+        obj.put(ARITH_RIGHT_OPERAND, constraint.getRightOperand().serialize(this));
+        obj.put(ARITH_RESULT, constraint.getResult().serialize(this));
+        return obj;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
-    public JSONObject serialize(ModulusConstraint modConstraint) {
-        return null;
+    public JSONObject serialize(ModulusConstraint constraint) {
+        if (constraint.getLeftOperand() == null || constraint.getRightOperand() == null
+                || constraint.getResult() == null) {
+            return null;
+        }
+
+        JSONObject obj = new JSONObject();
+        obj.put(CONSTRAINT_KEY, MODULUS_CONSTRAINT_KEY);
+        obj.put(ARITH_LEFT_OPERAND, constraint.getLeftOperand().serialize(this));
+        obj.put(ARITH_RIGHT_OPERAND, constraint.getRightOperand().serialize(this));
+        obj.put(ARITH_RESULT, constraint.getResult().serialize(this));
+        return obj;
     }
 }

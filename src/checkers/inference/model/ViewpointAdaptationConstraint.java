@@ -29,18 +29,8 @@ public class ViewpointAdaptationConstraint extends Constraint implements Ternary
         return decl;
     }
 
-    @Override
-    public Slot getResult() {
-        return result;
-    }
-
-    @Override
-    public <S, T> T serialize(Serializer<S, T> serializer) {
-        return serializer.serialize(this);
-    }
-
-    // First = Target, Second = Declared
-    // See ConstraintEncoderCoordinator
+    // LeftOperand = Target, RightOperand = Declared
+    // See {@link ConstraintEncoderCoordinator}
     @Override
     public Slot getLeftOperand() {
         return getTarget();
@@ -49,6 +39,16 @@ public class ViewpointAdaptationConstraint extends Constraint implements Ternary
     @Override
     public Slot getRightOperand() {
         return getDeclared();
+    }
+
+    @Override
+    public Slot getResult() {
+        return result;
+    }
+
+    @Override
+    public <S, T> T serialize(Serializer<S, T> serializer) {
+        return serializer.serialize(this);
     }
 
     @Override

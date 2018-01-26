@@ -92,20 +92,20 @@ public class ConstraintEncoderCoordinator {
         SlotSlotCombo combo = SlotSlotCombo.valueOf(constraint);
         switch (combo) {
             case VARIABLE_VARIABLE:
-                return encoder.encodeVariable_Variable((VariableSlot) constraint.getLeftOperand(),
-                        (VariableSlot) constraint.getRightOperand(),
+                return encoder.encodeVariable_Variable((VariableSlot) constraint.getTarget(),
+                        (VariableSlot) constraint.getDeclared(),
                         (VariableSlot) constraint.getResult());
             case VARIABLE_CONSTANT:
-                return encoder.encodeVariable_Constant((VariableSlot) constraint.getLeftOperand(),
-                        (ConstantSlot) constraint.getRightOperand(),
+                return encoder.encodeVariable_Constant((VariableSlot) constraint.getTarget(),
+                        (ConstantSlot) constraint.getDeclared(),
                         (VariableSlot) constraint.getResult());
             case CONSTANT_VARIABLE:
-                return encoder.encodeConstant_Variable((ConstantSlot) constraint.getLeftOperand(),
-                        (VariableSlot) constraint.getRightOperand(),
+                return encoder.encodeConstant_Variable((ConstantSlot) constraint.getTarget(),
+                        (VariableSlot) constraint.getDeclared(),
                         (VariableSlot) constraint.getResult());
             case CONSTANT_CONSTANT:
-                return encoder.encodeConstant_Constant((ConstantSlot) constraint.getLeftOperand(),
-                        (ConstantSlot) constraint.getRightOperand(),
+                return encoder.encodeConstant_Constant((ConstantSlot) constraint.getTarget(),
+                        (ConstantSlot) constraint.getDeclared(),
                         (VariableSlot) constraint.getResult());
         }
         return null;

@@ -32,15 +32,7 @@ public interface Serializer<SlotEncodingT, ConstraintEncodingT> {
 
     ConstraintEncodingT serialize(ViewpointAdaptationConstraint viewpointAdaptationConstraint);
 
-    ConstraintEncodingT serialize(AdditionConstraint addConstraint);
-
-    ConstraintEncodingT serialize(SubtractionConstraint subConstraint);
-
-    ConstraintEncodingT serialize(MultiplicationConstraint mulConstraint);
-
-    ConstraintEncodingT serialize(DivisionConstraint divConstraint);
-
-    ConstraintEncodingT serialize(ModulusConstraint modConstraint);
+    ConstraintEncodingT serialize(ArithmeticConstraint arithmeticConstraint);
 
     SlotEncodingT serialize(VariableSlot slot);
 

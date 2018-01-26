@@ -7,12 +7,8 @@ import checkers.inference.solver.backend.encoder.binary.InequalityConstraintEnco
 import checkers.inference.solver.backend.encoder.binary.SubtypeConstraintEncoder;
 import checkers.inference.solver.backend.encoder.existential.ExistentialConstraintEncoder;
 import checkers.inference.solver.backend.encoder.preference.PreferenceConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.AdditionConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.DivisionConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.ModulusConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.MultiplicationConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.SubtractionConstraintEncoder;
-import checkers.inference.solver.backend.encoder.viewpointadaptation.ViewpointAdaptationConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.ArithmeticConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.ViewpointAdaptationConstraintEncoder;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.util.ConstraintVerifier;
 
@@ -63,27 +59,7 @@ public class LogiQLConstraintEncoderFactory extends AbstractConstraintEncoderFac
     }
 
     @Override
-    public AdditionConstraintEncoder<String> createAdditionConstraintEncoder() {
-        return null;
-    }
-
-    @Override
-    public SubtractionConstraintEncoder<String> createSubtractionConstraintEncoder() {
-        return null;
-    }
-
-    @Override
-    public MultiplicationConstraintEncoder<String> createMultiplicationConstraintEncoder() {
-        return null;
-    }
-
-    @Override
-    public DivisionConstraintEncoder<String> createDivisionConstraintEncoder() {
-        return null;
-    }
-
-    @Override
-    public ModulusConstraintEncoder<String> createModulusConstraintEncoder() {
+    public ArithmeticConstraintEncoder<String> createArithmeticConstraintEncoder() {
         return null;
     }
 }

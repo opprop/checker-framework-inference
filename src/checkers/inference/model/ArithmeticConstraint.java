@@ -10,25 +10,28 @@ import java.util.Arrays;
  * <p>
  * This abstract class defines the fields and accessors shared by all arithmetic operations.
  */
-
-// TODO: merge the 5 subclasses into here
-
-public abstract class ArithmeticConstraint extends Constraint implements TernaryConstraint {
+public class ArithmeticConstraint extends Constraint implements TernaryConstraint {
 
     public enum ArithmeticOperationKind {
         ADDITION, SUBTRACTION, MULTIPLICATION, DIVISION, MODULUS
     }
 
+    private final ArithmeticOperationKind operation;
     private final Slot leftOperand;
     private final Slot rightOperand;
     private final Slot result;
 
-    protected ArithmeticConstraint(Slot leftOperand, Slot rightOperand, Slot result,
-            AnnotationLocation location) {
+    protected ArithmeticConstraint(ArithmeticOperationKind operation, Slot leftOperand,
+            Slot rightOperand, Slot result, AnnotationLocation location) {
         super(Arrays.asList(leftOperand, rightOperand, result), location);
+        this.operation = operation;
         this.leftOperand = leftOperand;
         this.rightOperand = rightOperand;
         this.result = result;
+    }
+
+    public ArithmeticOperationKind getOperation() {
+        return operation;
     }
 
     @Override
@@ -47,12 +50,19 @@ public abstract class ArithmeticConstraint extends Constraint implements Ternary
     }
 
     @Override
+    public <S, T> T serialize(Serializer<S, T> serializer) {
+        return serializer.serialize(this);
+    }
+
+    @Override
     public int hashCode() {
-        int hc = 1;
-        hc += ((leftOperand == null) ? 0 : leftOperand.hashCode());
-        hc += ((rightOperand == null) ? 0 : rightOperand.hashCode());
-        hc += ((result == null) ? 0 : result.hashCode());
-        return hc;
+        final int p = 31;
+        int r = 1;
+        r = p * r + ((operation == null) ? 0 : operation.hashCode());
+        r = p * r + ((leftOperand == null) ? 0 : leftOperand.hashCode());
+        r = p * r + ((rightOperand == null) ? 0 : rightOperand.hashCode());
+        r = p * r + ((operation == null) ? 0 : operation.hashCode());
+        return r;
     }
 
     @Override
@@ -60,14 +70,11 @@ public abstract class ArithmeticConstraint extends Constraint implements Ternary
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
         ArithmeticConstraint other = (ArithmeticConstraint) obj;
-        return leftOperand.equals(other.leftOperand) && rightOperand.equals(other.rightOperand)
-                && result.equals(other.result);
+        return operation.equals(other.operation) && leftOperand.equals(other.leftOperand)
+                && rightOperand.equals(other.rightOperand) && result.equals(other.result);
     }
 }

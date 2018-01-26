@@ -4,30 +4,24 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
 import org.sat4j.core.VecInt;
-
 import checkers.inference.SlotManager;
-import checkers.inference.model.AdditionConstraint;
-import checkers.inference.model.TernaryVariableSlot;
-import checkers.inference.model.ViewpointAdaptationConstraint;
+import checkers.inference.model.ArithmeticConstraint;
 import checkers.inference.model.ComparableConstraint;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
-import checkers.inference.model.DivisionConstraint;
 import checkers.inference.model.EqualityConstraint;
 import checkers.inference.model.ExistentialConstraint;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.InequalityConstraint;
-import checkers.inference.model.ModulusConstraint;
-import checkers.inference.model.MultiplicationConstraint;
 import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Serializer;
 import checkers.inference.model.Slot;
-import checkers.inference.model.SubtractionConstraint;
 import checkers.inference.model.SubtypeConstraint;
+import checkers.inference.model.TernaryVariableSlot;
 import checkers.inference.model.VariableSlot;
+import checkers.inference.model.ViewpointAdaptationConstraint;
 
 /**
  */
@@ -266,27 +260,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
     }
 
     @Override
-    public VecInt[] serialize(AdditionConstraint addConstraint) {
-        return emptyClauses;
-    }
-
-    @Override
-    public VecInt[] serialize(SubtractionConstraint subConstraint) {
-        return emptyClauses;
-    }
-
-    @Override
-    public VecInt[] serialize(MultiplicationConstraint mulConstraint) {
-        return emptyClauses;
-    }
-
-    @Override
-    public VecInt[] serialize(DivisionConstraint divConstraint) {
-        return emptyClauses;
-    }
-
-    @Override
-    public VecInt[] serialize(ModulusConstraint modConstraint) {
+    public VecInt[] serialize(ArithmeticConstraint arithmeticConstraint) {
         return emptyClauses;
     }
 

@@ -1,22 +1,18 @@
 package checkers.inference.solver.backend.z3.encoder;
 
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
 import checkers.inference.solver.backend.encoder.AbstractConstraintEncoderFactory;
 import checkers.inference.solver.backend.encoder.binary.ComparableConstraintEncoder;
 import checkers.inference.solver.backend.encoder.binary.EqualityConstraintEncoder;
 import checkers.inference.solver.backend.encoder.binary.InequalityConstraintEncoder;
 import checkers.inference.solver.backend.encoder.existential.ExistentialConstraintEncoder;
 import checkers.inference.solver.backend.encoder.preference.PreferenceConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.AdditionConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.DivisionConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.ModulusConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.MultiplicationConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.SubtractionConstraintEncoder;
-import checkers.inference.solver.backend.encoder.viewpointadaptation.ViewpointAdaptationConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.ArithmeticConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.ViewpointAdaptationConstraintEncoder;
 import checkers.inference.solver.backend.z3.Z3BitVectorFormatTranslator;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.util.ConstraintVerifier;
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
 
 /**
  * Z3 implementation of {@link checkers.inference.solver.backend.encoder.ConstraintEncoderFactory}.
@@ -72,27 +68,7 @@ public class Z3BitVectorConstraintEncoderFactory extends AbstractConstraintEncod
     }
 
     @Override
-    public AdditionConstraintEncoder<BoolExpr> createAdditionConstraintEncoder() {
-        return null;
-    }
-
-    @Override
-    public SubtractionConstraintEncoder<BoolExpr> createSubtractionConstraintEncoder() {
-        return null;
-    }
-
-    @Override
-    public MultiplicationConstraintEncoder<BoolExpr> createMultiplicationConstraintEncoder() {
-        return null;
-    }
-
-    @Override
-    public DivisionConstraintEncoder<BoolExpr> createDivisionConstraintEncoder() {
-        return null;
-    }
-
-    @Override
-    public ModulusConstraintEncoder<BoolExpr> createModulusConstraintEncoder() {
+    public ArithmeticConstraintEncoder<BoolExpr> createArithmeticConstraintEncoder() {
         return null;
     }
 }

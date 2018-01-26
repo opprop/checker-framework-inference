@@ -1,20 +1,26 @@
 package checkers.inference.solver.backend.encoder;
 
+import checkers.inference.model.ArithmeticConstraint;
 import checkers.inference.model.BinaryConstraint;
 import checkers.inference.model.Slot;
 import checkers.inference.model.TernaryConstraint;
+import checkers.inference.model.ViewpointAdaptationConstraint;
 import checkers.inference.solver.backend.encoder.binary.BinaryConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.TernaryConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.ArithmeticConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.ViewpointAdaptationConstraintEncoder;
 
 /**
- * Enum that models combination of slots in a {@link BinaryConstraint} and {@link TernaryConstraint}
- * (in this case, it's the combination of {@link TernaryConstraint#getLeftOperand()} and
- * {@link TernaryConstraint#getRightOperand()}).
+ * Enum that models combination of slots in a {@link BinaryConstraint} and a
+ * {@link TernaryConstraint}. In BinaryConstraint, it is the combination of
+ * {@link BinaryConstraint#getLHS()} and {@link BinaryConstraint#getRHS()}. In TernaryConstraint
+ * it's the combination of {@link TernaryConstraint#getLeftOperand()} and
+ * {@link TernaryConstraint#getRightOperand()}.
  *
  * <p>
- * {@link BinaryConstraintEncoder} and {@link TernaryConstraintEncoder} need to know the combination
- * of {@link Slot.Kind} to determine which encodeXXX() method in {@link BinaryConstraintEncoder} and
- * {@link TernaryConstraintEncoder} should be called.
+ * {@link BinaryConstraintEncoder} and the TernaryConstraint encoders
+ * {@link ArithmeticConstraintEncoder} and {@link ViewpointAdaptationConstraintEncoder} need to know
+ * the combination of {@link Slot.Kind} to determine which encodeXXX() method in
+ * {@link BinaryConstraintEncoder} and TernaryConstraint encoders should be called.
  *
  * <p>
  * But the {@link Slot.Kind} that's needed here is coarser-grained than its original definition:
@@ -26,7 +32,9 @@ import checkers.inference.solver.backend.encoder.ternary.TernaryConstraintEncode
  * needed.
  *
  * @see ConstraintEncoderCoordinator#dispatch(BinaryConstraint, BinaryConstraintEncoder)
- * @see ConstraintEncoderCoordinator#dispatch(TernaryConstraint, TernaryConstraintEncoder)
+ * @see ConstraintEncoderCoordinator#dispatch(ArithmeticConstraint, ArithmeticConstraintEncoder)
+ * @see ConstraintEncoderCoordinator#dispatch(ViewpointAdaptationConstraint,
+ *      ViewpointAdaptationConstraintEncoder)
  */
 public enum SlotSlotCombo {
 

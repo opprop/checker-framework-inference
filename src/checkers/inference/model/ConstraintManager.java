@@ -156,49 +156,15 @@ public class ConstraintManager {
                 ifExistsConstraints, ifNotExistsConstraints, getCurrentLocation());
     }
 
-    private void commonArithmeticConstraintInputCheck(ArithmeticOperationKind operation,
+    public ArithmeticConstraint createArithmeticConstraint(ArithmeticOperationKind operation,
             Slot leftOperand, Slot rightOperand, Slot result) {
         if (leftOperand == null || rightOperand == null || result == null) {
             ErrorReporter.errorAbort("Create " + operation
                     + " constraint with null argument. Left Operand: " + leftOperand
                     + " Right Operand: " + rightOperand + " Result: " + result);
         }
-    }
-
-    public AdditionConstraint createAdditionConstraint(Slot leftOperand, Slot rightOperand,
-            Slot result) {
-        commonArithmeticConstraintInputCheck(ArithmeticOperationKind.ADDITION, leftOperand,
-                rightOperand, result);
-        return new AdditionConstraint(leftOperand, rightOperand, result, getCurrentLocation());
-    }
-
-    public SubtractionConstraint createSubtractionConstraint(Slot leftOperand, Slot rightOperand,
-            Slot result) {
-        commonArithmeticConstraintInputCheck(ArithmeticOperationKind.SUBTRACTION, leftOperand,
-                rightOperand, result);
-        return new SubtractionConstraint(leftOperand, rightOperand, result, getCurrentLocation());
-    }
-
-    public MultiplicationConstraint createMultiplicationConstraint(Slot leftOperand,
-            Slot rightOperand, Slot result) {
-        commonArithmeticConstraintInputCheck(ArithmeticOperationKind.MULTIPLICATION, leftOperand,
-                rightOperand, result);
-        return new MultiplicationConstraint(
-                leftOperand, rightOperand, result, getCurrentLocation());
-    }
-
-    public DivisionConstraint createDivisionConstraint(Slot leftOperand, Slot rightOperand,
-            Slot result) {
-        commonArithmeticConstraintInputCheck(ArithmeticOperationKind.DIVISION, leftOperand,
-                rightOperand, result);
-        return new DivisionConstraint(leftOperand, rightOperand, result, getCurrentLocation());
-    }
-
-    public ModulusConstraint createModulusConstraint(Slot leftOperand, Slot rightOperand,
-            Slot result) {
-        commonArithmeticConstraintInputCheck(ArithmeticOperationKind.MODULUS, leftOperand,
-                rightOperand, result);
-        return new ModulusConstraint(leftOperand, rightOperand, result, getCurrentLocation());
+        return new ArithmeticConstraint(
+                operation, leftOperand, rightOperand, result, getCurrentLocation());
     }
 
     private AnnotationLocation getCurrentLocation() {
@@ -248,23 +214,8 @@ public class ConstraintManager {
         add(createExistentialConstraint(slot, ifExistsConstraints, ifNotExistsConstraints));
     }
 
-    public void addAdditionConstraint(Slot leftOperand, Slot rightOperand, Slot result) {
-        add(createAdditionConstraint(leftOperand, rightOperand, result));
-    }
-
-    public void addSubtractionConstraint(Slot leftOperand, Slot rightOperand, Slot result) {
-        add(createSubtractionConstraint(leftOperand, rightOperand, result));
-    }
-
-    public void addMultiplicationConstraint(Slot leftOperand, Slot rightOperand, Slot result) {
-        add(createMultiplicationConstraint(leftOperand, rightOperand, result));
-    }
-
-    public void addDivisionConstraint(Slot leftOperand, Slot rightOperand, Slot result) {
-        add(createDivisionConstraint(leftOperand, rightOperand, result));
-    }
-
-    public void addModulusConstraint(Slot leftOperand, Slot rightOperand, Slot result) {
-        add(createModulusConstraint(leftOperand, rightOperand, result));
+    public void addArithmeticConstraint(ArithmeticOperationKind operation, Slot leftOperand,
+            Slot rightOperand, Slot result) {
+        add(createArithmeticConstraint(operation, leftOperand, rightOperand, result));
     }
 }

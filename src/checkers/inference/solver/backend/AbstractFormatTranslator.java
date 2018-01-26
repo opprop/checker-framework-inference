@@ -2,25 +2,20 @@ package checkers.inference.solver.backend;
 
 import com.microsoft.z3.Optimize;
 import checkers.inference.InferenceMain;
-import checkers.inference.model.AdditionConstraint;
+import checkers.inference.model.ArithmeticConstraint;
 import checkers.inference.model.BinaryConstraint;
-import checkers.inference.model.TernaryVariableSlot;
-import checkers.inference.model.ViewpointAdaptationConstraint;
 import checkers.inference.model.ComparableConstraint;
 import checkers.inference.model.ConstantSlot;
-import checkers.inference.model.DivisionConstraint;
 import checkers.inference.model.EqualityConstraint;
 import checkers.inference.model.ExistentialConstraint;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.InequalityConstraint;
-import checkers.inference.model.ModulusConstraint;
-import checkers.inference.model.MultiplicationConstraint;
 import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.RefinementVariableSlot;
-import checkers.inference.model.SubtractionConstraint;
 import checkers.inference.model.SubtypeConstraint;
-import checkers.inference.model.TernaryConstraint;
+import checkers.inference.model.TernaryVariableSlot;
 import checkers.inference.model.VariableSlot;
+import checkers.inference.model.ViewpointAdaptationConstraint;
 import checkers.inference.solver.backend.encoder.ConstraintEncoderCoordinator;
 import checkers.inference.solver.backend.encoder.ConstraintEncoderFactory;
 import checkers.inference.solver.backend.encoder.binary.BinaryConstraintEncoder;
@@ -30,13 +25,8 @@ import checkers.inference.solver.backend.encoder.binary.InequalityConstraintEnco
 import checkers.inference.solver.backend.encoder.binary.SubtypeConstraintEncoder;
 import checkers.inference.solver.backend.encoder.existential.ExistentialConstraintEncoder;
 import checkers.inference.solver.backend.encoder.preference.PreferenceConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.AdditionConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.DivisionConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.ModulusConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.MultiplicationConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.SubtractionConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.TernaryConstraintEncoder;
-import checkers.inference.solver.backend.encoder.viewpointadaptation.ViewpointAdaptationConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.ArithmeticConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.ViewpointAdaptationConstraintEncoder;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.util.ConstraintVerifier;
 
@@ -131,29 +121,9 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
     protected ExistentialConstraintEncoder<ConstraintEncodingT> existentialConstraintEncoder;
 
     /**
-     * {@code AdditionConstraintEncoder} to which encoding of {@link AdditionConstraint} is delegated.
+     * {@code ArithmeticConstraintEncoder} to which encoding of {@link ArithmeticConstraint} is delegated.
      */
-    protected AdditionConstraintEncoder<ConstraintEncodingT> additionConstraintEncoder;
-
-    /**
-     * {@code SubtractionConstraintEncoder} to which encoding of {@link SubtractionConstraint} is delegated.
-     */
-    protected SubtractionConstraintEncoder<ConstraintEncodingT> subtractionConstraintEncoder;
-
-    /**
-     * {@code MultiplicationConstraintEncoder} to which encoding of {@link MultiplicationConstraint} is delegated.
-     */
-    protected MultiplicationConstraintEncoder<ConstraintEncodingT> multiplicationConstraintEncoder;
-
-    /**
-     * {@code DivisionConstraintEncoder} to which encoding of {@link DivisionConstraint} is delegated.
-     */
-    protected DivisionConstraintEncoder<ConstraintEncodingT> divisionConstraintEncoder;
-
-    /**
-     * {@code ModulusConstraintEncoder} to which encoding of {@link ModulusConstraint} is delegated.
-     */
-    protected ModulusConstraintEncoder<ConstraintEncodingT> modulusConstraintEncoder;
+    protected ArithmeticConstraintEncoder<ConstraintEncodingT> arithmeticConstraintEncoder;
 
     public AbstractFormatTranslator(Lattice lattice) {
         this.lattice = lattice;
@@ -176,11 +146,7 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
         preferenceConstraintEncoder = encoderFactory.createPreferenceConstraintEncoder();
         viewpointAdaptationConstraintEncoder = encoderFactory.createViewpointAdaptationConstraintEncoder();
         existentialConstraintEncoder = encoderFactory.createExistentialConstraintEncoder();
-        additionConstraintEncoder = encoderFactory.createAdditionConstraintEncoder();
-        subtractionConstraintEncoder = encoderFactory.createSubtractionConstraintEncoder();
-        multiplicationConstraintEncoder = encoderFactory.createMultiplicationConstraintEncoder();
-        divisionConstraintEncoder = encoderFactory.createDivisionConstraintEncoder();
-        modulusConstraintEncoder = encoderFactory.createModulusConstraintEncoder();
+        arithmeticConstraintEncoder = encoderFactory.createArithmeticConstraintEncoder();
     }
 
     /**
@@ -198,8 +164,13 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
         return encoder == null ? null : ConstraintEncoderCoordinator.dispatch(constraint, encoder);
     }
 
-    private ConstraintEncodingT dispatch(TernaryConstraint constraint,
-            TernaryConstraintEncoder<ConstraintEncodingT> encoder) {
+    private ConstraintEncodingT dispatch(ArithmeticConstraint constraint,
+            ArithmeticConstraintEncoder<ConstraintEncodingT> encoder) {
+        return encoder == null ? null : ConstraintEncoderCoordinator.dispatch(constraint, encoder);
+    }
+
+    private ConstraintEncodingT dispatch(ViewpointAdaptationConstraint constraint,
+            ViewpointAdaptationConstraintEncoder<ConstraintEncodingT> encoder) {
         return encoder == null ? null : ConstraintEncoderCoordinator.dispatch(constraint, encoder);
     }
 
@@ -241,28 +212,8 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
     }
 
     @Override
-    public ConstraintEncodingT serialize(AdditionConstraint additionConstraint) {
-        return dispatch(additionConstraint, additionConstraintEncoder);
-    }
-
-    @Override
-    public ConstraintEncodingT serialize(SubtractionConstraint subtractionConstraint) {
-        return dispatch(subtractionConstraint, subtractionConstraintEncoder);
-    }
-
-    @Override
-    public ConstraintEncodingT serialize(MultiplicationConstraint multiplicationConstraint) {
-        return dispatch(multiplicationConstraint, multiplicationConstraintEncoder);
-    }
-
-    @Override
-    public ConstraintEncodingT serialize(DivisionConstraint divisionConstraint) {
-        return dispatch(divisionConstraint, divisionConstraintEncoder);
-    }
-
-    @Override
-    public ConstraintEncodingT serialize(ModulusConstraint modulusConstraint) {
-        return dispatch(modulusConstraint, modulusConstraintEncoder);
+    public ConstraintEncodingT serialize(ArithmeticConstraint arithmeticConstraint) {
+        return dispatch(arithmeticConstraint, arithmeticConstraintEncoder);
     }
 
     @Override

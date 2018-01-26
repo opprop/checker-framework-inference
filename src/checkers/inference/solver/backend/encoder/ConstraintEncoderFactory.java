@@ -6,12 +6,8 @@ import checkers.inference.solver.backend.encoder.binary.InequalityConstraintEnco
 import checkers.inference.solver.backend.encoder.binary.SubtypeConstraintEncoder;
 import checkers.inference.solver.backend.encoder.existential.ExistentialConstraintEncoder;
 import checkers.inference.solver.backend.encoder.preference.PreferenceConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.AdditionConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.DivisionConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.ModulusConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.MultiplicationConstraintEncoder;
-import checkers.inference.solver.backend.encoder.ternary.SubtractionConstraintEncoder;
-import checkers.inference.solver.backend.encoder.viewpointadaptation.ViewpointAdaptationConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.ArithmeticConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.ViewpointAdaptationConstraintEncoder;
 
 /**
  * Factory that creates constraint encoders.
@@ -26,11 +22,7 @@ import checkers.inference.solver.backend.encoder.viewpointadaptation.ViewpointAd
  *     <li>{@link PreferenceConstraintEncoder}</li>
  *     <li>{@link ViewpointAdaptationConstraintEncoder}</li>
  *     <li>{@link ExistentialConstraintEncoder}</li>
- *     <li>{@link AdditionConstraintEncoder}</li>
- *     <li>{@link SubtractionConstraintEncoder}</li>
- *     <li>{@link MultiplicationConstraintEncoder}</li>
- *     <li>{@link DivisionConstraintEncoder}</li>
- *     <li>{@link ModulusConstraintEncoder}</li>
+ *     <li>{@link ArithmeticConstraintEncoder}</li>
  * </ul>
  * <p>
  * User of this interface is {@link checkers.inference.solver.backend.AbstractFormatTranslator}
@@ -54,13 +46,5 @@ public interface ConstraintEncoderFactory<ConstraintEncodingT> {
 
     ExistentialConstraintEncoder<ConstraintEncodingT> createExistentialConstraintEncoder();
 
-    AdditionConstraintEncoder<ConstraintEncodingT> createAdditionConstraintEncoder();
-
-    SubtractionConstraintEncoder<ConstraintEncodingT> createSubtractionConstraintEncoder();
-
-    MultiplicationConstraintEncoder<ConstraintEncodingT> createMultiplicationConstraintEncoder();
-
-    DivisionConstraintEncoder<ConstraintEncodingT> createDivisionConstraintEncoder();
-
-    ModulusConstraintEncoder<ConstraintEncodingT> createModulusConstraintEncoder();
+    ArithmeticConstraintEncoder<ConstraintEncodingT> createArithmeticConstraintEncoder();
 }

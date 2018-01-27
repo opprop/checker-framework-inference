@@ -16,6 +16,7 @@ import checkers.inference.model.EqualityConstraint;
 import checkers.inference.model.ExistentialConstraint;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.InequalityConstraint;
+import checkers.inference.model.LubVariableSlot;
 import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Serializer;
@@ -235,8 +236,22 @@ public class ToStringSerializer implements Serializer<String, String> {
         sb.append(slot.getId());
 
         if (showVerboseVars) {
-            sb.append(": merges ");
+            sb.append(": viewpoint-adapts ");
             sb.append(Arrays.asList(slot.getFirst(), slot.getSecond()));
+            formatMerges(slot, sb);
+            optionallyFormatAstPath(slot, sb);
+        }
+        return sb.toString();
+    }
+
+    @Override
+    public String serialize(LubVariableSlot slot) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(slot.getId());
+
+        if (showVerboseVars) {
+            sb.append(": lubof ");
+            sb.append(Arrays.asList(slot.getLeft(), slot.getRight()));
             formatMerges(slot, sb);
             optionallyFormatAstPath(slot, sb);
         }

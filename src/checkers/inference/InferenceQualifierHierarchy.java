@@ -1,5 +1,6 @@
 package checkers.inference;
 
+import checkers.inference.model.LubVariableSlot;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
@@ -287,7 +288,7 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
                     return slotMgr.getAnnotation(var1);
                 } else {
                     // Create a new merge variable for var1 and var2.
-                    final CombVariableSlot mergeVariableSlot = slotMgr.createCombVariableSlot(var1, var2);
+                    final LubVariableSlot mergeVariableSlot = slotMgr.createLubVariableSlot(var1, var2);
                     constraintMgr.addSubtypeConstraint(var1, mergeVariableSlot);
                     constraintMgr.addSubtypeConstraint(var2, mergeVariableSlot);
 

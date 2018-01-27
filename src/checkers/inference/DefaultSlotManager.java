@@ -13,6 +13,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 
+import checkers.inference.model.LubVariableSlot;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -82,6 +83,7 @@ public class DefaultSlotManager implements SlotManager {
      * corresponding CombVariableSlott
      */
     private final Map<Pair<Slot, Slot>, Integer> combSlotPairCache;
+    private final Map<Pair<Slot, Slot>, Integer> lubSlotPairCache;
 
     private final Set<Class<? extends Annotation>> realQualifiers;
     private final ProcessingEnvironment processingEnvironment;
@@ -103,6 +105,7 @@ public class DefaultSlotManager implements SlotManager {
         locationCache = new LinkedHashMap<>();
         existentialSlotPairCache = new LinkedHashMap<>();
         combSlotPairCache = new LinkedHashMap<>();
+        lubSlotPairCache = new LinkedHashMap<>();
         if (storeConstants) {
             Set<? extends AnnotationMirror> mirrors = InferenceMain.getInstance().getRealTypeFactory().getQualifierHierarchy().getTypeQualifiers();
             for (AnnotationMirror am : mirrors) {
@@ -157,7 +160,7 @@ public class DefaultSlotManager implements SlotManager {
         // We need to build the AnntotationBuilder each time because AnnotationBuilders are only allowed to build their annotations once
         if (slotClass.equals(VariableSlot.class) || slotClass.equals(ExistentialVariableSlot.class)
                 || slotClass.equals(RefinementVariableSlot.class) || slotClass.equals(CombVariableSlot.class)
-                || slotClass.equals(ConstantSlot.class)) {
+                || slotClass.equals(LubVariableSlot.class) || slotClass.equals(ConstantSlot.class)) {
             return convertVariable((VariableSlot) slot, new AnnotationBuilder(processingEnvironment, VarAnnot.class));
         }
 
@@ -342,6 +345,24 @@ public class DefaultSlotManager implements SlotManager {
             combSlotPairCache.put(pair, combVariableSlot.getId());
         }
         return combVariableSlot;
+    }
+
+    @Override
+    public LubVariableSlot createLubVariableSlot(Slot left, Slot right) {
+        LubVariableSlot lubVariableSlot;
+        Pair<Slot, Slot> pair = new Pair<>(left, right);
+        if (lubSlotPairCache.containsKey(pair)) {
+            int id = lubSlotPairCache.get(pair);
+            lubVariableSlot = (LubVariableSlot) getVariable(id);
+        } else {
+            // TODO Clients who initialize LubVariableSlot doesn't have tree location, so they
+            // can't pass valid AnnotationLocation when calling this create method. One solution
+            // is to find clients of clients, and there we set correct AnnotationLocation
+            lubVariableSlot = new LubVariableSlot(null, nextId(), left, right);
+            addToVariables(lubVariableSlot);
+            lubSlotPairCache.put(pair, lubVariableSlot.getId());
+        }
+        return lubVariableSlot;
     }
 
     @Override

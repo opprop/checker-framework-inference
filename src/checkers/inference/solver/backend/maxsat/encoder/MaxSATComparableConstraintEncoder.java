@@ -57,18 +57,6 @@ public class MaxSATComparableConstraintEncoder extends MaxSATAbstractConstraintE
 
     @Override
     public VecInt[] encodeConstant_Variable(ConstantSlot fst, VariableSlot snd) {
-        if (lattice.incomparableType.keySet().contains(fst.getValue())) {
-            List<VecInt> resultList = new ArrayList<>();
-            for (AnnotationMirror incomparable : lattice.incomparableType.get(fst.getValue())) {
-                // Should not be equal to incomparable
-                resultList.add(
-                        VectorUtils.asVec(
-                                -MathUtils.mapIdToMatrixEntry(snd.getId(), typeToInt.get(incomparable), lattice)));
-            }
-            VecInt[] resultArray = new VecInt[resultList.size()];
-            return resultList.toArray(resultArray);
-        } else {
-            return emptyValue;
-        }
+        return encodeVariable_Constant(snd, fst);
     }
 }

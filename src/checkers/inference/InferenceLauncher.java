@@ -148,7 +148,6 @@ public class InferenceLauncher {
      */
     public void infer() {
         printStep("Inferring", outStream);
-        printStep("Sys Env: " + System.getenv(), outStream);
         final String java = PluginUtil.getJavaCommand(System.getProperty("java.home"), outStream);
         List<String> argList = new LinkedList<>();
         argList.add(java);

@@ -17,11 +17,11 @@ then
     myDir="."
 fi
 
-ROOT=$(cd ${myDir}/../../ && pwd)
+JSR308=$(cd ${myDir}/../../ && pwd)
 
 distDir=$myDir"/../dist"
 
-libDir=$ROOT"checker-framework-inference/lib"
+libDir=$JSR308/"checker-framework-inference/lib"
 
 classpath="$distDir"/checker.jar:"$distDir"/annotation-file-utilities.jar:"$distDir"/checker-framework-inference.jar
 

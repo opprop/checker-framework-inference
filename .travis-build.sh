@@ -19,8 +19,8 @@ if [[ "$SLUGOWNER" == "" ]]; then
   SLUGOWNER=opprop
 fi
 
-if [[ "${GROUP}" != "cfi-tests" && "${GROUP}" != "downstream" ]]; then
-  echo "Bad argument '${GROUP}'; should be omitted or one of: cfi-tests, downstream."
+if [[ "${GROUP}" != "cfi-tests" && "${GROUP}" != "downstream" && "${GROUP}" != "all" ]]; then
+  echo "Bad argument '${GROUP}'; should be omitted or one of: cfi-tests, downstream, all."
   exit 1
 fi
 

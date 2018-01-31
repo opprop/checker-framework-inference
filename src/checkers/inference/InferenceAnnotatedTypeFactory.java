@@ -105,7 +105,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected final InferrableChecker realChecker;
     private final InferenceChecker inferenceChecker;
     protected final SlotManager slotManager;
-    private final ConstraintManager constraintManager;
+    protected final ConstraintManager constraintManager;
     private final ExistentialVariableInserter existentialInserter;
     private final BytecodeTypeAnnotator bytecodeTypeAnnotator;
     private final AnnotationMirror realTop;
@@ -114,15 +114,15 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public static final Logger logger = Logger.getLogger(InferenceAnnotatedTypeFactory.class.getSimpleName());
 
-    //Used to indicate progress in the output log.  Before calling inference, if you count the number of
-    //Java files you are compiling, you can use this number to gauge progress of inference.
-    //See setRoot below
+    // Used to indicate progress in the output log.  Before calling inference, if you count the number of
+    // Java files you are compiling, you can use this number to gauge progress of inference.
+    // See setRoot below
     public int compilationUnitsHandled = 0;
 
-    //there are locations in the code that are constant for which we still need to apply a variable
-    //though we know the value of that variable.  In this case, rather than creating a new variable
-    //for every one of these locations and increase the number of variables we solve for, use
-    //the same variable slot for all of these locations.  This map contains those variables.
+    // there are locations in the code that are constant for which we still need to apply a variable
+    // though we know the value of that variable.  In this case, rather than creating a new variable
+    // for every one of these locations and increase the number of variables we solve for, use
+    // the same variable slot for all of these locations.  This map contains those variables.
     private Map<Class<? extends Annotation>, VariableSlot> constantToVarAnnot = new HashMap<>();
 
     public InferenceAnnotatedTypeFactory(
@@ -142,7 +142,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.slotManager = slotManager;
         this.constraintManager = constraintManager;
 
-        variableAnnotator = new VariableAnnotator(this, realTypeFactory, realChecker, slotManager, constraintManager);
+        variableAnnotator = createVariableAnnotator();
         bytecodeTypeAnnotator = new BytecodeTypeAnnotator(this, realTypeFactory);
 
         varAnnot = new AnnotationBuilder(processingEnv, VarAnnot.class).build();
@@ -173,6 +173,18 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public CFTransfer createFlowTransferFunction(CFAbstractAnalysis<CFValue, CFStore, CFTransfer> analysis) {
         return realChecker.createInferenceTransferFunction((InferenceAnalysis) analysis);
+    }
+
+    /**
+     * Creates a variable annotator which adds slots and constraints. Subclasses can override this
+     * method to supply a subclass of {@link VariableAnnotator} to customize the slots and
+     * constraints generated.
+     *
+     * @return a {@link VariableAnnotator} or subclass of {@link VariableAnnotator}.
+     */
+    public VariableAnnotator createVariableAnnotator() {
+        return new VariableAnnotator(
+                this, realTypeFactory, realChecker, slotManager, constraintManager);
     }
 
     @Override
@@ -249,11 +261,11 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected void postDirectSuperTypes(AnnotatedTypeMirror type, List<? extends AnnotatedTypeMirror> supertypes) {
 
-        //TODO: Move postdirectSupertypes to a "copyTypeToSuperType method" that can just be called by this method?
-        //At the time of writing this is the same as AnnotatedTypeFactory.postDirectSuperTypes
-        //we cannot call super.postDirectSuperTypes because GenericAnnotatedTypeFactory will cause
-        //annotateImplicit(element,type) to be called on the supertype which will overwrite the annotations from type
-        //with those for the declaration of the super type
+        // TODO: Move postdirectSupertypes to a "copyTypeToSuperType method" that can just be called by this method?
+        // At the time of writing this is the same as AnnotatedTypeFactory.postDirectSuperTypes
+        // we cannot call super.postDirectSuperTypes because GenericAnnotatedTypeFactory will cause
+        // annotateImplicit(element,type) to be called on the supertype which will overwrite the annotations from type
+        // with those for the declaration of the super type
         Set<AnnotationMirror> annotations = type.getEffectiveAnnotations();
         for (AnnotatedTypeMirror supertype : supertypes) {
             if (!annotations.equals(supertype.getEffectiveAnnotations())) {
@@ -308,7 +320,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     @Override
     public List<AnnotatedTypeParameterBounds> typeVariablesFromUse(final AnnotatedDeclaredType useType, final TypeElement element ) {
-        //The type of the class in which the type params were declared
+        // The type of the class in which the type params were declared
         final AnnotatedDeclaredType ownerOfTypeParams = getAnnotatedType(element);
         final List<AnnotatedTypeMirror> declaredTypeParameters = ownerOfTypeParams.getTypeArguments();
 
@@ -318,9 +330,9 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             final AnnotatedTypeVariable declaredTypeParam = (AnnotatedTypeVariable) declaredTypeParameters.get(i);
             result.add(new AnnotatedTypeParameterBounds(declaredTypeParam.getUpperBound(), declaredTypeParam.getLowerBound()));
 
-            //TODO: Original InferenceAnnotatedTypeFactory#typeVariablesFromUse would create a combine constraint
-            //TODO: between the useType and the effectiveUpperBound of the declaredTypeParameter
-            //TODO: and then copy the annotations from the type with the CombVars to the declared type
+            // TODO: Original InferenceAnnotatedTypeFactory#typeVariablesFromUse would create a combine constraint
+            // TODO: between the useType and the effectiveUpperBound of the declaredTypeParameter
+            // TODO: and then copy the annotations from the type with the CombVars to the declared type
         }
 
         return result;
@@ -340,7 +352,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                               "Current path:\n" + this.visitorState.getPath();
         final ExecutableElement methodElem = TreeUtils.elementFromUse(methodInvocationTree);
 
-        //TODO: Used in comb constraints, going to leave it in to ensure the element has been visited
+        // TODO: Used in comb constraints, going to leave it in to ensure the element has been visited
         final AnnotatedExecutableType methodType = getAnnotatedType(methodElem);
 
         final ExpressionTree methodSelectExpression = methodInvocationTree.getMethodSelect();
@@ -353,10 +365,10 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         assert receiverType != null : "Null receiver type when getting method from use for tree ( " + methodInvocationTree + " )";
 
-        //TODO: Add CombConstraints for method parameter types as well as return types
+        // TODO: Add CombConstraints for method parameter types as well as return types
 
-        //TODO: Is the asMemberOf correct, was not in Werner's original implementation but I had added it
-        //TODO: It is also what the AnnotatedTypeFactory default implementation does
+        // TODO: Is the asMemberOf correct, was not in Werner's original implementation but I had added it
+        // TODO: It is also what the AnnotatedTypeFactory default implementation does
         final AnnotatedExecutableType methodOfReceiver = AnnotatedTypes.asMemberOf(types, this, receiverType, methodElem);
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = substituteTypeArgs(methodInvocationTree, methodElem, methodOfReceiver);
 
@@ -394,7 +406,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         assert newClassTree != null : "NewClassTree was null when attempting to get constructorFromUse. " +
                                       "Current path:\n" + this.visitorState.getPath();
 
-        final ExecutableElement constructorElem = TreeUtils.elementFromUse(newClassTree);
+        final ExecutableElement constructorElem = TreeUtils.constructor(newClassTree);;
         final AnnotatedTypeMirror constructorReturnType = fromNewClass(newClassTree);
         addComputedTypeAnnotations(newClassTree, constructorReturnType);
 
@@ -403,8 +415,8 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> substitutedPair = substituteTypeArgs(newClassTree, constructorElem, constructorType);
         inferencePoly.replacePolys(newClassTree, substitutedPair.first);
 
-        //TODO: ADD CombConstraints
-        //TODO: Should we be doing asMemberOf like super?
+        // TODO: ADD CombConstraints
+        // TODO: Should we be doing asMemberOf like super?
         return substitutedPair;
     }
 
@@ -428,10 +440,10 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         if (typeVarMapping.isEmpty()) {
             return Pair.<AnnotatedExecutableType, List<AnnotatedTypeMirror>>of(methodType, new LinkedList<AnnotatedTypeMirror>());
-        } //else
+        } // else
 
         // We take the type variables from the method element, not from the annotated method.
-        // For some reason, this way works, the other one doesn't.  //TODO: IS THAT TRUE?
+        // For some reason, this way works, the other one doesn't.  // TODO: IS THAT TRUE?
         final List<TypeVariable> foundTypeVars   = new LinkedList<>();
         final List<TypeVariable> missingTypeVars = new LinkedList<>();
 
@@ -477,7 +489,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     @Override
     protected void applyInferredAnnotations(org.checkerframework.framework.type.AnnotatedTypeMirror type, CFValue as) {
-        //TODO JB: Is this behavior different from what occured in inference?
+        // TODO JB: Is this behavior different from what occured in inference?
         boolean skipSubtypingCheck = true;
         DefaultInferredTypesApplier applier =
                 new DefaultInferredTypesApplier(skipSubtypingCheck,getQualifierHierarchy(), this);
@@ -492,8 +504,8 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         assert root != null : "GenericAnnotatedTypeFactory.annotateImplicit: " +
                 " root needs to be set when used on trees; factory: " + this.getClass();
 
-        //Moving this here forces the type variables to be annotated as a declaration
-        //before they are used and therefore ensures that they have annotations before use
+        // Moving this here forces the type variables to be annotated as a declaration
+        // before they are used and therefore ensures that they have annotations before use
         treeAnnotator.visit(tree, type);
 
         if (iUseFlow) {
@@ -508,8 +520,8 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             checkAndPerformFlowAnalysis(tree);
         }
 
-        //typeAnnotator.visit(type, null);
-        //defaults.annotate(tree, type);
+        // typeAnnotator.visit(type, null);
+        // defaults.annotate(tree, type);
 
         if (iUseFlow) {
             CFValue as = getInferredValueFor(tree);
@@ -529,7 +541,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return boxedType;
     }
 
-    //TODO: I don't think this method is needed, but we should verify this.
+    // TODO: I don't think this method is needed, but we should verify this.
 //    @Override
 //    public AnnotatedTypeMirror getAnnotatedTypeFromTypeTree(final Tree tree) {
 //
@@ -575,8 +587,8 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public void setRoot(final CompilationUnitTree root) {
         logger.fine("\nCHANGING COMPILATION UNIT ( " + compilationUnitsHandled + " ): " + root.getSourceFile().getName() + " \n");
-        //TODO: THERE MAY BE STORES WE WANT TO CLEAR, PERHAPS ELEMENTS FOR LOCAL VARIABLES
-        //TODO: IN THE PREVIOUS COMPILATION UNIT IN VARIABLE ANNOTATOR
+        // TODO: THERE MAY BE STORES WE WANT TO CLEAR, PERHAPS ELEMENTS FOR LOCAL VARIABLES
+        // TODO: IN THE PREVIOUS COMPILATION UNIT IN VARIABLE ANNOTATOR
 
         compilationUnitsHandled += 1;
         this.realTypeFactory.setRoot( root );

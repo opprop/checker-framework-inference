@@ -23,7 +23,7 @@ distDir=$myDir"/../dist"
 
 libDir=$ROOT"checker-framework-inference/lib"
 
-classpath="$distDir"/checker.jar:"$distDir"/plume.jar:"$distDir"/checker-framework-inference.jar
+classpath="$distDir"/checker.jar:"$distDir"/annotation-file-utilities.jar:"$distDir"/checker-framework-inference.jar
 
 if [ "$external_checker_classpath" != "" ] ; then
     classpath=${classpath}:${external_checker_classpath}

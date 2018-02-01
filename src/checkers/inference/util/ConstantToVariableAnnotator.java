@@ -65,7 +65,9 @@ public class ConstantToVariableAnnotator extends AnnotatedTypeScanner<Void, Void
     }
 
     /**
-     * Add a VarAnnot equivalent to the given realQualifier to the given type.
+     * Create a VarAnnot equivalent to the given realQualifier.
+     *
+     * @return a VarAnnot equivalent to the given realQualifier.
      *
      */
     public static AnnotationMirror createEquivalentVarAnno(final AnnotationMirror realQualifier) {

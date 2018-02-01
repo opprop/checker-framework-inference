@@ -75,7 +75,7 @@ public class ConstantToVariableAnnotator extends AnnotatedTypeScanner<Void, Void
         return slotManager.getAnnotation(varSlot);
     }
 
-    public ConstantSlot createConstantSlot(final AnnotationMirror realQualifier) {
+    public static ConstantSlot createConstantSlot(final AnnotationMirror realQualifier) {
         ConstantSlot varSlot = slotManager.createConstantSlot(realQualifier);
         return varSlot;
     }

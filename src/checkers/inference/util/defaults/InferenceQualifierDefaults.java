@@ -45,9 +45,24 @@ public class InferenceQualifierDefaults extends QualifierDefaults {
             super(atypeFactory, scope, type, applyToTypeVar);
         }
 
+        /**
+         * Instead of applying the real qualifier stored
+         * in the given {@code def}, replacing it with the
+         * equivalent VarAnnot and apply the VarAnnot on
+         * the applied type.
+         */
         @Override
         public void applyDefault(Default def) {
             this.location = def.location;
+            // We replace the real qualifier with equivalent varAnnot
+            // here, instead of mutating the annotation stored in `def`.
+            // The reason is mutating the annotation stored in `def`
+            // also needs to adapt logic of initializing sets of default
+            // qualifiers for checked and unchecked code, which needs
+            // more code and makes this class complicated.
+            // Since this is just two line duplication logic with super method
+            // here, we decided to replace real qualifier here instead of
+            // mutating the annotation in `def`.
             AnnotationMirror equivalentVarAnno = ConstantToVariableAnnotator.createEquivalentVarAnno(def.anno);
             impl.visit(type, equivalentVarAnno);
         }

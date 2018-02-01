@@ -12,6 +12,20 @@ import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.ConstantToVariableAnnotator;
 
+/**
+ * Apply default qualifiers in inference mode.
+ *
+ * In inference mode, unchecked bytecode needs default qualifiers.
+ * To build constraints, these default qualifiers should be VarAnnots.
+ * The super class {@code QualifierDefaults} would determine real
+ * qualifiers for each type use location, and this class would replace
+ * those real qualifiers by equivalent VarAnnots, and apply these
+ * VarAnnots as defaults to a given type only if this type has not been
+ * annotated with a VarAnnot.
+ *
+ * @see org.checkerframework.framework.util.defaults.QualifierDefaults
+ *
+ */
 public class InferenceQualifierDefaults extends QualifierDefaults {
 
     public InferenceQualifierDefaults(Elements elements, AnnotatedTypeFactory atypeFactory) {

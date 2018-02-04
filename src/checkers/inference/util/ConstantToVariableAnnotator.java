@@ -7,7 +7,6 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 
 import checkers.inference.InferenceMain;
 import checkers.inference.SlotManager;
-import checkers.inference.model.ConstantSlot;
 
 
 /**
@@ -49,7 +48,7 @@ public class ConstantToVariableAnnotator extends AnnotatedTypeScanner<Void, Void
         }
 
         AnnotationMirror realQualifier = type.getAnnotationInHierarchy(realTop);
-        AnnotationMirror equivalentVarAnno = createEquivalentVarAnno(realQualifier);
+        AnnotationMirror equivalentVarAnno = slotManager.createEquivalentVarAnno(realQualifier);
         type.addAnnotation(equivalentVarAnno);
         type.removeAnnotation(realQualifier);
 //
@@ -62,16 +61,5 @@ public class ConstantToVariableAnnotator extends AnnotatedTypeScanner<Void, Void
 //        }
 //
 //        ErrorReporter.errorAbort("Could not find VarAnnot for real qualifier: " + realQualifier + " type =" + type);
-    }
-
-    /**
-     * Create a VarAnnot equivalent to the given realQualifier.
-     *
-     * @return a VarAnnot equivalent to the given realQualifier.
-     *
-     */
-    public static AnnotationMirror createEquivalentVarAnno(final AnnotationMirror realQualifier) {
-        ConstantSlot varSlot = slotManager.createConstantSlot(realQualifier);
-        return slotManager.getAnnotation(varSlot);
     }
 }

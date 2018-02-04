@@ -9,6 +9,9 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.defaults.Default;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 
+import checkers.inference.InferenceMain;
+import checkers.inference.SlotManager;
+import checkers.inference.model.Slot;
 import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.ConstantToVariableAnnotator;
 
@@ -28,8 +31,10 @@ import checkers.inference.util.ConstantToVariableAnnotator;
  */
 public class InferenceQualifierDefaults extends QualifierDefaults {
 
+    private final SlotManager slotManager;
     public InferenceQualifierDefaults(Elements elements, AnnotatedTypeFactory atypeFactory) {
         super(elements, atypeFactory);
+        slotManager = InferenceMain.getInstance().getSlotManager();
     }
 
     @Override
@@ -63,7 +68,7 @@ public class InferenceQualifierDefaults extends QualifierDefaults {
             // Since this is just two line duplication logic with super method
             // here, we decided to replace real qualifier here instead of
             // mutating the annotation in `def`.
-            AnnotationMirror equivalentVarAnno = ConstantToVariableAnnotator.createEquivalentVarAnno(def.anno);
+            AnnotationMirror equivalentVarAnno = slotManager.createEquivalentVarAnno(def.anno);
             impl.visit(type, equivalentVarAnno);
         }
 

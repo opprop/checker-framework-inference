@@ -20,7 +20,7 @@ fi
 
 distDir=$myDir"/../dist"
 
-libDir=$myDir"/checker-framework-inference/lib"
+libDir=$myDir"/../lib"
 
 classpath="$distDir"/checker.jar:"$distDir"/annotation-file-utilities.jar:"$distDir"/checker-framework-inference.jar
 

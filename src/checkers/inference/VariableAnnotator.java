@@ -565,11 +565,11 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
                 ErrorReporter.errorAbort("The annotation(s) on the given type is neither VarAnno nor real qualifier!"
                         + "Atm is: " + atm + " annotations: " + atm.getAnnotations());
             }
-            varSlot = ConstantToVariableAnnotator.createConstantSlot(realQualifier);
+            varSlot = slotManager.createConstantSlot(realQualifier);
         } else if (tree != null && realChecker.isConstant(tree) ) {
             // Considered constant by real type system
             realQualifier = realTypeFactory.getAnnotatedType(tree).getAnnotationInHierarchy(realTop);
-            varSlot = ConstantToVariableAnnotator.createConstantSlot(realQualifier);
+            varSlot = slotManager.createConstantSlot(realQualifier);
         } else {
             varSlot = createVariable(location);
         }
@@ -579,7 +579,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
     }
 
     public VariableSlot getTopConstant() {
-        return ConstantToVariableAnnotator.createConstantSlot(realTop);
+        return slotManager.createConstantSlot(realTop);
     }
 
     /**

@@ -224,9 +224,15 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
         final Slot subSlot   = slotMgr.getSlot(subtype);
         final Slot superSlot = slotMgr.getSlot(supertype);
-        constraintMgr.addSubtypeConstraint(subSlot, superSlot);
-
-        return true;
+        if (subSlot instanceof ConstantSlot && superSlot instanceof ConstantSlot) {
+            ConstantSlot subConstantSlot = (ConstantSlot) subSlot;
+            ConstantSlot superConstantSlot = (ConstantSlot) superSlot;
+            // Two ConstantSlot combination => immediately know the subtype relation holds or not
+            return constraintMgr.getConstraintVerifier().isSubtype(subConstantSlot, superConstantSlot);
+        } else {
+            constraintMgr.addSubtypeConstraint(subSlot, superSlot);
+            return true;
+        }
     }
 
     @Override

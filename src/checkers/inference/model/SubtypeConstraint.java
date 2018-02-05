@@ -1,6 +1,9 @@
 package checkers.inference.model;
 
 import java.util.Arrays;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.ErrorReporter;
+import checkers.inference.util.ConstraintVerifier;
 
 /**
  * Represents a subtyping relationship between two slots.
@@ -30,16 +33,47 @@ public class SubtypeConstraint extends Constraint implements BinaryConstraint {
     private final Slot subtype;
     private final Slot supertype;
 
-    protected SubtypeConstraint(Slot subtype, Slot supertype, AnnotationLocation location) {
+    private SubtypeConstraint(Slot subtype, Slot supertype, AnnotationLocation location) {
         super(Arrays.asList(subtype, supertype), location);
         this.subtype = subtype;
         this.supertype = supertype;
     }
 
-    protected SubtypeConstraint(Slot subtype, Slot supertype) {
+    private SubtypeConstraint(Slot subtype, Slot supertype) {
         super(Arrays.asList(subtype, supertype));
         this.subtype = subtype;
         this.supertype = supertype;
+    }
+
+    protected static Constraint create(QualifierHierarchy realQualHierarchy,
+            ConstraintVerifier constraintVerifier, Slot subtype, Slot supertype,
+            AnnotationLocation location) {
+        if (subtype == null || supertype == null) {
+            ErrorReporter.errorAbort("Create subtype constraint with null argument. Subtype: "
+                    + subtype + " Supertype: " + supertype);
+        }
+
+        if ((subtype instanceof ConstantSlot) && realQualHierarchy.getTopAnnotations()
+                .contains(((ConstantSlot) subtype).getValue())) {
+            // if subtype is constant and subtype is top, then create equality constraint
+            return EqualityConstraint.create(constraintVerifier, subtype, supertype, location);
+
+        } else if ((supertype instanceof ConstantSlot) && realQualHierarchy.getBottomAnnotations()
+                .contains(((ConstantSlot) supertype).getValue())) {
+            // if supertype is constant and supertype is bottom, then create equality constraint
+            return EqualityConstraint.create(constraintVerifier, subtype, supertype, location);
+        }
+
+        if (subtype instanceof ConstantSlot && supertype instanceof ConstantSlot) {
+            ConstantSlot subConstant = (ConstantSlot) subtype;
+            ConstantSlot superConstant = (ConstantSlot) supertype;
+
+            return constraintVerifier.isSubtype(subConstant, superConstant)
+                    ? AlwaysTrueConstraint.create()
+                    : AlwaysFalseConstraint.create();
+        }
+
+        return new SubtypeConstraint(subtype, supertype, location);
     }
 
     @Override

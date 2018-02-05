@@ -17,7 +17,6 @@ then
     myDir=$(pwd)
 fi
 
-
 distDir=$myDir"/../dist"
 
 libDir=$myDir"/../lib"

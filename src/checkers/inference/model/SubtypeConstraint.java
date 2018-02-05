@@ -53,17 +53,15 @@ public class SubtypeConstraint extends Constraint implements BinaryConstraint {
                     + subtype + " Supertype: " + supertype);
         }
 
-        if ((subtype instanceof ConstantSlot) && realQualHierarchy.getTopAnnotations()
-                .contains(((ConstantSlot) subtype).getValue())) {
-            // if subtype is constant and subtype is top, then create equality constraint
-            return EqualityConstraint.create(constraintVerifier, subtype, supertype, location);
+        // Normalization cases:
+        // C1 <: C2 => TRUE/FALSE depending on relationship
+        // V1 <: TOP => TRUE
+        // V2 <: BOTTOM => REPLACE_WITH_EQUALITY
+        // BOTTOM <: V2 => TRUE
+        // TOP <: V2 => REPLACE_WITH_EQUALITY
+        // V1 <: V2 => CREATE_REAL_SUBTYPE_CONSTRAINT
 
-        } else if ((supertype instanceof ConstantSlot) && realQualHierarchy.getBottomAnnotations()
-                .contains(((ConstantSlot) supertype).getValue())) {
-            // if supertype is constant and supertype is bottom, then create equality constraint
-            return EqualityConstraint.create(constraintVerifier, subtype, supertype, location);
-        }
-
+        // C1 <: C2 => TRUE/FALSE depending on relationship
         if (subtype instanceof ConstantSlot && supertype instanceof ConstantSlot) {
             ConstantSlot subConstant = (ConstantSlot) subtype;
             ConstantSlot superConstant = (ConstantSlot) supertype;
@@ -73,8 +71,38 @@ public class SubtypeConstraint extends Constraint implements BinaryConstraint {
                     : AlwaysFalseConstraint.create();
         }
 
+        if (supertype instanceof ConstantSlot) {
+            if (isTop(realQualHierarchy, (ConstantSlot) supertype)) {
+                // V1 <: TOP => TRUE
+                return AlwaysTrueConstraint.create();
+            } else if (isBottom(realQualHierarchy, (ConstantSlot) supertype)) {
+                // V2 <: BOTTOM => REPLACE_WITH_EQUALITY
+                return EqualityConstraint.create(constraintVerifier, subtype, supertype, location);
+            }
+        }
+
+        if (subtype instanceof ConstantSlot) {
+            if (isBottom(realQualHierarchy, (ConstantSlot) subtype)) {
+                // BOTTOM <: V2 => TRUE
+                return AlwaysTrueConstraint.create();
+            } else if (isTop(realQualHierarchy, (ConstantSlot) subtype)) {
+                // TOP <: V2 => REPLACE_WITH_EQUALITY
+                return EqualityConstraint.create(constraintVerifier, subtype, supertype, location);
+            }
+        }
+
+        // V1 <: V2 => CREATE_REAL_SUBTYPE_CONSTRAINT
         return new SubtypeConstraint(subtype, supertype, location);
     }
+
+    private static boolean isTop(QualifierHierarchy realQualHierarchy, ConstantSlot constantSlot) {
+        return realQualHierarchy.getTopAnnotations().contains(constantSlot.getValue());
+    }
+
+    private static boolean isBottom(QualifierHierarchy realQualHierarchy, ConstantSlot constantSlot) {
+        return realQualHierarchy.getBottomAnnotations().contains(constantSlot.getValue());
+    }
+
 
     @Override
     public <S, T> T serialize(Serializer<S, T> serializer) {

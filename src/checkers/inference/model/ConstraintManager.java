@@ -57,7 +57,7 @@ public class ConstraintManager {
     private void add(Constraint constraint,
             Class<? extends Constraint> nonNormalizedConstraintClass) {
         if (constraint instanceof AlwaysFalseConstraint) {
-            // converts "XxxConstraint" to "xxx.constraint.unsatisfiable" as an error key
+            // converts class name "XxxConstraint" to "xxx.constraint.unsatisfiable" as an error key
             String errorKey = nonNormalizedConstraintClass.getSimpleName().toLowerCase()
                     .replace("constraint", ".constraint.unsatisfiable");
 

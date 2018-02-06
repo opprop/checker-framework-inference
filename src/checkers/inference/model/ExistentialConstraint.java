@@ -41,7 +41,7 @@ public class ExistentialConstraint extends Constraint {
         this.alternateConstraints = Collections.unmodifiableList(alternateConstraints);
     }
 
-    protected static Constraint create(VariableSlot potentialVariable,
+    protected static ExistentialConstraint create(VariableSlot potentialVariable,
             List<Constraint> potentialConstraints, List<Constraint> alternateConstraints,
             AnnotationLocation location) {
         if (potentialVariable == null || potentialConstraints == null

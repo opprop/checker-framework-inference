@@ -20,8 +20,8 @@ public class PreferenceConstraint extends Constraint {
         this.weight = weight;
     }
 
-    protected static Constraint create(VariableSlot variable, ConstantSlot goal, int weight,
-            AnnotationLocation location) {
+    protected static PreferenceConstraint create(VariableSlot variable, ConstantSlot goal,
+            int weight, AnnotationLocation location) {
         if (variable == null || goal == null) {
             ErrorReporter.errorAbort("Create preference constraint with null argument. Variable: "
                     + variable + " Goal: " + goal);

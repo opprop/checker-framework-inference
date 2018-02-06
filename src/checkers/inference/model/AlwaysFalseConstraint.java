@@ -1,26 +1,37 @@
 package checkers.inference.model;
 
 import java.util.Collections;
+import org.checkerframework.javacutil.ErrorReporter;
 
 /**
  * This "constraint" is the result of normalizing another constraint, where that constraint is
  * always false (evaluates to contradiction). If a constraint is normalized to this constraint, then
- * an error message may be issued by the {@link ConstraintManager}.
+ * an error message will be issued by the {@link ConstraintManager}. This class is implemented as a
+ * singleton.
  *
  * @see {@link ConstraintManager}
  */
 public class AlwaysFalseConstraint extends Constraint {
 
+    private static AlwaysFalseConstraint singleton;
+
     private AlwaysFalseConstraint() {
         super(Collections.emptyList());
     }
 
-    public static Constraint create() {
-        return new AlwaysFalseConstraint();
+    /** Creates/gets a singleton instance of the AlwaysFalseConstraint */
+    protected static AlwaysFalseConstraint create() {
+        if (singleton == null) {
+            singleton = new AlwaysFalseConstraint();
+        }
+        return singleton;
     }
 
     @Override
     public <S, T> T serialize(Serializer<S, T> serializer) {
+        ErrorReporter.errorAbort(
+                "Attempting to serialize an " + AlwaysFalseConstraint.class.getCanonicalName()
+                        + ". This constraint should never be serialized.");
         return null;
     }
 }

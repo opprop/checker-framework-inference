@@ -22,7 +22,7 @@ public class CombineConstraint extends Constraint {
         this.result = result;
     }
 
-    protected static Constraint create(Slot target, Slot decl, Slot result,
+    protected static CombineConstraint create(Slot target, Slot decl, Slot result,
             AnnotationLocation location) {
         if (target == null || decl == null || result == null) {
             ErrorReporter.errorAbort("Create combine constraint with null argument. Target: "

@@ -39,10 +39,9 @@ public class ConstraintEncoderCoordinator {
                 return encoder.encodeVariable_Constant((VariableSlot) constraint.getFirst(), (ConstantSlot) constraint.getSecond());
             case CONSTANT_VARIABLE:
                 return encoder.encodeConstant_Variable((ConstantSlot) constraint.getFirst(), (VariableSlot) constraint.getSecond());
-            case CONSTANT_CONSTANT:
-                return encoder.encodeConstant_Constant((ConstantSlot) constraint.getFirst(), (ConstantSlot) constraint.getSecond());
+            default:
+                return null;
         }
-        return null;
     }
 
     public static <ConstraintEncodingT> ConstraintEncodingT dispatch(
@@ -61,8 +60,9 @@ public class ConstraintEncoderCoordinator {
             case CONSTANT_CONSTANT:
                 return encoder.encodeConstant_Constant(
                         (ConstantSlot) constraint.getTarget(), (ConstantSlot) constraint.getDeclared(), (VariableSlot) constraint.getResult());
+            default:
+                return null;
         }
-        return null;
     }
 
     public static <ConstraintEncodingT> ConstraintEncodingT redirect(PreferenceConstraint constraint, PreferenceConstraintEncoder<ConstraintEncodingT> encoder) {

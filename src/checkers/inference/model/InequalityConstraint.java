@@ -1,8 +1,8 @@
 package checkers.inference.model;
 
 import java.util.Arrays;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ErrorReporter;
-import checkers.inference.util.ConstraintVerifier;
 
 public class InequalityConstraint extends Constraint implements BinaryConstraint {
 
@@ -21,20 +21,19 @@ public class InequalityConstraint extends Constraint implements BinaryConstraint
         this.second = second;
     }
 
-    protected static Constraint create(ConstraintVerifier constraintVerifier, Slot first,
-            Slot second, AnnotationLocation location) {
+    protected static Constraint create(Slot first, Slot second, AnnotationLocation location) {
         if (first == null || second == null) {
             ErrorReporter.errorAbort("Create inequality constraint with null argument. Subtype: "
                     + first + " Supertype: " + second);
         }
 
         if (first instanceof ConstantSlot && second instanceof ConstantSlot) {
-            ConstantSlot firstConstant = (ConstantSlot) first;
-            ConstantSlot secondConstant = (ConstantSlot) second;
+            ConstantSlot firstConst = (ConstantSlot) first;
+            ConstantSlot secondConst = (ConstantSlot) second;
 
-            return constraintVerifier.areEqual(firstConstant, secondConstant)
-                    ? AlwaysFalseConstraint.create()
-                    : AlwaysTrueConstraint.create();
+            return !AnnotationUtils.areSame(firstConst.getValue(), secondConst.getValue())
+                    ? AlwaysTrueConstraint.create()
+                    : AlwaysFalseConstraint.create();
         }
 
         return new InequalityConstraint(first, second, location);

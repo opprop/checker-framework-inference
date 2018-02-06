@@ -1,8 +1,8 @@
 package checkers.inference.model;
 
 import java.util.Arrays;
+import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.ErrorReporter;
-import checkers.inference.util.ConstraintVerifier;
 
 /**
  * Represents a constraint that two slots must be comparable.
@@ -25,20 +25,21 @@ public class ComparableConstraint extends Constraint implements BinaryConstraint
         this.second = second;
     }
 
-    protected static Constraint create(ConstraintVerifier constraintVerifier, Slot first,
-            Slot second, AnnotationLocation location) {
+    protected static Constraint create(Slot first, Slot second, AnnotationLocation location,
+            QualifierHierarchy realQualHierarchy) {
         if (first == null || second == null) {
             ErrorReporter.errorAbort("Create comparable constraint with null argument. Subtype: "
                     + first + " Supertype: " + second);
         }
 
         if (first instanceof ConstantSlot && second instanceof ConstantSlot) {
-            ConstantSlot firstConstant = (ConstantSlot) first;
-            ConstantSlot secondConstant = (ConstantSlot) second;
+            ConstantSlot firstConst = (ConstantSlot) first;
+            ConstantSlot secondConst = (ConstantSlot) second;
 
-            return constraintVerifier.areComparable(firstConstant, secondConstant)
-                    ? AlwaysTrueConstraint.create()
-                    : AlwaysFalseConstraint.create();
+            return realQualHierarchy.isSubtype(firstConst.getValue(), secondConst.getValue())
+                    || realQualHierarchy.isSubtype(secondConst.getValue(), firstConst.getValue())
+                            ? AlwaysTrueConstraint.create()
+                            : AlwaysFalseConstraint.create();
         }
 
         return new ComparableConstraint(first, second, location);

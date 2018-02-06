@@ -44,8 +44,8 @@ public class ConstraintManager {
     /**
      * Checks to see if the given {@link Constraint} is an instance of
      * {@link AlwaysFalseConstraint}. If so, a warning is issued. If not, it adds the
-     * {@link Constraint} to the constraint set only if the constraint is not an
-     * {@link AlwaysTrueConstraint}.
+     * {@link Constraint} to the constraint set only if the {@code ignoreConstraints} flag is set to
+     * false and the constraint is not an {@link AlwaysTrueConstraint}.
      *
      * <p>
      * The source constraint class is used to construct an error key for issue the warning.

@@ -1,5 +1,6 @@
 package checkers.inference.solver.backend.encoder;
 
+import org.checkerframework.javacutil.ErrorReporter;
 import checkers.inference.model.BinaryConstraint;
 import checkers.inference.model.CombineConstraint;
 import checkers.inference.model.ConstantSlot;
@@ -39,9 +40,13 @@ public class ConstraintEncoderCoordinator {
                 return encoder.encodeVariable_Constant((VariableSlot) constraint.getFirst(), (ConstantSlot) constraint.getSecond());
             case CONSTANT_VARIABLE:
                 return encoder.encodeConstant_Variable((ConstantSlot) constraint.getFirst(), (VariableSlot) constraint.getSecond());
-            default:
+            case CONSTANT_CONSTANT:
+                ErrorReporter.errorAbort("Attempting to encode a constant-constant combination "
+                        + "for a binary constraint. This should be normalized to "
+                        + "either AlwaysTrueConstraint or AlwaysFalseConstraint.");
                 return null;
         }
+        return null;
     }
 
     public static <ConstraintEncodingT> ConstraintEncodingT dispatch(

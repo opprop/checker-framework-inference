@@ -17,11 +17,13 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
-
+import checkers.inference.model.AlwaysFalseConstraint;
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.ConstantSlot;
+import checkers.inference.model.Constraint;
 import checkers.inference.model.ConstraintManager;
 import checkers.inference.model.Slot;
+import checkers.inference.model.SubtypeConstraint;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.InferenceUtil;
@@ -224,9 +226,15 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
         final Slot subSlot   = slotMgr.getSlot(subtype);
         final Slot superSlot = slotMgr.getSlot(supertype);
-        constraintMgr.addSubtypeConstraint(subSlot, superSlot);
 
-        return true;
+        Constraint constraint = constraintMgr.createSubtypeConstraint(subSlot, superSlot);
+
+        if (constraint instanceof AlwaysFalseConstraint) {
+            return false;
+        } else {
+            constraintMgr.add(constraint, SubtypeConstraint.class);
+            return true;
+        }
     }
 
     @Override

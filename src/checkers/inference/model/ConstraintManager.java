@@ -54,7 +54,7 @@ public class ConstraintManager {
      * @param nonNormalizedConstraintClass the class literal of the original non-normalized
      *        constraint
      */
-    private void add(Constraint constraint,
+    public void add(Constraint constraint,
             Class<? extends Constraint> nonNormalizedConstraintClass) {
         if (constraint instanceof AlwaysFalseConstraint) {
             // converts "XxxConstraint" into "xxx.constraint.unsatisfiable" for use as an error key

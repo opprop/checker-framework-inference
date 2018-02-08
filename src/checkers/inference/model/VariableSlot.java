@@ -46,7 +46,7 @@ public class VariableSlot extends Slot {
     }
 
     // Slots this variable has been merged to.
-    private final Set<CombVariableSlot> mergedToSlots = new HashSet<CombVariableSlot>();
+    private final Set<TernaryVariableSlot> mergedToSlots = new HashSet<TernaryVariableSlot>();
 
     // Refinement variables that refine this slot.
     private final Set<RefinementVariableSlot> refinedToSlots = new HashSet<RefinementVariableSlot>();
@@ -82,11 +82,11 @@ public class VariableSlot extends Slot {
         this.id = id;
     }
 
-    public Set<CombVariableSlot> getMergedToSlots() {
+    public Set<TernaryVariableSlot> getMergedToSlots() {
         return Collections.unmodifiableSet(mergedToSlots);
     }
 
-    public void addMergedToSlot(CombVariableSlot mergedSlot) {
+    public void addMergedToSlot(TernaryVariableSlot mergedSlot) {
         this.mergedToSlots.add(mergedSlot);
     }
 

@@ -16,29 +16,31 @@ package checkers.inference.model;
  * Implementing classes can use the same or different types for these
  * type parameters.
  */
-public interface Serializer<S, T> {
+public interface Serializer<SlotEncodingT, ConstraintEncodingT> {
 
-    T serialize(SubtypeConstraint constraint);
+    ConstraintEncodingT serialize(SubtypeConstraint constraint);
 
-    T serialize(EqualityConstraint constraint);
+    ConstraintEncodingT serialize(EqualityConstraint constraint);
 
-    T serialize(ExistentialConstraint constraint);
+    ConstraintEncodingT serialize(InequalityConstraint constraint);
 
-    T serialize(InequalityConstraint constraint);
+    ConstraintEncodingT serialize(ComparableConstraint comparableConstraint);
 
-    S serialize(VariableSlot slot);
+    ConstraintEncodingT serialize(PreferenceConstraint preferenceConstraint);
 
-    S serialize(ConstantSlot slot);
+    ConstraintEncodingT serialize(ExistentialConstraint constraint);
 
-    S serialize(ExistentialVariableSlot slot);
+    ConstraintEncodingT serialize(ViewpointAdaptationConstraint viewpointAdaptationConstraint);
 
-    S serialize(RefinementVariableSlot slot);
+    ConstraintEncodingT serialize(ArithmeticConstraint arithmeticConstraint);
 
-    S serialize(CombVariableSlot slot);
+    SlotEncodingT serialize(VariableSlot slot);
 
-    T serialize(ComparableConstraint comparableConstraint);
+    SlotEncodingT serialize(ConstantSlot slot);
 
-    T serialize(CombineConstraint combineConstraint);
+    SlotEncodingT serialize(ExistentialVariableSlot slot);
 
-    T serialize(PreferenceConstraint preferenceConstraint);
+    SlotEncodingT serialize(RefinementVariableSlot slot);
+
+    SlotEncodingT serialize(TernaryVariableSlot slot);
 }

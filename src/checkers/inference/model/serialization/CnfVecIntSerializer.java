@@ -4,12 +4,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
 import org.sat4j.core.VecInt;
-
 import checkers.inference.SlotManager;
-import checkers.inference.model.CombVariableSlot;
-import checkers.inference.model.CombineConstraint;
+import checkers.inference.model.ArithmeticConstraint;
 import checkers.inference.model.ComparableConstraint;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
@@ -22,7 +19,9 @@ import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Serializer;
 import checkers.inference.model.Slot;
 import checkers.inference.model.SubtypeConstraint;
+import checkers.inference.model.TernaryVariableSlot;
 import checkers.inference.model.VariableSlot;
+import checkers.inference.model.ViewpointAdaptationConstraint;
 
 /**
  */
@@ -104,7 +103,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
                 };
             }
 
-        }.accept(constraint.getFirst(), constraint.getSecond(), constraint);
+        }.accept(constraint.getLHS(), constraint.getRHS(), constraint);
 
     }
 
@@ -137,7 +136,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
                 };
             }
 
-        }.accept(constraint.getFirst(), constraint.getSecond(), constraint);
+        }.accept(constraint.getLHS(), constraint.getRHS(), constraint);
     }
 
 
@@ -231,7 +230,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
     }
 
     @Override
-    public VecInt[] serialize(CombVariableSlot slot) {
+    public VecInt[] serialize(TernaryVariableSlot slot) {
         // doesn't really mean anything
         return null;
     }
@@ -249,7 +248,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
     }
 
     @Override
-    public VecInt[] serialize(CombineConstraint combineConstraint) {
+    public VecInt[] serialize(ViewpointAdaptationConstraint viewpointAdaptationConstraint) {
         // does this just say that the result is a subtype of the other 2?
         // not sure what this means
         return emptyClauses;
@@ -258,6 +257,11 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
     @Override
     public VecInt[] serialize(PreferenceConstraint preferenceConstraint) {
         throw new UnsupportedOperationException("APPLY WEIGHTING FOR WEIGHTED MAX-SAT");
+    }
+
+    @Override
+    public VecInt[] serialize(ArithmeticConstraint arithmeticConstraint) {
+        return emptyClauses;
     }
 
     public List<VecInt> convertAll(Iterable<Constraint> constraints) {

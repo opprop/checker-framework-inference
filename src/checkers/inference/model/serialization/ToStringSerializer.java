@@ -4,11 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-
 import javax.lang.model.type.DeclaredType;
-
-import checkers.inference.model.CombVariableSlot;
-import checkers.inference.model.CombineConstraint;
+import checkers.inference.model.ArithmeticConstraint;
 import checkers.inference.model.ComparableConstraint;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
@@ -21,7 +18,9 @@ import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Serializer;
 import checkers.inference.model.Slot;
 import checkers.inference.model.SubtypeConstraint;
+import checkers.inference.model.TernaryVariableSlot;
 import checkers.inference.model.VariableSlot;
+import checkers.inference.model.ViewpointAdaptationConstraint;
 
 /**
  * This Serializer is meant only to convert constraints and variables to
@@ -104,7 +103,7 @@ public class ToStringSerializer implements Serializer<String, String> {
     public String serialize(EqualityConstraint constraint) {
         boolean prevShowVerboseVars = showVerboseVars;
         showVerboseVars = false;
-        String result = indent(constraint.getFirst().serialize(this) + " == " + constraint.getSecond().serialize(this));
+        String result = indent(constraint.getLHS().serialize(this) + " == " + constraint.getRHS().serialize(this));
         showVerboseVars = prevShowVerboseVars;
         return result;
     }
@@ -137,7 +136,7 @@ public class ToStringSerializer implements Serializer<String, String> {
     public String serialize(InequalityConstraint constraint) {
         boolean prevShowVerboseVars = showVerboseVars;
         showVerboseVars = false;
-        String result = indent(constraint.getFirst().serialize(this) + " != " + constraint.getSecond().serialize(this));
+        String result = indent(constraint.getLHS().serialize(this) + " != " + constraint.getRHS().serialize(this));
         showVerboseVars = prevShowVerboseVars;
         return result;
     }
@@ -146,13 +145,13 @@ public class ToStringSerializer implements Serializer<String, String> {
     public String serialize(ComparableConstraint constraint) {
         boolean prevShowVerboseVars = showVerboseVars;
         showVerboseVars = false;
-        String result = indent(constraint.getFirst().serialize(this) + " <~> " + constraint.getSecond().serialize(this));
+        String result = indent(constraint.getLHS().serialize(this) + " <~> " + constraint.getRHS().serialize(this));
         showVerboseVars = prevShowVerboseVars;
         return result;
     }
 
     @Override
-    public String serialize(CombineConstraint constraint) {
+    public String serialize(ViewpointAdaptationConstraint constraint) {
         boolean prevShowVerboseVars = showVerboseVars;
         showVerboseVars = false;
         // "\u25B7" is unicode representation of viewpoint adaptation sign |>
@@ -170,6 +169,36 @@ public class ToStringSerializer implements Serializer<String, String> {
         String result = indent(preferenceConstraint.getVariable().serialize(this) + " ~= "
                 + preferenceConstraint.getGoal().serialize(this)
                 + " w(" + preferenceConstraint.getWeight() + " )");
+        showVerboseVars = prevShowVerboseVars;
+        return result;
+    }
+
+    @Override
+    public String serialize(ArithmeticConstraint arithmeticConstraint) {
+        boolean prevShowVerboseVars = showVerboseVars;
+        showVerboseVars = false;
+
+        String operator = "";
+        switch (arithmeticConstraint.getOperation()) {
+            case ADDITION:
+                operator = "+";
+                break;
+            case SUBTRACTION:
+                operator = "-";
+                break;
+            case MULTIPLICATION:
+                operator = "*";
+                break;
+            case DIVISION:
+                operator = "/";
+                break;
+            case MODULUS:
+                operator = "%";
+                break;
+        }
+        String result = indent(arithmeticConstraint.getResult().serialize(this) + " = ( "
+                + arithmeticConstraint.getLeftOperand().serialize(this) + " " + operator + " "
+                + arithmeticConstraint.getRightOperand().serialize(this) + " )");
         showVerboseVars = prevShowVerboseVars;
         return result;
     }
@@ -230,13 +259,13 @@ public class ToStringSerializer implements Serializer<String, String> {
     }
 
     @Override
-    public String serialize(CombVariableSlot slot) {
+    public String serialize(TernaryVariableSlot slot) {
         final StringBuilder sb = new StringBuilder();
         sb.append(slot.getId());
 
         if (showVerboseVars) {
             sb.append(": merges ");
-            sb.append(Arrays.asList(slot.getFirst(), slot.getSecond()));
+            sb.append(Arrays.asList(slot.getLeftOperand(), slot.getRightOperand()));
             formatMerges(slot, sb);
             optionallyFormatAstPath(slot, sb);
         }

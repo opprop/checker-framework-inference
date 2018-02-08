@@ -2,14 +2,10 @@ package checkers.inference.model.serialization;
 
 import java.util.Collection;
 import java.util.Map;
-
 import javax.lang.model.element.AnnotationMirror;
-
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-
-import checkers.inference.model.CombVariableSlot;
-import checkers.inference.model.CombineConstraint;
+import checkers.inference.model.ArithmeticConstraint;
 import checkers.inference.model.ComparableConstraint;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
@@ -22,7 +18,9 @@ import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Serializer;
 import checkers.inference.model.Slot;
 import checkers.inference.model.SubtypeConstraint;
+import checkers.inference.model.TernaryVariableSlot;
 import checkers.inference.model.VariableSlot;
+import checkers.inference.model.ViewpointAdaptationConstraint;
 
 /**
  *
@@ -119,10 +117,10 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
     protected static final String COMP_RHS = "rhs";
     protected static final String COMP_LHS = "lhs";
 
-    protected static final String COMB_CONSTRAINT_KEY = "combine";
-    protected static final String COMB_TARGET = "target";
-    protected static final String COMB_DECL = "declared";
-    protected static final String COMB_RESULT = "result";
+    protected static final String VPA_CONSTRAINT_KEY = "viewpointadaptation";
+    protected static final String VPA_TARGET = "target";
+    protected static final String VPA_DECL = "declared";
+    protected static final String VPA_RESULT = "result";
 
     protected static final String PREFERENCE_CONSTRAINT_KEY = "preference";
     protected static final String PREFERENCE_VARIABLE = "variable";
@@ -137,6 +135,10 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
     protected static final String EXISTENTIAL_ID = "id";
     protected static final String EXISTENTIAL_THEN = "then";
     protected static final String EXISTENTIAL_ELSE = "else";
+
+    protected static final String ARITH_LEFT_OPERAND = "left_operand";
+    protected static final String ARITH_RIGHT_OPERAND = "right_operand";
+    protected static final String ARITH_RESULT = "result";
 
     protected static final String VERSION = "2";
 
@@ -222,7 +224,7 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
     }
 
     @Override
-    public String serialize(CombVariableSlot slot) {
+    public String serialize(TernaryVariableSlot slot) {
         return serialize((VariableSlot) slot);
     }
 
@@ -243,18 +245,19 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
     @SuppressWarnings("unchecked")
     @Override
     public JSONObject serialize(EqualityConstraint constraint) {
-        if (constraint.getFirst() == null || constraint.getSecond() == null) {
+        if (constraint.getLHS() == null || constraint.getRHS() == null) {
             return null;
         }
 
         JSONObject obj = new JSONObject();
         obj.put(CONSTRAINT_KEY, EQUALITY_CONSTRAINT_KEY);
-        obj.put(EQUALITY_LHS, constraint.getFirst().serialize(this));
-        obj.put(EQUALITY_RHS, constraint.getSecond().serialize(this));
+        obj.put(EQUALITY_LHS, constraint.getLHS().serialize(this));
+        obj.put(EQUALITY_RHS, constraint.getRHS().serialize(this));
         return obj;
     }
 
 
+    @SuppressWarnings("unchecked")
     @Override
     public JSONObject serialize(ExistentialConstraint constraint) {
 
@@ -269,43 +272,43 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
     @SuppressWarnings("unchecked")
     @Override
     public JSONObject serialize(InequalityConstraint constraint) {
-        if (constraint.getFirst() == null || constraint.getSecond() == null) {
+        if (constraint.getLHS() == null || constraint.getRHS() == null) {
             return null;
         }
 
         JSONObject obj = new JSONObject();
         obj.put(CONSTRAINT_KEY, INEQUALITY_CONSTRAINT_KEY);
-        obj.put(INEQUALITY_LHS, constraint.getFirst().serialize(this));
-        obj.put(INEQUALITY_RHS, constraint.getSecond().serialize(this));
+        obj.put(INEQUALITY_LHS, constraint.getLHS().serialize(this));
+        obj.put(INEQUALITY_RHS, constraint.getRHS().serialize(this));
         return obj;
     }
 
     @SuppressWarnings("unchecked")
     @Override
     public JSONObject serialize(ComparableConstraint constraint) {
-        if (constraint.getFirst() == null || constraint.getSecond() == null) {
+        if (constraint.getLHS() == null || constraint.getRHS() == null) {
             return null;
         }
 
         JSONObject obj = new JSONObject();
         obj.put(CONSTRAINT_KEY, COMP_CONSTRAINT_KEY);
-        obj.put(COMP_LHS, constraint.getFirst().serialize(this));
-        obj.put(COMP_RHS, constraint.getSecond().serialize(this));
+        obj.put(COMP_LHS, constraint.getLHS().serialize(this));
+        obj.put(COMP_RHS, constraint.getRHS().serialize(this));
         return obj;
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public JSONObject serialize(CombineConstraint constraint) {
+    public JSONObject serialize(ViewpointAdaptationConstraint constraint) {
         if (constraint.getTarget() == null || constraint.getDeclared() == null || constraint.getResult() == null) {
             return null;
         }
 
         JSONObject obj = new JSONObject();
-        obj.put(CONSTRAINT_KEY, COMB_CONSTRAINT_KEY);
-        obj.put(COMB_TARGET, constraint.getTarget().serialize(this));
-        obj.put(COMB_DECL, constraint.getDeclared().serialize(this));
-        obj.put(COMB_RESULT, constraint.getResult().serialize(this));
+        obj.put(CONSTRAINT_KEY, VPA_CONSTRAINT_KEY);
+        obj.put(VPA_TARGET, constraint.getTarget().serialize(this));
+        obj.put(VPA_DECL, constraint.getDeclared().serialize(this));
+        obj.put(VPA_RESULT, constraint.getResult().serialize(this));
         return obj;
     }
 
@@ -322,6 +325,22 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
         obj.put(PREFERENCE_GOAL, constraint.getGoal().serialize(this));
         // TODO: is the int showing up correctly in JSON?
         obj.put(PREFERENCE_WEIGHT, constraint.getWeight());
+        return obj;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public JSONObject serialize(ArithmeticConstraint constraint) {
+        if (constraint.getLeftOperand() == null || constraint.getRightOperand() == null
+                || constraint.getResult() == null) {
+            return null;
+        }
+
+        JSONObject obj = new JSONObject();
+        obj.put(CONSTRAINT_KEY, constraint.getOperation().name().toLowerCase());
+        obj.put(ARITH_LEFT_OPERAND, constraint.getLeftOperand().serialize(this));
+        obj.put(ARITH_RIGHT_OPERAND, constraint.getRightOperand().serialize(this));
+        obj.put(ARITH_RESULT, constraint.getResult().serialize(this));
         return obj;
     }
 }

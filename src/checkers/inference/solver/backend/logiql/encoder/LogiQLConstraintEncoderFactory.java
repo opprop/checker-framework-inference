@@ -5,9 +5,10 @@ import checkers.inference.solver.backend.encoder.binary.ComparableConstraintEnco
 import checkers.inference.solver.backend.encoder.binary.EqualityConstraintEncoder;
 import checkers.inference.solver.backend.encoder.binary.InequalityConstraintEncoder;
 import checkers.inference.solver.backend.encoder.binary.SubtypeConstraintEncoder;
-import checkers.inference.solver.backend.encoder.combine.CombineConstraintEncoder;
 import checkers.inference.solver.backend.encoder.existential.ExistentialConstraintEncoder;
 import checkers.inference.solver.backend.encoder.preference.PreferenceConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.ArithmeticConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.ViewpointAdaptationConstraintEncoder;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.util.ConstraintVerifier;
 
@@ -48,12 +49,17 @@ public class LogiQLConstraintEncoderFactory extends AbstractConstraintEncoderFac
     }
 
     @Override
-    public CombineConstraintEncoder<String> createCombineConstraintEncoder() {
+    public ViewpointAdaptationConstraintEncoder<String> createViewpointAdaptationConstraintEncoder() {
         return null;
     }
 
     @Override
     public ExistentialConstraintEncoder<String> createExistentialConstraintEncoder() {
+        return null;
+    }
+
+    @Override
+    public ArithmeticConstraintEncoder<String> createArithmeticConstraintEncoder() {
         return null;
     }
 }

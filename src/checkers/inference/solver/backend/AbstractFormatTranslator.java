@@ -1,8 +1,9 @@
 package checkers.inference.solver.backend;
 
+import com.microsoft.z3.Optimize;
 import checkers.inference.InferenceMain;
-import checkers.inference.model.CombVariableSlot;
-import checkers.inference.model.CombineConstraint;
+import checkers.inference.model.ArithmeticConstraint;
+import checkers.inference.model.BinaryConstraint;
 import checkers.inference.model.ComparableConstraint;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.EqualityConstraint;
@@ -12,19 +13,22 @@ import checkers.inference.model.InequalityConstraint;
 import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.SubtypeConstraint;
+import checkers.inference.model.TernaryVariableSlot;
 import checkers.inference.model.VariableSlot;
+import checkers.inference.model.ViewpointAdaptationConstraint;
 import checkers.inference.solver.backend.encoder.ConstraintEncoderCoordinator;
 import checkers.inference.solver.backend.encoder.ConstraintEncoderFactory;
+import checkers.inference.solver.backend.encoder.binary.BinaryConstraintEncoder;
 import checkers.inference.solver.backend.encoder.binary.ComparableConstraintEncoder;
 import checkers.inference.solver.backend.encoder.binary.EqualityConstraintEncoder;
 import checkers.inference.solver.backend.encoder.binary.InequalityConstraintEncoder;
 import checkers.inference.solver.backend.encoder.binary.SubtypeConstraintEncoder;
-import checkers.inference.solver.backend.encoder.combine.CombineConstraintEncoder;
 import checkers.inference.solver.backend.encoder.existential.ExistentialConstraintEncoder;
 import checkers.inference.solver.backend.encoder.preference.PreferenceConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.ArithmeticConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.ViewpointAdaptationConstraintEncoder;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.util.ConstraintVerifier;
-import com.microsoft.z3.Optimize;
 
 /**
  * Abstract base class for all concrete {@link FormatTranslator}.
@@ -107,14 +111,19 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
     protected PreferenceConstraintEncoder<ConstraintEncodingT> preferenceConstraintEncoder;
 
     /**
-     * {@code CombineConstraintEncoder} to which encoding of {@link CombineConstraint} is delegated.
+     * {@code ViewpointAdaptationConstraintEncoder} to which encoding of {@link ViewpointAdaptationConstraint} is delegated.
      */
-    protected CombineConstraintEncoder<ConstraintEncodingT> combineConstraintEncoder;
+    protected ViewpointAdaptationConstraintEncoder<ConstraintEncodingT> viewpointAdaptationConstraintEncoder;
 
     /**
      * {@code ExistentialConstraintEncoder} to which encoding of {@link ExistentialConstraint} is delegated.
      */
     protected ExistentialConstraintEncoder<ConstraintEncodingT> existentialConstraintEncoder;
+
+    /**
+     * {@code ArithmeticConstraintEncoder} to which encoding of {@link ArithmeticConstraint} is delegated.
+     */
+    protected ArithmeticConstraintEncoder<ConstraintEncodingT> arithmeticConstraintEncoder;
 
     public AbstractFormatTranslator(Lattice lattice) {
         this.lattice = lattice;
@@ -135,8 +144,9 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
         inequalityConstraintEncoder = encoderFactory.createInequalityConstraintEncoder();
         comparableConstraintEncoder = encoderFactory.createComparableConstraintEncoder();
         preferenceConstraintEncoder = encoderFactory.createPreferenceConstraintEncoder();
-        combineConstraintEncoder = encoderFactory.createCombineConstraintEncoder();
+        viewpointAdaptationConstraintEncoder = encoderFactory.createViewpointAdaptationConstraintEncoder();
         existentialConstraintEncoder = encoderFactory.createExistentialConstraintEncoder();
+        arithmeticConstraintEncoder = encoderFactory.createArithmeticConstraintEncoder();
     }
 
     /**
@@ -148,46 +158,62 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
      */
     protected abstract ConstraintEncoderFactory<ConstraintEncodingT> createConstraintEncoderFactory(ConstraintVerifier verifier);
 
+    // Dispatches via the Coordinator only if the encoder is instantiated
+    private ConstraintEncodingT dispatch(BinaryConstraint constraint,
+            BinaryConstraintEncoder<ConstraintEncodingT> encoder) {
+        return encoder == null ? null : ConstraintEncoderCoordinator.dispatch(constraint, encoder);
+    }
+
+    private ConstraintEncodingT dispatch(ArithmeticConstraint constraint,
+            ArithmeticConstraintEncoder<ConstraintEncodingT> encoder) {
+        return encoder == null ? null : ConstraintEncoderCoordinator.dispatch(constraint, encoder);
+    }
+
+    private ConstraintEncodingT dispatch(ViewpointAdaptationConstraint constraint,
+            ViewpointAdaptationConstraintEncoder<ConstraintEncodingT> encoder) {
+        return encoder == null ? null : ConstraintEncoderCoordinator.dispatch(constraint, encoder);
+    }
+
     @Override
     public ConstraintEncodingT serialize(SubtypeConstraint constraint) {
-        return subtypeConstraintEncoder == null ? null :
-                ConstraintEncoderCoordinator.dispatch(constraint, subtypeConstraintEncoder);
+        return dispatch(constraint, subtypeConstraintEncoder);
     }
 
     @Override
     public ConstraintEncodingT serialize(EqualityConstraint constraint) {
-        return equalityConstraintEncoder == null ? null :
-                ConstraintEncoderCoordinator.dispatch(constraint, equalityConstraintEncoder);
+        return dispatch(constraint, equalityConstraintEncoder);
     }
 
     @Override
     public ConstraintEncodingT serialize(InequalityConstraint constraint) {
-        return inequalityConstraintEncoder == null ? null :
-                ConstraintEncoderCoordinator.dispatch(constraint, inequalityConstraintEncoder);
+        return dispatch(constraint, inequalityConstraintEncoder);
     }
 
     @Override
     public ConstraintEncodingT serialize(ComparableConstraint constraint) {
-        return comparableConstraintEncoder == null ? null :
-                ConstraintEncoderCoordinator.dispatch(constraint, comparableConstraintEncoder);
+        return dispatch(constraint, comparableConstraintEncoder);
     }
 
     @Override
     public ConstraintEncodingT serialize(PreferenceConstraint constraint) {
-        return constraint == null ? null :
+        return preferenceConstraintEncoder == null ? null :
                 ConstraintEncoderCoordinator.redirect(constraint, preferenceConstraintEncoder);
-    }
-
-    @Override
-    public ConstraintEncodingT serialize(CombineConstraint combineConstraint) {
-        return comparableConstraintEncoder == null ? null :
-                ConstraintEncoderCoordinator.dispatch(combineConstraint, combineConstraintEncoder);
     }
 
     @Override
     public ConstraintEncodingT serialize(ExistentialConstraint constraint) {
         return existentialConstraintEncoder == null ? null :
                 ConstraintEncoderCoordinator.redirect(constraint, existentialConstraintEncoder);
+    }
+
+    @Override
+    public ConstraintEncodingT serialize(ViewpointAdaptationConstraint viewpointAdaptationConstraint) {
+        return dispatch(viewpointAdaptationConstraint, viewpointAdaptationConstraintEncoder);
+    }
+
+    @Override
+    public ConstraintEncodingT serialize(ArithmeticConstraint arithmeticConstraint) {
+        return dispatch(arithmeticConstraint, arithmeticConstraintEncoder);
     }
 
     @Override
@@ -211,7 +237,7 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
     }
 
     @Override
-    public SlotEncodingT serialize(CombVariableSlot slot) {
+    public SlotEncodingT serialize(TernaryVariableSlot slot) {
         return null;
     }
 }

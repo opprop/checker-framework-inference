@@ -18,7 +18,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 
-import checkers.inference.model.CombVariableSlot;
+import checkers.inference.model.TernaryVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.ConstraintManager;
 import checkers.inference.model.Slot;
@@ -252,7 +252,7 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
             return null;
         }
 
-        // TODO: How to get the path to the CombVariable?
+        // TODO: How to get the path to the TernaryVariable?
         final Slot slot1 = slotMgr.getSlot(a1);
         final Slot slot2 = slotMgr.getSlot(a2);
         if (slot1 != slot2) {
@@ -288,7 +288,7 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
                     return slotMgr.getAnnotation(var1);
                 } else {
                     // Create a new merge variable for var1 and var2.
-                    final CombVariableSlot mergeVariableSlot = slotMgr.createCombVariableSlot(var1, var2);
+                    final TernaryVariableSlot mergeVariableSlot = slotMgr.createTernaryVariableSlot(var1, var2);
                     constraintMgr.addSubtypeConstraint(var1, mergeVariableSlot);
                     constraintMgr.addSubtypeConstraint(var2, mergeVariableSlot);
 

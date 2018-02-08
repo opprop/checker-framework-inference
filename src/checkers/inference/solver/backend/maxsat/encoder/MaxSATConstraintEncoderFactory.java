@@ -1,14 +1,14 @@
 package checkers.inference.solver.backend.maxsat.encoder;
 
+import java.util.Map;
+import javax.lang.model.element.AnnotationMirror;
+import org.sat4j.core.VecInt;
 import checkers.inference.solver.backend.encoder.AbstractConstraintEncoderFactory;
-import checkers.inference.solver.backend.encoder.combine.CombineConstraintEncoder;
 import checkers.inference.solver.backend.encoder.existential.ExistentialConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.ArithmeticConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ternary.ViewpointAdaptationConstraintEncoder;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.util.ConstraintVerifier;
-import org.sat4j.core.VecInt;
-
-import javax.lang.model.element.AnnotationMirror;
-import java.util.Map;
 
 /**
  * MaxSAT implementation of {@link checkers.inference.solver.backend.encoder.ConstraintEncoderFactory}.
@@ -50,12 +50,17 @@ public class MaxSATConstraintEncoderFactory extends AbstractConstraintEncoderFac
     }
 
     @Override
-    public CombineConstraintEncoder<VecInt[]> createCombineConstraintEncoder() {
+    public ViewpointAdaptationConstraintEncoder<VecInt[]> createViewpointAdaptationConstraintEncoder() {
         return null;
     }
 
     @Override
     public ExistentialConstraintEncoder<VecInt[]> createExistentialConstraintEncoder() {
+        return null;
+    }
+
+    @Override
+    public ArithmeticConstraintEncoder<VecInt[]> createArithmeticConstraintEncoder() {
         return null;
     }
 }

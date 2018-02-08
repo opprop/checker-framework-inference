@@ -139,8 +139,9 @@ public class ConstraintManager {
         }
     }
 
-    // All addXXXConstraint methods create a (possibly normalized) constraint for the given slots
-    // and issues errors for unsatisfiable constraints.
+    // All addXXXConstraint methods create a (possibly normalized) constraint for the given slots.
+    // They also issue errors for unsatisfiable constraints, unless the method name has "NoErrorMsg"
+    // in it.
 
     /**
      * Creates and adds a {@link SubtypeConstraint} between the two slots to the constraint set,
@@ -158,8 +159,8 @@ public class ConstraintManager {
     }
 
     /**
-     * Same as {@link #addSubtypeConstraint(Slot, Slot)} except that instead of raising an error we
-     * return false if the constraint is always unsatisfiable.
+     * Same as {@link #addSubtypeConstraint(Slot, Slot)} except we return false instead of raising
+     * an error if the constraint is always unsatisfiable.
      */
     public boolean addSubtypeConstraintNoErrorMsg(Slot subtype, Slot supertype) {
         Constraint constraint = createSubtypeConstraint(subtype, supertype);

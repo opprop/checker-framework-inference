@@ -17,13 +17,11 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
-import checkers.inference.model.AlwaysFalseConstraint;
+
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.ConstantSlot;
-import checkers.inference.model.Constraint;
 import checkers.inference.model.ConstraintManager;
 import checkers.inference.model.Slot;
-import checkers.inference.model.SubtypeConstraint;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.InferenceUtil;

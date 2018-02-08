@@ -61,6 +61,9 @@ public class ConstraintManager {
             String errorKey = nonNormalizedConstraintClass.getSimpleName().toLowerCase()
                     .replace("constraint", ".constraint.unsatisfiable");
 
+            // TODO: issue the message with the slots for a binary constraint
+            // TODO: what format to issue the message for constraints with > 2 slots??
+
             // issue a non-halting error message indicating which non-normalized constraint cannot
             // be satisfied
             checker.report(Result.failure(errorKey), visitorState.getPath().getLeaf());

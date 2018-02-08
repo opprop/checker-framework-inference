@@ -7,6 +7,7 @@ import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.VisitorState;
+import org.checkerframework.javacutil.ErrorReporter;
 import checkers.inference.InferenceAnnotatedTypeFactory;
 import checkers.inference.VariableAnnotator;
 
@@ -42,34 +43,21 @@ public class ConstraintManager {
     }
 
     /**
-     * Checks to see if the given {@link Constraint} is an instance of
-     * {@link AlwaysFalseConstraint}. If so, a warning is issued. If not, it adds the
-     * {@link Constraint} to the constraint set only if the {@code ignoreConstraints} flag is set to
-     * false and the constraint is not an {@link AlwaysTrueConstraint}.
-     *
-     * <p>
-     * The source constraint class is used to construct an error key for issue the warning.
+     * If the {@code ignoreConstraints} flag is set to false, then this method checks to see if the
+     * given {@link Constraint} is an instance of {@link AlwaysFalseConstraint}. If so, a warning is
+     * issued. If not, it adds the {@link Constraint} to the constraint set only if the constraint
+     * is not an {@link AlwaysTrueConstraint}.
      *
      * @param constraint a (possibly normalized) constraint
-     * @param nonNormalizedConstraintClass the class literal of the original non-normalized
-     *        constraint
      */
-    public void add(Constraint constraint,
-            Class<? extends Constraint> nonNormalizedConstraintClass) {
-        if (constraint instanceof AlwaysFalseConstraint) {
-            // converts "XxxConstraint" into "xxx.constraint.unsatisfiable" for use as an error key
-            String errorKey = nonNormalizedConstraintClass.getSimpleName().toLowerCase()
-                    .replace("constraint", ".constraint.unsatisfiable");
-
-            // TODO: issue the message with the slots for a binary constraint
-            // TODO: what format to issue the message for constraints with > 2 slots??
-
-            // issue a non-halting error message indicating which non-normalized constraint cannot
-            // be satisfied
-            checker.report(Result.failure(errorKey), visitorState.getPath().getLeaf());
-
-        } else if (!ignoreConstraints && !(constraint instanceof AlwaysTrueConstraint)) {
-            constraints.add(constraint);
+    private void add(Constraint constraint) {
+        if (!ignoreConstraints) {
+            if (constraint instanceof AlwaysFalseConstraint) {
+                ErrorReporter.errorAbort(
+                        "An AlwaysFalseConstraint is being added to the constraint set.");
+            } else if (!(constraint instanceof AlwaysTrueConstraint)) {
+                constraints.add(constraint);
+            }
         }
     }
 
@@ -160,7 +148,27 @@ public class ConstraintManager {
      * error is issued if the {@link SubtypeConstraint} is always unsatisfiable.
      */
     public void addSubtypeConstraint(Slot subtype, Slot supertype) {
-        add(createSubtypeConstraint(subtype, supertype), SubtypeConstraint.class);
+        Constraint constraint = createSubtypeConstraint(subtype, supertype);
+        if (constraint instanceof AlwaysFalseConstraint) {
+            checker.report(Result.failure("subtype.constraint.unsatisfiable", subtype, supertype),
+                    visitorState.getPath().getLeaf());
+        } else {
+            add(constraint);
+        }
+    }
+
+    /**
+     * Same as {@link #addSubtypeConstraint(Slot, Slot)} except that instead of raising an error we
+     * return false if the constraint is always unsatisfiable.
+     */
+    public boolean addSubtypeConstraintNoErrorMsg(Slot subtype, Slot supertype) {
+        Constraint constraint = createSubtypeConstraint(subtype, supertype);
+        if (constraint instanceof AlwaysFalseConstraint) {
+            return false;
+        } else {
+            add(constraint);
+            return true;
+        }
     }
 
     /**
@@ -169,7 +177,13 @@ public class ConstraintManager {
      * {@link EqualityConstraint} is always unsatisfiable.
      */
     public void addEqualityConstraint(Slot first, Slot second) {
-        add(createEqualityConstraint(first, second), EqualityConstraint.class);
+        Constraint constraint = createEqualityConstraint(first, second);
+        if (constraint instanceof AlwaysFalseConstraint) {
+            checker.report(Result.failure("equality.constraint.unsatisfiable", first, second),
+                    visitorState.getPath().getLeaf());
+        } else {
+            add(constraint);
+        }
     }
 
     /**
@@ -178,7 +192,13 @@ public class ConstraintManager {
      * {@link InequalityConstraint} is always unsatisfiable.
      */
     public void addInequalityConstraint(Slot first, Slot second) {
-        add(createInequalityConstraint(first, second), InequalityConstraint.class);
+        Constraint constraint = createInequalityConstraint(first, second);
+        if (constraint instanceof AlwaysFalseConstraint) {
+            checker.report(Result.failure("inequality.constraint.unsatisfiable", first, second),
+                    visitorState.getPath().getLeaf());
+        } else {
+            add(constraint);
+        }
     }
 
     /**
@@ -187,32 +207,34 @@ public class ConstraintManager {
      * {@link ComparableConstraint} is always unsatisfiable.
      */
     public void addComparableConstraint(Slot first, Slot second) {
-        add(createComparableConstraint(first, second), ComparableConstraint.class);
+        Constraint constraint = createComparableConstraint(first, second);
+        if (constraint instanceof AlwaysFalseConstraint) {
+            checker.report(Result.failure("comparable.constraint.unsatisfiable", first, second),
+                    visitorState.getPath().getLeaf());
+        } else {
+            add(constraint);
+        }
     }
 
     /**
-     * Creates and adds a {@link CombineConstraint} to the constraint set. An error is issued if the
-     * {@link CombineConstraint} is always unsatisfiable.
+     * Creates and adds a {@link CombineConstraint} to the constraint set.
      */
     public void addCombineConstraint(Slot target, Slot decl, Slot result) {
-        add(createCombineConstraint(target, decl, result), CombineConstraint.class);
+        add(createCombineConstraint(target, decl, result));
     }
 
     /**
-     * Creates and adds a {@link PreferenceConstraint} to the constraint set. An error is issued if
-     * the {@link PreferenceConstraint} is always unsatisfiable.
+     * Creates and adds a {@link PreferenceConstraint} to the constraint set.
      */
     public void addPreferenceConstraint(VariableSlot variable, ConstantSlot goal, int weight) {
-        add(createPreferenceConstraint(variable, goal, weight), PreferenceConstraint.class);
+        add(createPreferenceConstraint(variable, goal, weight));
     }
 
     /**
-     * Creates and adds a {@link ExistentialConstraint} to the constraint set. An error is issued if
-     * the {@link ExistentialConstraint} is always unsatisfiable.
+     * Creates and adds a {@link ExistentialConstraint} to the constraint set.
      */
     public void addExistentialConstraint(Slot slot, List<Constraint> ifExistsConstraints,
             List<Constraint> ifNotExistsConstraints) {
-        add(createExistentialConstraint(slot, ifExistsConstraints, ifNotExistsConstraints),
-                ExistentialConstraint.class);
+        add(createExistentialConstraint(slot, ifExistsConstraints, ifNotExistsConstraints));
     }
 }

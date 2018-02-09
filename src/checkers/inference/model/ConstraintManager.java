@@ -151,6 +151,10 @@ public class ConstraintManager {
     public void addSubtypeConstraint(Slot subtype, Slot supertype) {
         Constraint constraint = createSubtypeConstraint(subtype, supertype);
         if (constraint instanceof AlwaysFalseConstraint) {
+            // TODO: forward error msg keys and nodes from InferenceVisitor to create a more
+            // relevant error message (eg assignment.type.incompatible) at the precise code AST node
+            // this subtype constraint originates from.
+            // Same for constraints below.
             checker.report(Result.failure("subtype.constraint.unsatisfiable", subtype, supertype),
                     visitorState.getPath().getLeaf());
         } else {

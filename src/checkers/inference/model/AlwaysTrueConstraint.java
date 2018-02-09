@@ -5,9 +5,7 @@ import org.checkerframework.javacutil.ErrorReporter;
 
 /**
  * This "constraint" is the result of normalizing another constraint, where that constraint is
- * always true (evaluates to tautology). If a constraint is normalized to this constraint, then it
- * is not added to the set of constraints by the {@link ConstraintManager}. This class is
- * implemented as a singleton.
+ * always true (evaluates to tautology). This class is implemented as a singleton.
  *
  * @see {@link ConstraintManager}
  */

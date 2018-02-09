@@ -165,6 +165,8 @@ public class ConstraintManager {
     /**
      * Same as {@link #addSubtypeConstraint(Slot, Slot)} except we return false instead of raising
      * an error if the constraint is always unsatisfiable.
+     *
+     * @return false if the subtype constraint is always unsatisfiable, true otherwise.
      */
     public boolean addSubtypeConstraintNoErrorMsg(Slot subtype, Slot supertype) {
         Constraint constraint = createSubtypeConstraint(subtype, supertype);

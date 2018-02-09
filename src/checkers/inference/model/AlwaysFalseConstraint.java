@@ -5,9 +5,7 @@ import org.checkerframework.javacutil.ErrorReporter;
 
 /**
  * This "constraint" is the result of normalizing another constraint, where that constraint is
- * always false (evaluates to contradiction). If a constraint is normalized to this constraint, then
- * an error message will be issued by the {@link ConstraintManager}. This class is implemented as a
- * singleton.
+ * always false (evaluates to contradiction). This class is implemented as a singleton.
  *
  * @see {@link ConstraintManager}
  */

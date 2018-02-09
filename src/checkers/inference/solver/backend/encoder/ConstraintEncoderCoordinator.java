@@ -45,8 +45,10 @@ public class ConstraintEncoderCoordinator {
                         + "for a binary constraint. This should be normalized to "
                         + "either AlwaysTrueConstraint or AlwaysFalseConstraint.");
                 return null;
+            default:
+                ErrorReporter.errorAbort("Unsupported SlotSlotCombo enum.");
+                return null;
         }
-        return null;
     }
 
     public static <ConstraintEncodingT> ConstraintEncodingT dispatch(
@@ -66,6 +68,7 @@ public class ConstraintEncoderCoordinator {
                 return encoder.encodeConstant_Constant(
                         (ConstantSlot) constraint.getTarget(), (ConstantSlot) constraint.getDeclared(), (VariableSlot) constraint.getResult());
             default:
+                ErrorReporter.errorAbort("Unsupported SlotSlotCombo enum.");
                 return null;
         }
     }

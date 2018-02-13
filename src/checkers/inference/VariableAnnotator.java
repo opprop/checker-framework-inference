@@ -139,7 +139,6 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
     private final AnnotationMirror realTop;
 
     private final ExistentialVariableInserter existentialInserter;
-    private final ConstantToVariableAnnotator constantToVariableAnnotator;
     private final ImpliedTypeAnnotator impliedTypeAnnotator;
 
     public VariableAnnotator(final InferenceAnnotatedTypeFactory typeFactory,
@@ -166,7 +165,6 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
                                                                    varAnnot, this);
 
         this.impliedTypeAnnotator = new ImpliedTypeAnnotator(inferenceTypeFactory, slotManager, existentialInserter);
-        this.constantToVariableAnnotator = inferenceTypeFactory.getConstantToVariableAnnotator();
     }
 
 
@@ -631,7 +629,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             if (varElement.getKind() == ElementKind.ENUM_CONSTANT) {
                 AnnotatedTypeMirror realType = realTypeFactory.getAnnotatedType(tree);
                 CopyUtil.copyAnnotations(realType, adt);
-                constantToVariableAnnotator.visit(adt);
+                inferenceTypeFactory.getConstantToVariableAnnotator().visit(adt);
             } else {
                 // calls this method again but with a ParameterizedTypeTree
                 visitDeclared(adt, ((VariableTree) tree).getType());
@@ -1041,7 +1039,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         if (path == null || enclosedByAnnotation(path)) {
             AnnotatedTypeMirror realType = realTypeFactory.getAnnotatedType(tree);
             CopyUtil.copyAnnotations(realType, type);
-            constantToVariableAnnotator.visit(type);
+            inferenceTypeFactory.getConstantToVariableAnnotator().visit(type);
             return;
         } // else
 

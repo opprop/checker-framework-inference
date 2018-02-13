@@ -180,9 +180,8 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         ASTPathUtil.getASTRecordForPath(typeFactory, path);
         if (tree.getKind() == Kind.CLASS || tree.getKind() == Kind.INTERFACE
          || tree.getKind() == Kind.ENUM  || tree.getKind() == Kind.ANNOTATION_TYPE) {
-            ClassSymbol classSymbol = (ClassSymbol) TreeUtils.elementFromDeclaration((ClassTree) tree);
-            return new ClassDeclLocation(classSymbol.packge().getQualifiedName().toString(),
-                                         classSymbol.flatName().toString());
+            TypeElement typeElement = TreeUtils.elementFromDeclaration((ClassTree) tree);
+            return new ClassDeclLocation(((ClassSymbol)typeElement).flatName().toString());
         } // else
 
         ASTRecord record = ASTPathUtil.getASTRecordForPath(typeFactory, path);
@@ -514,10 +513,6 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         }
 
         atm.replaceAnnotation(slotManager.getAnnotation(variable));
-
-        if (atm.getEffectiveAnnotationInHierarchy(realTop) == null) {
-            atm.addAnnotation(realTop);
-        }
 
         return variable;
     }

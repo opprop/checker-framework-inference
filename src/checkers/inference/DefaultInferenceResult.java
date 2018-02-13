@@ -77,7 +77,7 @@ public class DefaultInferenceResult implements InferenceResult {
      * Should be called when inference failed to give solutions.
      *
      * @param unsatisfiableConstraints non-null set of unsolable constraints. If a solver backend doesn't
-     *                                 support explaning, empty set should be passed.
+     *                                 support explaining, empty set should be passed.
      */
     public DefaultInferenceResult(Collection<Constraint> unsatisfiableConstraints) {
         this(null, unsatisfiableConstraints);

@@ -196,23 +196,19 @@ public class GraphSolvingStrategy extends AbstractSolvingStrategy {
     protected InferenceResult mergeInferenceResults(List<Pair<Map<Integer, AnnotationMirror>, Collection<Constraint>>> inferenceResults) {
 
         Map<Integer, AnnotationMirror> solutions = new HashMap<>();
-        Set<Constraint> explanations = new HashSet<>();
 
         for (Pair<Map<Integer, AnnotationMirror>, Collection<Constraint>> inferenceResult : inferenceResults) {
             if (inferenceResult.fst != null) {
                 solutions.putAll(inferenceResult.fst);
             } else {
-                // If any one solution is null, whole solutions should be null.
-                solutions = null;
-                explanations.addAll(inferenceResult.snd);
-                break;
+                // If any solution is null, there is no solution in whole. In this case, return the
+                // unsolvable set of constraints for the current sub graph as explanations
+                return new DefaultInferenceResult(inferenceResult.snd);
             }
         }
+
+        // Till this point, there must be solution
         StatisticRecorder.record(StatisticKey.ANNOTATOIN_SIZE, (long) solutions.size());
-        if (solutions != null) {
-            return new DefaultInferenceResult(solutions);
-        } else {
-            return new DefaultInferenceResult(explanations);
-        }
+        return new DefaultInferenceResult(solutions);
     }
 }

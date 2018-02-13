@@ -102,7 +102,6 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
     protected InferenceResult mergeInferenceResults(List<Pair<Map<Integer, AnnotationMirror>, Collection<Constraint>>> inferenceResults) {
         Map<Integer, AnnotationMirror> solutions = new HashMap<>();
         Map<Integer, Set<AnnotationMirror>> dataflowResults = new HashMap<>();
-        Set<Constraint> explanations = new HashSet<>();
 
         for (Pair<Map<Integer, AnnotationMirror>, Collection<Constraint>> inferenceResult : inferenceResults) {
             Map<Integer, AnnotationMirror> inferenceSolutionMap = inferenceResult.fst;
@@ -120,44 +119,36 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
                     }
                 }
             } else {
-                solutions = null;
-                dataflowResults = null;
-                explanations.addAll(inferenceResult.snd);
-                break;
+                // If any sub solution is null, there is no solution in a whole.
+                return new DefaultInferenceResult(inferenceResult.snd);
             }
         }
 
-        if (solutions != null && dataflowResults != null) {
-            for (Map.Entry<Integer, Set<AnnotationMirror>> entry : dataflowResults.entrySet()) {
-                Set<String> dataTypes = new HashSet<String>();
-                Set<String> dataRoots = new HashSet<String>();
-                for (AnnotationMirror anno : entry.getValue()) {
-                    String[] dataTypesArr = DataflowUtils.getTypeNames(anno);
-                    String[] dataRootsArr = DataflowUtils.getTypeNameRoots(anno);
-                    if (dataTypesArr.length == 1) {
-                        dataTypes.add(dataTypesArr[0]);
-                    }
-                    if (dataRootsArr.length == 1) {
-                        dataRoots.add(dataRootsArr[0]);
-                    }
+        for (Map.Entry<Integer, Set<AnnotationMirror>> entry : dataflowResults.entrySet()) {
+            Set<String> dataTypes = new HashSet<String>();
+            Set<String> dataRoots = new HashSet<String>();
+            for (AnnotationMirror anno : entry.getValue()) {
+                String[] dataTypesArr = DataflowUtils.getTypeNames(anno);
+                String[] dataRootsArr = DataflowUtils.getTypeNameRoots(anno);
+                if (dataTypesArr.length == 1) {
+                    dataTypes.add(dataTypesArr[0]);
                 }
-                AnnotationMirror dataflowAnno = DataflowUtils.createDataflowAnnotationWithRoots(dataTypes,
-                        dataRoots, processingEnvironment);
-                solutions.put(entry.getKey(), dataflowAnno);
+                if (dataRootsArr.length == 1) {
+                    dataRoots.add(dataRootsArr[0]);
+                }
             }
-            for (Map.Entry<Integer, AnnotationMirror> entry : solutions.entrySet()) {
-                AnnotationMirror refinedDataflow = ((DataflowAnnotatedTypeFactory) InferenceMain
-                        .getInstance().getRealTypeFactory()).refineDataflow(entry.getValue());
-                entry.setValue(refinedDataflow);
-            }
-
-            StatisticRecorder.record(StatisticKey.ANNOTATOIN_SIZE, (long) solutions.size());
+            AnnotationMirror dataflowAnno = DataflowUtils.createDataflowAnnotationWithRoots(dataTypes,
+                    dataRoots, processingEnvironment);
+            solutions.put(entry.getKey(), dataflowAnno);
+        }
+        for (Map.Entry<Integer, AnnotationMirror> entry : solutions.entrySet()) {
+            AnnotationMirror refinedDataflow = ((DataflowAnnotatedTypeFactory) InferenceMain
+                    .getInstance().getRealTypeFactory()).refineDataflow(entry.getValue());
+            entry.setValue(refinedDataflow);
         }
 
-        if (solutions != null) {
-            return new DefaultInferenceResult(solutions);
-        } else {
-            return new DefaultInferenceResult(explanations);
-        }
+        StatisticRecorder.record(StatisticKey.ANNOTATOIN_SIZE, (long) solutions.size());
+
+        return new DefaultInferenceResult(solutions);
     }
 }

@@ -251,7 +251,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      *                actual implied tree appended to it.
      * @return A new VariableSlot corresponding to tree
      */
-    private VariableSlot createVariable(final AnnotationLocation location) {
+    protected VariableSlot createVariable(final AnnotationLocation location) {
         final VariableSlot variableSlot = slotManager
                 .createVariableSlot(location);
         return variableSlot;

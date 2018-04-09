@@ -21,6 +21,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeVariable;
 
+import checkers.inference.util.InferenceViewpointAdapter;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAnalysis;
@@ -45,6 +46,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -78,7 +80,7 @@ import checkers.inference.util.defaults.InferenceQualifierDefaults;
  * will add the relevant annotation (either VarAnnot or constant real annotation) based on the type's corresponding
  * tree and the rules of the InferrableChecker.  If the InferrableChecker determines that a value is constant
  * then the realAnnotatedTypeFactory is consulted to get this value.
- * @see checkers.inference.InferenceAnnotatedTypeFactory#annotateImplicit(com.sun.source.tree.Tree, checkers.types.AnnotatedTypeMirror)
+ * @see checkers.inference.InferenceAnnotatedTypeFactory#annotateImplicit(com.sun.source.tree.Tree, .types.AnnotatedTypeMirror)
  *
  * 2.  If we do NOT have the source code then the realAnnotatedTypeFactory is used to determine a constant value
  * to place on the given "library", i.e. from bytecode, type.
@@ -298,29 +300,8 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public void postAsMemberOf(final AnnotatedTypeMirror type,
                                final AnnotatedTypeMirror owner, final Element element) {
-        final TypeKind typeKind = type.getKind();
-        if (typeKind != TypeKind.DECLARED && typeKind != TypeKind.ARRAY) {
-            return;
-        }
-
-        final ElementKind elementKind = element.getKind();
-        if (elementKind == ElementKind.LOCAL_VARIABLE || elementKind == ElementKind.PARAMETER) {
-            return;
-        }
-
-        AnnotatedTypeMirror declType = this.getAnnotatedType(element);
-
-        if (withCombineConstraints) {
-            /*if (InferenceMain.DEBUG(this)) {
-                println("InferenceAnnotatedTypeFactory::postAsMemberOf: Combine constraint.")
-            }*/
-            Slot recvSlot = slotManager.getVariableSlot(owner);
-            Slot declSlot = slotManager.getVariableSlot(declType);
-            final CombVariableSlot combSlot = slotManager
-                    .createCombVariableSlot(recvSlot, declSlot);
-            constraintManager.addCombineConstraint(recvSlot, declSlot, combSlot);
-
-            type.replaceAnnotation(slotManager.getAnnotation(combSlot));
+        if (shouldViewpointAdaptMember(type, element)) {
+            viewpointAdaptMember(type, owner, element);
         }
     }
 
@@ -332,26 +313,30 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     @Override
     public List<AnnotatedTypeParameterBounds> typeVariablesFromUse(final AnnotatedDeclaredType useType, final TypeElement element ) {
+        // Declared types
+        List<AnnotatedTypeMirror> typeArguments = useType.getTypeArguments();
         // The type of the class in which the type params were declared
         final AnnotatedDeclaredType ownerOfTypeParams = getAnnotatedType(element);
         final List<AnnotatedTypeMirror> declaredTypeParameters = ownerOfTypeParams.getTypeArguments();
 
+        assert typeArguments.size() == declaredTypeParameters.size()
+                : "Mismatch in type argument size between " + typeArguments + " and " + declaredTypeParameters;
+
+        Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
+
+        for (int i = 0; i < typeArguments.size(); ++i) {
+            mapping.put(((AnnotatedTypeVariable) declaredTypeParameters.get(i)).getUnderlyingType(), typeArguments.get(i));
+        }
+
         final List<AnnotatedTypeParameterBounds> result = new ArrayList<>();
 
-        for (int i = 0; i < declaredTypeParameters.size(); ++i) {
-            final AnnotatedTypeVariable declaredTypeParam = (AnnotatedTypeVariable) declaredTypeParameters.get(i);
-            result.add(new AnnotatedTypeParameterBounds(declaredTypeParam.getUpperBound(), declaredTypeParam.getLowerBound()));
-
-            // TODO: Original InferenceAnnotatedTypeFactory#typeVariablesFromUse would create a combine constraint
-            // TODO: between the useType and the effectiveUpperBound of the declaredTypeParameter
-            // TODO: and then copy the annotations from the type with the CombVars to the declared type
-        }
+        viewpointAdaptTypeVariableBounds(useType, declaredTypeParameters, mapping, result);
 
         return result;
     }
 
     /**
-     * @see org.checkerframework.checker.type.AnnotatedTypeFactory#methodFromUse(com.sun.source.tree.MethodInvocationTree)
+     * @see org.checkerframework.framework.type.AnnotatedTypeFactory#methodFromUse(com.sun.source.tree.MethodInvocationTree)
      * TODO: This is essentially the default implementation of AnnotatedTypeFactory.methodFromUse with a space to later
      * TODO: add comb constraints.  One difference is how the receiver is gotten.  Perhaps we should just
      * TODO: change getSelfType?  But I am not sure where getSelfType is used yet
@@ -382,6 +367,9 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // TODO: Is the asMemberOf correct, was not in Werner's original implementation but I had added it
         // TODO: It is also what the AnnotatedTypeFactory default implementation does
         final AnnotatedExecutableType methodOfReceiver = AnnotatedTypes.asMemberOf(types, this, receiverType, methodElem);
+        if (!ElementUtils.isStatic(methodElem)) {
+            viewpointAdaptMethod(methodElem, receiverType, methodOfReceiver);
+        }
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = substituteTypeArgs(methodInvocationTree, methodElem, methodOfReceiver);
 
         AnnotatedExecutableType method = mfuPair.first;
@@ -408,7 +396,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * TODO: Similar but not the same as AnnotatedTypeFactory.constructorFromUse with space set aside from
      * TODO: comb constraints, track down the differences with constructorFromUse
      * Note: super() and this() calls
-     * @see org.checkerframework.checker.type.AnnotatedTypeFactory#constructorFromUse(com.sun.source.tree.NewClassTree)
+     * @see org.checkerframework.framework.type.AnnotatedTypeFactory#constructorFromUse(com.sun.source.tree.NewClassTree)
      *
      * @param newClassTree
      * @return
@@ -422,12 +410,12 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         final AnnotatedTypeMirror constructorReturnType = fromNewClass(newClassTree);
         addComputedTypeAnnotations(newClassTree, constructorReturnType);
 
-        final AnnotatedExecutableType constructorType = AnnotatedTypes.asMemberOf(types, this, constructorReturnType, constructorElem);
+        AnnotatedExecutableType constructorType = AnnotatedTypes.asMemberOf(types, this, constructorReturnType, constructorElem);
+        constructorType = viewpointAdaptConstructor(constructorReturnType, constructorType);
 
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> substitutedPair = substituteTypeArgs(newClassTree, constructorElem, constructorType);
         inferencePoly.replacePolys(newClassTree, substitutedPair.first);
 
-        // TODO: ADD CombConstraints
         // TODO: Should we be doing asMemberOf like super?
         return substitutedPair;
     }
@@ -606,6 +594,11 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         this.realTypeFactory.setRoot( root );
         this.variableAnnotator.clearTreeInfo();
         super.setRoot(root);
+    }
+
+    @Override
+    protected InferenceViewpointAdapter createViewpointAdapter() {
+        return withCombineConstraints ? new InferenceViewpointAdapter() : null;
     }
 }
 

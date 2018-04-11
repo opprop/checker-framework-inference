@@ -287,7 +287,7 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
                     // Vice versa.
                     return slotMgr.getAnnotation(var1);
                 } else {
-                    // Create a new merge variable for var1 and var2.
+                    // Create a new LubVariable for var1 and var2.
                     final LubVariableSlot mergeVariableSlot = slotMgr.createLubVariableSlot(var1, var2);
                     constraintMgr.addSubtypeConstraint(var1, mergeVariableSlot);
                     constraintMgr.addSubtypeConstraint(var2, mergeVariableSlot);

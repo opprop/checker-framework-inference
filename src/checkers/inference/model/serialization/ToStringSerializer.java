@@ -318,7 +318,7 @@ public class ToStringSerializer implements Serializer<String, String> {
         sb.append(slot.getId());
 
         if (showVerboseVars) {
-            sb.append(": lubof ");
+            sb.append(": lub-of ");
             sb.append(Arrays.asList(slot.getLeft(), slot.getRight()));
             formatMerges(slot, sb);
             optionallyFormatAstPath(slot, sb);

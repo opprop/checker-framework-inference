@@ -8,7 +8,7 @@ import javax.lang.model.element.AnnotationMirror;
 import checkers.inference.model.LubVariableSlot;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-
+import checkers.inference.model.ArithmeticConstraint;
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.CombineConstraint;
 import checkers.inference.model.ComparableConstraint;
@@ -138,6 +138,10 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
     protected static final String EXISTENTIAL_ID = "id";
     protected static final String EXISTENTIAL_THEN = "then";
     protected static final String EXISTENTIAL_ELSE = "else";
+
+    protected static final String ARITH_LEFT_OPERAND = "left_operand";
+    protected static final String ARITH_RIGHT_OPERAND = "right_operand";
+    protected static final String ARITH_RESULT = "result";
 
     protected static final String VERSION = "2";
 
@@ -328,6 +332,17 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
         obj.put(PREFERENCE_GOAL, constraint.getGoal().serialize(this));
         // TODO: is the int showing up correctly in JSON?
         obj.put(PREFERENCE_WEIGHT, constraint.getWeight());
+        return obj;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public JSONObject serialize(ArithmeticConstraint constraint) {
+        JSONObject obj = new JSONObject();
+        obj.put(CONSTRAINT_KEY, constraint.getOperation().name().toLowerCase());
+        obj.put(ARITH_LEFT_OPERAND, constraint.getLeftOperand().serialize(this));
+        obj.put(ARITH_RIGHT_OPERAND, constraint.getRightOperand().serialize(this));
+        obj.put(ARITH_RESULT, constraint.getResult().serialize(this));
         return obj;
     }
 }

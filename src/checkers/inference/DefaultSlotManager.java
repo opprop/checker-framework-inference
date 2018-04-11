@@ -22,6 +22,7 @@ import org.checkerframework.javacutil.ErrorReporter;
 import com.sun.tools.javac.util.Pair;
 
 import checkers.inference.model.AnnotationLocation;
+import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.ExistentialVariableSlot;
@@ -85,6 +86,14 @@ public class DefaultSlotManager implements SlotManager {
     private final Map<Pair<Slot, Slot>, Integer> combSlotPairCache;
     private final Map<Pair<Slot, Slot>, Integer> lubSlotPairCache;
 
+    /**
+     * A map of {@link AnnotationLocation} to {@link Integer} for caching
+     * {@link ArithmeticVariableSlot}s. The annotation location uniquely identifies an
+     * {@link ArithmeticVariableSlot}. The {@link Integer} is the Id of the corresponding
+     * {@link ArithmeticVariableSlot}.
+     */
+    private final Map<AnnotationLocation, Integer> arithmeticSlotCache;
+
     private final Set<Class<? extends Annotation>> realQualifiers;
     private final ProcessingEnvironment processingEnvironment;
 
@@ -106,6 +115,8 @@ public class DefaultSlotManager implements SlotManager {
         existentialSlotPairCache = new LinkedHashMap<>();
         combSlotPairCache = new LinkedHashMap<>();
         lubSlotPairCache = new LinkedHashMap<>();
+        arithmeticSlotCache = new LinkedHashMap<>();
+
         if (storeConstants) {
             Set<? extends AnnotationMirror> mirrors = InferenceMain.getInstance().getRealTypeFactory().getQualifierHierarchy().getTypeQualifiers();
             for (AnnotationMirror am : mirrors) {
@@ -154,17 +165,17 @@ public class DefaultSlotManager implements SlotManager {
      * @inheritDoc
      */
     @Override
-    public AnnotationMirror getAnnotation( final Slot slot ) {
-        final Class<?> slotClass = slot.getClass();
-
-        // We need to build the AnntotationBuilder each time because AnnotationBuilders are only allowed to build their annotations once
-        if (slotClass.equals(VariableSlot.class) || slotClass.equals(ExistentialVariableSlot.class)
-                || slotClass.equals(RefinementVariableSlot.class) || slotClass.equals(CombVariableSlot.class)
-                || slotClass.equals(LubVariableSlot.class) || slotClass.equals(ConstantSlot.class)) {
-            return convertVariable((VariableSlot) slot, new AnnotationBuilder(processingEnvironment, VarAnnot.class));
+    public AnnotationMirror getAnnotation(final Slot slot) {
+        // if slot is a VariableSlot or one of its subclasses
+        if (slot instanceof VariableSlot) {
+            // We need to build the AnnotationBuilder each time because AnnotationBuilders are only
+            // allowed to build their annotations once
+            return convertVariable((VariableSlot) slot,
+                    new AnnotationBuilder(processingEnvironment, VarAnnot.class));
         }
 
-        throw new IllegalArgumentException("Slot type unrecognized( " + slot.getClass() + ") Slot=" + slot.toString() );
+        throw new IllegalArgumentException(
+                "Slot type unrecognized( " + slot.getClass() + ") Slot=" + slot.toString());
     }
 
     /**
@@ -270,7 +281,7 @@ public class DefaultSlotManager implements SlotManager {
     public List<ConstantSlot> getConstantSlots() {
         List<ConstantSlot> constants = new ArrayList<>();
         for (Slot slot : variables.values()) {
-            if (!slot.isVariable()) {
+            if (slot.isConstant()) {
                 constants.add((ConstantSlot) slot);
             }
         }
@@ -378,5 +389,42 @@ public class DefaultSlotManager implements SlotManager {
             existentialSlotPairCache.put(pair, existentialVariableSlot.getId());
         }
         return existentialVariableSlot;
+    }
+
+    @Override
+    public ArithmeticVariableSlot createArithmeticVariableSlot(AnnotationLocation location) {
+        if (location == null || location.getKind() == AnnotationLocation.Kind.MISSING) {
+            ErrorReporter.errorAbort(
+                    "Cannot create an ArithmeticVariableSlot with a missing annotation location.");
+        }
+
+        // create the arithmetic var slot if it doesn't exist for the given location
+        if (!arithmeticSlotCache.containsKey(location)) {
+            ArithmeticVariableSlot slot = new ArithmeticVariableSlot(location, nextId());
+            addToVariables(slot);
+            arithmeticSlotCache.put(location, slot.getId());
+            return slot;
+        }
+
+        return getArithmeticVariableSlot(location);
+    }
+
+    @Override
+    public ArithmeticVariableSlot getArithmeticVariableSlot(AnnotationLocation location) {
+        if (location == null || location.getKind() == AnnotationLocation.Kind.MISSING) {
+            ErrorReporter.errorAbort(
+                    "ArithmeticVariableSlots are never created with a missing annotation location.");
+        }
+        if (!arithmeticSlotCache.containsKey(location)) {
+            return null;
+        } else {
+            return (ArithmeticVariableSlot) getVariable(arithmeticSlotCache.get(location));
+        }
+    }
+
+    @Override
+    public AnnotationMirror createEquivalentVarAnno(AnnotationMirror realQualifier) {
+        ConstantSlot varSlot = createConstantSlot(realQualifier);
+        return getAnnotation(varSlot);
     }
 }

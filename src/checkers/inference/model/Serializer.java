@@ -26,14 +26,6 @@ public interface Serializer<S, T> {
 
     T serialize(InequalityConstraint constraint);
 
-    T serialize(ComparableConstraint comparableConstraint);
-
-    T serialize(CombineConstraint combineConstraint);
-
-    T serialize(PreferenceConstraint preferenceConstraint);
-
-    T serialize(ArithmeticConstraint arithmeticConstraint);
-  
     S serialize(VariableSlot slot);
 
     S serialize(ConstantSlot slot);
@@ -45,4 +37,12 @@ public interface Serializer<S, T> {
     S serialize(CombVariableSlot slot);
 
     S serialize(LubVariableSlot slot);
+
+    T serialize(ComparableConstraint comparableConstraint);
+
+    T serialize(CombineConstraint combineConstraint);
+
+    T serialize(PreferenceConstraint preferenceConstraint);
+
+    T serialize(ArithmeticConstraint arithmeticConstraint);
 }

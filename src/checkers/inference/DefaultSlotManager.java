@@ -360,15 +360,14 @@ public class DefaultSlotManager implements SlotManager {
 
     @Override
     public LubVariableSlot createLubVariableSlot(Slot left, Slot right) {
+        // Order of two ingredient slots doesn't matter, but for simplicity, we still use pair.
         LubVariableSlot lubVariableSlot;
         Pair<Slot, Slot> pair = new Pair<>(left, right);
         if (lubSlotPairCache.containsKey(pair)) {
             int id = lubSlotPairCache.get(pair);
             lubVariableSlot = (LubVariableSlot) getVariable(id);
         } else {
-            // TODO Clients who initialize LubVariableSlot doesn't have tree location, so they
-            // can't pass valid AnnotationLocation when calling this create method. One solution
-            // is to find clients of clients, and there we set correct AnnotationLocation
+            // We need a non-null location in the future for better debugging outputs
             lubVariableSlot = new LubVariableSlot(null, nextId(), left, right);
             addToVariables(lubVariableSlot);
             lubSlotPairCache.put(pair, lubVariableSlot.getId());

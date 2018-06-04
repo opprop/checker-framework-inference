@@ -80,7 +80,7 @@ import checkers.inference.util.defaults.InferenceQualifierDefaults;
  * will add the relevant annotation (either VarAnnot or constant real annotation) based on the type's corresponding
  * tree and the rules of the InferrableChecker.  If the InferrableChecker determines that a value is constant
  * then the realAnnotatedTypeFactory is consulted to get this value.
- * @see checkers.inference.InferenceAnnotatedTypeFactory#annotateImplicit(com.sun.source.tree.Tree, .types.AnnotatedTypeMirror)
+ * @see checkers.inference.InferenceAnnotatedTypeFactory#annotateImplicit(com.sun.source.tree.Tree, checkers.types.AnnotatedTypeMirror)
  *
  * 2.  If we do NOT have the source code then the realAnnotatedTypeFactory is used to determine a constant value
  * to place on the given "library", i.e. from bytecode, type.
@@ -301,7 +301,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public void postAsMemberOf(final AnnotatedTypeMirror type,
                                final AnnotatedTypeMirror owner, final Element element) {
         if (viewpointAdapter != null) {
-            viewpointAdapter.viewpointAdaptMember(type, owner, element);
+            viewpointAdapter.viewpointAdaptMember(owner, element, type);
         }
     }
 
@@ -344,7 +344,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * @see org.checkerframework.framework.type.AnnotatedTypeFactory#methodFromUse(com.sun.source.tree.MethodInvocationTree)
+     * @see org.checkerframework.checker.type.AnnotatedTypeFactory#methodFromUse(com.sun.source.tree.MethodInvocationTree)
      * TODO: This is essentially the default implementation of AnnotatedTypeFactory.methodFromUse with a space to later
      * TODO: add comb constraints.  One difference is how the receiver is gotten.  Perhaps we should just
      * TODO: change getSelfType?  But I am not sure where getSelfType is used yet
@@ -376,7 +376,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // TODO: It is also what the AnnotatedTypeFactory default implementation does
         final AnnotatedExecutableType methodOfReceiver = AnnotatedTypes.asMemberOf(types, this, receiverType, methodElem);
         if (viewpointAdapter != null) {
-            viewpointAdapter.viewpointAdaptMethod(methodElem, receiverType, methodOfReceiver);
+            viewpointAdapter.viewpointAdaptMethod(receiverType, methodElem, methodOfReceiver);
         }
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> mfuPair = substituteTypeArgs(methodInvocationTree, methodElem, methodOfReceiver);
 
@@ -404,7 +404,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * TODO: Similar but not the same as AnnotatedTypeFactory.constructorFromUse with space set aside from
      * TODO: comb constraints, track down the differences with constructorFromUse
      * Note: super() and this() calls
-     * @see org.checkerframework.framework.type.AnnotatedTypeFactory#constructorFromUse(com.sun.source.tree.NewClassTree)
+     * @see org.checkerframework.checker.type.AnnotatedTypeFactory#constructorFromUse(com.sun.source.tree.NewClassTree)
      *
      * @param newClassTree
      * @return
@@ -421,7 +421,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotatedExecutableType constructorType = AnnotatedTypes.asMemberOf(types, this, constructorReturnType, constructorElem);
 
         if (viewpointAdapter != null) {
-            viewpointAdapter.viewpointAdaptConstructor(constructorElem, constructorReturnType, constructorType);
+            viewpointAdapter.viewpointAdaptConstructor(constructorReturnType, constructorElem, constructorType);
         }
 
         Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> substitutedPair = substituteTypeArgs(newClassTree, constructorElem, constructorType);
@@ -609,7 +609,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected InferenceViewpointAdapter createViewpointAdapter() {
-        return withCombineConstraints ? new InferenceViewpointAdapter() : null;
+        return withCombineConstraints ? new InferenceViewpointAdapter(this) : null;
     }
 }
 

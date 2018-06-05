@@ -45,6 +45,7 @@ import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
+import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.ErrorReporter;
@@ -258,6 +259,11 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new InferenceTypeVariableSubstitutor(this, existentialInserter);
     }
 
+    @Override
+    protected DependentTypesHelper createDependentTypesHelper() {
+        return null;
+    }
+
     protected Map<Class<? extends Annotation>, VariableSlot> getConstantVars() {
         return Collections.unmodifiableMap(constantToVarAnnot);
     }
@@ -303,44 +309,6 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (viewpointAdapter != null) {
             viewpointAdapter.viewpointAdaptMember(owner, element, type);
         }
-    }
-
-    /**
-     * TODO: The implementation in AnnotatedTypeFactory essentially replaces the parameterized bounds with concrete bounds
-     * TODO: (e.g. <T extends @Nullable Object, E extends T> => <T extends @Nullable Object, E extends @Nullable Object>
-     * TODO: TO CORRECTLY MODEL THE RESULTING CONSTRAINTS WOULD WE NOT DO THE SAME THING?  OR CREATE A COMBVAR
-     * TODO: FOR THAT LOCATION?
-     */
-    @Override
-    public List<AnnotatedTypeParameterBounds> typeVariablesFromUse(final AnnotatedDeclaredType useType, final TypeElement element ) {
-        // Declared types
-        List<AnnotatedTypeMirror> typeArguments = useType.getTypeArguments();
-        // The type of the class in which the type params were declared
-        final AnnotatedDeclaredType ownerOfTypeParams = getAnnotatedType(element);
-        final List<AnnotatedTypeMirror> declaredTypeParameters = ownerOfTypeParams.getTypeArguments();
-
-        assert typeArguments.size() == declaredTypeParameters.size()
-                : "Mismatch in type argument size between " + typeArguments + " and " + declaredTypeParameters;
-
-        Map<TypeVariable, AnnotatedTypeMirror> mapping = new HashMap<>();
-
-        for (int i = 0; i < typeArguments.size(); ++i) {
-            mapping.put(((AnnotatedTypeVariable) declaredTypeParameters.get(i)).getUnderlyingType(), typeArguments.get(i));
-        }
-
-        final List<AnnotatedTypeParameterBounds> result = new ArrayList<>();
-        for (AnnotatedTypeMirror atm : declaredTypeParameters) {
-            AnnotatedTypeVariable atv = (AnnotatedTypeVariable) atm;
-            AnnotatedTypeMirror upper = typeVarSubstitutor.substitute(mapping, atv.getUpperBound());
-            AnnotatedTypeMirror lower = typeVarSubstitutor.substitute(mapping, atv.getLowerBound());
-            result.add(new AnnotatedTypeParameterBounds(upper, lower));
-        }
-
-        if (viewpointAdapter != null) {
-            viewpointAdapter.viewpointAdaptTypeParameterBounds(ownerOfTypeParams, result);
-        }
-
-        return result;
     }
 
     /**

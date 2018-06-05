@@ -386,7 +386,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         final AnnotatedTypeMirror constructorReturnType = fromNewClass(newClassTree);
         addComputedTypeAnnotations(newClassTree, constructorReturnType);
 
-        AnnotatedExecutableType constructorType = AnnotatedTypes.asMemberOf(types, this, constructorReturnType, constructorElem);
+        final AnnotatedExecutableType constructorType = AnnotatedTypes.asMemberOf(types, this, constructorReturnType, constructorElem);
 
         if (viewpointAdapter != null) {
             viewpointAdapter.viewpointAdaptConstructor(constructorReturnType, constructorElem, constructorType);

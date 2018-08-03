@@ -22,7 +22,7 @@ public class StatisticRecorder {
         CNF_CLAUSE_SIZE,
         LOGIQL_PREDICATE_SIZE,
         LOGIQL_DATA_SIZE,
-        ANNOTATOIN_SIZE,
+        ANNOTATION_SIZE,
 
         /* Timing Info*/
         GRAPH_GENERATION_TIME,
@@ -33,6 +33,8 @@ public class StatisticRecorder {
         SAT_SOLVING_TIME,
         LOGIQL_SERIALIZATION_TIME,
         LOGIQL_SOLVING_TIME,
+        SMT_SERIALIZATION_TIME,
+        SMT_SOLVING_TIME,
     }
 
     // Use atomic integer when back ends run in parallel.

@@ -208,7 +208,7 @@ public class GraphSolvingStrategy extends AbstractSolvingStrategy {
         }
 
         // Till this point, there must be solution
-        StatisticRecorder.record(StatisticKey.ANNOTATOIN_SIZE, (long) solutions.size());
+        StatisticRecorder.record(StatisticKey.ANNOTATION_SIZE, (long) solutions.size());
         return new DefaultInferenceResult(solutions);
     }
 }

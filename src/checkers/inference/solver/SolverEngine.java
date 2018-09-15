@@ -26,7 +26,6 @@ import checkers.inference.solver.util.PrintUtils;
 import checkers.inference.solver.util.SolverArg;
 import checkers.inference.solver.util.SolverEnvironment;
 import checkers.inference.solver.util.StatisticRecorder;
-import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 
 /**
  * SolverEngine is the entry point of general solver framework, and it is also
@@ -190,10 +189,10 @@ public class SolverEngine implements InferenceSolver {
     private Map<String, Integer> recordSlotConstraintSize(final Collection<Slot> slots,
             final Collection<Constraint> constraints) {
 
-        // Record constraint size
-        StatisticRecorder.record(StatisticKey.CONSTRAINT_SIZE, (long) constraints.size());
-        // Record slot size
-        StatisticRecorder.record(StatisticKey.SLOTS_SIZE, (long) slots.size());
+        // Record slot & constraint size
+        StatisticRecorder.record("slots_size", slots.size());
+        StatisticRecorder.record("constraint_size", constraints.size());
+
         Map<String, Integer> modelMap = new LinkedHashMap<>();
 
         final String CONSTANT_SLOT_NAME = ConstantSlot.class.getSimpleName();

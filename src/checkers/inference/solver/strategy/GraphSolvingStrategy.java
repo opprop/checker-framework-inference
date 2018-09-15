@@ -30,7 +30,6 @@ import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.SolverArg;
 import checkers.inference.solver.util.SolverEnvironment;
 import checkers.inference.solver.util.StatisticRecorder;
-import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 import com.sun.tools.javac.util.Pair;
 
 /**
@@ -89,9 +88,8 @@ public class GraphSolvingStrategy extends AbstractSolvingStrategy {
         // Merge solutions.
         InferenceResult result = mergeInferenceResults(inferenceResults);
 
-        //TODO: Refactor way of recording Statistics.
-        StatisticRecorder.record(StatisticKey.GRAPH_GENERATION_TIME, (graphBuildingEnd - graphBuildingStart));
-        StatisticRecorder.record(StatisticKey.GRAPH_SIZE, (long) constraintGraph.getIndependentPath().size());
+        StatisticRecorder.record("graph_generation_time", (graphBuildingEnd - graphBuildingStart));
+        StatisticRecorder.record("graph_size", constraintGraph.getIndependentPath().size());
 
         return result;
     }
@@ -157,8 +155,7 @@ public class GraphSolvingStrategy extends AbstractSolvingStrategy {
         }
         long solvingEnd = System.currentTimeMillis();
 
-        //TODO: Refactor way of recording statistic.
-        StatisticRecorder.record(StatisticKey.OVERALL_PARALLEL_SOLVING_TIME, (solvingEnd - solvingStart));
+        StatisticRecorder.record("overall_parallel_solving_time", (solvingEnd - solvingStart));
         return results;
     }
 
@@ -182,8 +179,8 @@ public class GraphSolvingStrategy extends AbstractSolvingStrategy {
             }
         }
         long solvingEnd = System.currentTimeMillis();
-        //TODO: Refactor way of recording statistic.
-        StatisticRecorder.record(StatisticKey.OVERALL_SEQUENTIAL_SOLVING_TIME, (solvingEnd - solvingStart));
+
+        StatisticRecorder.record("overall_sequential_solving_time", (solvingEnd - solvingStart));
         return results;
     }
 
@@ -208,7 +205,7 @@ public class GraphSolvingStrategy extends AbstractSolvingStrategy {
         }
 
         // Till this point, there must be solution
-        StatisticRecorder.record(StatisticKey.ANNOTATOIN_SIZE, (long) solutions.size());
+        StatisticRecorder.record("annotation_size", solutions.size());
         return new DefaultInferenceResult(solutions);
     }
 }

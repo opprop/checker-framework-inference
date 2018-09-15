@@ -1,7 +1,8 @@
 package checkers.inference.solver.util;
 
-import java.util.EnumMap;
+import java.util.Collections;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -11,40 +12,11 @@ import java.util.concurrent.atomic.AtomicInteger;
  *
  */
 public class StatisticRecorder {
-
-    public enum StatisticKey {
-
-        /* Basic Info */
-        SLOTS_SIZE,
-        CONSTRAINT_SIZE,
-        GRAPH_SIZE,
-        CNF_VARIABLE_SIZE,
-        CNF_CLAUSE_SIZE,
-        LOGIQL_PREDICATE_SIZE,
-        LOGIQL_DATA_SIZE,
-        ANNOTATOIN_SIZE,
-
-        /* Timing Info*/
-        GRAPH_GENERATION_TIME,
-        OVERALL_PARALLEL_SOLVING_TIME,
-        OVERALL_SEQUENTIAL_SOLVING_TIME,
-        OVERALL_NOGRAPH_SOLVING_TIME,
-        SAT_SERIALIZATION_TIME,
-        SAT_SOLVING_TIME,
-        LOGIQL_SERIALIZATION_TIME,
-        LOGIQL_SOLVING_TIME,
-    }
-
     // Use atomic integer when back ends run in parallel.
     public final static AtomicInteger satSerializationTime = new AtomicInteger(0);
     public final static AtomicInteger satSolvingTime = new AtomicInteger(0);
-    private final static Map<StatisticKey, Long> statistic = new EnumMap<StatisticKey, Long>(StatisticKey.class);
-
-    static {
-        for (StatisticKey key : StatisticKey.values()) {
-            statistic.put(key, (long) 0);
-        }
-    }
+    // statistics are sorted alphabetically by key name
+    private final static Map<String, Long> statistic = new TreeMap<>();
 
     public static synchronized void recordSingleSerializationTime(long value) {
         satSerializationTime.addAndGet((int) value);
@@ -54,9 +26,20 @@ public class StatisticRecorder {
         satSolvingTime.addAndGet((int) value);
     }
 
-    public static void record(StatisticKey key, Long value) {
+    /**
+     * Adds the given value to the statistics for the given key. If an existing
+     * value exists for the given key, this method stores the sum of the new
+     * value and the existing value into the key.
+     *
+     * @param key a statistic key
+     * @param value a value
+     */
+    public static void record(String key, long value) {
         synchronized (statistic) {
-            if (key.equals(StatisticKey.LOGIQL_PREDICATE_SIZE)) {
+            key = key.toLowerCase();
+
+            if (statistic.get(key) == null
+                    || key.contentEquals("logiql_predicate_size")) {
                 // LogiQL predicate size are fixed for same underlining type
                 // system.
                 statistic.put(key, value);
@@ -67,7 +50,22 @@ public class StatisticRecorder {
         }
     }
 
-    public static Map<StatisticKey, Long> getStatistic() {
-        return statistic;
+    /**
+     * Adds the given value to the statistics for the given key.
+     * 
+     * This is a convenience method to eliminate the need to cast the value to
+     * long at call sites.
+     * 
+     * @see #record(String, long)
+     *
+     * @param key a statistic key
+     * @param value a value
+     */
+    public static void record(String key, int value) {
+        record(key, (long) value);
+    }
+
+    public static Map<String, Long> getStatistic() {
+        return Collections.unmodifiableMap(statistic);
     }
 }

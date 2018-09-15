@@ -23,7 +23,6 @@ import checkers.inference.solver.backend.maxsat.MaxSatSolver;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.SolverEnvironment;
 import checkers.inference.solver.util.StatisticRecorder;
-import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 
 /**
  * LingelingSolver is also a MaxSatSolver but it calls Lingeling SAT solver to
@@ -176,7 +175,7 @@ public class LingelingSolver extends MaxSatSolver {
     private void recordData() {
         int totalClauses = hardClauses.size() + softClauses.size();
         int totalVariable = variableSet.size();
-        StatisticRecorder.record(StatisticKey.CNF_CLAUSE_SIZE, (long) totalClauses);
-        StatisticRecorder.record(StatisticKey.CNF_VARIABLE_SIZE, (long) totalVariable);
+        StatisticRecorder.record("cnf_clause_size", totalClauses);
+        StatisticRecorder.record("cnf_variable_size", totalVariable);
     }
 }

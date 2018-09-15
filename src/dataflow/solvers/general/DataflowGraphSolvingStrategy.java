@@ -32,7 +32,6 @@ import checkers.inference.solver.strategy.GraphSolvingStrategy;
 import checkers.inference.solver.util.PrintUtils;
 import checkers.inference.solver.util.SolverEnvironment;
 import checkers.inference.solver.util.StatisticRecorder;
-import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 import dataflow.DataflowAnnotatedTypeFactory;
 import dataflow.qual.DataFlow;
 import dataflow.qual.DataFlowInferenceBottom;
@@ -62,9 +61,7 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
                 DataFlowInferenceBottom.class);
 
         List<Solver<?>> solvers = new ArrayList<>();
-        //TODO: Refactor statistic part.
-        StatisticRecorder.record(StatisticKey.GRAPH_SIZE, (long) constraintGraph.getConstantPath()
-                .size());
+        StatisticRecorder.record("graph_size", constraintGraph.getConstantPath().size());
 
         for (Map.Entry<Vertex, Set<Constraint>> entry : constraintGraph.getConstantPath().entrySet()) {
             AnnotationMirror anno = entry.getKey().getValue();
@@ -147,7 +144,7 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
             entry.setValue(refinedDataflow);
         }
 
-        StatisticRecorder.record(StatisticKey.ANNOTATOIN_SIZE, (long) solutions.size());
+        StatisticRecorder.record("annotation_size", solutions.size());
 
         return new DefaultInferenceResult(solutions);
     }

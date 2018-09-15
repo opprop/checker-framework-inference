@@ -17,7 +17,6 @@ import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.NameUtils;
 import checkers.inference.solver.util.SolverEnvironment;
 import checkers.inference.solver.util.StatisticRecorder;
-import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 
 /**
  * LogiQLSolver first creates LogiQL predicates text, then calls format translator
@@ -60,7 +59,7 @@ public class LogiQLSolver extends Solver<LogiQLFormatTranslator> {
         this.serializationStart = System.currentTimeMillis();
         this.encodeAllConstraints();
         this.serializationEnd = System.currentTimeMillis();
-        StatisticRecorder.record(StatisticKey.LOGIQL_SERIALIZATION_TIME,
+        StatisticRecorder.record("logiql_serialization_time",
                 (serializationEnd - serializationStart));
         addVariables();
         addConstants();
@@ -71,7 +70,7 @@ public class LogiQLSolver extends Solver<LogiQLFormatTranslator> {
         runLogicBlox.runLogicBlox();
         this.solvingEnd = System.currentTimeMillis();
 
-        StatisticRecorder.record(StatisticKey.LOGIQL_SOLVING_TIME, (solvingEnd - solvingStart));
+        StatisticRecorder.record("logiql_solving_time", (solvingEnd - solvingStart));
 
         //TODO: Refactor this to let Translator take the responsiblity of decoding.
         DecodingTool DecodeTool = new DecodingTool(varSlotIds, logiqldataPath, lattice, localNth);
@@ -110,7 +109,7 @@ public class LogiQLSolver extends Solver<LogiQLFormatTranslator> {
 
     private void writeLogiQLData(String path, int nth) {
         String[] lines = logiQLText.toString().split("\r\n|\r|\n");
-        StatisticRecorder.record(StatisticKey.LOGIQL_DATA_SIZE, (long) lines.length);
+        StatisticRecorder.record("logiql_data_size", lines.length);
         try {
             String writePath = path + "/data" + nth + ".logic";
             File f = new File(writePath);

@@ -65,6 +65,11 @@ public class StatisticRecorder {
         record(key, (long) value);
     }
 
+    /**
+     * Returns an immutable map of the collected statistics.
+     *
+     * @return the immutable map.
+     */
     public static Map<String, Long> getStatistic() {
         return Collections.unmodifiableMap(statistic);
     }

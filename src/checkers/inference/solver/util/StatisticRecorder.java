@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import checkers.inference.model.ConstantSlot;
@@ -24,7 +23,7 @@ public class StatisticRecorder {
     public final static AtomicInteger satSerializationTime = new AtomicInteger(0);
     public final static AtomicInteger satSolvingTime = new AtomicInteger(0);
     // statistics are sorted alphabetically by key name
-    private final static Map<String, Long> statistic = new TreeMap<>();
+    private final static Map<String, Long> statistic = new LinkedHashMap<>();
 
     public static synchronized void recordSingleSerializationTime(long value) {
         satSerializationTime.addAndGet((int) value);

@@ -38,7 +38,7 @@ public class StatisticRecorder {
      * given key, this method stores the sum of the new value and the existing value into the key.
      *
      * @param key a statistic key. The key is treated case-insensitive: it will always be considered
-     *            in terms of its lower case equivalent.
+     *            in terms of its lower-case equivalent.
      * @param value a value
      */
     public static void record(String key, long value) {

@@ -121,12 +121,14 @@ public class LingelingSolver extends MaxSatSolver {
             e.printStackTrace();
         }
 
-        // TODO: use http://www.techiedelight.com/convert-list-integer-array-int/ ?
-        // Cannot convert from Integer[] to int[] directly...
-        int[] resultArray = new int[resultList.size()];
-        for (int i = 0; i < resultList.size(); i++) {
-            resultArray[i] = resultList.get(i);
-        }
+        // Java 8 style of List<Integer> to int[] conversion
+        int[] resultArray = resultList.stream().mapToInt(Integer::intValue).toArray();
+
+//        // Cannot convert from Integer[] to int[] directly...
+//        int[] resultArray = new int[resultList.size()];
+//        for (int i = 0; i < resultList.size(); i++) {
+//            resultArray[i] = resultList.get(i);
+//        }
         return resultArray;
     }
 
@@ -141,71 +143,6 @@ public class LingelingSolver extends MaxSatSolver {
             e.printStackTrace();
         }
     }
-
-//    /**
-//     * Create Lingeling process, and read output and error.
-//     *
-//     * @param command
-//     * @return and int array, which stores truth assignment for CNF predicate.
-//     * @throws IOException
-//     * @throws InterruptedException
-//     */
-//    private int[] getOutPut_Error(String command) throws IOException, InterruptedException {
-//
-//        final List<Integer> resultList = new ArrayList<Integer>();
-//        final Process p = Runtime.getRuntime().exec(command);
-//
-//        Thread getOutPut = new Thread() {
-//            @Override
-//            public void run() {
-//                String s = "";
-//                BufferedReader stdInput = new BufferedReader(new InputStreamReader(p.getInputStream()));
-//                try {
-//                    while ((s = stdInput.readLine()) != null) {
-//                        if (s.charAt(0) == 'v') {
-//                            for (String retval : s.split(" ")) {
-//                                if (!retval.equals("") && !retval.equals(" ") && !retval.equals("\n")
-//                                        && !retval.equals("v")) {
-//                                    int val = Integer.parseInt(retval);
-//                                    if (variableSet.contains(Math.abs(val))) {
-//                                        resultList.add(val);
-//                                    }
-//                                }
-//                            }
-//                        }
-//                    }
-//                } catch (NumberFormatException | IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        };
-//        getOutPut.start();
-//        Thread getError = new Thread() {
-//            @Override
-//            public void run() {
-//                String s = "";
-//                StringBuilder sb = new StringBuilder();
-//                BufferedReader stdError = new BufferedReader(new InputStreamReader(p.getErrorStream()));
-//                try {
-//                    while ((s = stdError.readLine()) != null) {
-//                        sb.append(s);
-//                    }
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        };
-//        getError.start();
-//        getOutPut.join();
-//        getError.join();
-//        p.waitFor();
-//        // Cannot convert from Integer[] to int[] directly...
-//        int[] resultArray = new int[resultList.size()];
-//        for (int i = 0; i < resultList.size(); i++) {
-//            resultArray[i] = resultList.get(i);
-//        }
-//        return resultArray;
-//    }
 
     /**
      * For lingeling solve, it gives the solution from 1 to the largest

@@ -27,19 +27,21 @@ public class StatisticRecorder {
     }
 
     /**
-     * Adds the given value to the statistics for the given key. If an existing
-     * value exists for the given key, this method stores the sum of the new
-     * value and the existing value into the key.
+     * Adds the given value to the statistics for the given key. If an existing value exists for the
+     * given key, this method stores the sum of the new value and the existing value into the key.
      *
-     * @param key a statistic key
-     * @param value a value
+     * @param key
+     *            a statistic key. The key is treated case-insensitive: it will always be considered
+     *            in terms of its lower case equivalent.
+     * @param value
+     *            a value
      */
     public static void record(String key, long value) {
         synchronized (statistic) {
+            // always use the lower-case version of the given key
             key = key.toLowerCase();
 
-            if (statistic.get(key) == null
-                    || key.contentEquals("logiql_predicate_size")) {
+            if (statistic.get(key) == null || key.contentEquals("logiql_predicate_size")) {
                 // LogiQL predicate size are fixed for same underlining type
                 // system.
                 statistic.put(key, value);
@@ -53,13 +55,14 @@ public class StatisticRecorder {
     /**
      * Adds the given value to the statistics for the given key.
      * 
-     * This is a convenience method to eliminate the need to cast the value to
-     * long at call sites.
+     * This is a convenience method to eliminate the need to cast the value to long at call sites.
      * 
      * @see #record(String, long)
      *
-     * @param key a statistic key
-     * @param value a value
+     * @param key
+     *            a statistic key
+     * @param value
+     *            a value
      */
     public static void record(String key, int value) {
         record(key, (long) value);

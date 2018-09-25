@@ -117,28 +117,19 @@ public class PrintUtils {
      * @param statistics
      * @param modelRecord
      */
-    private static void outputStatistics(PrintStream stream,
-            Map<String, Long> statistics, Map<String, Integer> modelRecord) {
-
+    private static void outputStatistics(PrintStream stream, Map<String, Long> statistics) {
         stream.println("====================== Statistics =======================");
-
-        // Basic info
         for (Map.Entry<String, Long> entry : statistics.entrySet()) {
             stream.println(entry.getKey() + "," + entry.getValue());
         }
-        for (Map.Entry<String, Integer> entry : modelRecord.entrySet()) {
-            stream.println(entry.getKey() + "," + entry.getValue());
-        }
-
         stream.println("=========================================================");
     }
 
     /**
      * Print the statistics to screen.
      */
-    public static void printStatistics(Map<String, Long> statistics,
-            Map<String, Integer> modelRecord) {
-        outputStatistics(System.out, statistics, modelRecord);
+    public static void printStatistics(Map<String, Long> statistics) {
+        outputStatistics(System.out, statistics);
     }
 
     /**
@@ -154,11 +145,10 @@ public class PrintUtils {
     
     // TODO: change modelRecord to be mapping to Long?
     public static void writeStatistics(Map<String, Long> statistics,
-            Map<String, Integer> modelRecord,
             boolean noAppend) {
         File outFile = new File("statistics.txt");
         try (PrintStream out = getFilePrintStream(outFile, noAppend)) {
-            outputStatistics(out, statistics, modelRecord);
+            outputStatistics(out, statistics);
         }
         System.out.println("Statistics have been written to: " + outFile.getAbsolutePath() + "\n");
     }

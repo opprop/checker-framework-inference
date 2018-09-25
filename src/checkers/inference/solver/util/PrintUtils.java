@@ -115,7 +115,6 @@ public class PrintUtils {
      * Outputs the statistics to the given stream.
      * @param stream
      * @param statistics
-     * @param modelRecord
      */
     private static void outputStatistics(PrintStream stream, Map<String, Long> statistics) {
         stream.println("====================== Statistics =======================");
@@ -137,15 +136,11 @@ public class PrintUtils {
      *
      * @param statistics
      *            a map between stats keys and their long values.
-     * @param modelRecord
      * @param noAppend
      *            if set to true the file will be written over, and if set to
      *            false the file will be appended.
      */
-    
-    // TODO: change modelRecord to be mapping to Long?
-    public static void writeStatistics(Map<String, Long> statistics,
-            boolean noAppend) {
+    public static void writeStatistics(Map<String, Long> statistics, boolean noAppend) {
         File outFile = new File("statistics.txt");
         try (PrintStream out = getFilePrintStream(outFile, noAppend)) {
             outputStatistics(out, statistics);

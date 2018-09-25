@@ -22,7 +22,7 @@ public class StatisticRecorder {
     // Use atomic integer when back ends run in parallel.
     public final static AtomicInteger satSerializationTime = new AtomicInteger(0);
     public final static AtomicInteger satSolvingTime = new AtomicInteger(0);
-    // statistics are sorted alphabetically by key name
+    // statistics are sorted by insertion order
     private final static Map<String, Long> statistic = new LinkedHashMap<>();
 
     public static synchronized void recordSingleSerializationTime(long value) {
@@ -37,11 +37,9 @@ public class StatisticRecorder {
      * Adds the given value to the statistics for the given key. If an existing value exists for the
      * given key, this method stores the sum of the new value and the existing value into the key.
      *
-     * @param key
-     *            a statistic key. The key is treated case-insensitive: it will always be considered
+     * @param key a statistic key. The key is treated case-insensitive: it will always be considered
      *            in terms of its lower case equivalent.
-     * @param value
-     *            a value
+     * @param value a value
      */
     public static void record(String key, long value) {
         synchronized (statistic) {
@@ -66,10 +64,8 @@ public class StatisticRecorder {
      *
      * @see #record(String, long)
      *
-     * @param key
-     *            a statistic key
-     * @param value
-     *            a value
+     * @param key a statistic key
+     * @param value a value
      */
     public static void record(String key, int value) {
         record(key, (long) value);
@@ -86,13 +82,11 @@ public class StatisticRecorder {
 
         // Record slot counts
         Map<Class<? extends Slot>, Long> slotCounts = new LinkedHashMap<>();
-        long totalConstantSlots = 0;
+        // Total number of non-constant slots
         long totalVariableSlots = 0;
 
         for (Slot slot : slots) {
-            if (slot instanceof ConstantSlot) {
-                totalConstantSlots++;
-            } else if (slot instanceof VariableSlot) {
+            if (slot instanceof VariableSlot && !(slot instanceof ConstantSlot)) {
                 totalVariableSlots++;
             }
 
@@ -105,7 +99,6 @@ public class StatisticRecorder {
             }
         }
 
-        record("total_constant_slots", totalConstantSlots);
         record("total_variable_slots", totalVariableSlots);
 
         for (Entry<Class<? extends Slot>, Long> entry : slotCounts.entrySet()) {

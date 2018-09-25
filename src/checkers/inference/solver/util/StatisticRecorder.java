@@ -23,7 +23,7 @@ public class StatisticRecorder {
     public final static AtomicInteger satSerializationTime = new AtomicInteger(0);
     public final static AtomicInteger satSolvingTime = new AtomicInteger(0);
     // statistics are sorted by insertion order
-    private final static Map<String, Long> statistic = new LinkedHashMap<>();
+    private final static Map<String, Long> statistics = new LinkedHashMap<>();
 
     public static synchronized void recordSingleSerializationTime(long value) {
         satSerializationTime.addAndGet((int) value);
@@ -42,17 +42,17 @@ public class StatisticRecorder {
      * @param value a value
      */
     public static void record(String key, long value) {
-        synchronized (statistic) {
+        synchronized (statistics) {
             // always use the lower-case version of the given key
             key = key.toLowerCase();
 
-            if (statistic.get(key) == null || key.contentEquals("logiql_predicate_size")) {
+            if (statistics.get(key) == null || key.contentEquals("logiql_predicate_size")) {
                 // LogiQL predicate size are fixed for same underlining type
                 // system.
-                statistic.put(key, value);
+                statistics.put(key, value);
             } else {
-                long oldValue = statistic.get(key);
-                statistic.put(key, value + oldValue);
+                long oldValue = statistics.get(key);
+                statistics.put(key, value + oldValue);
             }
         }
     }
@@ -139,6 +139,6 @@ public class StatisticRecorder {
      * @return the immutable map.
      */
     public static Map<String, Long> getStatistic() {
-        return Collections.unmodifiableMap(statistic);
+        return Collections.unmodifiableMap(statistics);
     }
 }

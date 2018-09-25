@@ -6,6 +6,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
 import java.util.Collection;
 
 import org.checkerframework.framework.util.ExecUtil;
@@ -14,6 +15,7 @@ import org.checkerframework.javacutil.BugInCF;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
 import checkers.inference.solver.frontend.Lattice;
+import checkers.inference.solver.util.FileUtils;
 import checkers.inference.solver.util.SolverEnvironment;
 
 /**
@@ -50,7 +52,7 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
      * Runs the external solver command as given by cmd and captures the stdout and stderr into
      * {@link BufferedReader}s
      *
-     * @param cmd
+     * @param command
      *            an external solver command to be executed, each string in the array is
      *            space-concatenated to form the final command
      * @return the exit status code of the external command
@@ -58,12 +60,12 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
      * @see #stdOutReader
      * @see #stdErrReader
      */
-    protected int runExternalSolver(String[] cmd) {
+    protected int runExternalSolver(String[] command) {
         // use ByteArrayOutputStream to store stdout and stderr
         ByteArrayOutputStream stdOutStream = new ByteArrayOutputStream(BUFFER_INITIAL_SIZE);
         ByteArrayOutputStream stdErrStream = new ByteArrayOutputStream(BUFFER_INITIAL_SIZE);
 
-        int exitStatus = ExecUtil.execute(cmd, stdOutStream, stdErrStream);
+        int exitStatus = ExecUtil.execute(command, stdOutStream, stdErrStream);
 
         // extract byte array from ByteArrayOutputStreams, and rewrap into a
         // buffered reader for post processing
@@ -139,10 +141,46 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
      * Writes the given content to the given file, with an option to append the output.
      *
      * @param file
-     * @param append
+     *            a file to be written to.
      * @param content
+     *            the content to be written to the file.
+     * @param append
+     *            if set to true the file will be appended, and if set to false the file will be
+     *            written over.
      */
-    protected void writeFile(File file, boolean append, String content) {
-        // TODO: reuse change from PrintUtils
+    private void writeFile(File file, String content, boolean append) {
+        try (PrintStream stream = FileUtils.getFilePrintStream(file, append)) {
+            stream.println(content);
+        }
+    }
+
+    /**
+     * Writes the given content to the given file. This method overwrites the given file if it
+     * already exists.
+     *
+     * @param file
+     *            a file to be written to.
+     * @param content
+     *            the content to be written to the file.
+     *
+     * @see #writeFile(File, String, boolean)
+     */
+    protected void writeFile(File file, String content) {
+        writeFile(file, content, false);
+    }
+
+    /**
+     * Writes the given content to the given file. This method appends to the given file if it
+     * already exists.
+     *
+     * @param file
+     *            a file to be written to.
+     * @param content
+     *            the content to be written to the file.
+     *
+     * @see #writeFile(File, String, boolean)
+     */
+    protected void writeFileInAppendMode(File file, String content) {
+        writeFile(file, content, true);
     }
 }

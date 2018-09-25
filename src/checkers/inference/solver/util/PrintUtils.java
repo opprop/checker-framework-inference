@@ -111,11 +111,6 @@ public class PrintUtils {
         System.out.println("Solutions have been written to: " + outFile.getAbsolutePath() + "\n");
     }
 
-    private static void outputStatisticText(PrintStream stream, String key,
-            Long value) {
-        stream.println(key.toLowerCase() + "," + value);
-    }
-
     /**
      * Outputs the statistics to the given stream.
      * @param stream
@@ -129,10 +124,10 @@ public class PrintUtils {
 
         // Basic info
         for (Map.Entry<String, Long> entry : statistics.entrySet()) {
-            outputStatisticText(stream, entry.getKey(), entry.getValue());
+            stream.println(entry.getKey() + "," + entry.getValue());
         }
         for (Map.Entry<String, Integer> entry : modelRecord.entrySet()) {
-            outputStatisticText(stream, entry.getKey(), entry.getValue().longValue());
+            stream.println(entry.getKey() + "," + entry.getValue());
         }
 
         stream.println("=========================================================");

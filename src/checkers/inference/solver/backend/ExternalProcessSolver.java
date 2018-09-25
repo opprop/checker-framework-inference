@@ -17,18 +17,18 @@ import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.SolverEnvironment;
 
 /**
- * Abstract solver which extends {@link Solver} with helper methods to invoke a
- * custom external solver process.
+ * Abstract solver which extends {@link Solver} with helper methods to invoke a custom external
+ * solver process.
  *
- * @author jeff
- *
- * @param <T> type of FormatTranslator required by this Solver
+ * @param <T>
+ *            type of FormatTranslator required by this Solver
  *
  * @see Solver
  */
-public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
-        extends Solver<T> {
+public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>> extends Solver<T> {
 
+    // initial buffer size for the ByteArrayOutputStreams used to capture stdout and stderr for the
+    // external solver process
     private static final int BUFFER_INITIAL_SIZE = 1 << 16; // 2^16 = 65536
 
     /**
@@ -41,32 +41,29 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
      */
     BufferedReader stdErrReader;
 
-    public ExternalProcessSolver(SolverEnvironment solverEnvironment,
-            Collection<Slot> slots, Collection<Constraint> constraints,
-            T formatTranslator, Lattice lattice) {
+    public ExternalProcessSolver(SolverEnvironment solverEnvironment, Collection<Slot> slots,
+            Collection<Constraint> constraints, T formatTranslator, Lattice lattice) {
         super(solverEnvironment, slots, constraints, formatTranslator, lattice);
     }
 
     /**
-     * Runs the external solver command as given by cmd and captures the stdout
-     * and stderr into {@link BufferedReader}s
-     * 
+     * Runs the external solver command as given by cmd and captures the stdout and stderr into
+     * {@link BufferedReader}s
+     *
      * @param cmd
-     *            an external solver command to be executed
+     *            an external solver command to be executed, each string in the array is
+     *            space-concatenated to form the final command
      * @return the exit status code of the external command
-     * 
+     *
      * @see #stdOutReader
      * @see #stdErrReader
      */
     protected int runExternalSolver(String[] cmd) {
         // use ByteArrayOutputStream to store stdout and stderr
-        ByteArrayOutputStream stdOutStream = new ByteArrayOutputStream(
-                BUFFER_INITIAL_SIZE);
-        ByteArrayOutputStream stdErrStream = new ByteArrayOutputStream(
-                BUFFER_INITIAL_SIZE);
+        ByteArrayOutputStream stdOutStream = new ByteArrayOutputStream(BUFFER_INITIAL_SIZE);
+        ByteArrayOutputStream stdErrStream = new ByteArrayOutputStream(BUFFER_INITIAL_SIZE);
 
-        int exitStatus = ExecUtil.execute(cmd, stdOutStream,
-                stdErrStream);
+        int exitStatus = ExecUtil.execute(cmd, stdOutStream, stdErrStream);
 
         // extract byte array from ByteArrayOutputStreams, and rewrap into a
         // buffered reader for post processing
@@ -77,22 +74,21 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
     }
 
     /**
-     * Extracts the byte array from the given stream and rewraps the array into
-     * a {@link BufferedReader}.
-     * 
+     * Extracts the byte array from the given stream and rewraps the array into a
+     * {@link BufferedReader}.
+     *
      * @param stream
      * @return the contents of the stream wrapped in a {@link BufferedReader}
      */
     private BufferedReader createBufferedReader(ByteArrayOutputStream stream) {
-        return new BufferedReader(new InputStreamReader(
-                new ByteArrayInputStream(stream.toByteArray())));
+        return new BufferedReader(
+                new InputStreamReader(new ByteArrayInputStream(stream.toByteArray())));
     }
 
     /**
-     * Returns a {@link BufferedReader} containing the contents of the stdout of
-     * the external solver process, if available. If not available, this method
-     * throws an exception.
-     * 
+     * Returns a {@link BufferedReader} containing the contents of the stdout of the external solver
+     * process, if available. If not available, this method throws an exception.
+     *
      * @return the {@link BufferedReader}.
      */
     protected BufferedReader getStdOut() {
@@ -104,10 +100,9 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
     }
 
     /**
-     * Returns a {@link BufferedReader} containing the contents of the stderr of
-     * the external solver process, if available. If not available, this method
-     * throws an exception.
-     * 
+     * Returns a {@link BufferedReader} containing the contents of the stderr of the external solver
+     * process, if available. If not available, this method throws an exception.
+     *
      * @return the {@link BufferedReader}.
      */
     protected BufferedReader getStdErr() {
@@ -129,7 +124,7 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
         } catch (IOException e) {
             e.printStackTrace();
         }
-        
+
         try {
             stdErrReader.close();
         } catch (IOException e) {
@@ -139,9 +134,10 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
         stdOutReader = null;
         stdErrReader = null;
     }
-    
+
     /**
      * Writes the given content to the given file, with an option to append the output.
+     *
      * @param file
      * @param append
      * @param content

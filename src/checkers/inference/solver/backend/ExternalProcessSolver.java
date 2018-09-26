@@ -49,7 +49,7 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
     }
 
     /**
-     * Runs the external solver command as given by cmd and captures the stdout and stderr into
+     * Runs the external solver command as given by command and captures the stdout and stderr into
      * {@link BufferedReader}s
      *
      * @param command
@@ -57,8 +57,9 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
      *            space-concatenated to form the final command
      * @return the exit status code of the external command
      *
-     * @see #stdOutReader
-     * @see #stdErrReader
+     * @see #getStdOut()
+     * @see #getStdErr()
+     * @see #reset()
      */
     protected int runExternalSolver(String[] command) {
         // use ByteArrayOutputStream to store stdout and stderr
@@ -67,8 +68,8 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
 
         int exitStatus = ExecUtil.execute(command, stdOutStream, stdErrStream);
 
-        // extract byte array from ByteArrayOutputStreams, and rewrap into a
-        // buffered reader for post processing
+        // extract byte array from ByteArrayOutputStreams and wrap in a buffered reader for post
+        // processing
         stdOutReader = createBufferedReader(stdOutStream);
         stdErrReader = createBufferedReader(stdErrStream);
 
@@ -76,8 +77,8 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
     }
 
     /**
-     * Extracts the byte array from the given stream and rewraps the array into a
-     * {@link BufferedReader}.
+     * Extracts the byte array from the given stream, wraps the array in a {@link BufferedReader},
+     * and returns the BufferedReader.
      *
      * @param stream
      * @return the contents of the stream wrapped in a {@link BufferedReader}
@@ -89,7 +90,7 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
 
     /**
      * Returns a {@link BufferedReader} containing the contents of the stdout of the external solver
-     * process, if available. If not available, this method throws an exception.
+     * process if the output is available. If not available, this method throws an exception.
      *
      * @return the {@link BufferedReader}.
      */
@@ -103,7 +104,7 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
 
     /**
      * Returns a {@link BufferedReader} containing the contents of the stderr of the external solver
-     * process, if available. If not available, this method throws an exception.
+     * process if the output is available. If not available, this method throws an exception.
      *
      * @return the {@link BufferedReader}.
      */
@@ -116,9 +117,9 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
     }
 
     /**
-     * Resets the external solver process for another execution of a solver
+     * Clears the BufferedReaders to allow for another execution of an external solver.
      */
-    protected void resetExternalSolverProcess() {
+    protected void reset() {
         // Close the two existing readers so that any old references to it will
         // no longer work
         try {
@@ -133,25 +134,9 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
             e.printStackTrace();
         }
 
+        // Clear the two fields so that calls to get the readers result in a crash
         stdOutReader = null;
         stdErrReader = null;
-    }
-
-    /**
-     * Writes the given content to the given file, with an option to append the output.
-     *
-     * @param file
-     *            a file to be written to.
-     * @param content
-     *            the content to be written to the file.
-     * @param append
-     *            if set to true the file will be appended, and if set to false the file will be
-     *            written over.
-     */
-    private void writeFile(File file, String content, boolean append) {
-        try (PrintStream stream = FileUtils.getFilePrintStream(file, append)) {
-            stream.println(content);
-        }
     }
 
     /**
@@ -166,7 +151,9 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
      * @see #writeFile(File, String, boolean)
      */
     protected void writeFile(File file, String content) {
-        writeFile(file, content, false);
+        try (PrintStream stream = FileUtils.getFilePrintStream(file, false)) {
+            stream.println(content);
+        }
     }
 
     /**
@@ -181,6 +168,8 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
      * @see #writeFile(File, String, boolean)
      */
     protected void writeFileInAppendMode(File file, String content) {
-        writeFile(file, content, true);
+        try (PrintStream stream = FileUtils.getFilePrintStream(file, true)) {
+            stream.println(content);
+        }
     }
 }

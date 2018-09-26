@@ -20,14 +20,14 @@ import checkers.inference.solver.util.SolverEnvironment;
 
 /**
  * Abstract solver which extends {@link Solver} with helper methods to invoke a custom external
- * solver process.
+ * solver program.
  *
  * @param <T>
  *            type of FormatTranslator required by this Solver
  *
  * @see Solver
  */
-public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>> extends Solver<T> {
+public abstract class ExternalSolver<T extends FormatTranslator<?, ?, ?>> extends Solver<T> {
 
     // initial buffer size for the ByteArrayOutputStreams used to capture stdout and stderr for the
     // external solver process
@@ -43,7 +43,7 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
      */
     BufferedReader stdErrReader;
 
-    public ExternalProcessSolver(SolverEnvironment solverEnvironment, Collection<Slot> slots,
+    public ExternalSolver(SolverEnvironment solverEnvironment, Collection<Slot> slots,
             Collection<Constraint> constraints, T formatTranslator, Lattice lattice) {
         super(solverEnvironment, slots, constraints, formatTranslator, lattice);
     }
@@ -59,7 +59,7 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
      *
      * @see #getStdOut()
      * @see #getStdErr()
-     * @see #reset()
+     * @see #resetExternalSolver()
      */
     protected int runExternalSolver(String[] command) {
         // use ByteArrayOutputStream to store stdout and stderr
@@ -119,7 +119,7 @@ public abstract class ExternalProcessSolver<T extends FormatTranslator<?, ?, ?>>
     /**
      * Clears the BufferedReaders to allow for another execution of an external solver.
      */
-    protected void reset() {
+    protected void resetExternalSolver() {
         // Close the two existing readers so that any old references to it will
         // no longer work
         try {

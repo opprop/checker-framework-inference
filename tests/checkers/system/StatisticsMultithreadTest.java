@@ -39,14 +39,12 @@ public class StatisticsMultithreadTest extends TestCase {
     }
 
     /**
-     * lambda interface for creating threads
+     * Functional interface for creating threads.
      *
-     * each thread is given a unique threadID and the return object must implement {@link Runnable}
-     *
-     * @param <Runnable>
+     * Each thread is given a unique threadID and the return object must implement {@link Runnable}.
      */
-    @SuppressWarnings("hiding")
-    private interface ThreadMaker<Runnable> {
+    @FunctionalInterface
+    private interface ThreadMaker {
         Runnable make(int threadID);
     }
 
@@ -57,7 +55,7 @@ public class StatisticsMultithreadTest extends TestCase {
      * @param threadMaker
      *            lambda parameter which should return newly created threads
      */
-    private void runThreads(ThreadMaker<Runnable> threadMaker) {
+    private void runThreads(ThreadMaker threadMaker) {
         // create and execute 100 threads, each trying to add or update an entry to the statistics
         for (int threadID = 0; threadID < numOfThreads; threadID++) {
             executor.execute(threadMaker.make(threadID));

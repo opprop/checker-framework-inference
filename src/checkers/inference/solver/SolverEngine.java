@@ -22,7 +22,7 @@ import checkers.inference.solver.util.NameUtils;
 import checkers.inference.solver.util.PrintUtils;
 import checkers.inference.solver.util.SolverArg;
 import checkers.inference.solver.util.SolverEnvironment;
-import checkers.inference.solver.util.StatisticRecorder;
+import checkers.inference.solver.util.Statistics;
 
 /**
  * SolverEngine is the entry point of general solver framework, and it is also
@@ -133,10 +133,11 @@ public class SolverEngine implements InferenceSolver {
         }
 
         if (collectStatistics) {
-            StatisticRecorder.recordSlotsStatistics(slots);
-            StatisticRecorder.recordConstraintsStatistics(constraints);
-            PrintUtils.printStatistics(StatisticRecorder.getStatistic());
-            PrintUtils.writeStatistics(StatisticRecorder.getStatistic(), noAppend);
+            Statistics.recordSlotsStatistics(slots);
+            Statistics.recordConstraintsStatistics(constraints);
+            Map<String, Long> statistics = Statistics.getStatistics();
+            PrintUtils.printStatistics(statistics);
+            PrintUtils.writeStatistics(statistics, noAppend);
         }
 
         return inferenceResult;

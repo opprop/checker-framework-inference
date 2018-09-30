@@ -119,7 +119,7 @@ public class PrintUtils {
     private static void outputStatistics(PrintStream stream, Map<String, Long> statistics) {
         stream.println("====================== Statistics =======================");
         for (Map.Entry<String, Long> entry : statistics.entrySet()) {
-            stream.println(entry.getKey() + ", " + entry.getValue());
+            stream.println(entry.getKey() + ": " + entry.getValue());
         }
         stream.println("=========================================================");
     }

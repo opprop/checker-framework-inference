@@ -12,7 +12,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.lang.model.element.AnnotationMirror;
 
-import org.checkerframework.javacutil.BugInCF;
 import org.sat4j.core.VecInt;
 
 import checkers.inference.model.Constraint;
@@ -92,12 +91,8 @@ public class LingelingSolver extends MaxSatSolver {
                 CNFData.getAbsolutePath() + "/cnfdata" + localNth + ".txt" };
 
         final List<Integer> resultList = new ArrayList<Integer>();
-        int exitStatus = runExternalSolver(command, stdOut -> parseStdOut(stdOut, resultList),
-                stdErr -> {
-                });
-        if (exitStatus != 0) {
-            throw new BugInCF("External Solver command did not exit successfully: " + command);
-        }
+        runExternalSolver(command, stdOut -> parseStdOut(stdOut, resultList), stdErr -> {
+        });
 
         // Java 8 style of List<Integer> to int[] conversion
         return resultList.stream().mapToInt(Integer::intValue).toArray();

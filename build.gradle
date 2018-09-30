@@ -240,7 +240,6 @@ afterEvaluate {
         }
 
         testLogging {
-            showStandardStreams = true
             // Always run the tests
             outputs.upToDateWhen { false }
             // The following prints out each time a test is passed.

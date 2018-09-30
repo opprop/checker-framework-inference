@@ -213,14 +213,13 @@ task testDataflowExternalSolvers(type: Exec, dependsOn: [dist, dependenciesJar])
 }
 
 afterEvaluate {
-    // Create a task for each JUnit test class whose name is the same as the JUnit class name.
+    // Create a task for each test class whose name is the same as the class name.
     sourceSets.test.java.filter {
             it.path.contains('tests/checkers') &&
             it.path.endsWith('Test.java') &&
             !it.path.contains('CFInferenceTest')
         }.forEach { file ->
         String junitClassName = file.name.replaceAll(".java", "")
-        // println junitClassName
         tasks.create(name: "${junitClassName}", type: Test, group: 'Verification') {
             description "Run ${junitClassName} tests."
             include "**/${name}.class"

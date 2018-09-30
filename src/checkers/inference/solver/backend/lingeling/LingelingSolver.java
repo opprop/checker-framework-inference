@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.lang.model.element.AnnotationMirror;
 
+import org.checkerframework.javacutil.BugInCF;
 import org.sat4j.core.VecInt;
 
 import checkers.inference.model.Constraint;
@@ -24,8 +25,8 @@ import checkers.inference.solver.util.StatisticRecorder;
 import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
 
 /**
- * LingelingSolver is also a MaxSatSolver but it calls Lingeling SAT solver to
- * solve the clauses. It doesn't support soft constraint.
+ * LingelingSolver is also a MaxSatSolver but it calls Lingeling SAT solver to solve the clauses. It
+ * doesn't support soft constraint.
  *
  * @author jianchu
  *
@@ -43,9 +44,9 @@ public class LingelingSolver extends MaxSatSolver {
     private long serializationEnd;
 
     public LingelingSolver(SolverEnvironment solverEnvironment, Collection<Slot> slots,
-            Collection<Constraint> constraints, MaxSatFormatTranslator formatTranslator, Lattice lattice) {
-        super(solverEnvironment, slots, constraints, formatTranslator,
-                lattice);
+            Collection<Constraint> constraints, MaxSatFormatTranslator formatTranslator,
+            Lattice lattice) {
+        super(solverEnvironment, slots, constraints, formatTranslator, lattice);
     }
 
     @Override
@@ -87,20 +88,22 @@ public class LingelingSolver extends MaxSatSolver {
      * @return and int array, which stores truth assignment for CNF predicate.
      */
     private int[] getOutPut_Error(int localNth) {
-        String[] command = {lingeling, CNFData.getAbsolutePath() + "/cnfdata"
-                + localNth + ".txt"};
+        String[] command = { lingeling,
+                CNFData.getAbsolutePath() + "/cnfdata" + localNth + ".txt" };
 
-        runExternalSolver(command);
+        final List<Integer> resultList = new ArrayList<Integer>();
+        int exitStatus = runExternalSolver(command, stdOut -> parseStdOut(stdOut, resultList),
+                stdErr -> {
+                });
+        if (exitStatus != 0) {
+            throw new BugInCF("External Solver command did not exit successfully: " + command);
+        }
 
-        BufferedReader stdOut = getStdOut();
-        BufferedReader stdErr = getStdErr();
-
-        parseStdErr(stdErr);
-        return parseStdOut(stdOut);
+        // Java 8 style of List<Integer> to int[] conversion
+        return resultList.stream().mapToInt(Integer::intValue).toArray();
     }
 
-    private int[] parseStdOut(BufferedReader stdOut) {
-        final List<Integer> resultList = new ArrayList<Integer>();
+    private void parseStdOut(BufferedReader stdOut, List<Integer> resultList) {
         String line;
 
         try {
@@ -120,34 +123,12 @@ public class LingelingSolver extends MaxSatSolver {
         } catch (NumberFormatException | IOException e) {
             e.printStackTrace();
         }
-
-        // Java 8 style of List<Integer> to int[] conversion
-        int[] resultArray = resultList.stream().mapToInt(Integer::intValue).toArray();
-
-//        // Cannot convert from Integer[] to int[] directly...
-//        int[] resultArray = new int[resultList.size()];
-//        for (int i = 0; i < resultList.size(); i++) {
-//            resultArray[i] = resultList.get(i);
-//        }
-        return resultArray;
-    }
-
-    private void parseStdErr(BufferedReader stdErr) {
-        StringBuilder sb = new StringBuilder();
-        String line;
-        try {
-            while ((line = stdErr.readLine()) != null) {
-                sb.append(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
     }
 
     /**
-     * For lingeling solve, it gives the solution from 1 to the largest
-     * variable. However, some numbers in this range may not has corresponding
-     * slot id. This method stores the variables that we really care about.
+     * For lingeling solve, it gives the solution from 1 to the largest variable. However, some
+     * numbers in this range may not has corresponding slot id. This method stores the variables
+     * that we really care about.
      */
     private void collectVals() {
         for (VecInt clause : this.hardClauses) {

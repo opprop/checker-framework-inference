@@ -24,6 +24,7 @@ import checkers.inference.model.Constraint;
 import checkers.inference.model.EqualityConstraint;
 import checkers.inference.model.ExistentialConstraint;
 import checkers.inference.model.ExistentialVariableSlot;
+import checkers.inference.model.ImplicationConstraint;
 import checkers.inference.model.InequalityConstraint;
 import checkers.inference.model.LubVariableSlot;
 import checkers.inference.model.PreferenceConstraint;
@@ -310,10 +311,19 @@ public class PrintUtils {
         }
 
         @Override
-        public Void serialize(ArithmeticConstraint constraint) {
-            constraint.getLeftOperand().serialize(this);
-            constraint.getRightOperand().serialize(this);
-            constraint.getResult().serialize(this);
+        public Void serialize(ImplicationConstraint implicationConstraint) {
+            for (Constraint assumption : implicationConstraint.getAssumptions()) {
+                assumption.serialize(this);
+            }
+            implicationConstraint.getConclusion().serialize(this);
+            return null;
+        }
+
+        @Override
+        public Void serialize(ArithmeticConstraint arithmeticConstraint) {
+            arithmeticConstraint.getLeftOperand().serialize(this);
+            arithmeticConstraint.getRightOperand().serialize(this);
+            arithmeticConstraint.getResult().serialize(this);
             return null;
         }
 

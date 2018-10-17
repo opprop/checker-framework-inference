@@ -1,5 +1,6 @@
 package checkers.inference.model;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -42,7 +43,7 @@ public abstract class Constraint {
     public AnnotationLocation getLocation() {
         return location;
     }
-    
+
     public abstract <S, T> T serialize(Serializer<S, T> serializer);
 
     /**

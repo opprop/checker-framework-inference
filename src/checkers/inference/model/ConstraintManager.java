@@ -130,6 +130,10 @@ public class ConstraintManager {
                 ifNotExistsConstraints, getCurrentLocation());
     }
 
+    public Constraint createImplicationConstraint(List<Constraint> assumptions, Constraint conclusion) {
+        return ImplicationConstraint.create(assumptions, conclusion, getCurrentLocation());
+    }
+
     /**
      * Create an {@link ArithmeticConstraint} for the given operation and slots.
      */
@@ -258,5 +262,9 @@ public class ConstraintManager {
     public void addArithmeticConstraint(ArithmeticOperationKind operation, Slot leftOperand,
             Slot rightOperand, ArithmeticVariableSlot result) {
         add(createArithmeticConstraint(operation, leftOperand, rightOperand, result));
+    }
+
+    public void addImplicationConstraint(List<Constraint> assumptions, Constraint conclusion) {
+        add(createImplicationConstraint(assumptions, conclusion));
     }
 }

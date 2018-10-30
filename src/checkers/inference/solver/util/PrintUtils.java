@@ -311,19 +311,19 @@ public class PrintUtils {
         }
 
         @Override
-        public Void serialize(ImplicationConstraint implicationConstraint) {
-            for (Constraint assumption : implicationConstraint.getAssumptions()) {
+        public Void serialize(ImplicationConstraint constraint) {
+            for (Constraint assumption : constraint.getAssumptions()) {
                 assumption.serialize(this);
             }
-            implicationConstraint.getConclusion().serialize(this);
+            constraint.getConclusion().serialize(this);
             return null;
         }
 
         @Override
-        public Void serialize(ArithmeticConstraint arithmeticConstraint) {
-            arithmeticConstraint.getLeftOperand().serialize(this);
-            arithmeticConstraint.getRightOperand().serialize(this);
-            arithmeticConstraint.getResult().serialize(this);
+        public Void serialize(ArithmeticConstraint constraint) {
+            constraint.getLeftOperand().serialize(this);
+            constraint.getRightOperand().serialize(this);
+            constraint.getResult().serialize(this);
             return null;
         }
 

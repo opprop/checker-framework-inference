@@ -20,8 +20,7 @@ import checkers.inference.solver.backend.maxsat.MaxSatFormatTranslator;
 import checkers.inference.solver.backend.maxsat.MaxSatSolver;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.SolverEnvironment;
-import checkers.inference.solver.util.StatisticRecorder;
-import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
+import checkers.inference.solver.util.Statistics;
 
 /**
  * LingelingSolver is also a MaxSatSolver but it calls Lingeling SAT solver to solve the clauses. It
@@ -74,8 +73,8 @@ public class LingelingSolver extends MaxSatSolver {
         long solvingTime = solvingEnd - solvingStart;
         long serializationTime = serializationEnd - serializationStart;
 
-        StatisticRecorder.recordSingleSerializationTime(serializationTime);
-        StatisticRecorder.recordSingleSolvingTime(solvingTime);
+        Statistics.addOrIncrementEntry("sat_serialization_time(ms)", serializationTime);
+        Statistics.addOrIncrementEntry("sat_solving_time(ms)", solvingTime);
 
         return solutions;
     }
@@ -144,7 +143,7 @@ public class LingelingSolver extends MaxSatSolver {
     private void recordData() {
         int totalClauses = hardClauses.size() + softClauses.size();
         int totalVariable = variableSet.size();
-        StatisticRecorder.record(StatisticKey.CNF_CLAUSE_SIZE, (long) totalClauses);
-        StatisticRecorder.record(StatisticKey.CNF_VARIABLE_SIZE, (long) totalVariable);
+        Statistics.addOrIncrementEntry("cnf_clause_size", totalClauses);
+        Statistics.addOrIncrementEntry("cnf_variable_size", totalVariable);
     }
 }

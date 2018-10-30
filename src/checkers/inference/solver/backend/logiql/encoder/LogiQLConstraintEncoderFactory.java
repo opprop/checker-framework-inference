@@ -18,7 +18,7 @@ import checkers.inference.solver.frontend.Lattice;
  *
  * @see checkers.inference.solver.backend.encoder.ConstraintEncoderFactory
  */
-public class LogiQLConstraintEncoderFactory extends AbstractConstraintEncoderFactory<LogiQLFormatTranslator, String> {
+public class LogiQLConstraintEncoderFactory extends AbstractConstraintEncoderFactory<String, LogiQLFormatTranslator> {
 
     public LogiQLConstraintEncoderFactory(Lattice lattice, LogiQLFormatTranslator formatTranslator) {
         super(lattice, formatTranslator);

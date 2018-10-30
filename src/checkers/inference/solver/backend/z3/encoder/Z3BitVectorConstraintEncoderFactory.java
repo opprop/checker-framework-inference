@@ -19,7 +19,7 @@ import com.microsoft.z3.Context;
  *
  * @see checkers.inference.solver.backend.encoder.ConstraintEncoderFactory
  */
-public class Z3BitVectorConstraintEncoderFactory extends AbstractConstraintEncoderFactory<Z3BitVectorFormatTranslator, BoolExpr>{
+public class Z3BitVectorConstraintEncoderFactory extends AbstractConstraintEncoderFactory<BoolExpr, Z3BitVectorFormatTranslator>{
 
     protected final Context context;
 

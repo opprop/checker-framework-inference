@@ -10,7 +10,7 @@ import checkers.inference.solver.frontend.Lattice;
  *
  * @see ConstraintEncoderFactory
  */
-public abstract class AbstractConstraintEncoderFactory<FormatTranslatorT extends FormatTranslator<?, ConstraintEncodingT, ?>, ConstraintEncodingT>
+public abstract class AbstractConstraintEncoderFactory<ConstraintEncodingT, FormatTranslatorT extends FormatTranslator<?, ConstraintEncodingT, ?>>
             implements ConstraintEncoderFactory<ConstraintEncodingT>{
 
     /**

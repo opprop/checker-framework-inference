@@ -17,7 +17,7 @@ import java.util.Map;
  *
  * @see checkers.inference.solver.backend.encoder.ConstraintEncoderFactory
  */
-public class MaxSATConstraintEncoderFactory extends AbstractConstraintEncoderFactory<MaxSatFormatTranslator, VecInt[]> {
+public class MaxSATConstraintEncoderFactory extends AbstractConstraintEncoderFactory<VecInt[], MaxSatFormatTranslator> {
 
     private final Map<AnnotationMirror, Integer> typeToInt;
 

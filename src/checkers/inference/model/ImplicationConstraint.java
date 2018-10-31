@@ -3,9 +3,13 @@ package checkers.inference.model;
 import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.BugInCF;
 
+import checkers.inference.InferenceMain;
+
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Constraint that models implication logic. If all the assumptions are
@@ -23,9 +27,9 @@ import java.util.List;
 public class ImplicationConstraint extends Constraint {
 
     /**
-     * An immutable list of {@link Constraint}s that are conjuncted together.
+     * An immutable set of {@link Constraint}s that are conjuncted together.
      */
-    private final List<Constraint> assumptions;
+    private final Set<Constraint> assumptions;
 
     /**
      * A single {@link Constraint} that is implicated by the
@@ -33,15 +37,15 @@ public class ImplicationConstraint extends Constraint {
      */
     private final Constraint conclusion;
 
-    public ImplicationConstraint(List<Constraint> assumptions,
+    public ImplicationConstraint(Set<Constraint> assumptions,
             Constraint conclusion, AnnotationLocation location) {
         super(extractAllSlots(assumptions, conclusion), location);
 
-        this.assumptions = Collections.unmodifiableList(assumptions);
+        this.assumptions = Collections.unmodifiableSet(assumptions);
         this.conclusion = conclusion;
     }
 
-    private static List<Slot> extractAllSlots(List<Constraint> assumptions,
+    private static List<Slot> extractAllSlots(Iterable<Constraint> assumptions,
             Constraint conclusion) {
         List<Slot> slots = new ArrayList<>();
         for (Constraint a : assumptions) {
@@ -51,6 +55,8 @@ public class ImplicationConstraint extends Constraint {
         return slots;
     }
 
+    // TODO: the input should be a set of constraints instead of a list. This
+    // requires modifying the constraint manager and PICO.
     public static Constraint create(List<Constraint> assumptions,
             Constraint conclusion, AnnotationLocation currentLocation) {
         if (assumptions == null || conclusion == null) {
@@ -78,11 +84,11 @@ public class ImplicationConstraint extends Constraint {
         }
 
         // Otherwise, assumptions list is not empty
-        List<Constraint> refinedAssumptions = new ArrayList<>();
+        Set<Constraint> refinedAssumptions = new HashSet<>();
         // Iterate over assumptions: if any assumption is false, directly return
         // AlwaysTrueConstraint;
         // If any assumption is true, don't add it to the refined assumptions
-        // list and continue the iteration.
+        // set and continue the iteration.
         for (Constraint assumption : assumptions) {
             // 2) any assumption == FALSE ==> return TRUE
             if (assumption instanceof AlwaysFalseConstraint) {
@@ -106,12 +112,17 @@ public class ImplicationConstraint extends Constraint {
             return AlwaysTrueConstraint.create();
         }
 
-        // TODO: create a ConjunctionConstraint which gets de-sugared at
-        // ConstraintManager
         // 5) refinedAssumptions != empty && conclusion == FALSE ==> return
         // conjunction of refinedAssumptions
-        // if (conclusion instanceof AlwaysFalseConstraint) {
-        // }
+        if (conclusion instanceof AlwaysFalseConstraint) {
+            // Instead of creating a "conjunction constraint", here we directly
+            // add the set of constraints to the constraint manager
+            InferenceMain.getInstance().getConstraintManager()
+                    .addAll(refinedAssumptions);
+            // since all assumptions are added to the constraint manager, we
+            // return a dummy always true constraint as the normalized result
+            return AlwaysTrueConstraint.create();
+        }
 
         // 6) refinedAssumptions != empty && conclusion != TRUE && conclusion !=
         // FALSE ==> CREATE_REAL_IMPLICATION_CONSTRAINT
@@ -124,7 +135,7 @@ public class ImplicationConstraint extends Constraint {
         return serializer.serialize(this);
     }
 
-    public List<Constraint> getAssumptions() {
+    public Set<Constraint> getAssumptions() {
         return assumptions;
     }
 
@@ -134,11 +145,7 @@ public class ImplicationConstraint extends Constraint {
 
     @Override
     public int hashCode() {
-        int hash = HashCodeUtils.hash(conclusion);
-        for (Constraint a : assumptions) {
-            hash = HashCodeUtils.hash(hash, a);
-        }
-        return hash;
+        return HashCodeUtils.hash(assumptions, conclusion);
     }
 
     @Override
@@ -150,10 +157,7 @@ public class ImplicationConstraint extends Constraint {
             return false;
         }
         ImplicationConstraint other = (ImplicationConstraint) obj;
-
-        // TODO: How to compare the two lists of assumptions for equality?
-        // aren't the assumptions really sets instead of lists?
-
-        return conclusion.equals(other.conclusion);
+        return assumptions.equals(other.assumptions)
+                && conclusion.equals(other.conclusion);
     }
 }

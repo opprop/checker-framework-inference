@@ -62,6 +62,19 @@ public class ConstraintManager {
         }
     }
 
+    /**
+     * Allows {@link ImplicationConstraint} to add its component assumptions
+     * directly to the manager as part of one of its normalization cases.
+     *
+     * @param constraints
+     *            a collection of (possibly normalized) constraints
+     */
+    protected void addAll(Iterable<Constraint> constraints) {
+        for (Constraint c : constraints) {
+            add(c);
+        }
+    }
+
     public void startIgnoringConstraints() {
         ignoreConstraints = true;
     }

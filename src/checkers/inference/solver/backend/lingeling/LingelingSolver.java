@@ -63,7 +63,7 @@ public class LingelingSolver extends MaxSatSolver {
         writeCNFInput("cnfdata" + localNth + ".txt");
 
         this.solvingStart = System.currentTimeMillis();
-        int[] resultArray = getOutPut_Error(localNth);
+        int[] resultArray = getSolverOutput(localNth);
         // TODO What's the value of resultArray if there is no solution? Need to adapt this to
         // changes in the PR: https://github.com/opprop/checker-framework-inference/pull/128
         // , i.e. set solutions to null if there is no solution
@@ -85,13 +85,13 @@ public class LingelingSolver extends MaxSatSolver {
      * @param localNth
      * @return and int array, which stores truth assignment for CNF predicate.
      */
-    private int[] getOutPut_Error(int localNth) {
+    private int[] getSolverOutput(int localNth) {
         String[] command = { lingeling,
                 CNFData.getAbsolutePath() + "/cnfdata" + localNth + ".txt" };
 
         final List<Integer> resultList = new ArrayList<Integer>();
-        runExternalSolver(command, stdOut -> parseStdOut(stdOut, resultList), stdErr -> {
-        });
+        runExternalSolver(command, stdOut -> parseStdOut(stdOut, resultList),
+                stdErr -> printStdErr(stdErr));
 
         // Java 8 style of List<Integer> to int[] conversion
         return resultList.stream().mapToInt(Integer::intValue).toArray();

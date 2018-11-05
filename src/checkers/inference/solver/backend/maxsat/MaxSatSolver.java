@@ -29,6 +29,7 @@ import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.Slot;
 import checkers.inference.solver.backend.ExternalSolver;
 import checkers.inference.solver.frontend.Lattice;
+import checkers.inference.solver.util.FileUtils;
 import checkers.inference.solver.util.SolverArg;
 import checkers.inference.solver.util.SolverEnvironment;
 import checkers.inference.solver.util.Statistics;
@@ -261,7 +262,7 @@ public class MaxSatSolver extends ExternalSolver<MaxSatFormatTranslator> {
     }
 
     protected void writeCNFInput(String file) {
-        writeFile(new File(CNFData.getAbsolutePath() + "/" + file), CNFInput.toString());
+        FileUtils.writeFile(new File(CNFData.getAbsolutePath() + "/" + file), CNFInput.toString());
     }
 
     /**

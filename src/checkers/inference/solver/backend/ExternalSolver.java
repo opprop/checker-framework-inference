@@ -1,14 +1,15 @@
 package checkers.inference.solver.backend;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintStream;
 import java.util.Collection;
+import java.util.function.Consumer;
+import java.util.logging.Logger;
 
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.UserError;
 
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
@@ -17,15 +18,17 @@ import checkers.inference.solver.util.FileUtils;
 import checkers.inference.solver.util.SolverEnvironment;
 
 /**
- * Abstract solver which extends {@link Solver} with helper methods to invoke a custom external
- * solver program.
+ * Abstract solver which extends {@link Solver} with helper methods to invoke a
+ * custom external solver program.
  *
  * @param <T>
  *            type of FormatTranslator required by this Solver
- *
  * @see Solver
+ * @see FileUtils
  */
 public abstract class ExternalSolver<T extends FormatTranslator<?, ?, ?>> extends Solver<T> {
+
+    public final Logger logger = Logger.getLogger(ExternalSolver.class.getName());
 
     public ExternalSolver(SolverEnvironment solverEnvironment, Collection<Slot> slots,
             Collection<Constraint> constraints, T formatTranslator, Lattice lattice) {
@@ -33,49 +36,38 @@ public abstract class ExternalSolver<T extends FormatTranslator<?, ?, ?>> extend
     }
 
     /**
-     * Functional interface for lambdas that process the stdOut or stdErr of the external solver
-     * process. Each lambda is given a {@link BufferedReader} as an input wrapping the stdOut or
-     * stdErr {@link InputStream}s.
-     */
-    @FunctionalInterface
-    protected interface StdOutputHandler {
-        public void handle(BufferedReader input);
-    }
-
-    /**
-     * Runs the external solver as given by command and uses the given stdOutHandler and
-     * stdErrHandler lambdas to process stdOut and stdErr.
+     * Runs the external solver as given by command and uses the given
+     * stdOutHandler and stdErrHandler lambdas to process stdOut and stdErr.
      *
      * @param command
-     *            an external solver command to be executed, each string in the array is
-     *            space-concatenated to form the final command
-     *
+     *            an external solver command to be executed, each string in the
+     *            array is space-concatenated to form the final command
      * @param stdOutHandler
-     *            a lambda which takes a {@link BufferedReader} providing the stdOut of the external
-     *            solver and handles the stdOut.
+     *            a lambda which takes a {@link BufferedReader} providing the
+     *            stdOut of the external solver and handles the stdOut.
      * @param stdErrHandler
-     *            a lambda which takes a {@link BufferedReader} providing the stdErr of the external
-     *            solver and handles the stdErr.
+     *            a lambda which takes a {@link BufferedReader} providing the
+     *            stdErr of the external solver and handles the stdErr.
      * @return the exit status code of the external command
      */
-    protected int runExternalSolver(String[] command, StdOutputHandler stdOutHandler,
-            StdOutputHandler stdErrHandler) {
+    protected int runExternalSolver(String[] command, Consumer<BufferedReader> stdOutHandler,
+            Consumer<BufferedReader> stdErrHandler) {
 
-        System.out.println("Running external solver command \"" + String.join(" ", command) + "\"");
+        logger.info("Running external solver command \"" + String.join(" ", command) + "\".");
 
         // Start the external solver process
         Process process;
         try {
             process = Runtime.getRuntime().exec(command);
         } catch (IOException e) {
-            throw new BugInCF("Could not run external solver");
+            throw new UserError("Could not run external solver.");
         }
 
         // Create threads to handle stdOut and stdErr
-        StdOutputHandlerThread stdOutHandlerThread = new StdOutputHandlerThread(
-                process.getInputStream(), stdOutHandler);
-        StdOutputHandlerThread stdErrHandlerThread = new StdOutputHandlerThread(
-                process.getErrorStream(), stdErrHandler);
+        StdHandlerThread stdOutHandlerThread = new StdHandlerThread(process.getInputStream(),
+                stdOutHandler);
+        StdHandlerThread stdErrHandlerThread = new StdHandlerThread(process.getErrorStream(),
+                stdErrHandler);
         stdOutHandlerThread.start();
         stdErrHandlerThread.start();
 
@@ -101,61 +93,46 @@ public abstract class ExternalSolver<T extends FormatTranslator<?, ?, ?>> extend
             throw new BugInCF("The threads for the external solver was interrupted.");
         }
 
-        System.out.println("External solver process finished");
+        logger.info("External solver process finished");
 
         return exitStatus;
     }
 
     /**
-     * A thread which wraps the InputStream in a BufferedReader and tasks the lambda function to
-     * handle the outputs.
+     * A thread which wraps an InputStream in a BufferedReader and tasks the
+     * lambda function to handle the outputs.
      */
-    private class StdOutputHandlerThread extends Thread {
+    private class StdHandlerThread extends Thread {
         private InputStream stream;
-        private StdOutputHandler handler;
+        private Consumer<BufferedReader> handler;
 
-        public StdOutputHandlerThread(final InputStream stream, final StdOutputHandler handler) {
+        public StdHandlerThread(final InputStream stream, final Consumer<BufferedReader> handler) {
             this.stream = stream;
             this.handler = handler;
         }
 
         @Override
         public void run() {
-            handler.handle(new BufferedReader(new InputStreamReader(stream)));
+            handler.accept(new BufferedReader(new InputStreamReader(stream)));
         }
     }
 
     /**
-     * Writes the given content to the given file. This method overwrites the given file if it
-     * already exists.
+     * Prints any content from the given {@link BufferedReader} to Checker
+     * Framework Inference's StdErr.
      *
-     * @param file
-     *            a file to be written to.
-     * @param content
-     *            the content to be written to the file.
-     *
-     * @see #writeFile(File, String, boolean)
+     * @param stdErr
+     *            a BufferedReader containing the contents of an external
+     *            process's std err output.
      */
-    protected void writeFile(File file, String content) {
-        try (PrintStream stream = FileUtils.getFilePrintStream(file, false)) {
-            stream.println(content);
-        }
-    }
-
-    /**
-     * Writes the given content to the given file. This method appends to the given file if it
-     * already exists.
-     *
-     * @param file
-     *            a file to be written to.
-     * @param content
-     *            the content to be written to the file.
-     *
-     * @see #writeFile(File, String, boolean)
-     */
-    protected void writeFileInAppendMode(File file, String content) {
-        try (PrintStream stream = FileUtils.getFilePrintStream(file, true)) {
-            stream.println(content);
+    protected void printStdErr(BufferedReader stdErr) {
+        String line;
+        try {
+            while ((line = stdErr.readLine()) != null) {
+                System.err.println(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }

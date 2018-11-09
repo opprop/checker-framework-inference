@@ -63,7 +63,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
     # Ontology test
     ONTOLOGY_GIT=ontology
     ONTOLOGY_BRANCH=master
-    ONTOLOGY_COMMAND="gradle build -x test && ./test-ontology.sh"
+    ONTOLOGY_COMMAND="./gradlew build -x test && ./test-ontology.sh"
 
     clone_downstream $ONTOLOGY_GIT $ONTOLOGY_BRANCH
     test_downstream $ONTOLOGY_GIT $ONTOLOGY_COMMAND
@@ -71,7 +71,7 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
     # # Units test
     UNITS_GIT=units-inference
     UNITS_BRANCH=master
-    UNITS_COMMAND="gradle build -x test && ./test-units.sh"
+    UNITS_COMMAND="./gradlew build -x test && ./test-units.sh"
 
     clone_downstream $UNITS_GIT $UNITS_BRANCH
     test_downstream $UNITS_GIT $UNITS_COMMAND

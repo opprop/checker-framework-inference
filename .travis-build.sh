@@ -41,16 +41,26 @@ fi
 # Downstream tests
 if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
 
-  # Only perform ontology downstream test in opprop.
+  # Only perform downstream test in opprop.
   if [[ "${SLUGOWNER}" == "opprop" ]]; then
-    # Ontology test: 10 minutes
-    echo "Running: (cd .. && git clone --depth 1 https://github.com/opprop/ontology.git)"
-    (cd .. && git clone --depth 1 https://github.com/opprop/ontology.git)
-    echo "... done: (cd .. && git clone --depth 1 https://github.com/opprop/ontology.git)"
+    # Ontology test
+    ONTOLOGY_GIT=https://github.com/opprop/ontology.git
+    ONTOLOGY_BRANCH=master
+    ONTOLOGY_COMMAND="git clone -b $ONTOLOGY_BRANCH --depth 1 $ONTOLOGY_GIT"
+    ONTOLOGY_BUILD="cd ../ontology && gradle build -x test && ./test-ontology.sh"
+    echo "Running: (cd .. && $ONTOLOGY_COMMAND)"
+    (cd .. && eval $ONTOLOGY_COMMAND)
+    echo "... done: (cd .. && $ONTOLOGY_COMMAND)"
+    echo "Running: ($ONTOLOGY_BUILD)"
+    (eval $ONTOLOGY_BUILD)
+    echo "... done: ($ONTOLOGY_BUILD)"
 
-    echo "Running: (cd ../ontology && gradle build -x test && ./test-ontology.sh)"
-    (cd ../ontology && gradle build -x test && ./test-ontology.sh)
-    echo "... done: (cd ../ontology && gradle build -x test && ./test-ontology.sh)"
+
+
+    # # Units test
+    # echo "Running: (cd .. && git clone --depth 1 https://github.com/opprop/ontology.git)"
+    # (cd .. && git clone --depth 1 https://github.com/opprop/ontology.git)
+    # echo "... done: (cd .. && git clone --depth 1 https://github.com/opprop/ontology.git)"
   fi
 fi
 

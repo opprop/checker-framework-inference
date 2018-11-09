@@ -27,7 +27,7 @@ import checkers.inference.SlotManager;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.Slot;
-import checkers.inference.solver.backend.ExternalSolver;
+import checkers.inference.solver.backend.Solver;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.FileUtils;
 import checkers.inference.solver.util.SolverArg;
@@ -41,7 +41,7 @@ import checkers.inference.solver.util.Statistics;
  * @author jianchu
  *
  */
-public class MaxSatSolver extends ExternalSolver<MaxSatFormatTranslator> {
+public class MaxSatSolver extends Solver<MaxSatFormatTranslator> {
 
     protected enum MaxSatSolverArg implements SolverArg {
         /**

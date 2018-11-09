@@ -19,6 +19,7 @@ import checkers.inference.model.Slot;
 import checkers.inference.solver.backend.maxsat.MaxSatFormatTranslator;
 import checkers.inference.solver.backend.maxsat.MaxSatSolver;
 import checkers.inference.solver.frontend.Lattice;
+import checkers.inference.solver.util.ExternalSolverUtils;
 import checkers.inference.solver.util.SolverEnvironment;
 import checkers.inference.solver.util.Statistics;
 
@@ -90,8 +91,8 @@ public class LingelingSolver extends MaxSatSolver {
                 CNFData.getAbsolutePath() + "/cnfdata" + localNth + ".txt" };
 
         final List<Integer> resultList = new ArrayList<Integer>();
-        runExternalSolver(command, stdOut -> parseStdOut(stdOut, resultList),
-                stdErr -> printStdErr(stdErr));
+        ExternalSolverUtils.runExternalSolver(command, stdOut -> parseStdOut(stdOut, resultList),
+                stdErr -> ExternalSolverUtils.printStdStream(System.err, stdErr));
 
         // Java 8 style of List<Integer> to int[] conversion
         return resultList.stream().mapToInt(Integer::intValue).toArray();

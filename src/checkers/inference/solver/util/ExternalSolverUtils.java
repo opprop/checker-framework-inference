@@ -1,39 +1,24 @@
-package checkers.inference.solver.backend;
+package checkers.inference.solver.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Collection;
+import java.io.PrintStream;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.UserError;
 
-import checkers.inference.model.Constraint;
-import checkers.inference.model.Slot;
-import checkers.inference.solver.frontend.Lattice;
-import checkers.inference.solver.util.FileUtils;
-import checkers.inference.solver.util.SolverEnvironment;
-
 /**
- * Abstract solver which extends {@link Solver} with helper methods to invoke a
- * custom external solver program.
- *
- * @param <T>
- *            type of FormatTranslator required by this Solver
- * @see Solver
+ * Utility class with methods to run an external solver program.
+ * 
  * @see FileUtils
  */
-public abstract class ExternalSolver<T extends FormatTranslator<?, ?, ?>> extends Solver<T> {
+public class ExternalSolverUtils {
 
-    public final Logger logger = Logger.getLogger(ExternalSolver.class.getName());
-
-    public ExternalSolver(SolverEnvironment solverEnvironment, Collection<Slot> slots,
-            Collection<Constraint> constraints, T formatTranslator, Lattice lattice) {
-        super(solverEnvironment, slots, constraints, formatTranslator, lattice);
-    }
+    public static final Logger logger = Logger.getLogger(ExternalSolverUtils.class.getName());
 
     /**
      * Runs the external solver as given by command and uses the given
@@ -41,16 +26,16 @@ public abstract class ExternalSolver<T extends FormatTranslator<?, ?, ?>> extend
      *
      * @param command
      *            an external solver command to be executed, each string in the
-     *            array is space-concatenated to form the final command
+     *            array is space-concatenated to form the final command.
      * @param stdOutHandler
      *            a lambda which takes a {@link BufferedReader} providing the
      *            stdOut of the external solver and handles the stdOut.
      * @param stdErrHandler
      *            a lambda which takes a {@link BufferedReader} providing the
      *            stdErr of the external solver and handles the stdErr.
-     * @return the exit status code of the external command
+     * @return the exit status code of the external command.
      */
-    protected int runExternalSolver(String[] command, Consumer<BufferedReader> stdOutHandler,
+    public static int runExternalSolver(String[] command, Consumer<BufferedReader> stdOutHandler,
             Consumer<BufferedReader> stdErrHandler) {
 
         logger.info("Running external solver command \"" + String.join(" ", command) + "\".");
@@ -102,7 +87,7 @@ public abstract class ExternalSolver<T extends FormatTranslator<?, ?, ?>> extend
      * A thread which wraps an InputStream in a BufferedReader and tasks the
      * lambda function to handle the outputs.
      */
-    private class StdHandlerThread extends Thread {
+    private static class StdHandlerThread extends Thread {
         private InputStream stream;
         private Consumer<BufferedReader> handler;
 
@@ -118,18 +103,20 @@ public abstract class ExternalSolver<T extends FormatTranslator<?, ?, ?>> extend
     }
 
     /**
-     * Prints any content from the given {@link BufferedReader} to Checker
-     * Framework Inference's StdErr.
+     * A default implementation of a handler which prints any content from the
+     * given {@link BufferedReader} to the given stream.
      *
-     * @param stdErr
+     * @param stream
+     *            an output stream to print the contents of the reader to.
+     * @param stdReader
      *            a BufferedReader containing the contents of an external
-     *            process's std err output.
+     *            process's std output stream.
      */
-    protected void printStdErr(BufferedReader stdErr) {
+    public static void printStdStream(PrintStream stream, BufferedReader stdReader) {
         String line;
         try {
-            while ((line = stdErr.readLine()) != null) {
-                System.err.println(line);
+            while ((line = stdReader.readLine()) != null) {
+                stream.println(line);
             }
         } catch (IOException e) {
             e.printStackTrace();

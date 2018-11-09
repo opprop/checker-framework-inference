@@ -43,19 +43,25 @@ if [[ "${GROUP}" == "downstream" || "${GROUP}" == "all" ]]; then
 
   # Only perform downstream test in opprop.
   if [[ "${SLUGOWNER}" == "opprop" ]]; then
+
+    # run_downstream_project Git_Target Build_Command
+    run_downstream () {
+        echo "Running: (cd .. && $1)"
+        (cd .. && eval $1)
+        echo "... done: (cd .. && $1)"
+
+        echo "Running: ($2)"
+        (eval $2)
+        echo "... done: ($2)"
+    }
+
     # Ontology test
     ONTOLOGY_GIT=https://github.com/opprop/ontology.git
     ONTOLOGY_BRANCH=master
     ONTOLOGY_COMMAND="git clone -b $ONTOLOGY_BRANCH --depth 1 $ONTOLOGY_GIT"
     ONTOLOGY_BUILD="cd ../ontology && gradle build -x test && ./test-ontology.sh"
-    echo "Running: (cd .. && $ONTOLOGY_COMMAND)"
-    (cd .. && eval $ONTOLOGY_COMMAND)
-    echo "... done: (cd .. && $ONTOLOGY_COMMAND)"
-    echo "Running: ($ONTOLOGY_BUILD)"
-    (eval $ONTOLOGY_BUILD)
-    echo "... done: ($ONTOLOGY_BUILD)"
 
-
+    run_downstream $ONTOLOGY_COMMAND $ONTOLOGY_BUILD
 
     # # Units test
     # echo "Running: (cd .. && git clone --depth 1 https://github.com/opprop/ontology.git)"

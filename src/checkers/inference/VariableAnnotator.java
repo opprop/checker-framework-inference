@@ -206,6 +206,8 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         VariableSlot polyVar = treeToPolyVar.get(tree);
         if (polyVar == null) {
             polyVar = slotManager.createVariableSlot(treeToLocation(tree));
+            // TODO: define a PolyVariableSlot in the future
+            polyVar.setInsertable(false);
             treeToPolyVar.put(tree, polyVar);
         }
 

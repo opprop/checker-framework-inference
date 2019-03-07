@@ -4,7 +4,7 @@ set -e
 
 WORKING_DIR=$(cd $(dirname "$0") && pwd)
 
-JSR308=$(cd $WORKING_DIR/../../../ && pwd)
+export JSR308=$(cd $WORKING_DIR/../../../ && pwd)
 
 export AFU=$JSR308/annotation-tools/annotation-file-utilities
 export LINGELING=$JSR308/lingeling

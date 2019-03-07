@@ -145,7 +145,7 @@ public class ImplicationConstraint extends Constraint {
 
     @Override
     public int hashCode() {
-        return HashCodeUtils.hash(assumptions, conclusion);
+        return HashCodeUtils.hash(12289, assumptions, conclusion);
     }
 
     @Override

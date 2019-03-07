@@ -1,10 +1,12 @@
 package checkers.inference.model;
 
 import org.checkerframework.javacutil.PluginUtil;
+import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.BugInCF;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * An ExistentialConstraint indicates that solvers need to determine if a variable's annotation
@@ -27,22 +29,22 @@ public class ExistentialConstraint extends Constraint {
     private final VariableSlot potentialVariable;
 
     // The constraints to enforce if potentialVariable exists
-    private final List<Constraint> potentialConstraints;
+    private final Set<Constraint> potentialConstraints;
 
     // the constraints to enforce if potentialVariable DOES NOT exist
-    private final List<Constraint> alternateConstraints;
+    private final Set<Constraint> alternateConstraints;
 
     private ExistentialConstraint(VariableSlot potentialVariable,
-                                 List<Constraint> potentialConstraints,
-                                 List<Constraint> alternateConstraints, AnnotationLocation location) {
+            Set<Constraint> potentialConstraints,
+            Set<Constraint> alternateConstraints, AnnotationLocation location) {
         super(combineSlots(potentialVariable, potentialConstraints, alternateConstraints), location);
         this.potentialVariable = potentialVariable;
-        this.potentialConstraints = Collections.unmodifiableList(potentialConstraints);
-        this.alternateConstraints = Collections.unmodifiableList(alternateConstraints);
+        this.potentialConstraints = Collections.unmodifiableSet(potentialConstraints);
+        this.alternateConstraints = Collections.unmodifiableSet(alternateConstraints);
     }
 
     protected static ExistentialConstraint create(VariableSlot potentialVariable,
-            List<Constraint> potentialConstraints, List<Constraint> alternateConstraints,
+            Set<Constraint> potentialConstraints, Set<Constraint> alternateConstraints,
             AnnotationLocation location) {
         if (potentialVariable == null || potentialConstraints == null
                 || alternateConstraints == null) {
@@ -57,10 +59,10 @@ public class ExistentialConstraint extends Constraint {
     }
 
     @SafeVarargs
-    private static List<Slot> combineSlots(Slot potential, final List<Constraint> ... constraints) {
+    private static List<Slot> combineSlots(Slot potential, final Set<Constraint> ... constraints) {
         final List<Slot> slots = new ArrayList<>();
         slots.add(potential);
-        for (final List<Constraint> constraintList : constraints) {
+        for (final Set<Constraint> constraintList : constraints) {
             for (final Constraint constraint : constraintList) {
                 slots.addAll(constraint.getSlots());
             }
@@ -72,17 +74,37 @@ public class ExistentialConstraint extends Constraint {
         return potentialVariable;
     }
 
-    public List<Constraint> potentialConstraints() {
+    public Set<Constraint> potentialConstraints() {
         return potentialConstraints;
     }
 
-    public List<Constraint> getAlternateConstraints() {
+    public Set<Constraint> getAlternateConstraints() {
         return alternateConstraints;
     }
 
     @Override
     public <S, T> T serialize(Serializer<S, T> serializer) {
         return serializer.serialize(this);
+    }
+
+    @Override
+    public int hashCode() {
+        return HashCodeUtils.hash(389, potentialVariable, potentialConstraints,
+                alternateConstraints);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        ExistentialConstraint other = (ExistentialConstraint) obj;
+        return potentialVariable.equals(other.potentialVariable)
+                && potentialConstraints.equals(other.potentialConstraints)
+                && alternateConstraints.equals(other.alternateConstraints);
     }
 
     @Override

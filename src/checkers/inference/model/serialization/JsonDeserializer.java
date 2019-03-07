@@ -69,14 +69,14 @@ public class JsonDeserializer {
         this.constraintManager = InferenceMain.getInstance().getConstraintManager();
     }
 
-    public List<Constraint> parseConstraints() throws ParseException {
+    public Set<Constraint> parseConstraints() throws ParseException {
         JSONArray constraints = (JSONArray) root.get(CONSTRAINTS_KEY);
-        List<Constraint> results = jsonArrayToConstraints(constraints);
+        Set<Constraint> results = jsonArrayToConstraints(constraints);
         return results;
     }
 
-    public List<Constraint> jsonArrayToConstraints(final JSONArray jsonConstraints) {
-        List<Constraint> results = new LinkedList<Constraint>();
+    public Set<Constraint> jsonArrayToConstraints(final JSONArray jsonConstraints) {
+        Set<Constraint> results = new HashSet<>();
 
         for (Object obj: jsonConstraints) {
             if (obj instanceof String) {
@@ -111,9 +111,9 @@ public class JsonDeserializer {
                     results.add(constraintManager.createComparableConstraint(lhs, rhs));
                 } else if (EXISTENTIAL_CONSTRAINT_KEY.equals(constraintType)) {
                     Slot potential = parseSlot((String) constraint.get(EXISTENTIAL_ID));
-                    List<Constraint> thenConstraints =
+                    Set<Constraint> thenConstraints =
                             jsonArrayToConstraints((JSONArray) constraint.get(EXISTENTIAL_THEN));
-                    List<Constraint> elseConstraints =
+                    Set<Constraint> elseConstraints =
                             jsonArrayToConstraints((JSONArray) constraint.get(EXISTENTIAL_ELSE));
                     results.add(constraintManager.createExistentialConstraint((VariableSlot) potential,
                             thenConstraints, elseConstraints));

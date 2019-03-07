@@ -138,7 +138,7 @@ public class ConstraintManager {
      * Creates an {@link ExistentialConstraint} for the given slot and lists of constraints.
      */
     public ExistentialConstraint createExistentialConstraint(Slot slot,
-            List<Constraint> ifExistsConstraints, List<Constraint> ifNotExistsConstraints) {
+            Set<Constraint> ifExistsConstraints, Set<Constraint> ifNotExistsConstraints) {
         return ExistentialConstraint.create((VariableSlot) slot, ifExistsConstraints,
                 ifNotExistsConstraints, getCurrentLocation());
     }
@@ -261,14 +261,26 @@ public class ConstraintManager {
      * Creates and adds a {@link PreferenceConstraint} to the constraint set.
      */
     public void addPreferenceConstraint(VariableSlot variable, ConstantSlot goal, int weight) {
-        add(createPreferenceConstraint(variable, goal, weight));
+        PreferenceConstraint pc = createPreferenceConstraint(variable, goal, weight);
+        if (constraints.contains(pc)) {
+            PreferenceConstraint existingPC = (PreferenceConstraint) constraints.stream()
+                    .filter(c -> c.hashCode() == pc.hashCode()).findFirst().get();
+
+            if (existingPC.getWeight() != weight) {
+                throw new BugInCF(
+                        "Constraint " + pc + " already exists in the constraint set with weight "
+                                + existingPC.getWeight() + ".");
+            }
+        } else {
+            add(pc);
+        }
     }
 
     /**
      * Creates and adds a {@link ExistentialConstraint} to the constraint set.
      */
-    public void addExistentialConstraint(Slot slot, List<Constraint> ifExistsConstraints,
-            List<Constraint> ifNotExistsConstraints) {
+    public void addExistentialConstraint(Slot slot, Set<Constraint> ifExistsConstraints,
+            Set<Constraint> ifNotExistsConstraints) {
         add(createExistentialConstraint(slot, ifExistsConstraints, ifNotExistsConstraints));
     }
 

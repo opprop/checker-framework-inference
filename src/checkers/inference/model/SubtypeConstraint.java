@@ -2,6 +2,7 @@ package checkers.inference.model;
 
 import java.util.Arrays;
 
+import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -126,34 +127,19 @@ public class SubtypeConstraint extends Constraint implements BinaryConstraint {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((subtype == null) ? 0 : subtype.hashCode());
-        result = prime * result
-                + ((supertype == null) ? 0 : supertype.hashCode());
-        return result;
+        return HashCodeUtils.hash(53, subtype, supertype);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
-        if (getClass() != obj.getClass())
-            return false;
+        }
         SubtypeConstraint other = (SubtypeConstraint) obj;
-        if (subtype == null) {
-            if (other.subtype != null)
-                return false;
-        } else if (!subtype.equals(other.subtype))
-            return false;
-        if (supertype == null) {
-            if (other.supertype != null)
-                return false;
-        } else if (!supertype.equals(other.supertype))
-            return false;
-        return true;
+        return subtype.equals(other.subtype) && supertype.equals(other.supertype);
     }
 
     /**

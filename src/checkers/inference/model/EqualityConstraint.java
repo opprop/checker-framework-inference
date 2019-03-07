@@ -2,6 +2,7 @@ package checkers.inference.model;
 
 import java.util.Arrays;
 
+import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -95,26 +96,20 @@ public class EqualityConstraint extends Constraint implements BinaryConstraint {
 
     @Override
     public int hashCode() {
-        int result = 1;
-        result = result + ((first == null) ? 0 : first.hashCode());
-        result = result + ((second == null) ? 0 : second.hashCode());
-        return result;
+        // EqualityConstraint is insensitive to the order of the slots
+        return HashCodeUtils.hash(97, first.hashCode() + second.hashCode());
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        EqualityConstraint other = (EqualityConstraint) obj;
-        if ((first.equals(other.first) && second.equals(other.second))
-                || (first.equals(other.second) && (second.equals(other.first)))) {
-            return true;
-        } else {
+        }
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
+        EqualityConstraint other = (EqualityConstraint) obj;
+        return (first.equals(other.first) && second.equals(other.second))
+                || (first.equals(other.second) && second.equals(other.first));
     }
 }

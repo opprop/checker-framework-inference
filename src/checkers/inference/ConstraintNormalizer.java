@@ -239,8 +239,8 @@ public class ConstraintNormalizer {
                 return constraints;
             }
 
-            List<Constraint> ifExistsConstraints = new ArrayList<>();
-            List<Constraint> ifNotExistsConstraints = new ArrayList<>();
+            Set<Constraint> ifExistsConstraints = new HashSet<>();
+            Set<Constraint> ifNotExistsConstraints = new HashSet<>();
 
             ifExistsConstraints.addAll(constraints);
             for (final ExistentialNode existNode : ifExists.values()) {

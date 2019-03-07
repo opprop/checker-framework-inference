@@ -104,7 +104,7 @@ public class ArithmeticConstraint extends Constraint {
     public int hashCode() {
         // We do not hash on annotation location as the result slot is unique for each annotation
         // location
-        return HashCodeUtils.hash(operation, leftOperand, rightOperand, result);
+        return HashCodeUtils.hash(3079, operation, leftOperand, rightOperand, result);
     }
 
     @Override

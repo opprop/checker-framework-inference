@@ -1,6 +1,8 @@
 package checkers.inference.model;
 
 import java.util.Arrays;
+
+import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -49,40 +51,18 @@ public class PreferenceConstraint extends Constraint {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((variable == null) ? 0 : variable.hashCode());
-        result = prime * result
-                + ((goal == null) ? 0 : goal.hashCode());
-        result = prime * result + weight;
-        return result;
+        return HashCodeUtils.hash(6151, variable, goal);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
-        if (getClass() != obj.getClass())
-            return false;
+        }
         PreferenceConstraint other = (PreferenceConstraint) obj;
-        if (variable == null) {
-            if (other.variable != null) {
-                return false;
-            }
-        } else if (!variable.equals(other.variable)) {
-            return false;
-        }
-
-        if (goal == null) {
-            if (other.goal != null) {
-                return false;
-            }
-        } else if (!goal.equals(other.goal)) {
-            return false;
-        }
-
-        return weight == other.weight;
+        return variable.equals(other.variable) && goal.equals(other.goal);
     }
 }

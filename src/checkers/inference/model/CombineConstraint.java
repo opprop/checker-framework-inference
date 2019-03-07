@@ -1,6 +1,8 @@
 package checkers.inference.model;
 
 import java.util.Arrays;
+
+import org.checkerframework.dataflow.util.HashCodeUtils;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
@@ -51,28 +53,19 @@ public class CombineConstraint extends Constraint {
 
     @Override
     public int hashCode() {
-        int hc = 1;
-        hc += ((target == null) ? 0 : target.hashCode());
-        hc += ((decl == null) ? 0 : decl.hashCode());
-        hc += ((result == null) ? 0 : result.hashCode());
-        return hc;
+        return HashCodeUtils.hash(1543, target, decl, result);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        CombineConstraint other = (CombineConstraint) obj;
-        if (target.equals(other.target) &&
-                decl.equals(other.decl) &&
-                result.equals(other.result)) {
-            return true;
-        } else {
+        }
+        if (obj == null || getClass() != obj.getClass()) {
             return false;
         }
+        CombineConstraint other = (CombineConstraint) obj;
+        return target.equals(other.target) && decl.equals(other.decl)
+                && result.equals(other.result);
     }
 }

@@ -34,3 +34,8 @@ else
     (cd $ROOT/lingeling && ./configure.sh && make --silent && ./lingeling --version)
     echo "cmd: (cd $ROOT/lingeling && ./configure.sh && make --silent && ./lingeling --version) Done."
 fi
+
+# Copy $ROOT/lingeling/lingeling into CFI lib dir
+echo "Copying $ROOT/lingeling/lingeling into $ROOT/checker-framework-inference/lib"
+(cp $ROOT/lingeling/lingeling $ROOT/checker-framework-inference/lib)
+echo "Copy done."

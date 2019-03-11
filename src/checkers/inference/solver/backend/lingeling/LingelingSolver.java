@@ -36,7 +36,7 @@ public class LingelingSolver extends MaxSatSolver {
     private String currentDirPath = System.getProperty("user.dir");
     private String JSR308 = currentDirPath.substring(0, currentDirPath.lastIndexOf("checker-framework-inference/"));
 
-    private final String lingeling = JSR308 + "/lingeling/lingeling";
+    private final String lingeling = JSR308 + "lingeling/lingeling";
     // record cnf integers in clauses. lingeling solver give the answer for all
     // the integers from 1 to the largest one. Some of them may be not in the
     // clauses.

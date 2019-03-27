@@ -15,27 +15,34 @@ then
     myDir="."
 fi
 
-ROOT=$(cd ${myDir}/../../ && pwd)
+ROOT=$(cd ${myDir}/../lib && pwd)
 
 ## Fetching Lingeling solver
 LINGELING_ARCHIVE=http://fmv.jku.at/lingeling/lingeling-bcj-78ebb86-180517.tar.gz
 
 if [ -e $ROOT/lingeling/lingeling ] ; then
-    echo "Found existing lingeling in $ROOT/lingeling/, skip downloading lingeling."
+    echo "Found existing lingeling in $ROOT/lingeling, exiting from the shell script."
+    exit 0
+elif [ -e $ROOT/lingeling.tar.gz ] ; then
+    echo "Found existing lingeling.tar.gz in $ROOT, skip downloading lingeling."
 else
     echo "Downloading lingeling from $LINGELING_ARCHIVE..."
-    echo "Running cmd: (cd $ROOT && wget -O lingeling.tar.gz $LINGELING_ARCHIVE && tar -xf lingeling.tar.gz && mv lingeling-* lingeling)"
-    (cd $ROOT && wget -O lingeling.tar.gz $LINGELING_ARCHIVE && tar -xf lingeling.tar.gz && mv lingeling-* lingeling)
-    echo "cmd: (cd $ROOT && wget -O lingeling.tar.gz $LINGELING_ARCHIVE && tar -xf lingeling.tar.gz && mv lingeling-* lingeling) Done."
-    echo "Downloaded lingeling into directory $ROOT/lingeling"
+    echo "Running cmd: (cd $ROOT && wget -O lingeling.tar.gz $LINGELING_ARCHIVE)"
+    (cd $ROOT && wget -O lingeling.tar.gz $LINGELING_ARCHIVE)
+    echo "cmd: (cd $ROOT && wget -O lingeling.tar.gz $LINGELING_ARCHIVE) Done."
+    echo "Downloaded lingeling.tar.gz in directory $ROOT."
+fi
 
-    echo "Compiling lingeling..."
+echo "Unziping lingeling.tar.gz..."
+    echo "Running cmd: (cd $ROOT && tar -xf lingeling.tar.gz && mv lingeling-* lingeling)"
+    (cd $ROOT && tar -xf lingeling.tar.gz && mv lingeling-* lingeling)
+    echo "cmd: (cd $ROOT && tar -xf lingeling.tar.gz && mv lingeling-* lingeling) Done."
+    echo "Unziped lingeling.tar.gz into directory $ROOT/lingeling."
+
+echo "Compiling lingeling..."
     echo "Running cmd: (cd $ROOT/lingeling && ./configure.sh && make --silent && ./lingeling --version)"
     (cd $ROOT/lingeling && ./configure.sh && make --silent && ./lingeling --version)
     echo "cmd: (cd $ROOT/lingeling && ./configure.sh && make --silent && ./lingeling --version) Done."
-fi
+    echo "Compiled lingeling successfully."
 
-# Copy $ROOT/lingeling/lingeling into CFI lib dir
-echo "Copying $ROOT/lingeling/lingeling into $ROOT/checker-framework-inference/lib"
-(cp $ROOT/lingeling/lingeling $ROOT/checker-framework-inference/lib)
-echo "Copy done."
+echo "Building lingeling done."

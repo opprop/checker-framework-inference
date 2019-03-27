@@ -15,13 +15,13 @@ then
     myDir="."
 fi
 
-ROOT=$(cd ${myDir}/../ && pwd)
+CFI=$(cd ${myDir}/../ && pwd)
 
-if [ ! -d $ROOT/lib ] ; then
-    mkdir $ROOT/lib
+if [ ! -d $CFI/lib ] ; then
+    mkdir $CFI/lib
 fi
 
-LIB=$(cd ${ROOT}/lib/ && pwd)
+LIB=$(cd ${CFI}/lib/ && pwd)
 
 ## Fetching Lingeling solver
 LINGELING_ARCHIVE=http://fmv.jku.at/lingeling/lingeling-bcj-78ebb86-180517.tar.gz
@@ -29,7 +29,7 @@ LINGELING_ARCHIVE=http://fmv.jku.at/lingeling/lingeling-bcj-78ebb86-180517.tar.g
 if [ -e $LIB/lingeling/lingeling ] ; then
     echo "Found existing lingeling in $LIB/lingeling, exiting from the shell script."
     exit 0
-elif [ -e $$LIB/lingeling.tar.gz ] ; then
+elif [ -e $LIB/lingeling.tar.gz ] ; then
     echo "Found existing lingeling.tar.gz in $LIB, skip downloading lingeling."
 else
     echo "Downloading lingeling from $LINGELING_ARCHIVE..."
@@ -40,15 +40,15 @@ else
 fi
 
 echo "Unziping lingeling.tar.gz..."
-    echo "Running cmd: (cd $LIB && tar -xf lingeling.tar.gz && mv lingeling-* lingeling)"
-    (cd $LIB && tar -xf lingeling.tar.gz && mv lingeling-* lingeling)
-    echo "cmd: (cd $LIB && tar -xf lingeling.tar.gz && mv lingeling-* lingeling) Done."
-    echo "Unziped lingeling.tar.gz into directory $LIB/lingeling."
+echo "Running cmd: (cd $LIB && tar -xf lingeling.tar.gz && mv lingeling-* lingeling)"
+(cd $LIB && tar -xf lingeling.tar.gz && mv lingeling-* lingeling)
+echo "cmd: (cd $LIB && tar -xf lingeling.tar.gz && mv lingeling-* lingeling) Done."
+echo "Unziped lingeling.tar.gz into directory $LIB/lingeling."
 
 echo "Compiling lingeling..."
-    echo "Running cmd: (cd $LIB/lingeling && ./configure.sh && make --silent && ./lingeling --version)"
-    (cd $LIB/lingeling && ./configure.sh && make --silent && ./lingeling --version)
-    echo "cmd: (cd $LIB/lingeling && ./configure.sh && make --silent && ./lingeling --version) Done."
-    echo "Compiled lingeling successfully."
+echo "Running cmd: (cd $LIB/lingeling && ./configure.sh && make --silent && ./lingeling --version)"
+(cd $LIB/lingeling && ./configure.sh && make --silent && ./lingeling --version)
+echo "cmd: (cd $LIB/lingeling && ./configure.sh && make --silent && ./lingeling --version) Done."
+echo "Compiled lingeling successfully."
 
 echo "Building lingeling done."

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 # Fail the whole script if any command fails
 set -e
@@ -28,11 +28,11 @@ case `uname -s` in
         DY_LIB_SUFFIX=dylib
     ;;
     *)
-    # Assume it is ubuntu OS.
-    Z3_ZIP=$UBUNTU_Z3
-    DY_LIB_SUFFIX=so
+        # Assume it is ubuntu OS.
+        Z3_ZIP=$UBUNTU_Z3
+        DY_LIB_SUFFIX=so
     ;;
-    esac
+esac
 
 ROOT=$(cd ${myDir}/../../ && pwd)
 

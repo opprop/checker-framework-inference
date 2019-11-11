@@ -176,6 +176,7 @@ jar {
 }
 
 shadowJar {
+    exclude "junit*"
     description 'Creates the "fat" checker.jar in dist'
     destinationDir = file("${projectDir}/dist")
     archiveName = "checker-framework-inference.jar"

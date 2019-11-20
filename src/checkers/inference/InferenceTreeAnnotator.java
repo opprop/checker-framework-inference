@@ -372,15 +372,12 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
 
     /**
      * The type returned from a unary operation is just the variable.
-     * This will have to change if we support refinement variables.
      */
     @Override
     public Void visitUnary(UnaryTree node, AnnotatedTypeMirror type) {
         // Do NOT call super method.
         // To match TreeAnnotator, we do not apply implicits
-
-        AnnotatedTypeMirror exp = atypeFactory.getAnnotatedType(node.getExpression());
-        type.addMissingAnnotations(exp.getAnnotations());
+        variableAnnotator.visit(type, node);
         return null;
     }
 
@@ -388,17 +385,12 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
      * The type returned from a compound operation is just the variable.
      * The visitor will insure that the RHS is a subtype of the LHS of the
      * compound assignment.
-     *
-     * This will have to change if we support refinement variables.
-     * (See Issue 9)
      */
     @Override
     public Void visitCompoundAssignment(CompoundAssignmentTree node, AnnotatedTypeMirror type) {
         // Do NOT call super method.
         // To match TreeAnnotator, we do not apply implicits
-
-        AnnotatedTypeMirror exp = atypeFactory.getAnnotatedType(node.getExpression());
-        type.addMissingAnnotations(exp.getAnnotations());
+        variableAnnotator.visit(type, node);
         return null;
     }
 

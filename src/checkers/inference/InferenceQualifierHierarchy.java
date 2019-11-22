@@ -16,6 +16,8 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
+
+import checkers.inference.model.AnnotationLocation;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.ConstraintManager;
 import checkers.inference.model.Slot;
@@ -290,6 +292,75 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
                     var1.addMergedToSlot(mergeVariableSlot);
                     var2.addMergedToSlot(mergeVariableSlot);
+
+                    return slotMgr.getAnnotation(mergeVariableSlot);
+                }
+            }
+        } else {
+            return slotMgr.getAnnotation(slot1);
+        }
+    }
+    
+    @Override
+    public AnnotationMirror greatestLowerBound(final AnnotationMirror a1, final AnnotationMirror a2) {
+        if (InferenceMain.isHackMode( (a1 == null || a2 == null))) {
+            InferenceMain.getInstance().logger.info(
+                    "Hack:\n"
+                  + "a1=" + a1 + "\n"
+                  + "a2=" + a2);
+            return a1 != null ? a1 : a2;
+        }
+        assert a1 != null && a2 != null : "greatestLowerBound accepts only NonNull types! 1 (" + a1 + " ) a2 (" + a2 + ")";
+
+        QualifierHierarchy realQualifierHierarhcy = inferenceMain.getRealTypeFactory().getQualifierHierarchy();
+        // for some reason GLB compares all annotations even if they are not in the same sub-hierarchy
+        if (!isVarAnnot(a1)) {
+            if (!isVarAnnot(a2)) {
+                return inferenceMain.getRealTypeFactory().getQualifierHierarchy().greatestLowerBound(a1, a2);
+            } else {
+                return null;
+            }
+        } else if (!isVarAnnot(a2)) {
+            return null;
+        }
+
+        // TODO: How to get the path to the CombVariable?
+        final Slot slot1 = slotMgr.getSlot(a1);
+        final Slot slot2 = slotMgr.getSlot(a2);
+        if (slot1 != slot2) {
+            if ((slot1 instanceof ConstantSlot) && (slot2 instanceof ConstantSlot)) {
+                // If both slots are constant slots, using real qualifier hierarchy to compute the GLB,
+                // then return a VarAnnot represent the constant GLB.
+                // (Because we passing in two VarAnnots that represent constant slots, so it is consistent
+                // to also return a VarAnnot that represents the constant GLB of these two constants.)
+                AnnotationMirror realAnno1 = ((ConstantSlot) slot1).getValue();
+                AnnotationMirror realAnno2 = ((ConstantSlot) slot2).getValue();
+
+                AnnotationMirror realLub = realQualifierHierarhcy.greatestLowerBound(realAnno1, realAnno2);
+                Slot constantSlot = slotMgr.createConstantSlot(realLub);
+                return slotMgr.getAnnotation(constantSlot);
+            } else {
+                VariableSlot var1 = (VariableSlot) slot1;
+                VariableSlot var2 = (VariableSlot) slot2;
+
+                if (var1 == var2) {
+                    // They are the same slot.
+                    return slotMgr.getAnnotation(var1);
+
+                } else if (var1.isMergedTo(var2)) {
+                    // var2 is a merge variable that var1 has been merged to. So just return annotation on var1.
+                    return slotMgr.getAnnotation(var1);
+                } else if (var2.isMergedTo(var1)) {
+                    // Vice versa.
+                    return slotMgr.getAnnotation(var2);
+                } else {
+                    // Create a new LubVariable for var1 and var2.
+                    final VariableSlot mergeVariableSlot = slotMgr.createVariableSlot(AnnotationLocation.MISSING_LOCATION);
+                    constraintMgr.addSubtypeConstraint(mergeVariableSlot, var1);
+                    constraintMgr.addSubtypeConstraint(mergeVariableSlot, var2);
+
+//                    mergeVariableSlot.addMergedToSlot(var1);
+//                    mergeVariableSlot.addMergedToSlot(var2);
 
                     return slotMgr.getAnnotation(mergeVariableSlot);
                 }

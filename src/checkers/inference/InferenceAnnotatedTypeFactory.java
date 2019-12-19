@@ -25,6 +25,7 @@ import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
@@ -45,6 +46,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 
 import checkers.inference.dataflow.InferenceAnalysis;
@@ -566,6 +568,19 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected InferenceViewpointAdapter createViewpointAdapter() {
         return withCombineConstraints ? new InferenceViewpointAdapter(this) : null;
+    }
+
+    @Override
+    public Set<AnnotationMirror> getTypeDeclarationBounds(TypeMirror type) {
+        Set<AnnotationMirror> bounds = super.getTypeDeclarationBounds(type);
+        Set<AnnotationMirror> newbounds = new HashSet<>();
+        // We don't want the type declaration bounds to contain a VarAnnot without id as it gives no useful information
+        for (AnnotationMirror am : bounds) {
+    	    if (AnnotationUtils.areSameByClass(am, VarAnnot.class) && !am.getElementValues().isEmpty()) {
+    		    newbounds.add(am);
+    	    }
+        }
+        return newbounds;
     }
 }
 

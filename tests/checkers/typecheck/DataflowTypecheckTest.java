@@ -12,7 +12,7 @@ public class DataflowTypecheckTest extends CheckerFrameworkPerFileTest {
 
     public DataflowTypecheckTest(File testFile) {
         super(testFile,  dataflow.DataflowChecker.class, "dataflow",
-                "-Anomsgtext", "-d", "tests/build/outputdir");
+                "-Anomsgtext", "-AconservativeUninferredTypeArguments","-d", "tests/build/outputdir");
     }
 
     @Parameters

@@ -51,7 +51,7 @@ if [[ "${GROUP}" == downstream* && "${SLUGOWNER}" == "opprop" ]]; then
 
     # test_downstream Git_Target Build_Test_Command
     test_downstream() {
-        COMMAND="cd $1 && ${@:2}"
+        COMMAND="cd ../$1 && ${@:2}"
         echo "Running: ($COMMAND)"
         (eval $COMMAND)
         echo "... done: ($COMMAND)"

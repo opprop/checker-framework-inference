@@ -8,6 +8,9 @@ import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.javacutil.BugInCF;
+
+import com.sun.source.tree.Tree;
+
 import checkers.inference.InferenceAnnotatedTypeFactory;
 import checkers.inference.VariableAnnotator;
 import checkers.inference.model.ArithmeticConstraint.ArithmeticOperationKind;
@@ -91,7 +94,7 @@ public class ConstraintManager {
      * {@link AlwaysTrueConstraint}, {@link AlwaysFalseConstraint}, or {@link EqualityConstraint}.
      */
     public Constraint createSubtypeConstraint(Slot subtype, Slot supertype) {
-        return SubtypeConstraint.create(subtype, supertype, getCurrentLocation(),
+        return SubtypeConstraint.create(subtype, supertype, getCurrentAnnotationLocation(),
                 realQualHierarchy);
     }
 
@@ -100,7 +103,7 @@ public class ConstraintManager {
      * {@link AlwaysTrueConstraint} or {@link AlwaysFalseConstraint}.
      */
     public Constraint createEqualityConstraint(Slot first, Slot second) {
-        return EqualityConstraint.create(first, second, getCurrentLocation());
+        return EqualityConstraint.create(first, second, getCurrentAnnotationLocation());
     }
 
     /**
@@ -108,7 +111,7 @@ public class ConstraintManager {
      * {@link AlwaysTrueConstraint} or {@link AlwaysFalseConstraint}.
      */
     public Constraint createInequalityConstraint(Slot first, Slot second) {
-        return InequalityConstraint.create(first, second, getCurrentLocation());
+        return InequalityConstraint.create(first, second, getCurrentAnnotationLocation());
     }
 
     /**
@@ -116,14 +119,14 @@ public class ConstraintManager {
      * {@link AlwaysTrueConstraint} or {@link AlwaysFalseConstraint}.
      */
     public Constraint createComparableConstraint(Slot first, Slot second) {
-        return ComparableConstraint.create(first, second, getCurrentLocation(), realQualHierarchy);
+        return ComparableConstraint.create(first, second, getCurrentAnnotationLocation(), realQualHierarchy);
     }
 
     /**
      * Creates a {@link CombineConstraint} between the three slots.
      */
     public CombineConstraint createCombineConstraint(Slot target, Slot decl, Slot result) {
-        return CombineConstraint.create(target, decl, result, getCurrentLocation());
+        return CombineConstraint.create(target, decl, result, getCurrentAnnotationLocation());
     }
 
     /**
@@ -131,7 +134,7 @@ public class ConstraintManager {
      */
     public PreferenceConstraint createPreferenceConstraint(VariableSlot variable, ConstantSlot goal,
             int weight) {
-        return PreferenceConstraint.create(variable, goal, weight, getCurrentLocation());
+        return PreferenceConstraint.create(variable, goal, weight, getCurrentAnnotationLocation());
     }
 
     /**
@@ -140,11 +143,11 @@ public class ConstraintManager {
     public ExistentialConstraint createExistentialConstraint(Slot slot,
             List<Constraint> ifExistsConstraints, List<Constraint> ifNotExistsConstraints) {
         return ExistentialConstraint.create((VariableSlot) slot, ifExistsConstraints,
-                ifNotExistsConstraints, getCurrentLocation());
+                ifNotExistsConstraints, getCurrentAnnotationLocation());
     }
 
     public Constraint createImplicationConstraint(List<Constraint> assumptions, Constraint conclusion) {
-        return ImplicationConstraint.create(assumptions, conclusion, getCurrentLocation());
+        return ImplicationConstraint.create(assumptions, conclusion, getCurrentAnnotationLocation());
     }
 
     /**
@@ -153,16 +156,27 @@ public class ConstraintManager {
     public ArithmeticConstraint createArithmeticConstraint(ArithmeticOperationKind operation,
             Slot leftOperand, Slot rightOperand, ArithmeticVariableSlot result) {
         return ArithmeticConstraint.create(operation, leftOperand, rightOperand, result,
-                getCurrentLocation());
+                getCurrentAnnotationLocation());
     }
 
     // TODO: give location directly in Constraint.create() methods
-    private AnnotationLocation getCurrentLocation() {
+    private AnnotationLocation getCurrentAnnotationLocation() {
         if (visitorState.getPath() != null) {
             return VariableAnnotator.treeToLocation(inferenceTypeFactory,
                     visitorState.getPath().getLeaf());
         } else {
             return AnnotationLocation.MISSING_LOCATION;
+        }
+    }
+
+    // visitorState.getPath().getLeaf() caused NullPointerException on some real project
+    // and doesn't always return correct source tree. Using class tree at least shows which
+    // Java source class there is such unsatisfiable error and also doesn't throw exception
+    private Tree getCurrentTreeLocation() {
+        if (visitorState.getPath() != null) {
+            return visitorState.getPath().getLeaf();
+        } else {
+            return visitorState.getClassTree();
         }
     }
 
@@ -183,7 +197,7 @@ public class ConstraintManager {
             // this subtype constraint originates from.
             // Same for constraints below.
             checker.report(Result.failure("subtype.constraint.unsatisfiable", subtype, supertype),
-                    visitorState.getPath().getLeaf());
+                    getCurrentTreeLocation());
         } else {
             add(constraint);
         }
@@ -214,7 +228,7 @@ public class ConstraintManager {
         Constraint constraint = createEqualityConstraint(first, second);
         if (constraint instanceof AlwaysFalseConstraint) {
             checker.report(Result.failure("equality.constraint.unsatisfiable", first, second),
-                    visitorState.getPath().getLeaf());
+                    getCurrentTreeLocation());
         } else {
             add(constraint);
         }
@@ -229,7 +243,7 @@ public class ConstraintManager {
         Constraint constraint = createInequalityConstraint(first, second);
         if (constraint instanceof AlwaysFalseConstraint) {
             checker.report(Result.failure("inequality.constraint.unsatisfiable", first, second),
-                    visitorState.getPath().getLeaf());
+                    getCurrentTreeLocation());
         } else {
             add(constraint);
         }
@@ -244,7 +258,7 @@ public class ConstraintManager {
         Constraint constraint = createComparableConstraint(first, second);
         if (constraint instanceof AlwaysFalseConstraint) {
             checker.report(Result.failure("comparable.constraint.unsatisfiable", first, second),
-                    visitorState.getPath().getLeaf());
+                    getCurrentTreeLocation());
         } else {
             add(constraint);
         }

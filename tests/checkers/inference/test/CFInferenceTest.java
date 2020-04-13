@@ -21,8 +21,8 @@ public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
     }
 
     public CFInferenceTest(File testFile, Class<? extends AbstractProcessor> checker,
-                           String testDir, String... checkerOptions) {
-        super(testFile, checker, testDir, checkerOptions);
+                           String checkerDir, String... checkerOptions) {
+        super(testFile, checker, checkerDir, checkerOptions);
     }
 
     public boolean useHacks() {

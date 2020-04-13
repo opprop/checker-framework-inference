@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo Entering "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in `pwd`
+echo "Entering checker-framework-inference/.travis-build-without-test.sh in" `pwd`
 
 # Fail the whole script if any command fails
 set -e
@@ -19,11 +19,8 @@ export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)/../checker-framework}"
 
 export PATH=$AFU/scripts:$JAVA_HOME/bin:$PATH
 
-if [ -d "/tmp/plume-scripts" ] ; then
-  git -C /tmp/plume-scripts pull -q
-else
-  git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
-fi
+git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
+  || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
 
 ## Build Checker Framework
 /tmp/plume-scripts/git-clone-related opprop checker-framework ${CHECKERFRAMEWORK}
@@ -32,6 +29,6 @@ fi
 (cd $CHECKERFRAMEWORK && checker/bin-devel/build.sh downloadjdk jdk8)
 
 # Finally build checker-framework-inference
-./gradlew dist && ./gradlew testLibJar
+./gradlew dist
 
-echo Exiting "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in `pwd`
+echo "Exiting checker-framework-inference/.travis-build-without-test.sh in" `pwd`

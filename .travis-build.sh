@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo Entering "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in `pwd`
+echo "Entering checker-framework-inference/.travis-build.sh in" `pwd`
 
 # Fail the whole script if any command fails
 set -e
@@ -57,38 +57,25 @@ if [[ "${GROUP}" == downstream* && "${SLUGOWNER}" == "opprop" ]]; then
         echo "... done: ($COMMAND)"
     }
 
+    # Ontology test
     if [[ "${GROUP}" == "downstream-ontology" ]]; then
         ONTOLOGY_GIT=ontology
         ONTOLOGY_BRANCH=master
         ONTOLOGY_COMMAND="./gradlew build -x test && ./test-ontology.sh"
 
-        ./gradlew testLibJar
-
         clone_downstream $ONTOLOGY_GIT $ONTOLOGY_BRANCH
         test_downstream $ONTOLOGY_GIT $ONTOLOGY_COMMAND
     fi
 
-    # Units test (Skip for now)
-#    if [[ "${GROUP}" == "downstream-units" ]]; then
-#        UNITS_GIT=units-inference
-#        UNITS_BRANCH=master
-#        UNITS_COMMAND="./gradlew build -x test && ./test-units.sh"
-#
-#        clone_downstream $UNITS_GIT $UNITS_BRANCH
-#        test_downstream $UNITS_GIT $UNITS_COMMAND
-#    fi
+    # Units test
+    if [[ "${GROUP}" == "downstream-units" ]]; then
+        UNITS_GIT=units-inference
+        UNITS_BRANCH=master
+        UNITS_COMMAND="./gradlew build -x test && ./test-units.sh"
 
-    # Security Demo test
-    if [[ "${GROUP}" == "downstream-security-demo" ]]; then
-        SECURITY_GIT=security-demo
-        SECURITY_BRANCH=master
-        SECURITY_COMMAND="./gradlew build -x test && ./test-security.sh"
-
-        ./gradlew testLibJar
-
-        clone_downstream $SECURITY_GIT $SECURITY_BRANCH
-        test_downstream $SECURITY_GIT $SECURITY_COMMAND
+        clone_downstream $UNITS_GIT $UNITS_BRANCH
+        test_downstream $UNITS_GIT $UNITS_COMMAND
     fi
 fi
 
-echo Exiting "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in `pwd`
+echo "Exiting checker-framework-inference/.travis-build.sh in" `pwd`

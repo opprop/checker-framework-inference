@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "Entering checker-framework-inference/.travis-build-without-test.sh in" `pwd`
+echo Entering "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in `pwd`
 
 # Fail the whole script if any command fails
 set -e
@@ -19,24 +19,19 @@ export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)/../checker-framework}"
 
 export PATH=$AFU/scripts:$JAVA_HOME/bin:$PATH
 
-git -C /tmp/plume-scripts pull > /dev/null 2>&1 \
-  || git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
-eval `/tmp/plume-scripts/ci-info opprop`
-## Build Checker Framework
-if [ -d $CHECKERFRAMEWORK ] ; then
-    # Fails if not currently on a branch
-    git -C $CHECKERFRAMEWORK pull || true
+if [ -d "/tmp/plume-scripts" ] ; then
+  git -C /tmp/plume-scripts pull -q
 else
-    REPO=`/tmp/plume-scripts/git-find-fork ${CI_ORGANIZATION} typetools checker-framework`
-    BRANCH=`/tmp/plume-scripts/git-find-branch ${REPO} ${CI_BRANCH}`
-    echo "About to execute: (cd $CHECKERFRAMEWORK/.. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})"
-    (cd $CHECKERFRAMEWORK/.. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO}) || (cd .. && git clone -b ${BRANCH} --single-branch --depth 1 ${REPO})
+  git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
 fi
 
+## Build Checker Framework
+/tmp/plume-scripts/git-clone-related opprop checker-framework ${CHECKERFRAMEWORK}
+
 # This also builds annotation-tools
-(cd $CHECKERFRAMEWORK && ./.travis-build-without-test.sh downloadjdk jdk8)
+(cd $CHECKERFRAMEWORK && checker/bin-devel/build.sh downloadjdk jdk8)
 
 # Finally build checker-framework-inference
-./gradlew dist
+./gradlew dist && ./gradlew testLibJar
 
-echo "Exiting checker-framework-inference/.travis-build-without-test.sh in" `pwd`
+echo Exiting "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in `pwd`

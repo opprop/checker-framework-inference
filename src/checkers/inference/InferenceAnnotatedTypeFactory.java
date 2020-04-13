@@ -569,5 +569,14 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected InferenceViewpointAdapter createViewpointAdapter() {
         return withCombineConstraints ? new InferenceViewpointAdapter(this) : null;
     }
+
+    /**
+     * Get the real top annotation from {@link #realTypeFactory}.
+     * @return the real top annotation.
+     */
+    @Override
+    protected Set<? extends AnnotationMirror> getDefaultTypeDeclarationBounds() {
+        return realTypeFactory.getQualifierHierarchy().getTopAnnotations();
+    }
 }
 

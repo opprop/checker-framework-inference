@@ -299,7 +299,7 @@ public class InferenceMain {
         if (realChecker == null) {
             try {
                 realChecker = (InferrableChecker) Class.forName(
-                        InferenceOptions.checker, true, ClassLoader.getSystemClassLoader()).newInstance();
+                        InferenceOptions.checker, true, ClassLoader.getSystemClassLoader()).getDeclaredConstructor().newInstance();
                 realChecker.init(inferenceChecker.getProcessingEnvironment());
                 realChecker.initChecker();
                 logger.finer(String.format("Created real checker: %s", realChecker));
@@ -348,7 +348,7 @@ public class InferenceMain {
     protected InferenceSolver getSolver() {
         try {
             InferenceSolver solver = (InferenceSolver) Class.forName(
-                    InferenceOptions.solver, true, ClassLoader.getSystemClassLoader()).newInstance();
+                    InferenceOptions.solver, true, ClassLoader.getSystemClassLoader()).getDeclaredConstructor().newInstance();
             logger.finer("Created solver: " + solver);
             return solver;
         } catch (Throwable e) {

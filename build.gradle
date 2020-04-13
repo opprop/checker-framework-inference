@@ -1,5 +1,5 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '5.1.0'
+    id 'com.github.johnrengelman.shadow' version '5.2.0'
 }
 
 apply plugin: 'java'
@@ -50,11 +50,11 @@ dependencies {
     compile files("${checkerJar}")
     compile group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
 
-    compile 'org.plumelib:options:1.0.3'
+    compile 'org.plumelib:options:1.0.4'
     // Serialize constraints
     compile 'com.googlecode.json-simple:json-simple:1.1.1'
     // Pretty print serialized constraints
-    compile 'com.google.code.gson:gson:1.7.2'
+    compile 'com.google.code.gson:gson:2.8.6'
 
     compile 'org.ow2.sat4j:org.ow2.sat4j.core:2.3.5'
     compile 'org.ow2.sat4j:org.ow2.sat4j.maxsat:2.3.5'
@@ -63,7 +63,7 @@ dependencies {
     testCompile fileTree(dir: "${checkerFrameworkPath}/framework-test/build/libs", include: "framework-test-*.jar")
     // Mocking library. Used in a couple tests
     testCompile 'org.mockito:mockito-all:2.0.2-beta'
-    testCompile 'junit:junit:4.12'
+    testCompile 'junit:junit:4.13'
 }
 
 sourceSets {
@@ -108,6 +108,7 @@ task buildDLJC(type: Exec) {
 
 test {
     dependsOn(shadowJar)
+    dependsOn('dist')
 
     systemProperties 'path.afu.scripts': "${afu}/scripts",
             'use.hacks': true
@@ -176,6 +177,9 @@ jar {
 }
 
 shadowJar {
+    dependencies {
+        exclude(dependency("junit:.*:.*"))
+    }
     description 'Creates the "fat" checker.jar in dist'
     destinationDir = file("${projectDir}/dist")
     archiveName = "checker-framework-inference.jar"
@@ -257,6 +261,7 @@ task testCheckerInferenceDevScript(type: Exec, dependsOn: [dist, dependenciesJar
     args = ['--mode', 'INFER',
             '--checker', 'interning.InterningChecker',
             '--solver', 'checkers.inference.solver.MaxSat2TypeSolver',
+            '--hacks=true',
             'testdata/interning/MapAssignment.java']
 }
 
@@ -290,6 +295,10 @@ afterEvaluate {
 
         if (project.hasProperty('emit.test.debug')) {
             systemProperties += ["emit.test.debug": 'true']
+        }
+
+        if (isJava8) {
+            jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}"]
         }
 
         testLogging {

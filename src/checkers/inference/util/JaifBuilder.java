@@ -310,6 +310,10 @@ public class JaifBuilder {
                     // TODO: this is not a feature but a workaround of a bug:
                     // We should create a non-empty correct ASTPath for constructor
                     if (astRecord.astPath.equals(ASTPath.empty())) {
+                    	if (astRecord.methodName != null && astRecord.methodName.contains("<init>")) {
+                            astRecord = new ASTRecord(astRecord.ast, astRecord.className,
+                                    astRecord.methodName, astRecord.varName, ASTPathUtil.getMethodTypeASTPath());
+                        }
                         continue;
                     }
 
@@ -334,7 +338,7 @@ public class JaifBuilder {
     }
 
     /**
-     * @param astRecord
+     * @param astPath
      * @return true if the given AST path represents a main modifier of a local variable
      * An AST Path represents a main modifier of a local variable should have pattern like
      * 1) ..., Block.statement #, ..., Variable.type

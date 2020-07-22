@@ -103,7 +103,7 @@ public class SolverEngine implements InferenceSolver {
     }
 
     @Override
-    public final InferenceResult solve(Map<String, String> configuration, Collection<Slot> slots,
+    public InferenceResult solve(Map<String, String> configuration, Collection<Slot> slots,
                                        Collection<Constraint> constraints, QualifierHierarchy qualHierarchy,
                                        ProcessingEnvironment processingEnvironment) {
 

@@ -29,7 +29,7 @@ public class DefaultInferenceResult implements InferenceResult {
      *
      * @see #hasSolution()
      */
-    protected final Map<Integer, AnnotationMirror> varIdToAnnotation;
+    public final Map<Integer, AnnotationMirror> varIdToAnnotation;
 
     /**
      * Set of {@link Constraint}s that caused solver not being able to give solutions.

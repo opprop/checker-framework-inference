@@ -73,8 +73,15 @@ public class ASTPathUtil {
      * Given the record for a class, return a new record that maps to the no-arg constructor for
      * this class.
      */
+//    public static ASTRecord getConstructorRecord(ASTRecord classRecord) {
+//        return new ASTRecord(classRecord.ast, classRecord.className, AFU_CONSTRUCTOR_ID, null, ASTPath.empty());
+//    }
     public static ASTRecord getConstructorRecord(ASTRecord classRecord) {
-        return new ASTRecord(classRecord.ast, classRecord.className, AFU_CONSTRUCTOR_ID, null, ASTPath.empty());
+        return new ASTRecord(classRecord.ast, classRecord.className, AFU_CONSTRUCTOR_ID, null, getMethodTypeASTPath());
+    }
+
+    public static ASTPath getMethodTypeASTPath() {
+        return ASTPath.empty().extend(new ASTPath.ASTEntry(Tree.Kind.METHOD, ASTPath.TYPE, null));
     }
 
     /**

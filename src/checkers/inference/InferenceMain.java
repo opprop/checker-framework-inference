@@ -16,6 +16,8 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.sun.tools.javac.main.Main.Result;
+
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.inference.InferenceOptions.InitStatus;
@@ -192,10 +194,10 @@ public class InferenceMain {
         logger.fine(String.format("Starting checker framework with options: %s", checkerFrameworkArgs));
 
         StringWriter javacoutput = new StringWriter();
-        boolean success = CheckerFrameworkUtil.invokeCheckerFramework(checkerFrameworkArgs.toArray(new String[checkerFrameworkArgs.size()]),
+        Result result = CheckerFrameworkUtil.invokeCheckerFramework(checkerFrameworkArgs.toArray(new String[checkerFrameworkArgs.size()]),
                 new PrintWriter(javacoutput, true));
 
-        resultHandler.handleCompilerResult(success, javacoutput.toString());
+        resultHandler.handleCompilerResult(result, javacoutput.toString());
     }
 
 
@@ -297,7 +299,7 @@ public class InferenceMain {
         return visitor;
     }
 
-    private InferrableChecker getRealChecker() {
+    public InferrableChecker getRealChecker() {
         if (realChecker == null) {
             try {
                 realChecker = (InferrableChecker) Class.forName(
@@ -441,7 +443,7 @@ public class InferenceMain {
     }
 
     public static abstract interface ResultHandler {
-        void handleCompilerResult(boolean success, String javacOutStr);
+        void handleCompilerResult(Result result, String javacOutStr);
     }
 
     protected static class DefaultResultHandler implements ResultHandler {
@@ -453,9 +455,9 @@ public class InferenceMain {
         }
 
         @Override
-        public void handleCompilerResult(boolean success, String javacOutStr) {
-            if (!success) {
-                logger.severe("Error return code from javac! Quitting.");
+        public void handleCompilerResult(Result result, String javacOutStr) {
+            if (result != Result.OK) {
+                logger.severe("Non-OK return code from javac! Quitting. Result code is: " + result);
                 logger.info(javacOutStr);
                 System.exit(1);
             }

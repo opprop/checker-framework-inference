@@ -13,7 +13,7 @@ import com.sun.tools.javac.util.Context.Factory;
 
 public class CheckerFrameworkUtil {
 
-    public static boolean invokeCheckerFramework(String[] args, PrintWriter outputCapture) {
+    public static Result invokeCheckerFramework(String[] args, PrintWriter outputCapture) {
         Main compiler = new Main("javac", outputCapture);
 
         // see https://github.com/google/error-prone-javac/blob/a53d069bbdb2c60232ed3811c19b65e41c3e60e0/src/jdk.compiler/share/classes/com/sun/tools/javac/main/Main.java#L159
@@ -21,7 +21,7 @@ public class CheckerFrameworkUtil {
         DummyJavacFileManager.preRegister(context);
         Result compilerResult = compiler.compile(args, context);
 
-        return compilerResult == Result.OK;
+        return compilerResult;
     }
 
     /**

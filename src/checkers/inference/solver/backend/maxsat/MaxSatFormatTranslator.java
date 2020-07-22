@@ -82,6 +82,24 @@ public class MaxSatFormatTranslator extends AbstractFormatTranslator<VecInt[], V
             }
         }
     }
+//    public List<VecInt> generateWellFormednessClauses(Integer varSlotId) {
+//        List<VecInt> result = new ArrayList<>();
+//        int[] leastOneIsTrue = new int[lattice.numTypes];
+//        for (Integer i : intToType.keySet()) {
+//            leastOneIsTrue[i] = MathUtils.mapIdToMatrixEntry(varSlotId, i.intValue(), lattice);
+//        }
+//        result.add(VectorUtils.asVec(leastOneIsTrue));
+//        List<Integer> varList = new ArrayList<Integer>(intToType.keySet());
+//        for (int i = 0; i < varList.size(); i++) {
+//            for (int j = i + 1; j < varList.size(); j++) {
+//                VecInt vecInt = new VecInt(2);
+//                vecInt.push(-MathUtils.mapIdToMatrixEntry(varSlotId, varList.get(i), lattice));
+//                vecInt.push(-MathUtils.mapIdToMatrixEntry(varSlotId, varList.get(j), lattice));
+//                result.add(vecInt);
+//            }
+//        }
+//        return result;
+//    }
 
     @Override
     public AnnotationMirror decodeSolution(Integer var, ProcessingEnvironment processingEnvironment) {

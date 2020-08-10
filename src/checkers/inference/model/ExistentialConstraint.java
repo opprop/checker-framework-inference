@@ -1,7 +1,7 @@
 package checkers.inference.model;
 
+import org.plumelib.util.UtilPlume;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -92,9 +92,9 @@ public class ExistentialConstraint extends Constraint {
         String doubleTab = tab + tab;
         return "ExistentialConstraint[\n"
                 + tab + "if( " + potentialVariable + " ) {\n"
-                + doubleTab + SystemUtil.join("\n" + doubleTab, potentialConstraints) + "\n"
+                + doubleTab + UtilPlume.join("\n" + doubleTab, potentialConstraints) + "\n"
                 + tab + "} else {\n"
-                + doubleTab + SystemUtil.join("\n" + doubleTab, alternateConstraints ) + "\n"
+                + doubleTab + UtilPlume.join("\n" + doubleTab, alternateConstraints ) + "\n"
                 + tab + "}\n"
                 + "]";
     }

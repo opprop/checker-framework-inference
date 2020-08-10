@@ -18,7 +18,7 @@ public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
     public static final boolean isAtMost7Jvm;
 
     static {
-        isAtMost7Jvm = org.checkerframework.javacutil.SystemUtil.getJreVersion() <= 1.7d;
+        isAtMost7Jvm = SystemUtil.getJreVersion() <= 1.7d;
     }
 
     public CFInferenceTest(File testFile, Class<? extends AbstractProcessor> checker,

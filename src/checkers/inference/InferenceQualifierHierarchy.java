@@ -192,8 +192,8 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
         if (InferenceMain.isHackMode((rhsVarAnnot == null || lhsAnnos == null))) {
                 InferenceMain.getInstance().logger.info(
                     "Hack:\n"
-                  + "    rhs=" + SystemUtil.join(", ", rhsAnnos) + "\n"
-                  + "    lhs=" + SystemUtil.join(", ", lhsAnnos ));
+                  + "    rhs=" + UtilPlume.join(", ", rhsAnnos) + "\n"
+                  + "    lhs=" + UtilPlume.join(", ", lhsAnnos ));
                 return true;
         }
 

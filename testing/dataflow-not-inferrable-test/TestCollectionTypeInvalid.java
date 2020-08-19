@@ -3,6 +3,8 @@ import java.util.ArrayList;
 import dataflow.qual.DataFlow;
 
 public class TestCollectionTypeInvalid {
+
+    @DataFlow(typeNames = {"java.util.ArrayList<Object>"})
     // :: error: (assignment.type.incompatible)
-    @DataFlow(typeNames = { "java.util.ArrayList<Object>" }) ArrayList collectionTypeTesing_invalid = new ArrayList<String>();
+    ArrayList invalidCollection = new ArrayList<String>();
 }

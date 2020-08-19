@@ -8,14 +8,15 @@ import java.util.regex.Pattern;
 import dataflow.qual.DataFlow;
 
 class TestByteCodeMethodArrayComponentType {
+
     public void test(String path) {
         // :: fixable-error: (assignment.type.incompatible)
-@DataFlow(typeNameRoots={"java.lang.String"}) String str = getPath(path);
+        @DataFlow(typeNameRoots = {"java.lang.String"}) String str = getPath(path);
     }
 
-    public String getPath(String pathPart){
+    public String getPath(String pathPart) {
         String pathFull = "";
-String [] arrOfPathPart = pathPart.split("");
+        String[] arrOfPathPart = pathPart.split("");
         pathFull = pathFull + arrOfPathPart[0];
         return pathFull;
     }
@@ -24,4 +25,4 @@ String [] arrOfPathPart = pathPart.split("");
         String pathFull = getPath(filePath);
         FileInputStream fstream = new FileInputStream(filePath);
     }
- }
+}

@@ -137,8 +137,12 @@ public class InferenceTransfer extends CFTransfer {
                 assert false;
             }
 
-            return storeDeclaration(lhs, (VariableTree) assignmentNode.getTree(), store, typeFactory);
+            if (assignmentNode.getTarget() instanceof LocalVariableNode
+                    && atm.getKind() != TypeKind.TYPEVAR) {
+                return createRefinementVar(assignmentNode.getTarget(), assignmentNode.getTree(), store, atm);
+            }
 
+            return storeDeclaration(lhs, (VariableTree) assignmentNode.getTree(), store, typeFactory);
         } else if (lhs.getTree().getKind() == Tree.Kind.IDENTIFIER
                 || lhs.getTree().getKind() == Tree.Kind.MEMBER_SELECT) {
             // Create Refinement Variable
@@ -205,6 +209,11 @@ public class InferenceTransfer extends CFTransfer {
             AnnotatedTypeMirror atm) {
 
         Slot slotToRefine = getInferenceAnalysis().getSlotManager().getVariableSlot(atm);
+        // Getting the declared type of a RefinementVariableSlot
+        // getRefined() should always return the slot of the declared type value
+        if (slotToRefine instanceof RefinementVariableSlot) {
+        	slotToRefine = ((RefinementVariableSlot)slotToRefine).getRefined();
+        }
 
         logger.fine("Creating refinement variable for tree: " + assignmentTree);
         RefinementVariableSlot refVar;

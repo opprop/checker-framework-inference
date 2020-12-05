@@ -6,7 +6,6 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 import java.util.Collections;
@@ -127,11 +126,13 @@ public class InferenceValue extends CFValue {
                    return this;
                } else if (thisVarSlot instanceof RefinementVariableSlot
                        && ((RefinementVariableSlot) thisVarSlot).getRefined().equals(otherVarSlot)) {
-
                 return this;
             } else if (otherVarSlot instanceof RefinementVariableSlot
                     && ((RefinementVariableSlot) otherVarSlot).getRefined().equals(thisVarSlot)) {
-
+                return other;
+            } else if (thisSlot instanceof RefinementVariableSlot
+                    && otherSlot instanceof RefinementVariableSlot
+                    && ((RefinementVariableSlot) thisSlot).getRefined().equals(((RefinementVariableSlot) otherSlot).getRefined())) {
                 return other;
             } else {
                 // Check if one of these has refinement variables that were merged to the other.

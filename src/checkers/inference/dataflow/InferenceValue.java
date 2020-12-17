@@ -23,6 +23,7 @@ import checkers.inference.SlotManager;
 import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
+import checkers.inference.model.ConstantSlot;
 
 /**
  * InferenceValue extends CFValue for inference.
@@ -220,5 +221,23 @@ public class InferenceValue extends CFValue {
         }
 
         return underlyingType;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("InferenceValue{annotations=");
+        Slot slot = getEffectiveSlot(this);
+        if (slot.isConstant()) {
+            sb.append(((ConstantSlot) slot).getValue());
+        } else {
+            sb.append(slot.getClass().getSimpleName());
+            sb.append("(");
+            sb.append(((VariableSlot)slot).getId());
+            sb.append(")");
+        }
+        sb.append(", underlyingType=");
+        sb.append(underlyingType);
+        sb.append("}");
+        return sb.toString();
     }
 }

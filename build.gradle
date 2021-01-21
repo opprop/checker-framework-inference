@@ -50,14 +50,14 @@ dependencies {
     compile files("${checkerJar}")
     compile group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
 
-    compile 'org.plumelib:options:1.0.4'
+    compile 'org.plumelib:options:1.0.5'
     // Serialize constraints
     compile 'com.googlecode.json-simple:json-simple:1.1.1'
     // Pretty print serialized constraints
     compile 'com.google.code.gson:gson:2.8.6'
 
-    compile 'org.ow2.sat4j:org.ow2.sat4j.core:2.3.5'
-    compile 'org.ow2.sat4j:org.ow2.sat4j.maxsat:2.3.5'
+    compile 'org.ow2.sat4j:org.ow2.sat4j.core:2.3.6'
+    compile 'org.ow2.sat4j:org.ow2.sat4j.maxsat:2.3.6'
     compile files(z3Jar)
 
     testCompile fileTree(dir: "${checkerFrameworkPath}/framework-test/build/libs", include: "framework-test-*.jar")

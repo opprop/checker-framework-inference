@@ -1611,7 +1611,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * This method returns the annotation that may or may not be placed on the class declaration for type.
      * If it does not already exist, this method creates the annotation and stores it in classDeclAnnos.
      */
-    private VariableSlot getOrCreateDeclBound(AnnotatedDeclaredType type) {
+    protected VariableSlot getOrCreateDeclBound(AnnotatedDeclaredType type) {
 
         TypeElement classDecl = (TypeElement) type.getUnderlyingType().asElement();
 

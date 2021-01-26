@@ -1613,6 +1613,16 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      */
     private VariableSlot getOrCreateDeclBound(AnnotatedDeclaredType type) {
 
+        // ASSERTION: the new class tree of an anonymous class is always visited before (as the enclosing tree)
+        // slot should be generated then
+        // use that slot as decl bound and avoid generating a new slot which violates the syntax when injected
+        // i.e. new MyInterface() @VarAnnot {...}   <- the VarAnnot is wrong
+        // note that this decl bound is NOT a ExistentialVariable
+        if (TypesUtils.isAnonymous(type.getUnderlyingType())) {
+            assert type.hasAnnotation(VarAnnot.class);
+            return slotManager.getVariableSlot(type);
+        }
+
         TypeElement classDecl = (TypeElement) type.getUnderlyingType().asElement();
 
         VariableSlot topConstant = getTopConstant();

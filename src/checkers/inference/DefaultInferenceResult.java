@@ -53,7 +53,7 @@ public class DefaultInferenceResult implements InferenceResult {
      * 1) Try to create empty solution
      * 2) Subclass calls this super constructor to begin with an empty map. Then subclass
      * has its logic to adding solutions to the mapping {@link #varIdToAnnotation}. The existing two
-     * subclasses are: {@link dataflow.solvers.classic.DataflowResult} and {@link sparta.checkers.sat.IFlowResult}.
+     * subclasses are: {@link refval.solvers.classic.RefValResult} and {@link sparta.checkers.sat.IFlowResult}.
      */
     public DefaultInferenceResult() {
         this(new HashMap<>());

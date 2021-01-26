@@ -34,7 +34,7 @@ if [[ "${GROUP}" == "cfi-tests" || "${GROUP}" == "all" ]]; then
 
     ./gradlew test
 
-    ./gradlew testDataflowExternalSolvers
+    ./gradlew testRefValExternalSolvers
 fi
 
 # Downstream tests

@@ -88,7 +88,7 @@ To test the build:
 ````
 ./gradlew testCheckerInferenceScript
 ./gradlew testCheckerInferenceDevScript
-./gradlew testDataflowExternalSolvers
+./gradlew testRefValExternalSolvers
 ````
 
 
@@ -133,9 +133,9 @@ Specifies which checker to run.
 The three most supported checkers at the moment are
 `ostrusted.OsTrustedChecker`,
 `checkers.tainting.TaintingChecker` and
-`dataflow.DataflowChecker`.
+`refval.RefValChecker`.
 
-  You can find details of `dataflow.DataflowChecker` in [README.dataflow](src/dataflow/README.md)
+  You can find details of `refval.RefValChecker` in [README.refval](src/refval/README.md)
 
 * `--solver`
 Which solver to use on the constraints.

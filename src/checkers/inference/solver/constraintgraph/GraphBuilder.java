@@ -19,8 +19,8 @@ import checkers.inference.model.Constraint;
 import checkers.inference.model.ExistentialConstraint;
 import checkers.inference.model.Slot;
 import checkers.inference.model.SubtypeConstraint;
-import dataflow.DataflowVisitor;
-import dataflow.util.DataflowUtils;
+import refval.RefValVisitor;
+import refval.util.RefValUtils;
 
 /**
  * GraphBuilder builds the constraint graph and runs graph traversal algorithms
@@ -133,8 +133,8 @@ public class GraphBuilder {
                         if (AnnotationUtils.areSame(top, next.getValue())) {
                             continue;
                         } else {
-                            if (InferenceMain.getInstance().getVisitor() instanceof DataflowVisitor) {
-                                String[] typeNames = DataflowUtils.getTypeNames(next.getValue());
+                            if (InferenceMain.getInstance().getVisitor() instanceof RefValVisitor) {
+                                String[] typeNames = RefValUtils.getTypeNames(next.getValue());
                                 if (typeNames.length == 1 && typeNames[0].length() == 0) {
                                     continue;
                                 }

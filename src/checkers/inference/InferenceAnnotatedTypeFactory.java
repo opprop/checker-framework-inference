@@ -124,6 +124,10 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // the same variable slot for all of these locations.  This map contains those variables.
     private Map<Class<? extends Annotation>, VariableSlot> constantToVarAnnot = new HashMap<>();
 
+    /** The map from the artificial variable for postfix expression to its real refined value **/
+    private Map<Tree, AnnotatedTypeMirror> tempVarToRefinedType = new HashMap<>();
+
+
     public InferenceAnnotatedTypeFactory(
             InferenceChecker inferenceChecker,
             boolean withCombineConstraints,
@@ -575,6 +579,27 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected Set<? extends AnnotationMirror> getDefaultTypeDeclarationBounds() {
         return realTypeFactory.getQualifierHierarchy().getTopAnnotations();
+    }
+
+    /**
+     * Caches the refinement slot for a given temp variable.
+     * @param tree the tree for the temp variable
+     * @param type the refined type for the initialized temp variable
+     */
+    public void cacheTempVariableRefinedType(Tree tree, AnnotatedTypeMirror type) {
+        if (!tempVarToRefinedType.containsKey(tree)) {
+            tempVarToRefinedType.put(tree, type);
+        }
+    }
+
+    /**
+     * Get the refined annotated type for a given temp variable.
+     *
+     * @param tree the tree that represents the temp variable
+     * @return the refined type for the temp variable
+     */
+    public AnnotatedTypeMirror getTempVariableRefinedType(Tree tree) {
+        return tempVarToRefinedType.get(tree);
     }
 }
 

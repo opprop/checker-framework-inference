@@ -143,11 +143,16 @@ public class InferenceTransfer extends CFTransfer {
                 || lhs.getTree().getKind() == Tree.Kind.MEMBER_SELECT) {
             // Create Refinement Variable
 
-            // TODO: We do not currently refine UnaryTrees and Compound Assignments (See Issue 9)
-            if (assignmentNode.getTree() instanceof CompoundAssignmentTree
-                    || assignmentNode.getTree() instanceof UnaryTree) {
-                CFValue result = analysis.createAbstractValue(atm);
-                return new RegularTransferResult<CFValue, CFStore>(finishValue(result, store), store);
+            UnaryTree unaryTree = analysis.getUnaryTreeForAssign(assignmentNode);
+            if (unaryTree != null &&
+                    (unaryTree.getKind() == Tree.Kind.POSTFIX_INCREMENT ||
+                     unaryTree.getKind() == Tree.Kind.POSTFIX_DECREMENT)) {
+                // If the underlying tree is a postfix increment/decrement unary tree,
+                // record the annotated type of the unary tree before it's refined,
+                // which will be used to generate equality constraint for tempPostfix
+                // variable by InferenceVisitor.
+                AnnotatedTypeMirror refinedATM = typeFactory.getAnnotatedType(unaryTree.getExpression());
+                typeFactory.cacheTempVariableRefinedType(unaryTree, refinedATM);
             }
 
             final TransferResult<CFValue, CFStore> result;

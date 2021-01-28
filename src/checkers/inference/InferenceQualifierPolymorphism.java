@@ -9,6 +9,7 @@ import javax.lang.model.element.AnnotationMirror;
 import com.sun.source.tree.Tree;
 
 import checkers.inference.model.ConstantSlot;
+import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
 
 /**
@@ -71,7 +72,7 @@ public class InferenceQualifierPolymorphism {
             if (type != null) {
                 AnnotationMirror varSlot = type.getAnnotationInHierarchy(varAnnot);
                 if (varSlot != null) {
-                    VariableSlot var = (VariableSlot) slotManager.getSlot(varSlot);
+                    Slot var = slotManager.getSlot(varSlot);
                     if (InferenceMain.isHackMode(var == null)) {
                     } else if (var.isConstant()) {
                         AnnotationMirror constant = ((ConstantSlot)var).getValue();

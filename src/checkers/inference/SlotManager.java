@@ -6,10 +6,12 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 
 import checkers.inference.model.AnnotationLocation;
 import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
+import checkers.inference.model.ComparisonVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.RefinementVariableSlot;
@@ -40,7 +42,7 @@ public interface SlotManager {
      *            used to locate this variable in code
      * @return VariableSlot that corresponds to this location
      */
-    VariableSlot createVariableSlot(AnnotationLocation location);
+    VariableSlot createVariableSlot(AnnotationLocation location, TypeMirror type);
 
     /**
      * Create new RefinementVariableSlot and return the reference to it if no
@@ -117,7 +119,7 @@ public interface SlotManager {
      * @return the ExistentialVariableSlot that wraps this potentialSlot and
      *         alternativeSlot
      */
-    ExistentialVariableSlot createExistentialVariableSlot(VariableSlot potentialSlot, VariableSlot alternativeSlot);
+    ExistentialVariableSlot createExistentialVariableSlot(Slot potentialSlot, Slot alternativeSlot);
 
     /**
      * Create new ArithmeticVariableSlot at the given location and return a reference to it if no
@@ -143,6 +145,31 @@ public interface SlotManager {
     ArithmeticVariableSlot getArithmeticVariableSlot(AnnotationLocation location);
 
     /**
+     * Create new ComparisonVariableSlot at the given location and return a reference to it if no
+     * ComparisonVariableSlot exists for the location. Otherwise, returns the existing
+     * ComparisonVariableSlot.
+     *
+     * @param location an AnnotationLocation used to locate this variable in code
+     * @param thenBranch true if is for the then store, false if is for the else store
+     * @return the ComparisonVariableSlot for the given location
+     */
+	ComparisonVariableSlot createComparisonVariableSlot(AnnotationLocation location, Slot refined, boolean thenBranch);
+
+	/**
+     * Retrieves the ComparisonVariableSlot created for the given location if it has been previously
+     * created, otherwise null is returned.
+     *
+     * This method allows faster retrieval of already created ComparisonVariableSlot during
+     * traversals of binary comparison trees in an InferenceTransfer subclass, which does not have direct access
+     * to the ATM containing this slot.
+     *
+     * @param location an AnnotationLocation used to locate this variable in code
+     * @param thenBranch true if is for the then store, false if is for the else store
+     * @return the ComparisonVariableSlot for the given location, or null if none exists
+     */
+	ComparisonVariableSlot getComparisonVariableSlot(AnnotationLocation location, boolean thenBranch);
+	
+    /**
      * Create a VarAnnot equivalent to the given realQualifier.
      *
      * @return a VarAnnot equivalent to the given realQualifier.
@@ -151,7 +178,7 @@ public interface SlotManager {
      AnnotationMirror createEquivalentVarAnno(final AnnotationMirror realQualifier);
 
     /** Return the variable identified by the given id or null if no such variable has been added */
-    VariableSlot getVariable( int id );
+    Slot getSlot( int id );
 
     /**
      * Given a slot return an annotation that represents the slot when added to an AnnotatedTypeMirror.
@@ -178,7 +205,7 @@ public interface SlotManager {
      * there is no VariableSlot this method throws an exception
      * @param atm An annotated type mirror with a VarAnnot in its primary annotations list
      */
-    VariableSlot getVariableSlot(AnnotatedTypeMirror atm);
+    Slot getVariableSlot(AnnotatedTypeMirror atm);
 
     /**
      * Return all slots collected by this SlotManager
@@ -190,7 +217,7 @@ public interface SlotManager {
      * Return all VariableSlots collected by this SlotManager
      * @return a lit of VariableSlots
      */
-    List<VariableSlot> getVariableSlots();
+    List<Slot> getVariableSlots();
 
     List<ConstantSlot> getConstantSlots();
 }

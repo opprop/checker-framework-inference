@@ -2,6 +2,7 @@ package checkers.inference.solver.backend.maxsat.encoder;
 
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.PreferenceConstraint;
+import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.solver.backend.encoder.preference.PreferenceConstraintEncoder;
 import checkers.inference.solver.backend.maxsat.MathUtils;
@@ -22,7 +23,7 @@ public class MaxSATPreferenceConstraintEncoder extends MaxSATAbstractConstraintE
     // different weights.
     @Override
     public VecInt[] encode(PreferenceConstraint constraint) {
-        VariableSlot vs = constraint.getVariable();
+        Slot vs = constraint.getVariable();
         ConstantSlot cs = constraint.getGoal();
         if (lattice.allTypes.contains(cs.getValue())) {
             return VectorUtils.asVecArray(MathUtils.mapIdToMatrixEntry(vs.getId(), typeToInt.get(cs.getValue()),

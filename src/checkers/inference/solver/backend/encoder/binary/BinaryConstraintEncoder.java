@@ -1,7 +1,7 @@
 package checkers.inference.solver.backend.encoder.binary;
 
 import checkers.inference.model.ConstantSlot;
-import checkers.inference.model.VariableSlot;
+import checkers.inference.model.Slot;
 
 /**
  * Interface that defines operations to encode a {@link checkers.inference.model.BinaryConstraint}.
@@ -15,9 +15,9 @@ import checkers.inference.model.VariableSlot;
  */
 public interface BinaryConstraintEncoder<ConstraintEncodingT> {
 
-    ConstraintEncodingT encodeVariable_Variable(VariableSlot fst, VariableSlot snd);
+    ConstraintEncodingT encodeVariable_Variable(Slot fst, Slot snd);
 
-    ConstraintEncodingT encodeVariable_Constant(VariableSlot fst, ConstantSlot snd);
+    ConstraintEncodingT encodeVariable_Constant(Slot fst, ConstantSlot snd);
 
-    ConstraintEncodingT encodeConstant_Variable(ConstantSlot fst, VariableSlot snd);
+    ConstraintEncodingT encodeConstant_Variable(ConstantSlot fst, Slot snd);
 }

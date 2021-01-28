@@ -6,10 +6,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
-import checkers.inference.model.VariableSlot;
 
 /**
  * Recorder for statistics.
@@ -55,7 +53,7 @@ public class Statistics {
         long totalVariableSlots = 0;
 
         for (Slot slot : slots) {
-            if (slot instanceof VariableSlot && !(slot instanceof ConstantSlot)) {
+            if (slot.isVariable()) {
                 totalVariableSlots++;
             }
 

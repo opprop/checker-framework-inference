@@ -1,8 +1,8 @@
 package checkers.inference.model;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
+import javax.lang.model.type.TypeMirror;
+
+import org.checkerframework.javacutil.AnnotationUtils;
 
 /**
  * VariableSlot is a Slot representing an undetermined value (i.e. a variable we are solving for).
@@ -21,35 +21,29 @@ import java.util.Set;
  * Variable slot hold references to slots it is refined by, and slots it is merged to.
  *
  */
-public class VariableSlot extends Slot implements Comparable<VariableSlot>{
+public class VariableSlot extends Slot {
+
+    /** Actual type wrapped with this TypeMirror. */
+    protected final TypeMirror actualType;
 
     /**
-     * Uniquely identifies this Slot.  id's are monotonically increasing in value by the order they
-     * are generated
+     * @param location Used to locate this variable in code, see @AnnotationLocation
+     * @param id      Unique identifier for this variable
+     * @param type the underlying type
      */
-    private final int id;
-
-    /**
-     * Should this VariableSlot be inserted back into the source code.
-     * This should be false for types have have an implicit annotation
-     * and slots for pre-annotated code.
-     */
-    private boolean insertable = true;
+    public VariableSlot(AnnotationLocation location, int id, TypeMirror type) {
+        super(id, location);
+        this.actualType = type;
+    }
 
     /**
      * @param location Used to locate this variable in code, see @AnnotationLocation
      * @param id      Unique identifier for this variable
      */
-    public VariableSlot(AnnotationLocation location, int id) {
-        super(location);
-        this.id = id;
+    public VariableSlot(int id, TypeMirror type) {
+        super(id);
+        this.actualType = type;
     }
-
-    // Slots this variable has been merged to.
-    private final Set<LubVariableSlot> mergedToSlots = new HashSet<>();
-
-    // Refinement variables that refine this slot.
-    private final Set<RefinementVariableSlot> refinedToSlots = new HashSet<>();
 
     @Override
     public <S, T> S serialize(Serializer<S, T> serializer) {
@@ -61,73 +55,20 @@ public class VariableSlot extends Slot implements Comparable<VariableSlot>{
         return Kind.VARIABLE;
     }
 
-    public boolean isMergedTo(VariableSlot other) {
-        for (VariableSlot mergedTo: mergedToSlots) {
-            if (mergedTo.equals(other)) {
-                return true;
-            } else {
-                if (mergedTo.isMergedTo(other)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+    /**
+     * Returns the underlying unannotated Java type, which this wraps.
+     *
+     * @return the underlying type
+     */
+    public TypeMirror getUnderlyingType() {
+        return actualType;
     }
 
-    public int getId() {
-        return id;
-    }
-
-    public VariableSlot(int id) {
-        this.id = id;
-    }
-
-    public Set<LubVariableSlot> getMergedToSlots() {
-        return Collections.unmodifiableSet(mergedToSlots);
-    }
-
-    public void addMergedToSlot(LubVariableSlot mergedSlot) {
-        this.mergedToSlots.add(mergedSlot);
-    }
-
-    public Set<RefinementVariableSlot> getRefinedToSlots() {
-        return refinedToSlots;
-    }
-
+    /**
+     * Should this VariableSlot be inserted back into the source code.
+     */
     @Override
-    public String toString() {
-        return this.getClass().getSimpleName() + "(" + id + ")";
-    }
-
     public boolean isInsertable() {
-        return insertable;
-    }
-
-    public void setInsertable(boolean insertable) {
-        this.insertable = insertable;
-    }
-
-    @Override
-    public int hashCode() {
-        return id;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        VariableSlot other = (VariableSlot) obj;
-        if (id != other.id)
-            return false;
         return true;
-    }
-
-    @Override
-    public int compareTo(VariableSlot other) {
-        return Integer.compare(id, other.id);
     }
 }

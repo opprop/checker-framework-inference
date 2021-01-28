@@ -255,7 +255,7 @@ public class ConstraintNormalizer {
             ret.add(InferenceMain
                     .getInstance()
                     .getConstraintManager()
-                    .createExistentialConstraint((VariableSlot) slot, ifExistsConstraints,
+                    .createExistentialConstraint(slot, ifExistsConstraints,
                             ifNotExistsConstraints));
             return ret;
         }
@@ -298,14 +298,14 @@ public class ConstraintNormalizer {
             if (alwaysExists) {
                 sb.append("[");
                 sb.append(
-                        slot.isVariable() ? ((VariableSlot) slot).getId()
+                        slot.isVariable() ? (slot).getId()
                                           : ((ConstantSlot) slot).getValue());
                 sb.append("]");
             } else {
                 if (!exists) {
                     sb.append("!");
                 }
-                sb.append(((VariableSlot) slot).getId());
+                sb.append((slot).getId());
             }
             return sb.toString();
         }
@@ -333,7 +333,7 @@ public class ConstraintNormalizer {
                 }
             }
 
-            return ((VariableSlot) o1).getId() - ((VariableSlot) o2).getId();
+            return (o1).getId() - (o2).getId();
         }
     }
 

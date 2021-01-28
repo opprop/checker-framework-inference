@@ -11,13 +11,13 @@ package checkers.inference.model;
  * TODO: One thing to note, is the viewpoint adaptation locations I believe should be
  * TODO: accompanied with a CombineConstraint where as the LUBs only use the subtype constraints
  */
-public class CombVariableSlot extends VariableSlot {
+public class CombVariableSlot extends Slot {
 
     private final Slot first;
     private final Slot second;
 
     public CombVariableSlot(AnnotationLocation location, int id, Slot first, Slot second) {
-        super(location, id);
+        super(id, location);
         this.first = first;
         this.second = second;
     }

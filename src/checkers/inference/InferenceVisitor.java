@@ -254,7 +254,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         if (infer) {
             ConstraintManager cManager = InferenceMain.getInstance().getConstraintManager();
             SlotManager sManager = InferenceMain.getInstance().getSlotManager();
-            VariableSlot vSlot = sManager.getVariableSlot(type);
+            Slot vSlot = sManager.getVariableSlot(type);
             ConstantSlot cSlot = InferenceMain.getInstance().getSlotManager().createConstantSlot(anno);
             cManager.addPreferenceConstraint(vSlot, cSlot, weight);
         }
@@ -658,13 +658,13 @@ public class InferenceVisitor<Checker extends InferenceChecker,
 
                     Slot sub = slotManager.getVariableSlot(upperBound);
                     logger.fine("InferenceVisitor::commonAssignmentCheck: Equality constraint for qualifiers sub: " + sub + " sup: " + sup);
-
-                    // Equality between the refvar and the value
-                    constraintManager.addEqualityConstraint(sup, sub);
+                    if (sub != null) {
+                    	// Equality between the refvar and the value
+                        constraintManager.addEqualityConstraint(sup, sub);
+                    }
 
                     // Refinement variable still needs to be a subtype of its declared type value
-                    constraintManager.addSubtypeConstraint(sup,
-                            ((RefinementVariableSlot) sup).getRefined());
+                    constraintManager.addSubtypeConstraint(sup, ((RefinementVariableSlot) sup).getRefined());
                 }
             }
         }

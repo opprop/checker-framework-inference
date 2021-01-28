@@ -78,7 +78,7 @@ public class ImpliedTypeAnnotator {
                     typeFactory.getAnnotatedType(typeVariableUse.getUnderlyingType().asElement());
 
             AnnotationLocation location = getLocation(typeVariableUse, astRecords);
-            VariableSlot potentialVar = slotManager.createVariableSlot(location);
+            VariableSlot potentialVar = slotManager.createVariableSlot(location, typeVariableUse.getUnderlyingType());
             existentialVariableInserter.insert(potentialVar, typeVariableUse, declaration);
         }
 
@@ -120,7 +120,7 @@ public class ImpliedTypeAnnotator {
          */
         protected void addVariablePrimaryAnnotation(final AnnotatedTypeMirror type, Map<AnnotatedTypeMirror, ASTRecord> astRecords) {
             AnnotationLocation location = getLocation(type, astRecords);
-            VariableSlot slot = slotManager.createVariableSlot(location);
+            VariableSlot slot = slotManager.createVariableSlot(location, type.getUnderlyingType());
             type.addAnnotation(slotManager.getAnnotation(slot));
         }
 

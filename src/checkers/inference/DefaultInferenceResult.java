@@ -20,7 +20,7 @@ import java.util.Map;
 public class DefaultInferenceResult implements InferenceResult {
 
     /**
-     * A map from variable Id of {@link checkers.inference.model.VariableSlot VariableSlot}
+     * A map from variable Id of {@link checkers.inference.model.Slot Slot}
      * to {@link AnnotationMirror}.
      *
      * No solution should set this field to null. Otherwise, if the map is empty, it means

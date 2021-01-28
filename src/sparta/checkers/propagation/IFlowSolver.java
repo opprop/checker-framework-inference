@@ -174,7 +174,7 @@ public abstract class IFlowSolver implements InferenceSolver {
             if (slot.getKind() == Kind.EXISTENTIAL_VARIABLE) {
                 throw new IllegalArgumentException("Unexpected variable type:" + slot);
             }
-            return getFlowSet(((VariableSlot) slot).getId());
+            return getFlowSet(slot.getId());
 
         } else if (slot.isConstant()) {
             Set<String> constantSet = new HashSet<>();

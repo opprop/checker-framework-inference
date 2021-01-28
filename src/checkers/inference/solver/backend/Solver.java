@@ -113,7 +113,7 @@ public abstract class Solver<T extends FormatTranslator<?, ?, ?>> {
     protected void collectVarSlots(Constraint constraint) {
         for (Slot slot : constraint.getSlots()) {
             if (!(slot instanceof ConstantSlot)) {
-                this.varSlotIds.add(((VariableSlot) slot).getId());
+                this.varSlotIds.add(slot.getId());
             }
         }
     }

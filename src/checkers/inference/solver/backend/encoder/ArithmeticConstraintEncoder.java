@@ -3,7 +3,7 @@ package checkers.inference.solver.backend.encoder;
 import checkers.inference.model.ArithmeticConstraint.ArithmeticOperationKind;
 import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.ConstantSlot;
-import checkers.inference.model.VariableSlot;
+import checkers.inference.model.Slot;
 
 /**
  * Interface that defines operations to encode a
@@ -15,13 +15,13 @@ import checkers.inference.model.VariableSlot;
  */
 public interface ArithmeticConstraintEncoder<ConstraintEncodingT> {
     ConstraintEncodingT encodeVariable_Variable(ArithmeticOperationKind operation,
-            VariableSlot leftOperand, VariableSlot rightOperand, ArithmeticVariableSlot result);
+            Slot leftOperand, Slot rightOperand, ArithmeticVariableSlot result);
 
     ConstraintEncodingT encodeVariable_Constant(ArithmeticOperationKind operation,
-            VariableSlot leftOperand, ConstantSlot rightOperand, ArithmeticVariableSlot result);
+            Slot leftOperand, ConstantSlot rightOperand, ArithmeticVariableSlot result);
 
     ConstraintEncodingT encodeConstant_Variable(ArithmeticOperationKind operation,
-            ConstantSlot leftOperand, VariableSlot rightOperand, ArithmeticVariableSlot result);
+            ConstantSlot leftOperand, Slot rightOperand, ArithmeticVariableSlot result);
 
     ConstraintEncodingT encodeConstant_Constant(ArithmeticOperationKind operation,
             ConstantSlot leftOperand, ConstantSlot rightOperand, ArithmeticVariableSlot result);

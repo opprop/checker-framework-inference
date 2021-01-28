@@ -6,7 +6,6 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 import java.util.Collections;
@@ -22,7 +21,6 @@ import checkers.inference.InferenceMain;
 import checkers.inference.SlotManager;
 import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Slot;
-import checkers.inference.model.VariableSlot;
 
 /**
  * InferenceValue extends CFValue for inference.
@@ -86,7 +84,6 @@ public class InferenceValue extends CFValue {
 
     @Override
     public CFValue mostSpecific(CFValue other, CFValue backup) {
-
         if (other == null) {
             return this;
         } else {
@@ -95,7 +92,6 @@ public class InferenceValue extends CFValue {
                 Slot thisSlot = getEffectiveSlot(this);
                 Slot otherSlot = getEffectiveSlot(other);
                 return mostSpecificFromSlot(thisSlot, otherSlot, other, backup);
-
             } else {
                 return mostSpecificTypeVariable(underlyingType, other, backup);
             }
@@ -118,34 +114,34 @@ public class InferenceValue extends CFValue {
      *
      */
     public CFValue mostSpecificFromSlot(final Slot thisSlot, final Slot otherSlot, final CFValue other, final CFValue backup) {
-           if (thisSlot.isVariable() && otherSlot.isVariable()) {
-               VariableSlot thisVarSlot = (VariableSlot) thisSlot;
-               VariableSlot otherVarSlot = (VariableSlot) otherSlot;
-               if (thisVarSlot.isMergedTo(otherVarSlot)) {
-                   return other;
-               } else if (otherVarSlot.isMergedTo(thisVarSlot)) {
-                   return this;
-               } else if (thisVarSlot instanceof RefinementVariableSlot
-                       && ((RefinementVariableSlot) thisVarSlot).getRefined().equals(otherVarSlot)) {
-
-                return this;
-            } else if (otherVarSlot instanceof RefinementVariableSlot
-                    && ((RefinementVariableSlot) otherVarSlot).getRefined().equals(thisVarSlot)) {
-
-                return other;
-            } else {
-                // Check if one of these has refinement variables that were merged to the other.
-                for (RefinementVariableSlot slot : thisVarSlot.getRefinedToSlots()) {
-                    if (slot.isMergedTo(otherVarSlot)) {
-                        return other;
-                    }
-                }
-                for (RefinementVariableSlot slot : otherVarSlot.getRefinedToSlots()) {
-                    if (slot.isMergedTo(thisVarSlot)) {
-                        return this;
-                    }
-                }
-            }
+       if (thisSlot.isVariable() && otherSlot.isVariable()) {
+           if (thisSlot.isMergedTo(otherSlot)) {
+               return other;
+           } else if (otherSlot.isMergedTo(thisSlot)) {
+               return this;
+           } else if (thisSlot instanceof RefinementVariableSlot
+                   && ((RefinementVariableSlot) thisSlot).getRefined().equals(otherSlot)) {
+               return this;
+           } else if (otherSlot instanceof RefinementVariableSlot
+                   && ((RefinementVariableSlot) otherSlot).getRefined().equals(thisSlot)) {
+               return other;
+           } else if (thisSlot instanceof RefinementVariableSlot
+                   && otherSlot instanceof RefinementVariableSlot
+                   && ((RefinementVariableSlot) thisSlot).getRefined().equals(((RefinementVariableSlot) otherSlot).getRefined())) {
+               return other;
+           } else {
+               // Check if one of these has refinement variables that were merged to the other.
+               for (RefinementVariableSlot slot : thisSlot.getRefinedToSlots()) {
+                   if (slot.isMergedTo(otherSlot)) {
+                       return other;
+                   }
+               }
+               for (RefinementVariableSlot slot : otherSlot.getRefinedToSlots()) {
+                   if (slot.isMergedTo(thisSlot)) {
+                       return this;
+                   }
+               }
+           }
         }
 
         return backup;

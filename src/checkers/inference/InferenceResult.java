@@ -36,7 +36,7 @@ public interface InferenceResult {
     /**
      * A method to check if there is solution for a particular variable ID or not.
      *
-     * @param varId id of a {@link checkers.inference.model.VariableSlot VariableSlot}
+     * @param varId id of a {@link checkers.inference.model.Slot Slot}
      * @return true iff {@link #hasSolution()} returns true and internal inferred
      * result(implementation detail) contains solution for {@code varId}
      *
@@ -46,9 +46,9 @@ public interface InferenceResult {
     boolean containsSolutionForVariable(int varId);
 
     /**
-     * A method to get the inferred solution for the given variable ID.
+     * A method to get the inferred solution for the given slot ID.
      *
-     * @param varId id of a {@link checkers.inference.model.VariableSlot VariableSlot}
+     * @param varId id of a {@link checkers.inference.model.Slot Slot}
      * @return non-null solution iff {@link #hasSolution()} returns true and internal
      * inferred result(implementation detail) contains solution for {@code varId}
      *

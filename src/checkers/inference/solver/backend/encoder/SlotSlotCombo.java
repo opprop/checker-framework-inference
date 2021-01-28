@@ -16,8 +16,8 @@ import  checkers.inference.solver.backend.encoder.combine.CombineConstraintEncod
  * <p>
  * But the {@link Slot.Kind} that's needed here is coarser-grained than its original definition:
  * Only knowing if a {@code Slot} is variable or constant is enough in solver encoding. Because solver
- * treats every {@link checkers.inference.model.VariableSlot} and its subclasses essentially as having
- * unknown value that is to be inferred and only the {@link checkers.inference.model.VariableSlot#id} is
+ * treats every {@link checkers.inference.model.Slot} and its subclasses essentially as having
+ * unknown value that is to be inferred and only the {@link checkers.inference.model.Slot#id} is
  * interesting; Solver treats {@link checkers.inference.model.ConstantSlot} as having a real qualifier
  * that no inference is needed.
  *

@@ -3,13 +3,13 @@ package checkers.inference.model;
 /**
  * LubVariableSlot models the least-upper-bounds of two other slots.
  */
-public class LubVariableSlot extends VariableSlot {
+public class LubVariableSlot extends Slot {
 
     private final Slot left;
     private final Slot right;
 
     public LubVariableSlot(AnnotationLocation location, int id, Slot left, Slot right) {
-        super(location, id);
+        super(id, location);
         this.left = left;
         this.right = right;
     }

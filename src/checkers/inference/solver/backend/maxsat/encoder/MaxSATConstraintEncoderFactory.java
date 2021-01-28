@@ -2,6 +2,7 @@ package checkers.inference.solver.backend.maxsat.encoder;
 
 import checkers.inference.solver.backend.encoder.AbstractConstraintEncoderFactory;
 import checkers.inference.solver.backend.encoder.ArithmeticConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ComparisonConstraintEncoder;
 import checkers.inference.solver.backend.encoder.combine.CombineConstraintEncoder;
 import checkers.inference.solver.backend.encoder.existential.ExistentialConstraintEncoder;
 import checkers.inference.solver.backend.encoder.implication.ImplicationConstraintEncoder;
@@ -46,6 +47,12 @@ public class MaxSATConstraintEncoderFactory extends AbstractConstraintEncoderFac
     public MaxSATComparableConstraintEncoder createComparableConstraintEncoder() {
         return new MaxSATComparableConstraintEncoder(lattice, typeToInt);
     }
+    
+    @Override
+    public ComparisonConstraintEncoder<VecInt[]> createComparisonConstraintEncoder() {
+        return null;
+    }
+
 
     @Override
     public MaxSATPreferenceConstraintEncoder createPreferenceConstraintEncoder() {

@@ -8,11 +8,11 @@ import org.checkerframework.javacutil.BugInCF;
  */
 public class PreferenceConstraint extends Constraint {
 
-    private final VariableSlot variable;
+    private final Slot variable;
     private final ConstantSlot goal;
     private final int weight;
 
-    private PreferenceConstraint(VariableSlot variable, ConstantSlot goal, int weight,
+    private PreferenceConstraint(Slot variable, ConstantSlot goal, int weight,
             AnnotationLocation location) {
         super(Arrays.<Slot> asList(variable, goal), location);
         this.variable = variable;
@@ -20,7 +20,7 @@ public class PreferenceConstraint extends Constraint {
         this.weight = weight;
     }
 
-    protected static PreferenceConstraint create(VariableSlot variable, ConstantSlot goal,
+    protected static PreferenceConstraint create(Slot variable, ConstantSlot goal,
             int weight, AnnotationLocation location) {
         if (variable == null || goal == null) {
             throw new BugInCF("Create preference constraint with null argument. Variable: "
@@ -35,7 +35,7 @@ public class PreferenceConstraint extends Constraint {
         return serializer.serialize(this);
     }
 
-    public VariableSlot getVariable() {
+    public Slot getVariable() {
         return variable;
     }
 

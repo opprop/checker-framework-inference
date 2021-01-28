@@ -26,15 +26,12 @@ public class Vertex {
         this.edges = new HashSet<Edge>();
         this.slot = slot;
 
-        if (slot instanceof VariableSlot) {
-            VariableSlot vs = (VariableSlot) slot;
-            this.id = vs.getId();
-            if (slot instanceof ConstantSlot) {
-                ConstantSlot cs = (ConstantSlot) slot;
-                this.value = cs.getValue();
-            } else {
-                this.value = null;
-            }
+        this.id = slot.getId();
+        if (slot instanceof ConstantSlot) {
+            ConstantSlot cs = (ConstantSlot) slot;
+            this.value = cs.getValue();
+        } else {
+            this.value = null;
         }
     }
 

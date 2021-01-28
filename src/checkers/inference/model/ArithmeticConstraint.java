@@ -18,7 +18,13 @@ public class ArithmeticConstraint extends Constraint {
         MINUS("-"),
         MULTIPLY("*"),
         DIVIDE("/"),
-        REMAINDER("%");
+        REMAINDER("%"),
+        LEFT_SHIFT("<<"),
+        RIGHT_SHIFT(">>"),
+        UNSIGNED_RIGHT_SHIFT(">>>"),
+        AND("&"),
+        OR("|"),
+        XOR("^");
 
         // stores the symbol of the operation
         private final String opSymbol;
@@ -38,6 +44,28 @@ public class ArithmeticConstraint extends Constraint {
                 case DIVIDE:
                     return DIVIDE;
                 case REMAINDER:
+                    return REMAINDER;
+                case LEFT_SHIFT:
+                	return LEFT_SHIFT;
+                case RIGHT_SHIFT:
+                	return RIGHT_SHIFT;
+                case UNSIGNED_RIGHT_SHIFT:
+                	return UNSIGNED_RIGHT_SHIFT;
+                case AND:
+                	return AND;
+                case OR:
+                	return OR;
+                case XOR:
+                	return XOR;
+                case PLUS_ASSIGNMENT:
+                    return PLUS;
+                case MINUS_ASSIGNMENT:
+                    return MINUS;
+                case MULTIPLY_ASSIGNMENT:
+                    return MULTIPLY;
+                case DIVIDE_ASSIGNMENT:
+                    return DIVIDE;
+                case REMAINDER_ASSIGNMENT:
                     return REMAINDER;
                 default:
                     throw new BugInCF("There are no defined ArithmeticOperationKinds "

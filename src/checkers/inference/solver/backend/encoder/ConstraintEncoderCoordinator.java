@@ -4,11 +4,13 @@ import org.checkerframework.javacutil.BugInCF;
 import checkers.inference.model.ArithmeticConstraint;
 import checkers.inference.model.BinaryConstraint;
 import checkers.inference.model.CombineConstraint;
+import checkers.inference.model.ComparableConstraint;
+import checkers.inference.model.ComparisonConstraint;
+import checkers.inference.model.ComparisonVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.ExistentialConstraint;
 import checkers.inference.model.ImplicationConstraint;
 import checkers.inference.model.PreferenceConstraint;
-import checkers.inference.model.VariableSlot;
 import checkers.inference.solver.backend.encoder.binary.BinaryConstraintEncoder;
 import checkers.inference.solver.backend.encoder.combine.CombineConstraintEncoder;
 import checkers.inference.solver.backend.encoder.existential.ExistentialConstraintEncoder;
@@ -38,14 +40,14 @@ public class ConstraintEncoderCoordinator {
             BinaryConstraintEncoder<ConstraintEncodingT> encoder) {
         switch (SlotSlotCombo.valueOf(constraint.getFirst(), constraint.getSecond())) {
             case VARIABLE_VARIABLE:
-                return encoder.encodeVariable_Variable((VariableSlot) constraint.getFirst(),
-                        (VariableSlot) constraint.getSecond());
+                return encoder.encodeVariable_Variable(constraint.getFirst(),
+                        constraint.getSecond());
             case VARIABLE_CONSTANT:
-                return encoder.encodeVariable_Constant((VariableSlot) constraint.getFirst(),
+                return encoder.encodeVariable_Constant(constraint.getFirst(),
                         (ConstantSlot) constraint.getSecond());
             case CONSTANT_VARIABLE:
                 return encoder.encodeConstant_Variable((ConstantSlot) constraint.getFirst(),
-                        (VariableSlot) constraint.getSecond());
+                        constraint.getSecond());
             case CONSTANT_CONSTANT:
                 throw new BugInCF("Attempting to encode a constant-constant combination "
                         + "for a binary constraint. This should be normalized to "
@@ -59,24 +61,48 @@ public class ConstraintEncoderCoordinator {
             CombineConstraintEncoder<ConstraintEncodingT> encoder) {
         switch (SlotSlotCombo.valueOf(constraint.getTarget(), constraint.getDeclared())) {
             case VARIABLE_VARIABLE:
-                return encoder.encodeVariable_Variable((VariableSlot) constraint.getTarget(),
-                        (VariableSlot) constraint.getDeclared(),
-                        (VariableSlot) constraint.getResult());
+                return encoder.encodeVariable_Variable(constraint.getTarget(),
+                        constraint.getDeclared(),
+                        constraint.getResult());
             case VARIABLE_CONSTANT:
-                return encoder.encodeVariable_Constant((VariableSlot) constraint.getTarget(),
+                return encoder.encodeVariable_Constant(constraint.getTarget(),
                         (ConstantSlot) constraint.getDeclared(),
-                        (VariableSlot) constraint.getResult());
+                        constraint.getResult());
             case CONSTANT_VARIABLE:
                 return encoder.encodeConstant_Variable((ConstantSlot) constraint.getTarget(),
-                        (VariableSlot) constraint.getDeclared(),
-                        (VariableSlot) constraint.getResult());
+                        constraint.getDeclared(),
+                        constraint.getResult());
             case CONSTANT_CONSTANT:
                 return encoder.encodeConstant_Constant((ConstantSlot) constraint.getTarget(),
                         (ConstantSlot) constraint.getDeclared(),
-                        (VariableSlot) constraint.getResult());
+                        constraint.getResult());
             default:
                 throw new BugInCF("Unsupported SlotSlotCombo enum.");
         }
+    }
+    
+    public static <ConstraintEncodingT> ConstraintEncodingT dispatch(
+            ComparisonConstraint constraint,
+            ComparisonConstraintEncoder<ConstraintEncodingT> encoder) {
+        switch (SlotSlotCombo.valueOf(constraint.getLeft(), constraint.getRight())) {
+            case VARIABLE_VARIABLE:
+                return encoder.encodeVariable_Variable(constraint.getOperation(),
+                        constraint.getLeft(),
+                        constraint.getRight(), constraint.getResult());
+            case VARIABLE_CONSTANT:
+                return encoder.encodeVariable_Constant(constraint.getOperation(),
+                        constraint.getLeft(),
+                        (ConstantSlot) constraint.getRight(), constraint.getResult());
+            case CONSTANT_VARIABLE:
+                return encoder.encodeConstant_Variable(constraint.getOperation(),
+                        (ConstantSlot) constraint.getLeft(),
+                        constraint.getRight(), constraint.getResult());
+            case CONSTANT_CONSTANT:
+                return encoder.encodeConstant_Constant(constraint.getOperation(),
+                        (ConstantSlot) constraint.getLeft(),
+                        (ConstantSlot) constraint.getRight(), constraint.getResult());
+        }
+        return null;
     }
 
     public static <ConstraintEncodingT> ConstraintEncodingT dispatch(
@@ -85,16 +111,16 @@ public class ConstraintEncoderCoordinator {
         switch (SlotSlotCombo.valueOf(constraint.getLeftOperand(), constraint.getRightOperand())) {
             case VARIABLE_VARIABLE:
                 return encoder.encodeVariable_Variable(constraint.getOperation(),
-                        (VariableSlot) constraint.getLeftOperand(),
-                        (VariableSlot) constraint.getRightOperand(), constraint.getResult());
+                        constraint.getLeftOperand(),
+                        constraint.getRightOperand(), constraint.getResult());
             case VARIABLE_CONSTANT:
                 return encoder.encodeVariable_Constant(constraint.getOperation(),
-                        (VariableSlot) constraint.getLeftOperand(),
+                        constraint.getLeftOperand(),
                         (ConstantSlot) constraint.getRightOperand(), constraint.getResult());
             case CONSTANT_VARIABLE:
                 return encoder.encodeConstant_Variable(constraint.getOperation(),
                         (ConstantSlot) constraint.getLeftOperand(),
-                        (VariableSlot) constraint.getRightOperand(), constraint.getResult());
+                        constraint.getRightOperand(), constraint.getResult());
             case CONSTANT_CONSTANT:
                 return encoder.encodeConstant_Constant(constraint.getOperation(),
                         (ConstantSlot) constraint.getLeftOperand(),

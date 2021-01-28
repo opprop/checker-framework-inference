@@ -1,7 +1,7 @@
 package checkers.inference.solver.backend.logiql.encoder;
 
 import checkers.inference.model.ConstantSlot;
-import checkers.inference.model.VariableSlot;
+import checkers.inference.model.Slot;
 import checkers.inference.solver.backend.encoder.binary.SubtypeConstraintEncoder;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.NameUtils;
@@ -13,7 +13,7 @@ public class LogiQLSubtypeConstraintEncoder extends LogiQLAbstractConstraintEnco
     }
 
     @Override
-    public String encodeVariable_Variable(VariableSlot subtype, VariableSlot supertype) {
+    public String encodeVariable_Variable(Slot subtype, Slot supertype) {
         String logiQLData = "+subtypeConstraint(v1, v2), +variable(v1), +hasvariableName[v1] = "
                 + subtype.getId() + ", +variable(v2), +hasvariableName[v2] = " + supertype.getId()
                 + ".\n";
@@ -21,7 +21,7 @@ public class LogiQLSubtypeConstraintEncoder extends LogiQLAbstractConstraintEnco
     }
 
     @Override
-    public String encodeVariable_Constant(VariableSlot subtype, ConstantSlot supertype) {
+    public String encodeVariable_Constant(Slot subtype, ConstantSlot supertype) {
         String supertypeName = NameUtils.getSimpleName(supertype.getValue());
         int subtypeId = subtype.getId();
         String logiQLData = "+subtypeConstraintRightConstant(v, c), +variable(v), +hasvariableName[v] = "
@@ -30,7 +30,7 @@ public class LogiQLSubtypeConstraintEncoder extends LogiQLAbstractConstraintEnco
     }
 
     @Override
-    public String encodeConstant_Variable(ConstantSlot subtype, VariableSlot supertype) {
+    public String encodeConstant_Variable(ConstantSlot subtype, Slot supertype) {
         String subtypeName = NameUtils.getSimpleName(subtype.getValue());
         int supertypeId = supertype.getId();
         String logiQLData = "+subtypeConstraintLeftConstant(c, v), +constant(c), +hasconstantName[c] = \""

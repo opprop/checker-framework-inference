@@ -15,7 +15,7 @@ import javax.lang.model.element.AnnotationMirror;
  * will be represented by a ConstantSlot( @NonNull )
  *
  */
-public class ConstantSlot extends VariableSlot {
+public class ConstantSlot extends Slot {
 
     /**
      * The annotation in the real type system that this slot is equivalent to
@@ -41,7 +41,7 @@ public class ConstantSlot extends VariableSlot {
      *                program
      */
     public ConstantSlot(AnnotationMirror value, AnnotationLocation location, int id) {
-        super(location, id);
+        super(id, location);
         checkAndSetValue(value);
     }
 

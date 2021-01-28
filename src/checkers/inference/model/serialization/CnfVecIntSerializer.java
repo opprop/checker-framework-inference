@@ -11,9 +11,12 @@ import org.sat4j.core.VecInt;
 
 import checkers.inference.SlotManager;
 import checkers.inference.model.ArithmeticConstraint;
+import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.CombineConstraint;
 import checkers.inference.model.ComparableConstraint;
+import checkers.inference.model.ComparisonConstraint;
+import checkers.inference.model.ComparisonVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.EqualityConstraint;
@@ -49,7 +52,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
         return new VariableCombos<SubtypeConstraint>() {
 
             @Override
-            protected VecInt[] constant_variable(ConstantSlot subtype, VariableSlot supertype, SubtypeConstraint constraint) {
+            protected VecInt[] constant_variable(ConstantSlot subtype, Slot supertype, SubtypeConstraint constraint) {
 
                 if (isTop(subtype)) {
                     return asVecArray(-supertype.getId());
@@ -59,7 +62,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
             }
 
             @Override
-            protected VecInt[] variable_constant(VariableSlot subtype, ConstantSlot supertype, SubtypeConstraint constraint) {
+            protected VecInt[] variable_constant(Slot subtype, ConstantSlot supertype, SubtypeConstraint constraint) {
                 if (!isTop(supertype)) {
                     return asVecArray(subtype.getId());
                 }
@@ -68,7 +71,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
             }
 
             @Override
-            protected VecInt[] variable_variable(VariableSlot subtype, VariableSlot supertype, SubtypeConstraint constraint) {
+            protected VecInt[] variable_variable(Slot subtype, Slot supertype, SubtypeConstraint constraint) {
 
                 // this is supertype => subtype which is the equivalent of (!supertype v subtype)
                 return asVecArray(-supertype.getId(), subtype.getId());
@@ -83,7 +86,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
         return new VariableCombos<EqualityConstraint>() {
 
             @Override
-            protected VecInt[] constant_variable(ConstantSlot slot1, VariableSlot slot2, EqualityConstraint constraint) {
+            protected VecInt[] constant_variable(ConstantSlot slot1, Slot slot2, EqualityConstraint constraint) {
 
                 if (isTop(slot1)) {
                     return asVecArray(-slot2.getId());
@@ -93,12 +96,12 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
             }
 
             @Override
-            protected VecInt[] variable_constant(VariableSlot slot1, ConstantSlot slot2, EqualityConstraint constraint) {
+            protected VecInt[] variable_constant(Slot slot1, ConstantSlot slot2, EqualityConstraint constraint) {
                 return constant_variable(slot2, slot1, constraint);
             }
 
             @Override
-            protected VecInt[] variable_variable(VariableSlot slot1, VariableSlot slot2, EqualityConstraint constraint) {
+            protected VecInt[] variable_variable(Slot slot1, Slot slot2, EqualityConstraint constraint) {
 
                 // a <=> b which is the same as (!a v b) & (!b v a)
                 return new VecInt[]{
@@ -116,7 +119,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
         return new VariableCombos<InequalityConstraint>() {
 
             @Override
-            protected VecInt[] constant_variable(ConstantSlot slot1, VariableSlot slot2, InequalityConstraint constraint) {
+            protected VecInt[] constant_variable(ConstantSlot slot1, Slot slot2, InequalityConstraint constraint) {
 
                 if (isTop(slot1)) {
                     return asVecArray(slot2.getId());
@@ -126,12 +129,12 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
             }
 
             @Override
-            protected VecInt[] variable_constant(VariableSlot slot1, ConstantSlot slot2, InequalityConstraint constraint) {
+            protected VecInt[] variable_constant(Slot slot1, ConstantSlot slot2, InequalityConstraint constraint) {
                 return constant_variable(slot2, slot1, constraint);
             }
 
             @Override
-            protected VecInt[] variable_variable(VariableSlot slot1, VariableSlot slot2, InequalityConstraint constraint) {
+            protected VecInt[] variable_variable(Slot slot1, Slot slot2, InequalityConstraint constraint) {
 
                 // a <=> !b which is the same as (!a v !b) & (b v a)
                 return new VecInt[]{
@@ -243,6 +246,18 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
     public VecInt[] serialize(LubVariableSlot slot) {
         return null;
     }
+    
+    @Override
+    public VecInt[] serialize(ArithmeticVariableSlot slot) {
+        // doesn't really mean anything
+        return null;
+    }
+    
+    @Override
+    public VecInt[] serialize(ComparisonVariableSlot slot) {
+        // doesn't really mean anything
+        return null;
+    }
 
     @Override
     public VecInt[] serialize(ExistentialVariableSlot slot) {
@@ -254,6 +269,12 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
     public VecInt[] serialize(ComparableConstraint comparableConstraint) {
         // not sure what this means
         return emptyClauses;
+    }
+    
+    @Override
+    public VecInt[] serialize(ComparisonConstraint comparisonConstraint) {
+    	throw new UnsupportedOperationException(
+                "Serializing ComparisonConstraint is unsupported in CnfVecIntSerializer");
     }
 
     @Override
@@ -317,15 +338,15 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
      */
     class VariableCombos<T extends Constraint> {
 
-        protected VecInt[] variable_variable(VariableSlot slot1, VariableSlot slot2, T constraint) {
+        protected VecInt[] variable_variable(Slot slot1, Slot slot2, T constraint) {
             return defaultAction(slot1, slot2, constraint);
         }
 
-        protected VecInt[] constant_variable(ConstantSlot slot1, VariableSlot slot2, T constraint) {
+        protected VecInt[] constant_variable(ConstantSlot slot1, Slot slot2, T constraint) {
             return defaultAction(slot1, slot2, constraint);
         }
 
-        protected VecInt[] variable_constant(VariableSlot slot1, ConstantSlot slot2, T constraint) {
+        protected VecInt[] variable_constant(Slot slot1, ConstantSlot slot2, T constraint) {
             return defaultAction(slot1, slot2, constraint);
         }
 
@@ -343,12 +364,12 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
                 if (slot2 instanceof ConstantSlot) {
                     result = constant_constant((ConstantSlot) slot1, (ConstantSlot) slot2, constraint);
                 } else {
-                    result = constant_variable((ConstantSlot) slot1, (VariableSlot) slot2, constraint);
+                    result = constant_variable((ConstantSlot) slot1, slot2, constraint);
                 }
             } else if (slot2 instanceof ConstantSlot) {
-                result = variable_constant((VariableSlot) slot1, (ConstantSlot) slot2, constraint);
+                result = variable_constant(slot1, (ConstantSlot) slot2, constraint);
             } else {
-                result = variable_variable((VariableSlot) slot1, (VariableSlot) slot2, constraint);
+                result = variable_variable(slot1, slot2, constraint);
             }
 
             return result;

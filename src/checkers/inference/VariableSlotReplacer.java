@@ -11,6 +11,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.inference.model.ExistentialVariableSlot;
+import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
 
 /**
@@ -55,7 +56,7 @@ public class VariableSlotReplacer {
         replacements.addAll(initialReplacements);
     }
 
-    public VariableSlotReplacer addReplacement(final VariableSlot oldSlot, final VariableSlot newSlot) {
+    public VariableSlotReplacer addReplacement(final Slot oldSlot, final Slot newSlot) {
         this.replacements.add(new Replacement(oldSlot, newSlot));
         return this;
     }
@@ -101,7 +102,7 @@ public class VariableSlotReplacer {
         protected void testAndReplace(Replacement replacement, AnnotatedTypeMirror type) {
             AnnotationMirror anno = type.getAnnotationInHierarchy(varAnnot);
             if (anno != null) {
-                VariableSlot variable = (VariableSlot) slotManager.getSlot(anno);
+                Slot variable = slotManager.getSlot(anno);
 
                 if (slotManager.getVariableSlot(type).equals(replacement.oldSlot)) {
                     final AnnotationMirror newAnnotation = slotManager.getAnnotation(replacement.newSlot);
@@ -109,7 +110,7 @@ public class VariableSlotReplacer {
 
                 } else if (replaceInExistentials && variable instanceof ExistentialVariableSlot) {
 
-                    VariableSlot existentialReplacement =
+                    Slot existentialReplacement =
                             constructExistentialReplacement(replacement, (ExistentialVariableSlot) variable);
                     if (existentialReplacement != null) {
                         final AnnotationMirror newAnnotation = slotManager.getAnnotation(existentialReplacement);
@@ -120,13 +121,13 @@ public class VariableSlotReplacer {
         }
 
 
-        protected VariableSlot constructExistentialReplacement(Replacement replacement,
+        protected Slot constructExistentialReplacement(Replacement replacement,
                                                                ExistentialVariableSlot variable) {
-            VariableSlot potential = variable.getPotentialSlot();
+            Slot potential = variable.getPotentialSlot();
             AnnotationMirror potentialAnno = null;
 
             // alternative may itself be another existential
-            VariableSlot alternative = variable.getAlternativeSlot();
+            Slot alternative = variable.getAlternativeSlot();
 
             boolean replace = false;
 
@@ -140,7 +141,7 @@ public class VariableSlotReplacer {
                 replace = true;
 
             } else if (alternative instanceof ExistentialVariableSlot) {
-                VariableSlot existentialAlternative =
+                Slot existentialAlternative =
                     constructExistentialReplacement(replacement, (ExistentialVariableSlot) alternative);
 
                 if (existentialAlternative != null) {
@@ -158,10 +159,10 @@ public class VariableSlotReplacer {
     }
 
     public static class Replacement {
-        public final VariableSlot oldSlot;
-        public final VariableSlot newSlot;
+        public final Slot oldSlot;
+        public final Slot newSlot;
 
-        public Replacement(final VariableSlot oldSlot, final VariableSlot newSlot) {
+        public Replacement(final Slot oldSlot, final Slot newSlot) {
             this.oldSlot = oldSlot;
             this.newSlot = newSlot;
 

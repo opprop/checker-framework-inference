@@ -1,7 +1,7 @@
 package checkers.inference.solver.backend.maxsat.encoder;
 
 import checkers.inference.model.ConstantSlot;
-import checkers.inference.model.VariableSlot;
+import checkers.inference.model.Slot;
 import checkers.inference.solver.backend.encoder.binary.InequalityConstraintEncoder;
 import checkers.inference.solver.backend.maxsat.MathUtils;
 import checkers.inference.solver.backend.maxsat.VectorUtils;
@@ -18,7 +18,7 @@ public class MaxSATInequalityConstraintEncoder extends MaxSATAbstractConstraintE
     }
 
     @Override
-    public VecInt[] encodeVariable_Variable(VariableSlot fst, VariableSlot snd) {
+    public VecInt[] encodeVariable_Variable(Slot fst, Slot snd) {
         // a <=> !b which is the same as (!a v !b) & (b v a)
         VecInt[] result = new VecInt[lattice.numTypes * 2];
         int i = 0;
@@ -36,12 +36,12 @@ public class MaxSATInequalityConstraintEncoder extends MaxSATAbstractConstraintE
     }
 
     @Override
-    public VecInt[] encodeVariable_Constant(VariableSlot fst, ConstantSlot snd) {
+    public VecInt[] encodeVariable_Constant(Slot fst, ConstantSlot snd) {
         return encodeConstant_Variable(snd, fst);
     }
 
     @Override
-    public VecInt[] encodeConstant_Variable(ConstantSlot fst, VariableSlot snd) {
+    public VecInt[] encodeConstant_Variable(ConstantSlot fst, Slot snd) {
         if (lattice.allTypes.contains(fst.getValue())) {
             return VectorUtils.asVecArray(
                     -MathUtils.mapIdToMatrixEntry(snd.getId(), typeToInt.get(fst.getValue()), lattice));

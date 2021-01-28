@@ -12,9 +12,12 @@ import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.javacutil.SystemUtil;
 import checkers.inference.InferenceMain;
 import checkers.inference.model.ArithmeticConstraint;
+import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.CombineConstraint;
 import checkers.inference.model.ComparableConstraint;
+import checkers.inference.model.ComparisonConstraint;
+import checkers.inference.model.ComparisonVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.EqualityConstraint;
@@ -93,15 +96,9 @@ public class ToStringSerializer implements Serializer<String, String> {
         Set<String> serializedOtherSlots = new TreeSet<>();
 
         for (Slot slot : slots) {
-            if (slot instanceof VariableSlot) {
-                // sort the varSlots by ID through insertion to TreeMap
-                VariableSlot varSlot = (VariableSlot) slot;
-                serializedVarSlots.put(varSlot.getId(),
-                        getCurrentIndentString() + varSlot.serialize(this));
-            } else {
-                // sort all other slots by serialized string content through insertion to TreeSet
-                serializedOtherSlots.add(getCurrentIndentString() + slot.serialize(this));
-            }
+            // sort the varSlots by ID through insertion to TreeMap
+            serializedVarSlots.put(slot.getId(),
+                    getCurrentIndentString() + slot.serialize(this));
         }
 
         List<String> serializedSlots = new ArrayList<>();
@@ -205,6 +202,26 @@ public class ToStringSerializer implements Serializer<String, String> {
         showVerboseVars = prevShowVerboseVars;
         return sb.toString();
     }
+    
+    @Override
+    public String serialize(ComparisonConstraint constraint) {
+    	boolean prevShowVerboseVars = showVerboseVars;
+        showVerboseVars = false;
+        // format: result <= ( left comp right )
+        final StringBuilder sb = new StringBuilder();
+        sb.append(getCurrentIndentString())
+          .append(constraint.getResult().serialize(this))
+          .append(" <= ( ")
+          .append(constraint.getLeft().serialize(this))
+          .append(" ")
+          .append(constraint.getOperation().getSymbol())
+          .append(" ")
+          .append(constraint.getRight().serialize(this))
+          .append(" )");
+        optionallyFormatAstPath(constraint, sb);
+        showVerboseVars = prevShowVerboseVars;
+        return sb.toString();
+    }
 
     @Override
     public String serialize(CombineConstraint constraint) {
@@ -301,7 +318,6 @@ public class ToStringSerializer implements Serializer<String, String> {
         return String.join(" & ", serializedAssumptions);
     }
 
-    // variables
     @Override
     public String serialize(VariableSlot slot) {
         final StringBuilder sb = new StringBuilder();
@@ -360,6 +376,22 @@ public class ToStringSerializer implements Serializer<String, String> {
         return sb.toString();
     }
 
+    @Override
+    public String serialize(ArithmeticVariableSlot slot) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(slot.getId());
+        optionallyShowVerbose(slot, sb);
+        return sb.toString();
+    }
+
+    @Override
+    public String serialize(ComparisonVariableSlot slot) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(slot.getId());
+        optionallyShowVerbose(slot, sb);
+        return sb.toString();
+    }
+
     /**
      * @return the indent string for the current indentation level as stored in
      *         {@link #indentationLevel}.
@@ -368,21 +400,21 @@ public class ToStringSerializer implements Serializer<String, String> {
         return indentStrings.get(indentationLevel);
     }
 
-    private void formatMerges(final VariableSlot slot, final StringBuilder sb) {
+    private void formatMerges(final Slot slot, final StringBuilder sb) {
         if (!slot.getMergedToSlots().isEmpty()) {
             sb.append(": merged to -> ")
               .append(slot.getMergedToSlots());
         }
     }
 
-    private void optionallyShowVerbose(final VariableSlot varSlot, final StringBuilder sb) {
+    private void optionallyShowVerbose(final Slot varSlot, final StringBuilder sb) {
         if (showVerboseVars) {
             formatMerges(varSlot, sb);
             optionallyFormatAstPath(varSlot, sb);
         }
     }
 
-    private void optionallyFormatAstPath(final VariableSlot varSlot, final StringBuilder sb) {
+    private void optionallyFormatAstPath(final Slot varSlot, final StringBuilder sb) {
         if (showAstPaths && (varSlot.isInsertable() || (varSlot.getLocation() != null))) {
             sb.append("\n")
               .append(getCurrentIndentString())

@@ -1,9 +1,12 @@
 package checkers.inference.solver.backend;
 
 import checkers.inference.model.ArithmeticConstraint;
+import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.CombineConstraint;
 import checkers.inference.model.ComparableConstraint;
+import checkers.inference.model.ComparisonConstraint;
+import checkers.inference.model.ComparisonVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.EqualityConstraint;
 import checkers.inference.model.ExistentialConstraint;
@@ -13,9 +16,11 @@ import checkers.inference.model.InequalityConstraint;
 import checkers.inference.model.LubVariableSlot;
 import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.RefinementVariableSlot;
+import checkers.inference.model.Slot;
 import checkers.inference.model.SubtypeConstraint;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.solver.backend.encoder.ArithmeticConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ComparisonConstraintEncoder;
 import checkers.inference.solver.backend.encoder.ConstraintEncoderCoordinator;
 import checkers.inference.solver.backend.encoder.ConstraintEncoderFactory;
 import checkers.inference.solver.backend.encoder.binary.ComparableConstraintEncoder;
@@ -98,6 +103,11 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
      * {@code ComparableConstraintEncoder} to which encoding of {@link ComparableConstraint} is delegated.
      */
     protected ComparableConstraintEncoder<ConstraintEncodingT> comparableConstraintEncoder;
+    
+    /**
+     * {@code ComparisonConstraintEncoder} to which encoding of {@link ComparableConstraint} is delegated.
+     */
+    protected ComparisonConstraintEncoder<ConstraintEncodingT> comparisonConstraintEncoder;
 
     /**
      * {@code PreferenceConstraintEncoder} to which encoding of {@link PreferenceConstraint} is delegated.
@@ -138,6 +148,7 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
         equalityConstraintEncoder = encoderFactory.createEqualityConstraintEncoder();
         inequalityConstraintEncoder = encoderFactory.createInequalityConstraintEncoder();
         comparableConstraintEncoder = encoderFactory.createComparableConstraintEncoder();
+        comparisonConstraintEncoder = encoderFactory.createComparisonConstraintEncoder();
         preferenceConstraintEncoder = encoderFactory.createPreferenceConstraintEncoder();
         combineConstraintEncoder = encoderFactory.createCombineConstraintEncoder();
         existentialConstraintEncoder = encoderFactory.createExistentialConstraintEncoder();
@@ -175,6 +186,12 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
     public ConstraintEncodingT serialize(ComparableConstraint constraint) {
         return comparableConstraintEncoder == null ? null :
                 ConstraintEncoderCoordinator.dispatch(constraint, comparableConstraintEncoder);
+    }
+    
+    @Override
+    public ConstraintEncodingT serialize(ComparisonConstraint constraint) {
+        return comparableConstraintEncoder == null ? null :
+                ConstraintEncoderCoordinator.dispatch(constraint, comparisonConstraintEncoder);
     }
 
     @Override
@@ -234,6 +251,16 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
 
     @Override
     public SlotEncodingT serialize(LubVariableSlot slot) {
+        return null;
+    }
+
+    @Override
+    public SlotEncodingT serialize(ArithmeticVariableSlot slot) {
+        return null;
+    }
+    
+    @Override
+    public SlotEncodingT serialize(ComparisonVariableSlot slot) {
         return null;
     }
 }

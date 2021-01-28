@@ -14,6 +14,7 @@ import org.sat4j.core.VecInt;
 import checkers.inference.InferenceMain;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
+import checkers.inference.model.VariableSlot;
 import checkers.inference.model.serialization.CnfVecIntSerializer;
 import dataflow.qual.DataFlowTop;
 import dataflow.util.DataflowUtils;

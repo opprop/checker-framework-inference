@@ -748,31 +748,8 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
     /**
      * Visit the extends, implements, and type parameters of the given class type and tree.
      */
-    private void handleClassDeclaration(AnnotatedDeclaredType classType, ClassTree classTree) {
-        final Tree extendsTree = classTree.getExtendsClause();
-        if (extendsTree == null) {
-            // Annotated the implicit extends.
-            Element classElement = classType.getUnderlyingType().asElement();
-            VariableSlot extendsSlot;
-            if (!extendsMissingTrees.containsKey(classElement)) {
-                // TODO: SEE COMMENT ON createImpliedExtendsLocation
-                AnnotationLocation location = createImpliedExtendsLocation(classTree);
-                extendsSlot = createVariable(location);
-                extendsMissingTrees.put(classElement, extendsSlot);
-                logger.fine("Created variable for implicit extends on class:\n" +
-                        extendsSlot.getId() + " => " + classElement + " (extends Object)");
-
-            } else {
-                // Add annotation
-                extendsSlot = extendsMissingTrees.get(classElement);
-            }
-            List<AnnotatedDeclaredType> superTypes = classType.directSuperTypes();
-            superTypes.get(0).replaceAnnotation(slotManager.getAnnotation(extendsSlot));
-
-        } else {
-            final AnnotatedTypeMirror extendsType = inferenceTypeFactory.getAnnotatedTypeFromTypeTree(extendsTree);
-            visit(extendsType, extendsTree);
-        }
+    protected void handleClassDeclaration(AnnotatedDeclaredType classType, ClassTree classTree) {
+        handleExtendsClause(classType, classTree);
 
 //        // TODO: NOT SURE THIS HANDLES MEMBER SELECT CORRECTLY
 //        int interfaceIndex = 1;
@@ -799,6 +776,55 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         Element classElement = classType.getUnderlyingType().asElement();
         storeElementType(classElement, classType);
 
+    }
+
+    /**
+     * Defines how extends clause is visited during {@code handleClassDeclaration}
+     * @param classType the type of the class
+     * @param classTree the tree of the class
+     */
+    protected void handleExtendsClause(AnnotatedDeclaredType classType, ClassTree classTree) {
+        final Tree extendsTree = classTree.getExtendsClause();
+        if (extendsTree == null) {
+            handleImplicitExtends(classType, classTree);
+
+        } else {
+            handleExplicitExtends(extendsTree);
+        }
+    }
+
+    /**
+     * Defines how implicit extends clause ({@code extends Object}) is visited during {@code handleClassDeclaration}
+     * @param classType the type of the class
+     * @param classTree the tree of the class
+     */
+    protected void handleImplicitExtends(AnnotatedDeclaredType classType, ClassTree classTree) {
+        // Annotated the implicit extends.
+        Element classElement = classType.getUnderlyingType().asElement();
+        VariableSlot extendsSlot;
+        if (!extendsMissingTrees.containsKey(classElement)) {
+            // TODO: SEE COMMENT ON createImpliedExtendsLocation
+            AnnotationLocation location = createImpliedExtendsLocation(classTree);
+            extendsSlot = createVariable(location);
+            extendsMissingTrees.put(classElement, extendsSlot);
+            logger.fine("Created variable for implicit extends on class:\n" +
+                    extendsSlot.getId() + " => " + classElement + " (extends Object)");
+
+        } else {
+            // Add annotation
+            extendsSlot = extendsMissingTrees.get(classElement);
+        }
+        List<AnnotatedDeclaredType> superTypes = classType.directSuperTypes();
+        superTypes.get(0).replaceAnnotation(slotManager.getAnnotation(extendsSlot));
+    }
+
+    /**
+     * Defines how explicit extends clause is visited during {@code handleClassDeclaration}
+     * @param extendsTree the extends tree from the class declaration
+     */
+    protected void handleExplicitExtends(Tree extendsTree) {
+        final AnnotatedTypeMirror extendsType = inferenceTypeFactory.getAnnotatedTypeFromTypeTree(extendsTree);
+        visit(extendsType, extendsTree);
     }
 
     /**

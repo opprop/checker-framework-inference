@@ -232,9 +232,8 @@ public class InferenceValue extends CFValue {
             AnnotationFormatter formatter = analysis.getTypeFactory().getAnnotationFormatter();
             AnnotationMirror anno = ((ConstantSlot) slot).getValue();
             sb.append(formatter.formatAnnotationMirror(anno));
-            sb.append("(== ");
-            // TODO: optimizing the way to get string representaton of
-            //  constant slot regarding slot infomation
+            sb.append(" (== ");
+            // TODO: improve output of ConstantSlot itself
             sb.append(slot.getClass().getSimpleName());
             sb.append("(");
             sb.append(((VariableSlot)slot).getId());

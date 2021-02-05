@@ -6,6 +6,7 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -225,15 +226,23 @@ public class InferenceValue extends CFValue {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder("InferenceValue{annotations=");
+        StringBuilder sb = new StringBuilder("InferenceValue{annotation=");
         Slot slot = getEffectiveSlot(this);
         if (slot.isConstant()) {
-            sb.append(((ConstantSlot) slot).getValue());
-        } else {
+            AnnotationFormatter formatter = analysis.getTypeFactory().getAnnotationFormatter();
+            AnnotationMirror anno = ((ConstantSlot) slot).getValue();
+            sb.append(formatter.formatAnnotationMirror(anno));
+            sb.append("(== ");
+            // TODO: optimizing the way to get string representaton of
+            //  constant slot regarding slot infomation
             sb.append(slot.getClass().getSimpleName());
             sb.append("(");
             sb.append(((VariableSlot)slot).getId());
             sb.append(")");
+
+            sb.append(")");
+        } else {
+            sb.append(slot);
         }
         sb.append(", underlyingType=");
         sb.append(underlyingType);

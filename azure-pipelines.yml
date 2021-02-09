@@ -10,7 +10,7 @@ pr:
 
 
 jobs:
-  - job: cfi-tests-jdk8
+  - job: cfi_tests_jdk8
     pool:
       vmImage: 'ubuntu-latest'
     container: xingweitian/ubuntu-for-cfi-jdk8:latest
@@ -19,7 +19,7 @@ jobs:
         fetchDepth: 25
       - bash: ./.travis-build.sh cfi-tests
         displayName: ./.travis-build.sh cfi-tests
-  - job: cfi-tests-jdk11
+  - job: cfi_tests_jdk11
     pool:
       vmImage: 'ubuntu-latest'
     container: xingweitian/ubuntu-for-cfi-jdk11:latest
@@ -28,7 +28,7 @@ jobs:
         fetchDepth: 25
       - bash: ./.travis-build.sh cfi-tests
         displayName: ./.travis-build.sh cfi-tests
-  - job: downstream-ontology-jdk8
+  - job: downstream_ontology_jdk8
     pool:
       vmImage: 'ubuntu-latest'
     container: xingweitian/ubuntu-for-cfi-jdk8:latest
@@ -37,7 +37,7 @@ jobs:
         fetchDepth: 25
       - bash: ./.travis-build.sh downstream-ontology
         displayName: ./.travis-build.sh downstream-ontology
-  - job: downstream-ontology-jdk11
+  - job: downstream_ontology_jdk11
     pool:
       vmImage: 'ubuntu-latest'
     container: xingweitian/ubuntu-for-cfi-jdk11:latest
@@ -46,7 +46,7 @@ jobs:
         fetchDepth: 25
       - bash: ./.travis-build.sh downstream-ontology
         displayName: ./.travis-build.sh downstream-ontology
-  - job: downstream-units-jdk8
+  - job: downstream_units_jdk8
     pool:
       vmImage: 'ubuntu-latest'
     container: xingweitian/ubuntu-for-cfi-jdk8:latest
@@ -55,7 +55,7 @@ jobs:
         fetchDepth: 25
       - bash: ./.travis-build.sh downstream-units
         displayName: ./.travis-build.sh downstream-units
-  - job: downstream-units-jdk11
+  - job: downstream_units_jdk11
     pool:
       vmImage: 'ubuntu-latest'
     container: xingweitian/ubuntu-for-cfi-jdk11:latest
@@ -64,7 +64,7 @@ jobs:
         fetchDepth: 25
       - bash: ./.travis-build.sh downstream-units
         displayName: ./.travis-build.sh downstream-units
-  - job: downstream-security-demo-jdk8
+  - job: downstream_security_demo_jdk8
     pool:
       vmImage: 'ubuntu-latest'
     container: xingweitian/ubuntu-for-cfi-jdk8:latest
@@ -73,7 +73,7 @@ jobs:
         fetchDepth: 25
       - bash: ./.travis-build.sh downstream-security-demo
         displayName: ./.travis-build.sh downstream-security-demo
-  - job: downstream-security-demo-jdk11
+  - job: downstream_security_demo_jdk11
     pool:
       vmImage: 'ubuntu-latest'
     container: xingweitian/ubuntu-for-cfi-jdk11:latest

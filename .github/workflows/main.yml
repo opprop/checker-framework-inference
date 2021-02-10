@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast:
+      matrix:
+        group: [cfi-tests, downstream-ontology, downstream-units, downstream-security-demo]
+        jdk: [jdk8, jdk11]
+    env:
+      GROUP: ${{group}}
+      JDKVER: ${{jdk}}
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python 3
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.6
+      - name: Checker Framework Inference Build & Test
+        run: |
+          python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"
+          REMOTE_ORIGIN_URL=`git config --get remote.origin.url`
+          echo "THIS_REPO=${THIS_REPO}"
+          echo "JDKVER=${JDKVER}"
+          echo "GROUP=${GROUP}"
+          echo "BUILDJDK=${BUILDJDK}"
+          echo "REMOTE_ORIGIN_URL=${REMOTE_ORIGIN_URL}"
+          echo "GITHUB_REPOSITORY=${GITHUB_REPOSITORY}"
+          echo "GITHUB_REF=${GITHUB_REF}"
+          echo "GITHUB_EVENT_NAME=${GITHUB_EVENT_NAME}"
+          echo "GITHUB_COMMIT=${GITHUB_SHA}"
+

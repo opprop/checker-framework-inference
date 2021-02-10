@@ -28,3 +28,8 @@ $WORKING_DIR/cleanup.sh
 echo -e "\nRunning LingelingSolver\n"
 $WORKING_DIR/runLingelingSolver.sh
 $WORKING_DIR/cleanup.sh
+
+# test using z3 (external) solver
+echo -e "\nRunning Z3Solver\n"
+$WORKING_DIR/runZ3BitVectorSolver.sh
+$WORKING_DIR/cleanup.sh

@@ -1,5 +1,6 @@
 package dataflow.util;
 
+import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,6 +17,8 @@ import org.checkerframework.javacutil.BugInCF;
 import com.sun.source.tree.LiteralTree;
 
 import dataflow.qual.DataFlow;
+import dataflow.qual.DataFlowInferenceBottom;
+import dataflow.qual.DataFlowTop;
 
 /**
  * Utility class for Dataflow type system.
@@ -50,6 +53,26 @@ public class DataflowUtils {
             ProcessingEnvironment processingEnv) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, DataFlow.class);
         builder.setValue("typeNameRoots", dataType);
+        return builder.build();
+    }
+
+    /**
+     * Create a {@code @DataFlowTop}.
+     * @param processingEnv the processing environment
+     * @return a DataFlowTop annotation mirror
+     */
+    public static AnnotationMirror createDataflowTop(ProcessingEnvironment processingEnv) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, DataFlowTop.class);
+        return builder.build();
+    }
+
+    /**
+     * Create a {@code @DataFlowInferenceBottom}.
+     * @param processingEnv the processing environment
+     * @return a DataFlowInferenceBottom annotation mirror
+     */
+    public static AnnotationMirror createDataflowBottom(ProcessingEnvironment processingEnv) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnv, DataFlowInferenceBottom.class);
         return builder.build();
     }
 

@@ -17,8 +17,8 @@ jobs:
         group: [cfi-tests, downstream-ontology, downstream-units, downstream-security-demo]
         jdk: [jdk8, jdk11]
     env:
-      GROUP: ${{group}}
-      JDKVER: ${{jdk}}
+      GROUP: ${{matrix.group}}
+      JDKVER: ${{matrix.jdk}}
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python 3

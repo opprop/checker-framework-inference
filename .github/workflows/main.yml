@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast:
+      fail-fast: false
       matrix:
         group: [cfi-tests, downstream-ontology, downstream-units, downstream-security-demo]
         jdk: [jdk8, jdk11]

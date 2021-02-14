@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        group: [ cfi-tests, downstream-ontology, downstream-security-demo ]
+        jdk: [ jdk8, jdk11 ]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        run: |
+          echo "REMOTE_ORIGIN_URL=${{ git config --get remote.origin.url }}" >> $GITHUB_ENV
+      - uses: addnab/docker-run-action@v1
+        with:
+          image: xingweitian/ubuntu-for-cfi-${{ matrix.jdk }}
+          run: |
+            /bin/bash -c "true &&
+            git clone --quiet -b ${GITHUB_REF##*/} ${{ env.REMOTE_ORIGIN_URL }} ${GITHUB_REPOSITORY} || git clone --quiet -b ${GITHUB_REF##*/} ${{ env.REMOTE_ORIGIN_URL }} ${GITHUB_REPOSITORY} &&
+            cd $THIS_REPO &&
+            git checkout -qf ${GITHUB_SHA} &&
+            export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` &&
+            export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8 &&
+            ./.travis-build.sh ${{ matrix.group }}"

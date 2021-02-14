@@ -31,7 +31,7 @@ jobs:
               echo "Branch=`echo ${{ github.head_ref }} | sed -E 's|refs/[a-zA-Z]+/||'`"
               branch=`echo ${{ github.head_ref }} | sed -E 's|refs/[a-zA-Z]+/||'`
             fi &&
-            git clone -b ${branch} ${{ env.REMOTE_ORIGIN_URL }} &&
+            git clone -b $branch ${{ env.REMOTE_ORIGIN_URL }} &&
             echo "REMOTE_ORIGIN_URL=${{ env.REMOTE_ORIGIN_URL }}" &&
             git clone -b ${{ github.head_ref }} ${{ env.REMOTE_ORIGIN_URL }} &&
             cd checker-framework-inference &&

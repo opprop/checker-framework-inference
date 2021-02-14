@@ -1,5 +1,5 @@
 Continuous integration status of master:
-[![Build Status](https://travis-ci.com/opprop/checker-framework-inference.png?branch=master)](https://travis-ci.com/opprop/checker-framework-inference)
+![main.yml](https://github.com/opprop/checker-framework-inference/workflows/.github/workflows/main.yml/badge.svg)
 
 Checker Framework Inference
 ===========================

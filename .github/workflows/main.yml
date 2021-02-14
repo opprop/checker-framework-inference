@@ -17,8 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-        run: |
-          echo "REMOTE_ORIGIN_URL=${{ git config --get remote.origin.url }}" >> $GITHUB_ENV
+      - run: echo "REMOTE_ORIGIN_URL=${{ git config --get remote.origin.url }}" >> $GITHUB_ENV
       - uses: addnab/docker-run-action@v1
         with:
           image: xingweitian/ubuntu-for-cfi-${{ matrix.jdk }}

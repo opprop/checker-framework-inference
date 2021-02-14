@@ -23,9 +23,8 @@ jobs:
           image: xingweitian/ubuntu-for-cfi-${{ matrix.jdk }}
           run: |
             /bin/bash -c "true &&
-            git clone --quiet -b ${GITHUB_REF##*/} ${{ env.REMOTE_ORIGIN_URL }} ${GITHUB_REPOSITORY} || git clone --quiet -b ${GITHUB_REF##*/} ${{ env.REMOTE_ORIGIN_URL }} ${GITHUB_REPOSITORY} &&
+            git clone --quiet -b ${GITHUB_REF##*/} ${{ env.REMOTE_ORIGIN_URL }} checker-framework-inference || git clone --quiet -b ${GITHUB_REF##*/} ${{ env.REMOTE_ORIGIN_URL }} checker-framework-inference &&
             cd $THIS_REPO &&
             git checkout -qf ${GITHUB_SHA} &&
-            export JAVA_HOME=\`which javac|xargs readlink -f|xargs dirname|xargs dirname\` &&
             export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8 &&
             ./.travis-build.sh ${{ matrix.group }}"

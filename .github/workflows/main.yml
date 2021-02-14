@@ -18,20 +18,18 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: echo "REMOTE_ORIGIN_URL=`git config --get remote.origin.url`" >> $GITHUB_ENV
+      - name: reattach HEAD to Head Ref
+        run: echo "BRANCH=${{ github.head_ref }} | sed -E 's|refs/[a-zA-Z]+/||')" >> $GITHUB_ENV
+        if: github.head_ref != ''
+      - name: reattach HEAD to Ref
+        run: echo "BRANCH=${{ github.ref }} | sed -E 's|refs/[a-zA-Z]+/||')" >> $GITHUB_ENV
+        if: github.head_ref == ''
       - uses: addnab/docker-run-action@v1
         with:
           image: xingweitian/ubuntu-for-cfi-${{ matrix.jdk }}
           run: |
             /bin/bash -c "true &&
-            branch='' &&
-            if [ "${{ github.head_ref }}" == "" ] ; then
-              echo "Branch=`echo ${{ github.ref }} | sed -E 's|refs/[a-zA-Z]+/||'`"
-              branch=`echo ${{ github.ref }} | sed -E 's|refs/[a-zA-Z]+/||'`
-            else
-              echo "Branch=`echo ${{ github.head_ref }} | sed -E 's|refs/[a-zA-Z]+/||'`"
-              branch=`echo ${{ github.head_ref }} | sed -E 's|refs/[a-zA-Z]+/||'`
-            fi &&
-            git clone -b $branch ${{ env.REMOTE_ORIGIN_URL }} &&
+            git clone -b ${{ env.BRANCH }} ${{ env.REMOTE_ORIGIN_URL }} &&
             echo "REMOTE_ORIGIN_URL=${{ env.REMOTE_ORIGIN_URL }}" &&
             git clone -b ${{ github.head_ref }} ${{ env.REMOTE_ORIGIN_URL }} &&
             cd checker-framework-inference &&

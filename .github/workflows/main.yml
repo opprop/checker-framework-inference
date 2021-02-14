@@ -23,7 +23,13 @@ jobs:
           image: xingweitian/ubuntu-for-cfi-${{ matrix.jdk }}
           run: |
             /bin/bash -c "true &&
-            echo "GITHUB_REF=${{ github.head_ref }}" &&
+            branch='' &&
+            if [ "${{ github.head_ref }}" == "" ] ; then
+              branch=`echo ${{ github.ref }} | sed -E 's|refs/[a-zA-Z]+/||'`
+            else
+              branch=`echo ${{ github.head_ref }} | sed -E 's|refs/[a-zA-Z]+/||'`
+            fi &&
+            git clone -b ${branch} ${{ env.REMOTE_ORIGIN_URL }}
             echo "REMOTE_ORIGIN_URL=${{ env.REMOTE_ORIGIN_URL }}" &&
             git clone -b ${{ github.head_ref }} ${{ env.REMOTE_ORIGIN_URL }} &&
             cd checker-framework-inference &&

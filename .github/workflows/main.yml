@@ -19,10 +19,14 @@ jobs:
       - uses: actions/checkout@v2
       - run: echo "REMOTE_ORIGIN_URL=`git config --get remote.origin.url`" >> $GITHUB_ENV
       - name: reattach HEAD to Head Ref
-        run: echo "BRANCH=${{ github.head_ref }} | sed -E 's|refs/[a-zA-Z]+/||'" >> $GITHUB_ENV
+        run: |
+          branch=`echo ${{ github.head_ref }} | sed -E 's|refs/[a-zA-Z]+/||'`
+          echo "BRANCH=${branch}" >> $GITHUB_ENV
         if: github.head_ref != ''
       - name: reattach HEAD to Ref
-        run: echo "BRANCH=${{ github.ref }} | sed -E 's|refs/[a-zA-Z]+/||'" >> $GITHUB_ENV
+        run: |
+          branch=`echo ${{ github.ref }} | sed -E 's|refs/[a-zA-Z]+/||'`
+          echo "BRANCH=${branch}" >> $GITHUB_ENV
         if: github.head_ref == ''
       - uses: addnab/docker-run-action@v1
         with:

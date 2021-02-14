@@ -33,8 +33,8 @@ jobs:
           image: xingweitian/ubuntu-for-cfi-${{ matrix.jdk }}
           run: |
             /bin/bash -c "true &&
-            git clone -b ${{ env.BRANCH }} ${{ env.REMOTE_ORIGIN_URL }} &&
             echo "REMOTE_ORIGIN_URL=${{ env.REMOTE_ORIGIN_URL }}" &&
+            git clone -b ${{ env.BRANCH }} ${{ env.REMOTE_ORIGIN_URL }} &&
             cd checker-framework-inference &&
             export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8 &&
             ./.travis-build.sh ${{ matrix.group }}"

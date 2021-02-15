@@ -172,7 +172,7 @@ Specifies what concrete solver is going to use.
 
   At this moment, we have below available back ends:
 
-  * `MaxSAT`: Encodes constraints as Max-SAT problem and use Sat4j library to solve.
+  * `MaxSat`: Encodes constraints as Max-SAT problem and use Sat4j library to solve.
 
   * `Lingeling`: Encodes constraints as SAT problem and use Lingeling solver to solve.
 
@@ -181,7 +181,7 @@ Specifies what concrete solver is going to use.
   * `Z3` with bit vector theory: Encodes constraints as Max-SMT problem with bit vectory theory, and use Z3 library to solve.
 
 
-  `MaxSAT` solver is used by default.
+  `MaxSat` solver is used by default.
 
 * `useGraph`
 Specifies whether to separate constraints into multiple components through constraint graph and solve them respectively. The default value is true.
@@ -195,6 +195,6 @@ Specifies whether to collect statistic with respect to timing, size of constrain
 For example, generic solver can be invoked through following command:
 
 ````
-./scripts/inference --mode INFER --checker ostrusted.OsTrustedChecker --solver checkers.inference.solver.GeneralSolver --solverArgs solver=MaxSAT,useGraph=true,collectStatistics=true,solveInParallel=false [List of files]
+./scripts/inference --mode INFER --checker ostrusted.OsTrustedChecker --solver checkers.inference.solver.GeneralSolver --solverArgs solver=MaxSat,useGraph=true,collectStatistics=true,solveInParallel=false [List of files]
 ````
 

@@ -27,10 +27,11 @@ jobs:
           branch=`echo ${{ github.ref }} | sed -E 's|refs/[a-zA-Z]+/||'`
           echo "BRANCH=${branch}" >> $GITHUB_ENV
         if: github.head_ref == ''
-      - uses: addnab/docker-run-action@v1
+      - name: Pull Request
+        if: github.head_ref != ''
+        uses: addnab/docker-run-action@v1
         with:
           image: xingweitian/ubuntu-for-cfi-${{ matrix.jdk }}
-          if: github.head_ref != ''
           run: |
             /bin/bash -c "true &&
             git clone ${{ env.REMOTE_ORIGIN_URL }} &&
@@ -39,10 +40,11 @@ jobs:
             git checkout -qf ${{ github.sha }} &&
             export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8 &&
             ./.travis-build.sh ${{ matrix.group }}"
-      - uses: addnab/docker-run-action@v1
+      - name: Push
+        if: github.head_ref == ''
+        uses: addnab/docker-run-action@v1
         with:
           image: xingweitian/ubuntu-for-cfi-${{ matrix.jdk }}
-          if: github.head_ref == ''
           run: |
             /bin/bash -c "true &&
             git clone -b ${{ env.BRANCH }} ${{ env.REMOTE_ORIGIN_URL }} &&

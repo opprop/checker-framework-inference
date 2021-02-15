@@ -1,7 +1,7 @@
 import java.util.*;
 import ostrusted.qual.*;
 
-public class TypeArgSAT {
+public class TypeArg {
     void t1(List<@OsTrusted String> li, String s) {
         // :: fixable-error: (assignment.type.incompatible)
         li.add(s);

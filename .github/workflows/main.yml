@@ -37,7 +37,7 @@ jobs:
             git clone ${{ env.REMOTE_ORIGIN_URL }} &&
             cd checker-framework-inference &&
             git fetch origin +refs/pull/${{ github.event.number }}/merge &&
-            git checkout -qf ${{ github.sha }} &&
+            git checkout -f ${{ github.sha }} &&
             export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8 &&
             ./.travis-build.sh ${{ matrix.group }}"
       - name: Push

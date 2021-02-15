@@ -33,9 +33,9 @@ jobs:
           image: xingweitian/ubuntu-for-cfi-${{ matrix.jdk }}
           run: |
             /bin/bash -c "true &&
-            echo "GITHUB_ACTOR=$GITHUB_ACTOR" &&
-            echo "GITHUB_REPOSITORY=$GITHUB_REPOSITORY" &&
-            echo "GITHUB_SHA=$GITHUB_SHA" &&
+            echo "GITHUB_ACTOR=${{ github.actor }}" &&
+            echo "GITHUB_REPOSITORY=${{ github.repository }}" &&
+            echo "GITHUB_SHA=${{ github.sha }} " &&
             echo "REMOTE_ORIGIN_URL=${{ env.REMOTE_ORIGIN_URL }}" &&
             git clone -b ${{ env.BRANCH }} ${{ env.REMOTE_ORIGIN_URL }} &&
             cd checker-framework-inference &&

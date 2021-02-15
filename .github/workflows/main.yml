@@ -18,6 +18,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: echo "REMOTE_ORIGIN_URL=`git config --get remote.origin.url`" >> $GITHUB_ENV
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
       - name: reattach HEAD to Head Ref
         run: |
           branch=`echo ${{ github.head_ref }} | sed -E 's|refs/[a-zA-Z]+/||'`
@@ -33,9 +37,6 @@ jobs:
           image: xingweitian/ubuntu-for-cfi-${{ matrix.jdk }}
           run: |
             /bin/bash -c "true &&
-            echo "GITHUB_ACTOR=${{ github.actor }}" &&
-            echo "GITHUB_REPOSITORY=${{ github.repository }}" &&
-            echo "GITHUB_SHA=${{ github.sha }} " &&
             echo "REMOTE_ORIGIN_URL=${{ env.REMOTE_ORIGIN_URL }}" &&
             git clone -b ${{ env.BRANCH }} ${{ env.REMOTE_ORIGIN_URL }} &&
             cd checker-framework-inference &&

@@ -18,22 +18,35 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - run: echo "REMOTE_ORIGIN_URL=`git config --get remote.origin.url`" >> $GITHUB_ENV
-      - name: reattach HEAD to Head Ref
-        run: |
-          branch=`echo ${{ github.head_ref }} | sed -E 's|refs/[a-zA-Z]+/||'`
-          echo "BRANCH=${branch}" >> $GITHUB_ENV
-        if: github.head_ref != ''
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
       - name: reattach HEAD to Ref
         run: |
           branch=`echo ${{ github.ref }} | sed -E 's|refs/[a-zA-Z]+/||'`
           echo "BRANCH=${branch}" >> $GITHUB_ENV
         if: github.head_ref == ''
-      - uses: addnab/docker-run-action@v1
+      - name: Pull Request
+        if: github.head_ref != ''
+        uses: addnab/docker-run-action@v1
         with:
           image: xingweitian/ubuntu-for-cfi-${{ matrix.jdk }}
           run: |
             /bin/bash -c "true &&
-            echo "REMOTE_ORIGIN_URL=${{ env.REMOTE_ORIGIN_URL }}" &&
+            git clone ${{ env.REMOTE_ORIGIN_URL }} &&
+            cd checker-framework-inference &&
+            git fetch origin +refs/pull/${{ github.event.number }}/merge &&
+            git checkout -f ${{ github.sha }} &&
+            export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8 &&
+            ./.travis-build.sh ${{ matrix.group }}"
+      - name: Push
+        if: github.head_ref == ''
+        uses: addnab/docker-run-action@v1
+        with:
+          image: xingweitian/ubuntu-for-cfi-${{ matrix.jdk }}
+          run: |
+            /bin/bash -c "true &&
             git clone -b ${{ env.BRANCH }} ${{ env.REMOTE_ORIGIN_URL }} &&
             cd checker-framework-inference &&
             export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8 &&

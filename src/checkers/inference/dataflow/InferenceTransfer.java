@@ -63,6 +63,9 @@ public class InferenceTransfer extends CFTransfer {
     // case where the correct, inferred RHS has no primary annotation
     private Map<Tree, Pair<RefinementVariableSlot, RefinementVariableSlot>> createdTypeVarRefinementVariables = new HashMap<>();
 
+    // Keeps a cache of pre-increment/pre-decrement state of postfix expression
+    private AnnotatedTypeMirror tempPostfixCache;
+
     public InferenceTransfer(InferenceAnalysis analysis) {
         super(analysis);
     }
@@ -137,24 +140,37 @@ public class InferenceTransfer extends CFTransfer {
                 assert false;
             }
 
+            if (assignmentNode.getTarget() instanceof LocalVariableNode
+                    && atm.getKind() != TypeKind.TYPEVAR) {
+                return createRefinementVar(assignmentNode.getTarget(), assignmentNode.getTree(), store, atm);
+            }
             return storeDeclaration(lhs, (VariableTree) assignmentNode.getTree(), store, typeFactory);
 
         } else if (lhs.getTree().getKind() == Tree.Kind.IDENTIFIER
                 || lhs.getTree().getKind() == Tree.Kind.MEMBER_SELECT) {
-            // Create Refinement Variable
 
-            UnaryTree unaryTree = analysis.getUnaryTreeForAssign(assignmentNode);
-            if (unaryTree != null &&
-                    (unaryTree.getKind() == Tree.Kind.POSTFIX_INCREMENT ||
-                     unaryTree.getKind() == Tree.Kind.POSTFIX_DECREMENT)) {
-                // If the underlying tree is a postfix increment/decrement unary tree,
-                // record the annotated type of the unary tree before it's refined,
-                // which will be used to generate equality constraint for tempPostfix
-                // variable by InferenceVisitor.
-                AnnotatedTypeMirror refinedATM = typeFactory.getAnnotatedType(unaryTree.getExpression());
-                typeFactory.cacheTempVariableRefinedType(unaryTree, refinedATM);
+            Tree realTree = typeFactory.getPath(assignmentNode.getTree()).getLeaf();
+            if (isPostfix(realTree)) {
+                if (tempPostfixCache != null) {
+                    // If the cache is non-null, it means the current assignment tree is `tempPostfix#num0 = x`.
+                    // DO NOT create refinement variable, but update the value of `tempPostfix#num0` with the cache.
+                    // Don't forget to reset the cache and prepare it for the next postfix expression.
+                    CFValue result = analysis.createAbstractValue(tempPostfixCache);
+                    getInferenceAnalysis().getNodeValues().put(lhs, result);
+                    store.updateForAssignment(lhs, result);
+                    // CFValue doesn't hold the reference of `tempPostfixCache`, so re-assign the cache
+                    // doesn't matter
+                    tempPostfixCache = null;
+                    logger.fine("underlying tree is UnaryTree, update node value: " + result + "\n\n");
+                    return new RegularTransferResult<CFValue, CFStore>(finishValue(result, store), store);
+                }
+                // Empty cache means the current assignment tree is `x = x + 1`,
+                // load the current refinment variable for `x` into the cache
+                // for future use.
+                tempPostfixCache = typeFactory.getAnnotatedType(((UnaryTree) realTree).getExpression());
             }
 
+            // Create Refinement Variable
             final TransferResult<CFValue, CFStore> result;
             if (atm.getKind() == TypeKind.TYPEVAR) {
                 result = createTypeVarRefinementVars(assignmentNode.getTarget(), assignmentNode.getTree(),
@@ -210,6 +226,11 @@ public class InferenceTransfer extends CFTransfer {
             AnnotatedTypeMirror atm) {
 
         Slot slotToRefine = getInferenceAnalysis().getSlotManager().getVariableSlot(atm);
+        // Getting the declared type of a RefinementVariableSlot
+        // getRefined() should always return the slot of the declared type value
+        if (slotToRefine instanceof RefinementVariableSlot) {
+        	slotToRefine = ((RefinementVariableSlot)slotToRefine).getRefined();
+        }
 
         logger.fine("Creating refinement variable for tree: " + assignmentTree);
         RefinementVariableSlot refVar;
@@ -384,5 +405,15 @@ public class InferenceTransfer extends CFTransfer {
 
     private boolean isDeclarationWithInitializer(AssignmentNode assignmentNode) {
         return (assignmentNode.getTree().getKind() == Tree.Kind.VARIABLE);
+    }
+
+    /**
+     * Checks if a {@link Tree} is a postfix increment/decrement unary tree
+     * @param node {@link Tree} to be checked
+     * @return true if the given tree is a postfix increment/decrement unary tree
+     */
+    private boolean isPostfix(Tree node) {
+        return node.getKind() == Tree.Kind.POSTFIX_INCREMENT ||
+                node.getKind() == Tree.Kind.POSTFIX_DECREMENT;
     }
 }

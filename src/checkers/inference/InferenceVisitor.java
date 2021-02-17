@@ -44,7 +44,6 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 
 
@@ -853,34 +852,5 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     // Do NOT perform this check until issue #218 is resolved
     protected void checkConstructorResult(
             AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {}
-    
-    @Override
-    public Void visitUnary(UnaryTree node, Void p) {
-        if (!infer) {
-            return super.visitUnary(node, p);
-        }
-
-        switch (node.getKind()) {
-            case POSTFIX_INCREMENT:
-            case POSTFIX_DECREMENT:
-                // For postfix increment/decrement, add additional equality constraint
-                // between the refined type of `tempPostfix#num` (which is stored in ATF)
-                // and the expression type.
-                AnnotatedTypeMirror tempPostfixATM = ((InferenceAnnotatedTypeFactory) atypeFactory).getTempVariableRefinedType(node);
-                if (tempPostfixATM != null) {
-                    AnnotatedTypeMirror expType = atypeFactory.getAnnotatedType(node);
-                    areEqual(tempPostfixATM, expType, "", node);
-                }
-            case PREFIX_INCREMENT:
-            case PREFIX_DECREMENT:
-                AnnotatedTypeMirror varType = atypeFactory.getAnnotatedType(node.getExpression());
-                AnnotatedTypeMirror valueType = atypeFactory.getAnnotatedTypeRhsUnaryAssign(node);
-                commonAssignmentCheck(varType, valueType, node, "");
-                return null;
-
-            default:
-                return super.visitUnary(node, p);
-        }
-    }
     
 }

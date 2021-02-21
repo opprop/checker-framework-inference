@@ -16,38 +16,25 @@ jobs:
         jdk: [ jdk8, jdk11 ]
     runs-on: ubuntu-latest
     steps:
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install ant cpp gradle jq libcurl3-gnutls make maven mercurial python3-requests unzip wget binutils build-essential
+      - name: Checkout
       - uses: actions/checkout@v2
-      - run: echo "REMOTE_ORIGIN_URL=`git config --get remote.origin.url`" >> $GITHUB_ENV
+      - name: Set up Python 3
+      - uses: actions/setup-python@v2
+        with:
+          python-version: '3.8'
       - name: Dump GitHub context
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
-      - name: reattach HEAD to Ref
+      - name: Install Python dependencies
         run: |
-          branch=`echo ${{ github.ref }} | sed -E 's|refs/[a-zA-Z]+/||'`
-          echo "BRANCH=${branch}" >> $GITHUB_ENV
-        if: github.head_ref == ''
-      - name: Pull Request
-        if: github.head_ref != ''
-        uses: addnab/docker-run-action@v1
-        with:
-          image: xingweitian/ubuntu-for-cfi-${{ matrix.jdk }}
-          run: |
-            /bin/bash -c "true &&
-            git clone ${{ env.REMOTE_ORIGIN_URL }} &&
-            cd checker-framework-inference &&
-            git fetch origin +refs/pull/${{ github.event.number }}/merge &&
-            git checkout -f ${{ github.sha }} &&
-            export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8 &&
-            ./.travis-build.sh ${{ matrix.group }}"
-      - name: Push
-        if: github.head_ref == ''
-        uses: addnab/docker-run-action@v1
-        with:
-          image: xingweitian/ubuntu-for-cfi-${{ matrix.jdk }}
-          run: |
-            /bin/bash -c "true &&
-            git clone -b ${{ env.BRANCH }} ${{ env.REMOTE_ORIGIN_URL }} &&
-            cd checker-framework-inference &&
-            export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8 &&
-            ./.travis-build.sh ${{ matrix.group }}"
+          python3 -m pip3 install --upgrade pip
+          if [ -f requirements.txt ]; then pip3 install -r requirements.txt; fi
+      - name: Build
+        run: |
+          export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8 &&
+          ./.ci-build.sh ${{ matrix.group }}"

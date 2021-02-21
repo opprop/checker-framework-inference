@@ -248,7 +248,7 @@ task release(type: Zip) {
 
 task cloneAndBuildDependencies(type: Exec) {
     description 'Clones (or updates) and builds all dependencies'
-    executable './.travis-build-without-test.sh'
+    executable './.ci-build-without-test.sh'
 }
 
 task testCheckerInferenceScript(type: Exec, dependsOn: dist) {
@@ -272,7 +272,7 @@ task testCheckerInferenceDevScript(type: Exec, dependsOn: [dist, dependenciesJar
 
 task testDataflowExternalSolvers(type: Exec, dependsOn: [dist, dependenciesJar]) {
     description 'Test Dataflow type system on its external solvers Lingeling and LogicBlox'
-    executable './testing/dataflowexample/travis-test.sh'
+    executable './testing/dataflowexample/ci-test.sh'
 }
 
 afterEvaluate {

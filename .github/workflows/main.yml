@@ -34,9 +34,16 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Pull Request
+        if: github.head_ref != ''
+        run: |
+          git fetch origin +refs/pull/${{ github.event.number }}/merge
+          git checkout -qf ${{ github.sha }}
+          git config user.email noone@cares.com
+          git config user.name Noone Cares
+          git remote add theupstream https://github.com/${{ github.repository }}.git
+          git pull theupstream ${{ github.base_ref }}
       - name: Build
         run: |
-          echo `git branch`
-          echo `git config --get remote.origin.url`
           export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
           ./.ci-build.sh ${{ matrix.group }}

@@ -42,6 +42,7 @@ jobs:
             git config user.name Noone Cares
             git fetch theupstream ${{ github.event.pull_request.head.repo.clone_url }}
             git checkout -b ${{ github.head_ref }} theupstream/${{ github.head_ref }}
+            git clone -b ${{ github.head_ref }} https://github.com/${{ github.repository_owner }}/checker-framework ../checker-framework
           fi
       - name: Build
         run: |

@@ -36,5 +36,7 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Build
         run: |
+          echo `git branch`
+          echo `git config --get remote.origin.url`
           export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
           ./.ci-build.sh ${{ matrix.group }}

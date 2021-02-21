@@ -36,5 +36,5 @@ jobs:
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Build
         run: |
-          export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8 &&
-          ./.ci-build.sh ${{ matrix.group }}"
+          export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8
+          ./.ci-build.sh ${{ matrix.group }}

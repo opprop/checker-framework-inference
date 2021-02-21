@@ -37,12 +37,12 @@ jobs:
       - name: Pull Request
         if: github.head_ref != ''
         run: |
-          git fetch origin +refs/pull/${{ github.event.number }}/merge
-          git checkout -qf ${{ github.sha }}
-          git config user.email noone@cares.com
-          git config user.name Noone Cares
-          git remote add theupstream https://github.com/${{ github.repository }}.git
-          git pull theupstream ${{ github.base_ref }} --allow-unrelated-histories
+          if [ ${{ github.repository_owner }} != opprop ] ; then
+            git config user.email noone@cares.com
+            git config user.name Noone Cares
+            git fetch theupstream ${{ github.event.pull_request.base.repo.clone_url }}
+            git checkout -b ${{ github.head_ref }} theupstream/${{ github.head_ref }}
+          fi
       - name: Build
         run: |
           export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8

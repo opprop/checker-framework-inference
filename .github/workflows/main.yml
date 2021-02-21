@@ -42,7 +42,7 @@ jobs:
           git config user.email noone@cares.com
           git config user.name Noone Cares
           git remote add theupstream https://github.com/${{ github.repository }}.git
-          git pull theupstream ${{ github.base_ref }}
+          git pull theupstream ${{ github.base_ref }} --allow-unrelated-histories
       - name: Build
         run: |
           export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8

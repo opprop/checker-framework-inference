@@ -20,8 +20,15 @@ jobs:
         run: |
           sudo apt update
           sudo apt install ant cpp gradle jq libcurl3-gnutls make maven mercurial python3-requests unzip wget binutils build-essential
-      - name: Checkout
+      - name: Pull Request Checkout
         uses: actions/checkout@v2
+        with:
+          ref: ${{github.event.pull_request.head.ref}}
+          repository: ${{github.event.pull_request.head.repo.full_name}}
+        if: github.head_ref != ''
+      - name: Push Checkout
+        uses: actions/checkout@v2
+        if: github.head_ref == ''
       - name: Set up Python 3
         uses: actions/setup-python@v2
         with:
@@ -34,16 +41,16 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - name: Pull Request
-        if: github.head_ref != ''
-        run: |
-          if [ ${{ github.repository_owner }} != opprop ] ; then
-            git config user.email noone@cares.com
-            git config user.name Noone Cares
-            git fetch theupstream ${{ github.event.pull_request.head.repo.clone_url }}
-            git checkout -b ${{ github.head_ref }} theupstream/${{ github.head_ref }}
-            git clone -b ${{ github.head_ref }} https://github.com/${{ github.repository_owner }}/checker-framework ../checker-framework
-          fi
+#      - name: Pull Request
+#        if: github.head_ref != ''
+#        run: |
+#          if [ ${{ github.event.pull_request.head.repo.full_name }} != opprop ] ; then
+#            git config user.email noone@cares.com
+#            git config user.name Noone Cares
+#            git fetch theupstream ${{ github.event.pull_request.head.repo.clone_url }}
+#            git checkout -b ${{ github.head_ref }} theupstream/${{ github.head_ref }}
+#            git clone -b ${{ github.head_ref }} https://github.com/${{ github.repository_owner }}/checker-framework ../checker-framework
+#          fi
       - name: Build
         run: |
           export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8

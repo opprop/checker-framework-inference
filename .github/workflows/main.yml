@@ -41,16 +41,6 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-#      - name: Pull Request
-#        if: github.head_ref != ''
-#        run: |
-#          if [ ${{ github.event.pull_request.head.repo.full_name }} != opprop ] ; then
-#            git config user.email noone@cares.com
-#            git config user.name Noone Cares
-#            git fetch theupstream ${{ github.event.pull_request.head.repo.clone_url }}
-#            git checkout -b ${{ github.head_ref }} theupstream/${{ github.head_ref }}
-#            git clone -b ${{ github.head_ref }} https://github.com/${{ github.repository_owner }}/checker-framework ../checker-framework
-#          fi
       - name: Build
         run: |
           export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8

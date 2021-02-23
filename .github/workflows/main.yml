@@ -11,6 +11,7 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
         group: [ cfi-tests, downstream-ontology, downstream-security-demo ]
         jdk: [ 8, 11 ]

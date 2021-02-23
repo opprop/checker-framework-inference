@@ -1,5 +1,6 @@
 package checkers.inference.solver.frontend;
 
+import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -8,7 +9,9 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
+import checkers.inference.InferenceMain;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 import checkers.inference.model.ConstantSlot;
@@ -33,6 +36,9 @@ public class LatticeBuilder {
 
     /**
      * All type qualifiers in underling type system.
+     * Requires annotation ordering, so must created with {@code AnnotationUtils.createAnnotationSet()} when constructing from empty set,
+     * even if being converted to {@code UnmodifiableSet} later on
+     * TODO remove the dependency to TreeSet
      */
     private Set<? extends AnnotationMirror> allTypes;
 
@@ -73,13 +79,27 @@ public class LatticeBuilder {
      * @param qualHierarchy of underling type system.
      * @return a new Lattice instance.
      */
-    @SuppressWarnings("deprecation") // replace getTypeQualifiers
     public Lattice buildLattice(QualifierHierarchy qualHierarchy, Collection<Slot> slots) {
         clear();
-        allTypes = qualHierarchy.getTypeQualifiers();
+
+        Set<AnnotationMirror> supportedAnnos = AnnotationUtils.createAnnotationSet();
+        Set<Class<? extends Annotation>> annoClasses =
+                InferenceMain.getInstance().getRealTypeFactory().getSupportedTypeQualifiers();
+        for (Class<? extends Annotation> ac: annoClasses) {
+            supportedAnnos.add(new AnnotationBuilder(
+                    InferenceMain.getInstance().getRealTypeFactory().getProcessingEnv(), ac).build());
+        }
+
         top = qualHierarchy.getTopAnnotations().iterator().next();
         bottom = qualHierarchy.getBottomAnnotations().iterator().next();
-        numTypes = qualHierarchy.getTypeQualifiers().size();
+
+        // this is a workaround for "computed" bottoms. e.g. DataFlow bottom
+        if (!AnnotationUtils.containsSame(supportedAnnos, bottom)) {
+            supportedAnnos.add(bottom);
+        }
+
+        allTypes = Collections.unmodifiableSet(supportedAnnos);
+        numTypes = supportedAnnos.size();
 
         // Calculate subtypes map and supertypes map
         for (AnnotationMirror i : allTypes) {

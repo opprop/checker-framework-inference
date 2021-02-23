@@ -47,7 +47,7 @@ public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
     @Override
     @Test
     public void run() {
-        boolean shouldEmitDebugInfo = TestUtilities.testBooleanProperty("emit.test.debug");
+        boolean shouldEmitDebugInfo = TestUtilities.getShouldEmitDebugInfo();
         Pair<String, List<String>> solverArgs = getSolverNameAndOptions();
 
         final File testDataDir = new File("testdata");

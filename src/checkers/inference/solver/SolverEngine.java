@@ -61,7 +61,7 @@ public class SolverEngine implements InferenceSolver {
         collectStatistics,
 
         /**
-         * whether to write solutions (or unsolveable) to file output or not
+         * whether to write solutions (or unsolvable) to file output or not
          */
         writeSolutions,
 
@@ -82,7 +82,7 @@ public class SolverEngine implements InferenceSolver {
             Class<?> SolverFactoryClass = Class.forName(solverPackageName + "." + solverFactoryClassName);
             return (SolverFactory) SolverFactoryClass.getConstructor().newInstance();
         } catch (Exception e) {
-            throw new BugInCF("Exceptions happends when creating the solver factory for " + solverName, e);
+            throw new BugInCF("Exceptions happen when creating the solver factory for " + solverName, e);
         }
     }
 
@@ -98,7 +98,7 @@ public class SolverEngine implements InferenceSolver {
             Class<?> solverStrategyClass = Class.forName(STRATEGY_PACKAGE_NAME + "." + strategyClassName);
             return (SolvingStrategy) solverStrategyClass.getConstructor(SolverFactory.class).newInstance(solverFactory);
         } catch (Exception e) {
-            throw new BugInCF(e.getClass().getSimpleName() + " happends when creating [" + strategyName + "] solving strategy!", e);
+            throw new BugInCF(e.getClass().getSimpleName() + " happens when creating [" + strategyName + "] solving strategy!", e);
         }
     }
 

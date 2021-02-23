@@ -25,7 +25,7 @@ if [[ "${GROUP}" != "cfi-tests" && "${GROUP}" != downstream* && "${GROUP}" != "a
   exit 1
 fi
 
-. ./.travis-build-without-test.sh
+. ./.ci-build-without-test.sh
 
 # Test CF Inference
 if [[ "${GROUP}" == "cfi-tests" || "${GROUP}" == "all" ]]; then

@@ -17,5 +17,5 @@ CFI=$ROOT/checker-framework-inference
 AFU=$ROOT/annotation-tools/annotation-file-utilities
 Z3=$ROOT/z3/bin
 
-PATH=$AFU/scripts:$PATH
+export PATH=$AFU/scripts:$Z3:$PATH
 

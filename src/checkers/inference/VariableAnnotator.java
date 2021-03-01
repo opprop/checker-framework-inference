@@ -749,18 +749,8 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * Visit the extends, implements, and type parameters of the given class type and tree.
      */
     protected void handleClassDeclaration(AnnotatedDeclaredType classType, ClassTree classTree) {
-        handleExtendsClause(classType, classTree);
+        handleExtendsAndImplementsClause(classType, classTree);
 
-//        // TODO: NOT SURE THIS HANDLES MEMBER SELECT CORRECTLY
-//        int interfaceIndex = 1;
-//        for(Tree implementsTree : classTree.getImplementsClause()) {
-//            final AnnotatedTypeMirror implementsType = inferenceTypeFactory.getAnnotatedTypeFromTypeTree(implementsTree);
-//            AnnotatedTypeMirror supertype = classType.directSuperTypes().get(interfaceIndex);
-//            assert supertype.getUnderlyingType() == implementsType.getUnderlyingType();
-//            visit(supertype, implementsTree);
-//            interfaceIndex++;
-//        }
-//
         if (InferenceMain.isHackMode(
                 (classType.getTypeArguments().size() != classTree.getTypeParameters().size()))) {
             return;
@@ -776,6 +766,16 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         Element classElement = classType.getUnderlyingType().asElement();
         storeElementType(classElement, classType);
 
+    }
+
+    /**
+     * Defines how extends and implicit clause is visited during {@code handleClassDeclaration}
+     * @param classType the type of the class
+     * @param classTree the tree of the class
+     */
+    protected void handleExtendsAndImplementsClause(AnnotatedDeclaredType classType, ClassTree classTree) {
+        handleExtendsClause(classType, classTree);
+        handleImplementsClause(classType, classTree);
     }
 
     /**
@@ -825,6 +825,24 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
     protected void handleExplicitExtends(Tree extendsTree) {
         final AnnotatedTypeMirror extendsType = inferenceTypeFactory.getAnnotatedTypeFromTypeTree(extendsTree);
         visit(extendsType, extendsTree);
+    }
+
+    /**
+     * Defines how implements clause is visited during {@code handleClassDeclaration}
+     * @param classType the type of the class
+     * @param classTree the tree of the class
+     */
+    protected void handleImplementsClause(AnnotatedDeclaredType classType, ClassTree classTree) {
+//        // TODO: NOT SURE THIS HANDLES MEMBER SELECT CORRECTLY
+//        int interfaceIndex = 1;
+//        for(Tree implementsTree : classTree.getImplementsClause()) {
+//            final AnnotatedTypeMirror implementsType = inferenceTypeFactory.getAnnotatedTypeFromTypeTree(implementsTree);
+//            AnnotatedTypeMirror supertype = classType.directSuperTypes().get(interfaceIndex);
+//            assert supertype.getUnderlyingType() == implementsType.getUnderlyingType();
+//            visit(supertype, implementsTree);
+//            interfaceIndex++;
+//        }
+
     }
 
     /**

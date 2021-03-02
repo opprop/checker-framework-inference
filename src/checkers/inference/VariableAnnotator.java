@@ -1631,10 +1631,10 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         if (declSlot == null) {
             Tree decl = inferenceTypeFactory.declarationFromElement(classDecl);
             if (decl != null) {
-                VariableSlot potentialDeclSlot = createVariable(decl);
-                declSlot = getOrCreateExistentialVariable(potentialDeclSlot, topConstant);
-                classDeclAnnos.put(classDecl, potentialDeclSlot);
-
+                // Since each class decl should have a slot,
+                // do not use existential slot here.
+                declSlot = createVariable(decl);
+                classDeclAnnos.put(classDecl, declSlot);
             } else {
                 declSlot = topConstant;
             }

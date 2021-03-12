@@ -23,6 +23,7 @@ import java.util.logging.Logger;
 
 import javax.lang.model.type.TypeKind;
 
+import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.UnaryTree;
@@ -225,13 +226,18 @@ public class InferenceTransfer extends CFTransfer {
 
         atm.replaceAnnotation(getInferenceAnalysis().getSlotManager().getAnnotation(refVar));
 
+        // cache this atm for use in InferenceVisitor.commonAssignmentCheck
+        InferenceAnnotatedTypeFactory typeFactory = (InferenceAnnotatedTypeFactory) analysis.getTypeFactory();
+        Tree targetTree;
+        if (assignmentTree instanceof AssignmentTree) {
+            targetTree = ((AssignmentTree) assignmentTree).getVariable();
+        } else {
+            targetTree = assignmentTree;
+        }
+        typeFactory.cacheRefinedTypeForTree(targetTree, atm);
+
         // add refinement variable value to output
         CFValue result = analysis.createAbstractValue(atm);
-
-        // This is a bit of a hack, but we want the LHS to now get the refinement annotation.
-        // So change the value for LHS that is already in the store.
-        getInferenceAnalysis().getNodeValues().put(lhs, result);
-
         store.updateForAssignment(lhs, result);
         return new RegularTransferResult<CFValue, CFStore>(finishValue(result, store), store);
     }
@@ -346,13 +352,18 @@ public class InferenceTransfer extends CFTransfer {
         upperBoundType.replaceAnnotation(slotManager.getAnnotation(upperBoundRefVar));
         lowerBoundType.replaceAnnotation(slotManager.getAnnotation(lowerBoundRefVar));
 
+        // cache this atm for use in InferenceVisitor.commonAssignmentCheck
+        InferenceAnnotatedTypeFactory typeFactory = (InferenceAnnotatedTypeFactory) analysis.getTypeFactory();
+        Tree targetTree;
+        if (assignmentTree instanceof AssignmentTree) {
+            targetTree = ((AssignmentTree) assignmentTree).getVariable();
+        } else {
+            targetTree = assignmentTree;
+        }
+        typeFactory.cacheRefinedTypeForTree(targetTree, typeVar);
+
         // add refinement variable value to output
         CFValue result = analysis.createAbstractValue(typeVar);
-
-        // This is a bit of a hack, but we want the LHS to now get the refinement annotation.
-        // So change the value for LHS that is already in the store.
-        getInferenceAnalysis().getNodeValues().put(lhs, result);
-
         store.updateForAssignment(lhs, result);
         return new RegularTransferResult<CFValue, CFStore>(finishValue(result, store), store);
     }

@@ -464,7 +464,12 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         // Refinement variables come from flow inference, so we need to call getAnnotatedType instead of getDefaultedAnnotatedType
         AnnotatedTypeMirror var;
         if (this.infer) {
-            var = atypeFactory.getAnnotatedType(varTree);
+            // Instead of the LHS's annotated type, get the annotated type after refinement,
+            // which was cached during dataflow analysis.
+            var = ((InferenceAnnotatedTypeFactory)atypeFactory).getRefinedTypeForTree(varTree);
+            if (var == null) {
+                var = atypeFactory.getAnnotatedType(varTree);
+            }
         } else {
             var = atypeFactory.getAnnotatedTypeLhs(varTree);
         }

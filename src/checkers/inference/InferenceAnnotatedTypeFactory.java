@@ -124,6 +124,12 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // the same variable slot for all of these locations.  This map contains those variables.
     private Map<Class<? extends Annotation>, VariableSlot> constantToVarAnnot = new HashMap<>();
 
+    /**
+     * This field caches the mappings from lhs tree of an assignment to the corresponding
+     * annotated type after refinement.
+     */
+    private final Map<Tree, AnnotatedTypeMirror> treeToRefinedType = new HashMap<>();
+
     public InferenceAnnotatedTypeFactory(
             InferenceChecker inferenceChecker,
             boolean withCombineConstraints,
@@ -575,6 +581,29 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected Set<? extends AnnotationMirror> getDefaultTypeDeclarationBounds() {
         return realTypeFactory.getQualifierHierarchy().getTopAnnotations();
+    }
+
+    /**
+     * Gets the refined type of the lhs tree (of an assignment)
+     * @param node
+     * @return
+     */
+    public AnnotatedTypeMirror getRefinedTypeForTree(Tree node) {
+        if (node != null) {
+            return treeToRefinedType.get(node);
+        }
+        return null;
+    }
+
+    /**
+     * Caches the refined type of the lhs tree (of an assignment)
+     * @param node
+     * @param atm
+     */
+    public void cacheRefinedTypeForTree(Tree node, AnnotatedTypeMirror atm) {
+        if (node != null && treeToRefinedType.containsKey(node)) {
+            treeToRefinedType.put(node, atm);
+        }
     }
 }
 

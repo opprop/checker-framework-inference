@@ -33,7 +33,7 @@ import checkers.inference.solver.util.Statistics;
  */
 public class LingelingSolver extends MaxSatSolver {
 
-    // Lingeling binary executable file should be located at checker-framework-inference/lib/lingeling.
+    // Ensure the path to Lingeling binary executable file has been added into $PATH.
     private final String lingeling = "lingeling";
 
     // record cnf integers in clauses. lingeling solver give the answer for all

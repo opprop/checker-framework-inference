@@ -4,8 +4,7 @@ set -e
 
 WORKING_DIR=$(cd $(dirname "$0") && pwd)
 
-CFI=$(cd $WORKING_DIR/../../ && pwd)
-. $CFI/scripts/runtime-env-setup.sh
+. $WORKING_DIR/../../scripts/runtime-env-setup.sh
 
 ## Build libs for test
 (cd $WORKING_DIR && ant compile-libs)

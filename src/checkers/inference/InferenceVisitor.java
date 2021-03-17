@@ -17,7 +17,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
@@ -855,9 +855,8 @@ public class InferenceVisitor<Checker extends InferenceChecker,
             AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
         if (infer) {
             AnnotatedTypeMirror returnType = constructorType.getReturnType();
-            final AnnotatedDeclaredType classType  = atypeFactory.getAnnotatedType(ElementUtils.enclosingClass(constructorElement));
+            final AnnotatedDeclaredType classType  = atypeFactory.getAnnotatedType(TreeUtils.enclosingClass(getCurrentPath()));
             areEqual(returnType, classType, "", getCurrentPath().getLeaf());
         }
     }
-    
 }

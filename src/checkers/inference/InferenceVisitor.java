@@ -17,6 +17,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
@@ -851,6 +852,12 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     @Override
     // Do NOT perform this check until issue #218 is resolved
     protected void checkConstructorResult(
-            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {}
+            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
+        if (infer) {
+            AnnotatedTypeMirror returnType = constructorType.getReturnType();
+            final AnnotatedDeclaredType classType  = atypeFactory.getAnnotatedType(ElementUtils.enclosingClass(constructorElement));
+            areEqual(returnType, classType, "", getCurrentPath().getLeaf());
+        }
+    }
     
 }

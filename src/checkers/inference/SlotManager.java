@@ -54,7 +54,7 @@ public interface SlotManager {
      *            a potential downward refinement of an existing VariableSlot
      * @return RefinementVariableSlot that corresponds to this location
      */
-    RefinementVariableSlot createRefinementVariableSlot(AnnotationLocation location, Slot refined);
+    RefinementVariableSlot createRefinementVariableSlot(AnnotationLocation location, Slot refined, Slot refineTo);
 
     /**
      * Create new ConstrantSlot and returns the reference to it if no

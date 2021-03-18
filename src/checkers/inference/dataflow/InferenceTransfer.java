@@ -155,7 +155,12 @@ public class InferenceTransfer extends CFTransfer {
                 result = createTypeVarRefinementVars(assignmentNode.getTarget(), assignmentNode.getTree(),
                                                      store, (AnnotatedTypeVariable) atm);
             } else {
-                result = createRefinementVar(assignmentNode.getTarget(), assignmentNode.getTree(), store, atm);
+                Tree valueTree = assignmentNode.getExpression().getTree();
+                AnnotatedTypeMirror valueType = typeFactory.getAnnotatedType(valueTree);
+                if (valueType.getKind() == TypeKind.TYPEVAR) {
+                    valueType = InferenceUtil.findUpperBoundType((AnnotatedTypeVariable) valueType);
+                }
+                result = createRefinementVar(assignmentNode.getTarget(), assignmentNode.getTree(), store, atm, valueType);
             }
 
             return result;
@@ -198,13 +203,16 @@ public class InferenceTransfer extends CFTransfer {
      * @param assignmentTree The tree for the assignment
      * @param store The store to update
      * @param atm The type of the variable being refined
+     * @param valueAtm The type that the variable is refined to
      * @return
      */
     private TransferResult<CFValue, CFStore> createRefinementVar(Node lhs,
             Tree assignmentTree, CFStore store,
-            AnnotatedTypeMirror atm) {
+            AnnotatedTypeMirror atm, AnnotatedTypeMirror valueAtm) {
 
-        Slot slotToRefine = getInferenceAnalysis().getSlotManager().getVariableSlot(atm);
+        SlotManager slotManager = getInferenceAnalysis().getSlotManager();
+        Slot slotToRefine = slotManager.getVariableSlot(atm);
+        Slot refineTo = slotManager.getVariableSlot(valueAtm);
 
         logger.fine("Creating refinement variable for tree: " + assignmentTree);
         RefinementVariableSlot refVar;
@@ -212,7 +220,7 @@ public class InferenceTransfer extends CFTransfer {
             refVar = createdRefinementVariables.get(assignmentTree);
         } else {
             AnnotationLocation location = VariableAnnotator.treeToLocation(analysis.getTypeFactory(), assignmentTree);
-            refVar = getInferenceAnalysis().getSlotManager().createRefinementVariableSlot(location, slotToRefine);
+            refVar = getInferenceAnalysis().getSlotManager().createRefinementVariableSlot(location, slotToRefine, refineTo);
 
             // Fields from library methods can be refined, but the slotToRefine is a ConstantSlot
             // which does not have a refined slots field.
@@ -227,10 +235,6 @@ public class InferenceTransfer extends CFTransfer {
 
         // add refinement variable value to output
         CFValue result = analysis.createAbstractValue(atm);
-
-        // This is a bit of a hack, but we want the LHS to now get the refinement annotation.
-        // So change the value for LHS that is already in the store.
-        getInferenceAnalysis().getNodeValues().put(lhs, result);
 
         store.updateForAssignment(lhs, result);
         return new RegularTransferResult<CFValue, CFStore>(finishValue(result, store), store);
@@ -334,8 +338,8 @@ public class InferenceTransfer extends CFTransfer {
 
         } else {
             AnnotationLocation location = VariableAnnotator.treeToLocation(analysis.getTypeFactory(), assignmentTree);
-            upperBoundRefVar = slotManager.createRefinementVariableSlot(location, upperBoundSlot);
-            lowerBoundRefVar = slotManager.createRefinementVariableSlot(location, lowerBoundSlot);
+            upperBoundRefVar = slotManager.createRefinementVariableSlot(location, upperBoundSlot, null);
+            lowerBoundRefVar = slotManager.createRefinementVariableSlot(location, lowerBoundSlot, null);
 
             upperBoundSlot.getRefinedToSlots().add(upperBoundRefVar);
             lowerBoundSlot.getRefinedToSlots().add(lowerBoundRefVar);

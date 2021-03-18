@@ -642,30 +642,8 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                 }
             }
         } else {
-
             // TODO: RECONSIDER THIS WHEN WE CONSIDER WILDCARDS
-            if (varType.getKind() != TypeKind.WILDCARD) {
-                Slot sup = InferenceMain.getInstance().getSlotManager().getVariableSlot(varType);
-                if (sup instanceof RefinementVariableSlot && !InferenceMain.getInstance().isPerformingFlow()) {
-                    inferenceRefinementVariable = true;
-
-                    final AnnotatedTypeMirror upperBound;
-                    if (valueType.getKind() == TypeKind.TYPEVAR) {
-                        upperBound = InferenceUtil.findUpperBoundType((AnnotatedTypeVariable) valueType);
-                    } else {
-                        upperBound = valueType;
-                    }
-
-                    Slot sub = slotManager.getVariableSlot(upperBound);
-                    logger.fine("InferenceVisitor::commonAssignmentCheck: Equality constraint for qualifiers sub: " + sub + " sup: " + sup);
-
-                    // Equality between the refvar and the value
-                    constraintManager.addEqualityConstraint(sup, sub);
-
-                    // Refinement variable still needs to be a subtype of its declared type value
-                    constraintManager.addSubtypeConstraint(sup,
-                            ((RefinementVariableSlot) sup).getRefined());
-                }
+            if (varType.getKind() == TypeKind.WILDCARD) {
             }
         }
 

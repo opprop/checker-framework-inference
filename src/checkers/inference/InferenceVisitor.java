@@ -17,6 +17,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreeUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
@@ -39,6 +40,7 @@ import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.InferenceUtil;
 
 import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ThrowTree;
@@ -89,8 +91,9 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         return (Factory)((BaseInferrableChecker)checker).getTypeFactory();
     }
 
-    public boolean isValidUse(final AnnotatedDeclaredType declarationType,
-                              final AnnotatedDeclaredType useType) {
+    @Override
+    public boolean isValidUse(
+            AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
         // TODO at least for the UTS we don't check annotations on the class declaration
         //   println("InferenceChecker::isValidUse: decl: " + declarationType)
         //   println("InferenceChecker::isValidUse: use: " + useType)
@@ -832,13 +835,22 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                     // not use void as return type.
                     return true;
                 }
+
+                // For the sake of well-formedness, only the constructor's return type is validated,
+                // because unlike normal methods bounded by declared return type, constructor result
+                // should always be subtype of class declaration bound.
+                if (TreeUtils.isConstructor((MethodTree) tree)) {
+                    ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
+                    AnnotatedTypeMirror bound = atypeFactory.getAnnotatedType(enclosingClass);
+                    atypeFactory.getTypeHierarchy().isSubtype(type.getErased(), bound.getErased());
+                }
                 break;
             default:
                 type = atypeFactory.getAnnotatedType(tree);
         }
 
         // TODO: THIS MIGHT FAIL
-        typeValidator.isValid(type, tree);
+        // typeValidator.isValid(type, tree);
         // more checks (also specific to checker, potentially)
         return true;
     }

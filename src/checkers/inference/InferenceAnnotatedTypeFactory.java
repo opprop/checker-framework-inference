@@ -589,7 +589,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public Set<AnnotationMirror> getTypeDeclarationBounds(TypeMirror type) {
         AnnotationMirror vAnno =
                 variableAnnotator.getClassDeclVarAnnot(getProcessingEnv().getTypeUtils().asElement(type));
-        return vAnno == null ? Collections.singleton(vAnno) : super.getTypeDeclarationBounds(type);
+        return vAnno != null ? Collections.singleton(vAnno) : super.getTypeDeclarationBounds(type);
     }
 }
 

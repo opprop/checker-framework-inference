@@ -838,7 +838,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         }
 
         // TODO: THIS MIGHT FAIL
-//        typeValidator.isValid(type, tree);
+        typeValidator.isValid(type, tree);
         // more checks (also specific to checker, potentially)
         return true;
     }
@@ -848,4 +848,12 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         return new InferenceValidator(checker, this, atypeFactory);
     }
     
+    @Override
+    protected void checkConstructorResult(
+            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
+        if (!infer) {
+            super.checkConstructorResult(constructorType, constructorElement);
+        }
+    }
+
 }

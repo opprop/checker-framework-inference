@@ -45,6 +45,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 
 import checkers.inference.dataflow.InferenceAnalysis;
@@ -575,6 +576,20 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected Set<? extends AnnotationMirror> getDefaultTypeDeclarationBounds() {
         return realTypeFactory.getQualifierHierarchy().getTopAnnotations();
+    }
+
+    /**
+     * Get the annotation from the class declaration.
+     * @param type a type
+     * @return the {@link VarAnnot} on the class bound, or the result from
+     * {@link org.checkerframework.framework.type.AnnotatedTypeFactory#getTypeDeclarationBounds}
+     * if the class is not handled by the {@link VariableAnnotator}.
+     */
+    @Override
+    public Set<AnnotationMirror> getTypeDeclarationBounds(TypeMirror type) {
+        AnnotationMirror vAnno =
+                variableAnnotator.getClassDeclVarAnnot(getProcessingEnv().getTypeUtils().asElement(type));
+        return vAnno == null ? Collections.singleton(vAnno) : super.getTypeDeclarationBounds(type);
     }
 }
 

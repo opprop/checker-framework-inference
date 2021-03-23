@@ -37,6 +37,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ArrayTypeTree;
@@ -1630,6 +1631,20 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         }
 
         return declSlot;
+    }
+
+    /**
+     * Get the {@link VarAnnot} on the class declaration of the Element.
+     * @param ele an element
+     * @return the {@link VarAnnot} on the class declaration,
+     * or {@code null} if the class declaration of the Element is not handled by the
+     * {@link VariableAnnotator#getOrCreateDeclBound(AnnotatedDeclaredType)}.
+     */
+    public AnnotationMirror getClassDeclVarAnnot(Element ele) {
+        if (classDeclAnnos.get(ele) != null) {
+            return slotManager.getAnnotation(classDeclAnnos.get(ele));
+        }
+        return null;
     }
 
     private void addDeclarationConstraints(VariableSlot declSlot, VariableSlot instanceSlot) {

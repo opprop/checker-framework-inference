@@ -48,13 +48,17 @@ public interface SlotManager {
      * reference to existing RefinementVariableSlot on this location. Each
      * location uniquely identifies a RefinementVariableSlot
      *
+     * Create the related equality constraint if the refinement value is given.
+     *
      * @param location
      *            used to locate this variable in code.
-     * @param refined
+     * @param declaredTypeSlot
      *            a potential downward refinement of an existing VariableSlot
+     * @param valueSlot
+     *            the lhs value the existing VariableSlot is refined to
      * @return RefinementVariableSlot that corresponds to this location
      */
-    RefinementVariableSlot createRefinementVariableSlot(AnnotationLocation location, Slot refined, Slot refineTo);
+    RefinementVariableSlot createRefinementVariableSlot(AnnotationLocation location, Slot declaredTypeSlot, Slot valueSlot);
 
     /**
      * Create new ConstrantSlot and returns the reference to it if no

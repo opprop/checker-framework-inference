@@ -580,6 +580,11 @@ public class InferenceVisitor<Checker extends InferenceChecker,
      * pseudo-assignment that created it.
      *
      * This method detects the assignments that cause refinements and generates the above constraints.
+     *
+     * For declared type, we create the refinement constraint once the refinement variable is created
+     * during dataflow analysis. Therefore nothing needs to be done here.
+     * TODO: handle the type variable the same way as declared type, so that finally all refinement-related
+     * constraints are created in the dataflow analysis, and this method is useless.
      */
     public boolean maybeAddRefinementVariableConstraints(final AnnotatedTypeMirror varType, final AnnotatedTypeMirror valueType) {
         boolean inferenceRefinementVariable = false;
@@ -641,11 +646,9 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                     // TODO: OR A DIFFERENT SET OF CONSTRAINTS?
                 }
             }
-        } else {
-            // TODO: RECONSIDER THIS WHEN WE CONSIDER WILDCARDS
-            if (varType.getKind() == TypeKind.WILDCARD) {
-            }
         }
+
+        // TODO: RECONSIDER THIS WHEN WE CONSIDER WILDCARDS
 
         return inferenceRefinementVariable;
     }

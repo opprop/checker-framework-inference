@@ -318,22 +318,22 @@ public class DefaultSlotManager implements SlotManager {
     }
 
     @Override
-    public RefinementVariableSlot createRefinementVariableSlot(AnnotationLocation location, Slot refined, Slot refineTo) {
+    public RefinementVariableSlot createRefinementVariableSlot(AnnotationLocation location, Slot declaredTypeSlot, Slot valueSlot) {
         RefinementVariableSlot refinementVariableSlot;
         if (location.getKind() == AnnotationLocation.Kind.MISSING) {
             //Don't cache slot for MISSING LOCATION. Just create a new one and return.
-            refinementVariableSlot = new RefinementVariableSlot(location, nextId(), refined);
-            if (refineTo != null) {
-                InferenceMain.getInstance().getConstraintManager().addEqualityConstraint(refinementVariableSlot, refineTo);
+            refinementVariableSlot = new RefinementVariableSlot(location, nextId(), declaredTypeSlot);
+            if (valueSlot != null) {
+                InferenceMain.getInstance().getConstraintManager().addEqualityConstraint(refinementVariableSlot, valueSlot);
             }
             addToVariables(refinementVariableSlot);
         } else if (locationCache.containsKey(location)) {
             int id = locationCache.get(location);
             refinementVariableSlot = (RefinementVariableSlot) getVariable(id);
         } else {
-            refinementVariableSlot = new RefinementVariableSlot(location, nextId(), refined);
-            if (refineTo != null) {
-                InferenceMain.getInstance().getConstraintManager().addEqualityConstraint(refinementVariableSlot, refineTo);
+            refinementVariableSlot = new RefinementVariableSlot(location, nextId(), declaredTypeSlot);
+            if (valueSlot != null) {
+                InferenceMain.getInstance().getConstraintManager().addEqualityConstraint(refinementVariableSlot, valueSlot);
             }
             addToVariables(refinementVariableSlot);
             locationCache.put(location, refinementVariableSlot.getId());

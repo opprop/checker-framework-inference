@@ -1,5 +1,7 @@
 package checkers.inference;
 
+import checkers.inference.model.ConstantSlot;
+import checkers.inference.model.Slot;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAnalysis;
@@ -21,6 +23,7 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -589,7 +592,21 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public Set<AnnotationMirror> getTypeDeclarationBounds(TypeMirror type) {
         AnnotationMirror vAnno =
                 variableAnnotator.getClassDeclVarAnnot(getProcessingEnv().getTypeUtils().asElement(type));
-        return vAnno != null ? Collections.singleton(vAnno) : super.getTypeDeclarationBounds(type);
+        if (vAnno != null) {
+            return Collections.singleton(vAnno);
+        }
+        // For types that are not created VarAnnot (e.g. types from bytecode),
+        // we apply the default qualifier and get the corresponding VarAnnot
+        // as the type declaration bound.
+        Set<AnnotationMirror> realTypeBounds = super.getTypeDeclarationBounds(type);
+        AnnotationMirrorSet bounds = new AnnotationMirrorSet();
+        for (AnnotationMirror anno : realTypeBounds) {
+            Slot slot = slotManager.getSlot(anno);
+            if (slot != null) {
+                bounds.add(slotManager.getAnnotation(slot));
+            }
+        }
+        return bounds;
     }
 }
 

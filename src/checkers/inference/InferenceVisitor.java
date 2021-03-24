@@ -91,22 +91,6 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         return (Factory)((BaseInferrableChecker)checker).getTypeFactory();
     }
 
-    @Override
-    public boolean isValidUse(
-            AnnotatedDeclaredType declarationType, AnnotatedDeclaredType useType, Tree tree) {
-        // TODO at least for the UTS we don't check annotations on the class declaration
-        //   println("InferenceChecker::isValidUse: decl: " + declarationType)
-        //   println("InferenceChecker::isValidUse: use: " + useType)
-
-        // TODO JB: Currently visitDeclared strips the useType of it's @VarAnnots etc...
-        // TODO JB: So the constraints coming from use don't get passed on via visitParameterizedType->checkTypeArguments
-
-        // TODO JB: At the moment this leads to erroneous subtyping between some type parameter elements,
-        // TODO JB: Comment this out and visit CalledMethod.java
-        return atypeFactory.getTypeHierarchy().isSubtype(useType.getErased(), declarationType.getErased());
-        // return true;
-    }
-
     public void doesNotContain(AnnotatedTypeMirror ty, AnnotationMirror mod, String msgkey, Tree node) {
         doesNotContain(ty, new AnnotationMirror[] {mod}, msgkey, node);
     }
@@ -799,60 +783,6 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         } else {
             super.checkExceptionParameter(node);
         }
-    }
-
-    // TODO: WE NEED TO FIX this method and have it do something sensible
-    // TODO: The issue here is that I have removed the error reporting from this method
-    // TODO: In order to allow verigames to move forward.
-    /**
-     * Tests whether the tree expressed by the passed type tree is a valid type,
-     * and emits an error if that is not the case (e.g. '@Mutable String').
-     * If the tree is a method or constructor, check the return type.
-     *
-     * @param tree  the AST type supplied by the user
-     */
-    @Override
-    public boolean validateTypeOf(Tree tree) {
-        AnnotatedTypeMirror type;
-        // It's quite annoying that there is no TypeTree
-        switch (tree.getKind()) {
-            case PRIMITIVE_TYPE:
-            case PARAMETERIZED_TYPE:
-            case TYPE_PARAMETER:
-            case ARRAY_TYPE:
-            case UNBOUNDED_WILDCARD:
-            case EXTENDS_WILDCARD:
-            case SUPER_WILDCARD:
-            case ANNOTATED_TYPE:
-                type = atypeFactory.getAnnotatedTypeFromTypeTree(tree);
-                break;
-            case METHOD:
-                type = atypeFactory.getMethodReturnType((MethodTree) tree);
-                if (type == null ||
-                        type.getKind() == TypeKind.VOID) {
-                    // Nothing to do for void methods.
-                    // Note that for a constructor the AnnotatedExecutableType does
-                    // not use void as return type.
-                    return true;
-                }
-
-                // For the sake of well-formedness, only the constructor's return type is validated,
-                // because unlike normal methods bounded by declared return type, constructor result
-                // should always be subtype of class declaration bound.
-                if (TreeUtils.isConstructor((MethodTree) tree)) {
-                    ClassTree enclosingClass = TreeUtils.enclosingClass(getCurrentPath());
-                    AnnotatedTypeMirror bound = atypeFactory.getAnnotatedType(enclosingClass);
-                    atypeFactory.getTypeHierarchy().isSubtype(type.getErased(), bound.getErased());
-                }
-                break;
-            default:
-                type = atypeFactory.getAnnotatedType(tree);
-        }
-
-        // TODO: THIS MIGHT FAIL
-        // typeValidator.isValid(type, tree);
-        // more checks (also specific to checker, potentially)
-        return true;
     }
 
     @Override

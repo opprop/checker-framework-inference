@@ -1632,6 +1632,21 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         return declSlot;
     }
 
+    /**
+     * Get the {@link VarAnnot} on the class declaration of the Element.
+     * @param ele an element
+     * @return the {@link VarAnnot} on the class declaration,
+     * or {@code null} if the class declaration of the Element is not handled by the
+     * {@link VariableAnnotator#getOrCreateDeclBound(AnnotatedDeclaredType)}.
+     */
+    public AnnotationMirror getClassDeclVarAnnot(Element ele) {
+        if (classDeclAnnos.get(ele) != null) {
+            return slotManager.getAnnotation(classDeclAnnos.get(ele));
+        }
+        return null;
+    }
+
+
     private void addDeclarationConstraints(VariableSlot declSlot, VariableSlot instanceSlot) {
         constraintManager.addSubtypeConstraint(instanceSlot, declSlot);
     }

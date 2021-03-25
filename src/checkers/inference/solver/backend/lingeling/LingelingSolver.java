@@ -33,12 +33,8 @@ import checkers.inference.solver.util.Statistics;
  */
 public class LingelingSolver extends MaxSatSolver {
 
-    // Lingeling binary executable file should be located at checker-framework-inference/lib/lingeling.
-    private static final String CFIProjectName = "checker-framework-inference";
-    private String currentWorkingDirPath = System.getProperty("user.dir");
-    private String CFIDir = currentWorkingDirPath.substring(0, currentWorkingDirPath.lastIndexOf(CFIProjectName) +
-            CFIProjectName.length() + 1);
-    private final String lingeling = Paths.get(CFIDir, "lib", "lingeling", "lingeling").toString();
+    // Ensure the path to Lingeling binary executable file has been added into $PATH.
+    private final String lingeling = "lingeling";
 
     // record cnf integers in clauses. lingeling solver give the answer for all
     // the integers from 1 to the largest one. Some of them may be not in the

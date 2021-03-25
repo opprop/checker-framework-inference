@@ -155,6 +155,8 @@ public class InferenceTransfer extends CFTransfer {
                 result = createTypeVarRefinementVars(assignmentNode.getTarget(), assignmentNode.getTree(),
                                                      store, (AnnotatedTypeVariable) atm);
             } else {
+                // Get the rhs value so the refinement variable slot being created can have the related
+                // equality constraint generated altogether
                 Tree valueTree = assignmentNode.getExpression().getTree();
                 AnnotatedTypeMirror valueType = typeFactory.getAnnotatedType(valueTree);
                 if (valueType.getKind() == TypeKind.TYPEVAR) {
@@ -338,6 +340,9 @@ public class InferenceTransfer extends CFTransfer {
 
         } else {
             AnnotationLocation location = VariableAnnotator.treeToLocation(analysis.getTypeFactory(), assignmentTree);
+            // Create a refinement variable for each of the upper bound and the lower bound. But unlike the case
+            // in the declared type refinement, here we pass null as the rhs value slot so no refinement constraint
+            // is created. Refinement constraints for type variable will be created in InferenceVisitor
             upperBoundRefVar = slotManager.createRefinementVariableSlot(location, upperBoundSlot, null);
             lowerBoundRefVar = slotManager.createRefinementVariableSlot(location, lowerBoundSlot, null);
 

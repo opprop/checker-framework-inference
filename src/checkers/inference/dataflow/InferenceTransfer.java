@@ -155,10 +155,13 @@ public class InferenceTransfer extends CFTransfer {
                 result = createTypeVarRefinementVars(assignmentNode.getTarget(), assignmentNode.getTree(),
                                                      store, (AnnotatedTypeVariable) atm);
             } else {
-                // Get the rhs value so the refinement variable slot being created can have the related
-                // equality constraint generated altogether
+                // Get the rhs value and pass it to slot manager to generate the equality constraint
+                // as "refinement variable == rhs value"
                 Tree valueTree = assignmentNode.getExpression().getTree();
                 AnnotatedTypeMirror valueType = typeFactory.getAnnotatedType(valueTree);
+
+                // If the rhs is type variable, the refinement value is the upper bound of it,
+                // because this is the most precise result we can infer
                 if (valueType.getKind() == TypeKind.TYPEVAR) {
                     valueType = InferenceUtil.findUpperBoundType((AnnotatedTypeVariable) valueType);
                 }
@@ -343,6 +346,8 @@ public class InferenceTransfer extends CFTransfer {
             // Create a refinement variable for each of the upper bound and the lower bound. But unlike the case
             // in the declared type refinement, here we pass null as the rhs value slot so no refinement constraint
             // is created. Refinement constraints for type variable will be created in InferenceVisitor
+            // TODO: we will finally pass non-null value slot to create refinement constraint here, rather than in
+            // InferenceVisitor, by resolving Issue: https://github.com/opprop/checker-framework-inference/issues/316
             upperBoundRefVar = slotManager.createRefinementVariableSlot(location, upperBoundSlot, null);
             lowerBoundRefVar = slotManager.createRefinementVariableSlot(location, lowerBoundSlot, null);
 

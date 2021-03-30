@@ -57,6 +57,9 @@ public interface SlotManager {
      *            non-null, an equality constraint "delarationSlot == valueSlot" is
      *            created. Otherwise such constraint is created in
      *            {@link InferenceVisitor#maybeAddRefinementVariableConstraints}
+     *            Now we pass in non-null valueSlot only when lhs is declared type.
+     *            TODO: handle wildcards/type variables in the same way as declared
+     *            type, so that this parameter is always non-null
      *
      * @return RefinementVariableSlot that corresponds to this refinement
      */

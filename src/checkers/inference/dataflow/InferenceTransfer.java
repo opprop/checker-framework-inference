@@ -160,8 +160,8 @@ public class InferenceTransfer extends CFTransfer {
                 Tree valueTree = assignmentNode.getExpression().getTree();
                 AnnotatedTypeMirror valueType = typeFactory.getAnnotatedType(valueTree);
 
-                // If the rhs is type variable, the refinement value is the upper bound of it,
-                // because this is the most precise result we can infer
+                // If the rhs is a type variable, the refinement value is the upper bound of it,
+                // because this is the most precise type we can use
                 if (valueType.getKind() == TypeKind.TYPEVAR) {
                     valueType = InferenceUtil.findUpperBoundType((AnnotatedTypeVariable) valueType);
                 }
@@ -365,6 +365,7 @@ public class InferenceTransfer extends CFTransfer {
 
         // This is a bit of a hack, but we want the LHS to now get the refinement annotation.
         // So change the value for LHS that is already in the store.
+        // TODO: We should finally remove this hack as what we've done for the declared type refinement
         getInferenceAnalysis().getNodeValues().put(lhs, result);
 
         store.updateForAssignment(lhs, result);

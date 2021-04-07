@@ -584,9 +584,8 @@ public class InferenceVisitor<Checker extends InferenceChecker,
      * For declared type, we create the refinement constraint once the refinement variable is created in 
      * {@link checkers.inference.dataflow.InferenceTransfer#createRefinementVar} during dataflow analysis.
      * Therefore nothing needs to be done here.
-     * TODO: handle the type variable the same way as declared type, so that finally all refinement-related
-     * constraints are created in the dataflow analysis, and this method is removed.
-     * TODO: RECONSIDER THIS WHEN WE CONSIDER WILDCARDS
+     * TODO: handle type variables and wildcards the same way as declared types, so that finally all 
+     * refinement-related constraints are created in the dataflow analysis, and this method is removed.
      */
     public boolean maybeAddRefinementVariableConstraints(final AnnotatedTypeMirror varType, final AnnotatedTypeMirror valueType) {
         boolean inferenceRefinementVariable = false;

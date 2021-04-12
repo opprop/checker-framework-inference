@@ -318,18 +318,26 @@ public class DefaultSlotManager implements SlotManager {
     }
 
     @Override
-    public RefinementVariableSlot createRefinementVariableSlot(AnnotationLocation location, Slot refined) {
-        RefinementVariableSlot refinementVariableSlot;
-        if (location.getKind() == AnnotationLocation.Kind.MISSING) {
-            //Don't cache slot for MISSING LOCATION. Just create a new one and return.
-            refinementVariableSlot = new RefinementVariableSlot(location, nextId(), refined);
-            addToVariables(refinementVariableSlot);
-        } else if (locationCache.containsKey(location)) {
+    public RefinementVariableSlot createRefinementVariableSlot(AnnotationLocation location, Slot declarationSlot, Slot valueSlot) {
+        // If the location is already cached, return the corresponding refinement slot in the cache
+        if (locationCache.containsKey(location)) {
             int id = locationCache.get(location);
-            refinementVariableSlot = (RefinementVariableSlot) getVariable(id);
-        } else {
-            refinementVariableSlot = new RefinementVariableSlot(location, nextId(), refined);
-            addToVariables(refinementVariableSlot);
+            return (RefinementVariableSlot) getVariable(id);
+        }
+
+        // Create new refinement variable slot, as well as the equality constraint to the value slot
+        RefinementVariableSlot refinementVariableSlot;
+        refinementVariableSlot = new RefinementVariableSlot(location, nextId(), declarationSlot);
+        addToVariables(refinementVariableSlot);
+        if (valueSlot != null) {
+            // If the rhs value slot passed in is non-null, create the equality constraint on it
+            InferenceMain.getInstance().getConstraintManager().addEqualityConstraint(refinementVariableSlot, valueSlot);
+        }
+
+        // Only cache slot for non-MISSING LOCATION
+        // TODO: We should always create refinement variable on a non-missing location,
+        //  and remove this if-condition
+        if (location.getKind() != AnnotationLocation.Kind.MISSING) {
             locationCache.put(location, refinementVariableSlot.getId());
         }
         return refinementVariableSlot;

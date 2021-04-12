@@ -43,18 +43,27 @@ public interface SlotManager {
     VariableSlot createVariableSlot(AnnotationLocation location);
 
     /**
-     * Create new RefinementVariableSlot and return the reference to it if no
-     * RefinementVariableSlot on this location exists. Otherwise return the
-     * reference to existing RefinementVariableSlot on this location. Each
-     * location uniquely identifies a RefinementVariableSlot
+     * Create new RefinementVariableSlot (as well as the refinement constraint if
+     * possible) and return the reference to it if no RefinementVariableSlot on this
+     * location exists. Otherwise return the reference to existing RefinementVariableSlot
+     * on this location. Each location uniquely identifies a RefinementVariableSlot
      *
      * @param location
-     *            used to locate this variable in code.
-     * @param refined
-     *            a potential downward refinement of an existing VariableSlot
-     * @return RefinementVariableSlot that corresponds to this location
+     *            used to locate this refinement variable in code
+     * @param declarationSlot
+     *            the VariableSlot for the lhs that gets refined
+     * @param valueSlot
+     *            the value that the given lhs VariableSlot is refined to. If it is
+     *            non-null, an equality constraint "declarationSlot == valueSlot" is
+     *            created. Otherwise such constraint is created in
+     *            {@link InferenceVisitor#maybeAddRefinementVariableConstraints}
+     *            Currently we pass in non-null valueSlot only when lhs is a declared type.
+     *            TODO: handle wildcards/type variables in the same way as declared
+     *            type, so that this parameter is always non-null
+     *
+     * @return RefinementVariableSlot that corresponds to this refinement
      */
-    RefinementVariableSlot createRefinementVariableSlot(AnnotationLocation location, Slot refined);
+    RefinementVariableSlot createRefinementVariableSlot(AnnotationLocation location, Slot declarationSlot, Slot valueSlot);
 
     /**
      * Create new ConstrantSlot and returns the reference to it if no

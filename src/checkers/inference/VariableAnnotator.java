@@ -786,10 +786,10 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
     protected void handleExtendsClause(AnnotatedDeclaredType classType, ClassTree classTree) {
         final Tree extendsTree = classTree.getExtendsClause();
         if (extendsTree == null) {
-            handleImplicitExtends(classType, classTree);
+            handleImplicitExtendsClause(classType, classTree);
 
         } else {
-            handleExplicitExtends(extendsTree);
+            handleExplicitExtendsClause(extendsTree);
         }
     }
 
@@ -798,7 +798,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * @param classType the type of the class
      * @param classTree the tree of the class
      */
-    protected void handleImplicitExtends(AnnotatedDeclaredType classType, ClassTree classTree) {
+    protected void handleImplicitExtendsClause(AnnotatedDeclaredType classType, ClassTree classTree) {
         // Annotated the implicit extends.
         Element classElement = classType.getUnderlyingType().asElement();
         VariableSlot extendsSlot;
@@ -822,7 +822,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * Defines how explicit extends clause is visited during {@code handleClassDeclaration}
      * @param extendsTree the extends tree from the class declaration
      */
-    protected void handleExplicitExtends(Tree extendsTree) {
+    protected void handleExplicitExtendsClause(Tree extendsTree) {
         final AnnotatedTypeMirror extendsType = inferenceTypeFactory.getAnnotatedTypeFromTypeTree(extendsTree);
         visit(extendsType, extendsTree);
     }

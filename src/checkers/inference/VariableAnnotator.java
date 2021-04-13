@@ -1639,7 +1639,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * or {@code null} if the class declaration of the Element is not handled by the
      * {@link VariableAnnotator#getOrCreateDeclBound(AnnotatedDeclaredType)}.
      */
-    public AnnotationMirror getClassDeclVarAnnot(Element ele) {
+    public AnnotationMirror getClassDeclVarAnnot(TypeElement ele) {
         if (classDeclAnnos.get(ele) != null) {
             return slotManager.getAnnotation(classDeclAnnos.get(ele));
         }

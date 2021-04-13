@@ -584,7 +584,8 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Get the annotation from the class declaration.
      * @param type a type
-     * @return the {@link VarAnnot} on the class bound, or the result from
+     * @return the set of {@link VarAnnot} on the class bound. Unlike type checking,
+     * the returned set is always singleton in inference.
      * {@link org.checkerframework.framework.type.AnnotatedTypeFactory#getTypeDeclarationBounds}
      * if the class is not handled by the {@link VariableAnnotator}.
      */
@@ -596,14 +597,16 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return Collections.singleton(vAnno);
         }
         // For types that are not created VarAnnot (e.g. types from bytecode),
-        // we apply the default qualifier and get the corresponding VarAnnot
-        // as the type declaration bound.
+        // get the default qualifier in real type hierarchy and map it to the
+        // corresponding VarAnnot as the type declaration bound.
         Set<AnnotationMirror> realTypeBounds = super.getTypeDeclarationBounds(type);
         AnnotationMirrorSet bounds = new AnnotationMirrorSet();
         for (AnnotationMirror anno : realTypeBounds) {
             Slot slot = slotManager.getSlot(anno);
             if (slot != null) {
                 bounds.add(slotManager.getAnnotation(slot));
+                // Declaration bound for any type use in inference is unique
+                break;
             }
         }
         return bounds;

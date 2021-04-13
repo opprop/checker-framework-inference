@@ -46,6 +46,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
@@ -591,8 +592,9 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     @Override
     public Set<AnnotationMirror> getTypeDeclarationBounds(TypeMirror type) {
+        final TypeElement elt = (TypeElement) getProcessingEnv().getTypeUtils().asElement(type);
         AnnotationMirror vAnno =
-                variableAnnotator.getClassDeclVarAnnot(getProcessingEnv().getTypeUtils().asElement(type));
+                variableAnnotator.getClassDeclVarAnnot(elt);
         if (vAnno != null) {
             return Collections.singleton(vAnno);
         }

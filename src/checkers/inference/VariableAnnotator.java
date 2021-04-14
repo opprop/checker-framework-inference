@@ -1612,24 +1612,25 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * If it does not already exist, this method creates the annotation and stores it in classDeclAnnos.
      */
     private VariableSlot getOrCreateDeclBound(AnnotatedDeclaredType type) {
-
-        // ASSERTION: The new class tree of an anonymous class is always visited before the anonymous class itself
-        // (as the enclosing tree), and a slot should be generated on this new class tree.
-        // Since the new class tree should be the only use of the anonymous class,
-        // it's safe to use the slot on the new class tree as decl bound,
-        // and avoid generating a new slot which violates the java syntax when injected:
-        // i.e. new MyInterface() @VarAnnot {...}   <- the VarAnnot is wrong
-        // Note that this decl bound is NOT a ExistentialVariable.
-        if (TypesUtils.isAnonymous(type.getUnderlyingType())) {
-            assert type.hasAnnotation(VarAnnot.class);
-            return slotManager.getVariableSlot(type);
-        }
-
         TypeElement classDecl = (TypeElement) type.getUnderlyingType().asElement();
 
         VariableSlot topConstant = getTopConstant();
         VariableSlot declSlot = classDeclAnnos.get(classDecl);
         if (declSlot == null) {
+
+            // ASSERTION: The new class tree of an anonymous class is always visited before the anonymous class itself
+            // (as the enclosing tree), and a slot should be generated on this new class tree.
+            // Since the new class tree should be the only use of the anonymous class,
+            // it's safe to use the slot on the new class tree as decl bound,
+            // and avoid generating a new slot which violates the java syntax when injected:
+            // i.e. new MyInterface() @VarAnnot {...}   <- the VarAnnot is wrong
+            // Note that this decl bound is NOT a ExistentialVariable.
+            if (TypesUtils.isAnonymous(type.getUnderlyingType())) {
+                assert type.hasAnnotation(VarAnnot.class);
+                classDeclAnnos.put(classDecl, slotManager.getVariableSlot(type));
+                return slotManager.getVariableSlot(type);
+            }
+
             Tree decl = inferenceTypeFactory.declarationFromElement(classDecl);
             if (decl != null) {
                 // Since each class decl should have a slot,

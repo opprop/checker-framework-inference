@@ -270,7 +270,9 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
         variableAnnotator.visit(atm, newClassTree.getIdentifier());
 
         annotateMethodTypeArgs(newClassTree);
-
+        if (newClassTree.getClassBody() != null) {
+            variableAnnotator.visit(atm, newClassTree.getClassBody());
+        }
         return null;
     }
 

@@ -48,9 +48,9 @@ if [[ "${GROUP}" == downstream* && "${SLUGOWNER}" == "opprop" ]]; then
         DOWNSTREAM_PROJ="$(pwd -P)/../$1"
         echo "clone downstream to: ${DOWNSTREAM_PROJ}"
         COMMAND="/tmp/plume-scripts/git-clone-related --debug opprop $1 ${DOWNSTREAM_PROJ}"
-        echo "Running: (cd .. && $COMMAND)"
-        (cd .. && eval $COMMAND)
-        echo "... done: (cd .. && $COMMAND)"
+        echo "Running: ($COMMAND)"
+        (eval $COMMAND)
+        echo "... done: ($COMMAND)"
     }
 
     # test_downstream Git_Target Build_Test_Command

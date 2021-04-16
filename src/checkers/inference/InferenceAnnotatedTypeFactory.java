@@ -580,26 +580,5 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     protected Set<? extends AnnotationMirror> getDefaultTypeDeclarationBounds() {
         return realTypeFactory.getQualifierHierarchy().getTopAnnotations();
     }
-
-    /**
-     * Caches the refinement slot for a given temp variable.
-     * @param tree the tree for the temp variable
-     * @param type the refined type for the initialized temp variable
-     */
-    public void cacheTempVariableRefinedType(Tree tree, AnnotatedTypeMirror type) {
-        if (!tempVarToRefinedType.containsKey(tree)) {
-            tempVarToRefinedType.put(tree, type);
-        }
-    }
-
-    /**
-     * Get the refined annotated type for a given temp variable.
-     *
-     * @param tree the tree that represents the temp variable
-     * @return the refined type for the temp variable
-     */
-    public AnnotatedTypeMirror getTempVariableRefinedType(Tree tree) {
-        return tempVarToRefinedType.get(tree);
-    }
 }
 

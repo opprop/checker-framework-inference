@@ -143,7 +143,7 @@ Which solver to use on the constraints.
 * `--targetclasspath`
 The classpath that is required by target program.
 
-`checkers.inference.solver.PropagationSolver` and `checkers.inference.solver.GeneralSolver` are real solvers
+`checkers.inference.solver.PropagationSolver` and `checkers.inference.solver.SolverEngine` are real solvers
 at the moment.
 
 Omiting the solver will create an output that numbers all of the
@@ -155,14 +155,14 @@ constraints generated.
 
 Other options can be found by `./scripts/inference --help`.
 
-## Use of General solver
+## Use of SolverEngine
 
 Generic solver is designed for solving type constraints from arbitrary type system.
 
 You can invoke generic solver through:
 
 ````
---solver checkers.inference.solver.GeneralSolver
+--solver checkers.inference.solver.SolverEngine
 ````
 
 There are a couple of arguments that generic solver can accept:
@@ -195,6 +195,6 @@ Specifies whether to collect statistic with respect to timing, size of constrain
 For example, generic solver can be invoked through following command:
 
 ````
-./scripts/inference --mode INFER --checker ostrusted.OsTrustedChecker --solver checkers.inference.solver.GeneralSolver --solverArgs solver=MaxSat,useGraph=true,collectStatistics=true,solveInParallel=false [List of files]
+./scripts/inference --mode INFER --checker ostrusted.OsTrustedChecker --solver checkers.inference.solver.SolverEngine --solverArgs solver=MaxSat,useGraph=true,collectStatistics=true,solveInParallel=false [List of files]
 ````
 

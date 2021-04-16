@@ -580,6 +580,12 @@ public class InferenceVisitor<Checker extends InferenceChecker,
      * pseudo-assignment that created it.
      *
      * This method detects the assignments that cause refinements and generates the above constraints.
+     *
+     * For declared type, we create the refinement constraint once the refinement variable is created in 
+     * {@link checkers.inference.dataflow.InferenceTransfer#createRefinementVar} during dataflow analysis.
+     * Therefore nothing needs to be done here.
+     * TODO: handle type variables and wildcards the same way as declared types, so that finally all 
+     * refinement-related constraints are created in the dataflow analysis, and this method is removed.
      */
     public boolean maybeAddRefinementVariableConstraints(final AnnotatedTypeMirror varType, final AnnotatedTypeMirror valueType) {
         boolean inferenceRefinementVariable = false;
@@ -639,32 +645,6 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                 if (!InferenceMain.isHackMode()) {
                     throw new BugInCF("Unexpected assignment to type variable"); // TODO: Either more detail, or remove because of type args?
                     // TODO: OR A DIFFERENT SET OF CONSTRAINTS?
-                }
-            }
-        } else {
-
-            // TODO: RECONSIDER THIS WHEN WE CONSIDER WILDCARDS
-            if (varType.getKind() != TypeKind.WILDCARD) {
-                Slot sup = InferenceMain.getInstance().getSlotManager().getVariableSlot(varType);
-                if (sup instanceof RefinementVariableSlot && !InferenceMain.getInstance().isPerformingFlow()) {
-                    inferenceRefinementVariable = true;
-
-                    final AnnotatedTypeMirror upperBound;
-                    if (valueType.getKind() == TypeKind.TYPEVAR) {
-                        upperBound = InferenceUtil.findUpperBoundType((AnnotatedTypeVariable) valueType);
-                    } else {
-                        upperBound = valueType;
-                    }
-
-                    Slot sub = slotManager.getVariableSlot(upperBound);
-                    logger.fine("InferenceVisitor::commonAssignmentCheck: Equality constraint for qualifiers sub: " + sub + " sup: " + sup);
-
-                    // Equality between the refvar and the value
-                    constraintManager.addEqualityConstraint(sup, sub);
-
-                    // Refinement variable still needs to be a subtype of its declared type value
-                    constraintManager.addSubtypeConstraint(sup,
-                            ((RefinementVariableSlot) sup).getRefined());
                 }
             }
         }

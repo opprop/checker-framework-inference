@@ -44,7 +44,6 @@ if [[ "${GROUP}" == downstream* && "${SLUGOWNER}" == "opprop" ]]; then
 
     # clone_downstream Git_Target Git_Branch
     clone_downstream () {
-        #COMMAND="git clone -b $2 --depth 1 https://github.com/opprop/$1.git"
         DOWNSTREAM_PROJ="$(pwd -P)/../$1"
         echo "clone downstream to: ${DOWNSTREAM_PROJ}"
         COMMAND="/tmp/plume-scripts/git-clone-related --debug opprop $1 ${DOWNSTREAM_PROJ}"

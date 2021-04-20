@@ -114,13 +114,12 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
         InferenceUtil.testArgument(classType instanceof AnnotatedDeclaredType,
                 "Unexpected type for ClassTree ( " + classTree + " ) AnnotatedTypeMirror ( " + classType + " ) ");
 
-        // For anonymous classes, we do not create additional variables, as they
-        // were already handled by the visitNewClass. This would otherwise result
-        // in new variables for an extends clause, which then cannot be inserted.
-        if (!InferenceUtil.isAnonymousClass(classTree)) {
-            this.variableAnnotator.visit(classType, classTree);
+        AnnotatedDeclaredType declType = (AnnotatedDeclaredType) classType;
+        if (declType.getEnclosingType() != null) {
+            ClassTree enclosingClass = TreeUtils.enclosingClass(atypeFactory.getPath(classTree));
+            variableAnnotator.visit(declType.getEnclosingType(), enclosingClass);
         }
-
+        variableAnnotator.visit(classType, classTree);
         return null;
     }
 

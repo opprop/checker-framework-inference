@@ -94,6 +94,11 @@ public abstract class GraphSolvingStrategy extends AbstractSolvingStrategy {
         return result;
     }
 
+    /**
+     * Get the top qualifier in the underlying type hierarchy, which is used in building
+     * the graph.
+     * @return
+     */
     protected abstract AnnotationMirror getGraphTopAnnotation();
 
     protected ConstraintGraph generateGraph(Collection<Slot> slots, Collection<Constraint> constraints,

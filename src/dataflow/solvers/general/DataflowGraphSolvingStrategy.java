@@ -87,7 +87,7 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
 
     @Override
     protected AnnotationMirror getGraphTopAnnotation() {
-        AnnotationMirror DATAFLOWTOP = AnnotationBuilder.fromClass(processingEnvironment.getElementUtils(), DataFlow.class);
+        AnnotationMirror DATAFLOWTOP = AnnotationBuilder.fromClass(processingEnvironment.getElementUtils(), DataFlowTop.class);
         return DATAFLOWTOP;
     }
 

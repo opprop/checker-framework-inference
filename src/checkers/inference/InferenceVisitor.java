@@ -827,10 +827,4 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     protected InferenceValidator createTypeValidator() {
         return new InferenceValidator(checker, this, atypeFactory);
     }
-    
-    @Override
-    // Do NOT perform this check until issue #218 is resolved
-    protected void checkConstructorResult(
-            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {}
-    
 }

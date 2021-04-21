@@ -34,13 +34,9 @@ public class GraphBuilder {
     private final ConstraintGraph graph;
     private AnnotationMirror top;
 
-    public GraphBuilder(Collection<Slot> slots, Collection<Constraint> constraints) {
+    public GraphBuilder(Collection<Slot> slots, Collection<Constraint> constraints, AnnotationMirror top) {
         this.constraints = constraints;
         this.graph = new ConstraintGraph();
-    }
-
-    public GraphBuilder(Collection<Slot> slots, Collection<Constraint> constraints, AnnotationMirror top) {
-        this(slots, constraints);
         this.top = top;
     }
 

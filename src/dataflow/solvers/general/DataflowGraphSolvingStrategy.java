@@ -86,13 +86,9 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
     }
 
     @Override
-    protected ConstraintGraph generateGraph(Collection<Slot> slots, Collection<Constraint> constraints,
-            ProcessingEnvironment processingEnvironment) {
-        AnnotationMirror DATAFLOWTOP = AnnotationBuilder.fromClass(
-                processingEnvironment.getElementUtils(), DataFlowTop.class);
-        GraphBuilder graphBuilder = new GraphBuilder(slots, constraints, DATAFLOWTOP);
-        ConstraintGraph constraintGraph = graphBuilder.buildGraph();
-        return constraintGraph;
+    protected AnnotationMirror getGraphTopAnnotation() {
+        AnnotationMirror DATAFLOWTOP = AnnotationBuilder.fromClass(processingEnvironment.getElementUtils(), DataFlow.class);
+        return DATAFLOWTOP;
     }
 
     @Override

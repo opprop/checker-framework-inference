@@ -326,7 +326,7 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
         for (AnnotationMirror top : realTops) {
             ConstantSlot slot = (ConstantSlot) slotManager.getSlot(top);
             if (slot != null) {
-                annos.add(slot.getValue());
+                annos.add(slotManager.getAnnotation(slot));
             }
         }
 
@@ -353,7 +353,7 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
         for (AnnotationMirror bottom : realBottoms) {
             ConstantSlot slot = (ConstantSlot) slotManager.getSlot(bottom);
             if (slot != null) {
-                annos.add(slot.getValue());
+                annos.add(slotManager.getAnnotation(slot));
             }
         }
 

@@ -18,6 +18,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.inference.DefaultInferenceResult;
+import checkers.inference.InferenceMain;
 import checkers.inference.InferenceResult;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
@@ -31,6 +32,7 @@ import checkers.inference.solver.util.SolverArg;
 import checkers.inference.solver.util.SolverEnvironment;
 import checkers.inference.solver.util.Statistics;
 import com.sun.tools.javac.util.Pair;
+import org.checkerframework.framework.type.QualifierHierarchy;
 
 /**
  * GraphSolvingStrategy solves a given set of constraints by a divide-and-conquer way:
@@ -43,7 +45,7 @@ import com.sun.tools.javac.util.Pair;
  * This solving strategy is useful when solving constraints for a type system with a huge number of qualifers.
  * Normal plain solving strategy meet exponentially increased solving time in this case.
  */
-public abstract class GraphSolvingStrategy extends AbstractSolvingStrategy {
+public class GraphSolvingStrategy extends AbstractSolvingStrategy {
 
     enum GraphSolveStrategyArg implements SolverArg {
         solveInParallel;
@@ -95,11 +97,16 @@ public abstract class GraphSolvingStrategy extends AbstractSolvingStrategy {
     }
 
     /**
-     * Get the top qualifier in the underlying type hierarchy, which is used in building
-     * the graph.
-     * @return
+     * Get the top qualifier in the underlying type hierarchy, which is used in building the
+     * constraint graph. By default, the first annotation in the top annotation list is returned.
+     *
+     * <p>This method is recommended to be overridden in the subclass.
+     * @return the top annotation of the constraint graph
      */
-    protected abstract AnnotationMirror getGraphTopAnnotation();
+    protected AnnotationMirror getGraphTopAnnotation() {
+        QualifierHierarchy qualHierarchy = InferenceMain.getInstance().getRealTypeFactory().getQualifierHierarchy();
+        return qualHierarchy.getTopAnnotations().iterator().next();
+    }
 
     protected ConstraintGraph generateGraph(Collection<Slot> slots, Collection<Constraint> constraints,
             ProcessingEnvironment processingEnvironment) {

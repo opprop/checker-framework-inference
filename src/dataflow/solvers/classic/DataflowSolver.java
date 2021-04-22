@@ -39,7 +39,6 @@ import dataflow.util.DataflowUtils;
 public class DataflowSolver implements InferenceSolver {
 
     protected AnnotationMirror DATAFLOW;
-    protected AnnotationMirror DATAFLOWTOP;
 
     @Override
     public InferenceResult solve(Map<String, String> configuration,
@@ -49,8 +48,8 @@ public class DataflowSolver implements InferenceSolver {
 
         Elements elements = processingEnvironment.getElementUtils();
         DATAFLOW = AnnotationBuilder.fromClass(elements, DataFlow.class);
-        DATAFLOWTOP = AnnotationBuilder.fromClass(elements, DataFlowTop.class);
-        GraphBuilder graphBuilder = new GraphBuilder(slots, constraints, DATAFLOWTOP);
+        AnnotationMirror dataflowTop = AnnotationBuilder.fromClass(elements, DataFlowTop.class);
+        GraphBuilder graphBuilder = new GraphBuilder(slots, constraints, dataflowTop);
         ConstraintGraph constraintGraph = graphBuilder.buildGraph();
 
         List<DatatypeSolver> dataflowSolvers = new ArrayList<>();

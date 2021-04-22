@@ -86,12 +86,6 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
     }
 
     @Override
-    protected AnnotationMirror getGraphTopAnnotation() {
-        AnnotationMirror DATAFLOWTOP = AnnotationBuilder.fromClass(processingEnvironment.getElementUtils(), DataFlowTop.class);
-        return DATAFLOWTOP;
-    }
-
-    @Override
     protected InferenceResult mergeInferenceResults(List<Pair<Map<Integer, AnnotationMirror>, Collection<Constraint>>> inferenceResults) {
         Map<Integer, AnnotationMirror> solutions = new HashMap<>();
         Map<Integer, Set<AnnotationMirror>> dataflowResults = new HashMap<>();

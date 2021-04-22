@@ -317,7 +317,7 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
     /**
      * Find the corresponding {@code VarAnnot} for the real top qualifier.
      *
-     * @return an singleton that contains the VarAnnot corresponding to the real top qualifier
+     * @return a singleton that contains the VarAnnot corresponding to the real top qualifier
      */
     private Set<AnnotationMirror> findTopVarAnnot() {
         AnnotationMirrorSet annos = new AnnotationMirrorSet();
@@ -337,13 +337,13 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
                             + "Tops found ( " + InferenceUtil.join(annos) + " )"
             );
         }
-        return annos;
+        return Collections.unmodifiableSet(annos);
     }
 
     /**
      * Find the corresponding {@code VarAnnot} for the real bottom qualifier.
      *
-     * @return an singleton that contains the VarAnnot corresponding to the real bottom qualifier
+     * @return a singleton that contains the VarAnnot corresponding to the real bottom qualifier
      */
     private Set<AnnotationMirror> findBottomVarAnnot() {
         AnnotationMirrorSet annos = new AnnotationMirrorSet();
@@ -359,12 +359,12 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
         if (annos.size() != 1) {
             throw new BugInCF(
-                    "There should be exactly 1 top qualifier in inference hierarchy"
+                    "There should be exactly 1 bottom qualifier in inference hierarchy"
                             + "( checkers.inference.qual.VarAnnot ).\n"
-                            + "Tops found ( " + InferenceUtil.join(annos) + " )"
+                            + "Bottoms found ( " + InferenceUtil.join(annos) + " )"
             );
         }
-        return annos;
+        return Collections.unmodifiableSet(annos);
     }
 
     @Override

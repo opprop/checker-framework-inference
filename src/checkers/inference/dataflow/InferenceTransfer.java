@@ -206,8 +206,13 @@ public class InferenceTransfer extends CFTransfer {
             AnnotatedTypeMirror atm, AnnotatedTypeMirror valueAtm) {
 
         SlotManager slotManager = getInferenceAnalysis().getSlotManager();
+
         Slot slotToRefine = slotManager.getVariableSlot(atm);
-        assert !(slotToRefine instanceof RefinementVariableSlot);
+        if(slotToRefine instanceof RefinementVariableSlot) {
+            slotToRefine = ((RefinementVariableSlot) slotToRefine).getRefined();
+        }
+        assert slotToRefine instanceof VariableSlot;
+
         Slot refineTo = slotManager.getVariableSlot(valueAtm);
 
         logger.fine("Creating refinement variable for tree: " + assignmentTree);

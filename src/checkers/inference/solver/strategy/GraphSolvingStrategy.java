@@ -97,10 +97,12 @@ public class GraphSolvingStrategy extends AbstractSolvingStrategy {
     }
 
     /**
-     * Get the top qualifier in the underlying type hierarchy, which is used in building the
-     * constraint graph. By default, the first annotation in the top annotation list is returned.
+     * Get the top qualifier in the underlying type hierarchy, which is used in simplifying the
+     * constraint graph. By default, the first (and usually the only) annotation in the top
+     * annotation list is returned.
      *
-     * <p>This method is recommended to be overridden in the subclass.
+     * <p>This method should be overridden in special cases, e.g, type systems with multiple
+     * type hierarchies.
      * @return the top annotation of the constraint graph
      */
     protected AnnotationMirror getGraphTopAnnotation() {

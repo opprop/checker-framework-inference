@@ -32,9 +32,9 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
     private final SlotManager slotMgr;
     private final ConstraintManager constraintMgr;
 
-    /** Corresponding VarAnnot for the real top qualifier */
+    /** Unmodifiable singleton set containing the VarAnnot corresponding to the real top qualifier */
     private final Set<AnnotationMirror> topVarAnnot;
-    /** Corresponding VarAnnot for the real bottom qualifier */
+    /** Unmodifiable singleton set containing the VarAnnot corresponding to the real bottom qualifier */
     private final Set<AnnotationMirror> bottomVarAnnot;
 
     public InferenceQualifierHierarchy(final MultiGraphFactory multiGraphFactory) {
@@ -377,17 +377,17 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
         return bottomVarAnnot;
     }
 
-    // ================================================================================
-    // TODO Both of these are probably wrong for inference. We really want a new VarAnnot for that position.
-    // ================================================================================
-
     @Override
     public AnnotationMirror getTopAnnotation(final AnnotationMirror am) {
         if (isVarAnnot(am)) {
             return topVarAnnot.iterator().next();
         }
-        QualifierHierarchy realQualifierHierarhcy = inferenceMain.getRealTypeFactory().getQualifierHierarchy();
-        return realQualifierHierarhcy.getTopAnnotations().iterator().next();
+
+        if (InferenceMain.isHackMode()) {
+            return super.getTopAnnotation(am);
+        } else {
+            throw new BugInCF("trying to get real top annotation from the inference hierarchy");
+        }
     }
 
     @Override
@@ -395,7 +395,11 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
         if (isVarAnnot(am)) {
             return bottomVarAnnot.iterator().next();
         }
-        QualifierHierarchy realQualifierHierarhcy = inferenceMain.getRealTypeFactory().getQualifierHierarchy();
-        return realQualifierHierarhcy.getBottomAnnotations().iterator().next();
+
+        if (InferenceMain.isHackMode()) {
+            return super.getBottomAnnotation(am);
+        } else {
+            throw new BugInCF("trying to get real bottom annotation from the inference hierarchy");
+        }
     }
 }

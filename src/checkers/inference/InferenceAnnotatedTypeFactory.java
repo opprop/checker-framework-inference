@@ -598,20 +598,9 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (vAnno != null) {
             return Collections.singleton(vAnno);
         }
-        // For types that are not created VarAnnot (e.g. types from bytecode),
-        // get the default qualifier in real type hierarchy and map it to the
-        // corresponding VarAnnot as the type declaration bound.
-        Set<AnnotationMirror> realTypeBounds = super.getTypeDeclarationBounds(type);
-        AnnotationMirrorSet bounds = new AnnotationMirrorSet();
-        for (AnnotationMirror anno : realTypeBounds) {
-            Slot slot = slotManager.getSlot(anno);
-            if (slot != null) {
-                bounds.add(slotManager.getAnnotation(slot));
-                // Declaration bound for any type use in inference is unique
-                break;
-            }
-        }
-        return bounds;
+
+        // If the declaration bound of the underlying type is not cached, use default
+        return (Set<AnnotationMirror>) qualHierarchy.getTopAnnotations();
     }
 }
 

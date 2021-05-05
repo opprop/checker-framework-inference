@@ -579,7 +579,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     @Override
     protected Set<? extends AnnotationMirror> getDefaultTypeDeclarationBounds() {
-        return realTypeFactory.getQualifierHierarchy().getTopAnnotations();
+        return qualHierarchy.getTopAnnotations();
     }
 
     /**
@@ -600,7 +600,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         // If the declaration bound of the underlying type is not cached, use default
-        return (Set<AnnotationMirror>) qualHierarchy.getTopAnnotations();
+        return (Set<AnnotationMirror>) getDefaultTypeDeclarationBounds();
     }
 }
 

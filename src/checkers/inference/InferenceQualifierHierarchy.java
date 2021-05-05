@@ -1,9 +1,13 @@
 package checkers.inference;
 
-import checkers.inference.model.*;
+import checkers.inference.model.ConstantSlot;
+import checkers.inference.model.ConstraintManager;
+import checkers.inference.model.LubVariableSlot;
+import checkers.inference.model.Slot;
+import checkers.inference.model.VariableSlot;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
-import org.checkerframework.common.subtyping.qual.Unqualified;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -28,40 +32,24 @@ import checkers.inference.util.InferenceUtil;
  */
 public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
     private final InferenceMain inferenceMain = InferenceMain.getInstance();
-    private final AnnotationMirror varAnnot;
 
     private final SlotManager slotMgr;
     private final ConstraintManager constraintMgr;
 
+    /** Unmodifiable singleton set containing the VarAnnot corresponding to the real top qualifier */
+    private final Set<AnnotationMirror> topVarAnnot;
+    /** Unmodifiable singleton set containing the VarAnnot corresponding to the real bottom qualifier */
+    private final Set<AnnotationMirror> bottomVarAnnot;
+
     public InferenceQualifierHierarchy(final MultiGraphFactory multiGraphFactory) {
         super(multiGraphFactory);
-        final Set<? extends AnnotationMirror> tops = this.getTopAnnotations();
-
-        AnnotationMirror localVarAnnot = null;
-        for (AnnotationMirror top : tops) {
-            if (isVarAnnot(top)) {
-                localVarAnnot = top;
-            }
-        }
-        varAnnot = localVarAnnot;
-
-        if (varAnnot == null) {
-            throw new BugInCF(
-                    "VarAnnot not found in the list of top annotations: tops=" + SystemUtil.join(", ", tops));
-        }
-
-        if (tops.size() != 1) {
-            throw new BugInCF(
-                    "There should be only 1 top qualifier "
-                 + "( checkers.inference.qual.VarAnnot ).\n"
-                 + "Tops found ( " + InferenceUtil.join(tops) + " )"
-            );
-        }
 
         slotMgr = inferenceMain.getSlotManager();
         constraintMgr = inferenceMain.getConstraintManager();
-    }
 
+        topVarAnnot = findTopVarAnnot();
+        bottomVarAnnot = findBottomVarAnnot();
+    }
 
     /**
      * Method to finalize the qualifier hierarchy before it becomes unmodifiable.
@@ -330,25 +318,92 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
         return null;
     }
 
-    // ================================================================================
-    // TODO Both of these are probably wrong for inference. We really want a new VarAnnot for that position.
-    // ================================================================================
+    /**
+     * Find the corresponding {@code VarAnnot} for the real top qualifier.
+     *
+     * @return a singleton that contains the VarAnnot corresponding to the real top qualifier
+     */
+    private Set<AnnotationMirror> findTopVarAnnot() {
+        AnnotationMirrorSet annos = new AnnotationMirrorSet();
+        Set<? extends AnnotationMirror> realTops = inferenceMain.getRealTypeFactory().getQualifierHierarchy().getTopAnnotations();
+        SlotManager slotManager = inferenceMain.getSlotManager();
+        for (AnnotationMirror top : realTops) {
+            ConstantSlot slot = (ConstantSlot) slotManager.getSlot(top);
+            if (slot != null) {
+                annos.add(slotManager.getAnnotation(slot));
+            }
+        }
+
+        if (annos.size() != 1) {
+            throw new BugInCF(
+                    "There should be exactly 1 top qualifier in inference hierarchy"
+                            + "( checkers.inference.qual.VarAnnot ).\n"
+                            + "Tops found ( " + InferenceUtil.join(annos) + " )"
+            );
+        }
+        return Collections.unmodifiableSet(annos);
+    }
+
+    /**
+     * Find the corresponding {@code VarAnnot} for the real bottom qualifier.
+     *
+     * @return a singleton that contains the VarAnnot corresponding to the real bottom qualifier
+     */
+    private Set<AnnotationMirror> findBottomVarAnnot() {
+        AnnotationMirrorSet annos = new AnnotationMirrorSet();
+        Set<? extends AnnotationMirror> realBottoms = inferenceMain.getRealTypeFactory().getQualifierHierarchy().getBottomAnnotations();
+        SlotManager slotManager = inferenceMain.getSlotManager();
+        assert slotManager.getSlots().size() > 0;
+        for (AnnotationMirror bottom : realBottoms) {
+            ConstantSlot slot = (ConstantSlot) slotManager.getSlot(bottom);
+            if (slot != null) {
+                annos.add(slotManager.getAnnotation(slot));
+            }
+        }
+
+        if (annos.size() != 1) {
+            throw new BugInCF(
+                    "There should be exactly 1 bottom qualifier in inference hierarchy"
+                            + "( checkers.inference.qual.VarAnnot ).\n"
+                            + "Bottoms found ( " + InferenceUtil.join(annos) + " )"
+            );
+        }
+        return Collections.unmodifiableSet(annos);
+    }
+
+    @Override
+    public Set<? extends AnnotationMirror> getTopAnnotations() {
+        return topVarAnnot;
+    }
+
+    @Override
+    public Set<? extends AnnotationMirror> getBottomAnnotations() {
+        return bottomVarAnnot;
+    }
 
     @Override
     public AnnotationMirror getTopAnnotation(final AnnotationMirror am) {
         if (isVarAnnot(am)) {
-            return varAnnot;
-        } // else
+            return topVarAnnot.iterator().next();
+        }
 
-        return inferenceMain.getRealTypeFactory().getQualifierHierarchy().getTopAnnotations().iterator().next();
+        if (InferenceMain.isHackMode()) {
+            return super.getTopAnnotation(am);
+        } else {
+            throw new BugInCF("trying to get real top annotation from the inference hierarchy");
+        }
     }
 
     @Override
     public AnnotationMirror getBottomAnnotation(final AnnotationMirror am) {
         if (isVarAnnot(am)) {
-            return varAnnot;
-        } // else
+            return bottomVarAnnot.iterator().next();
+        }
 
-        return inferenceMain.getRealTypeFactory().getQualifierHierarchy().getBottomAnnotations().iterator().next();
+        if (InferenceMain.isHackMode()) {
+            return super.getBottomAnnotation(am);
+        } else {
+            throw new BugInCF("trying to get real bottom annotation from the inference hierarchy");
+        }
     }
 }

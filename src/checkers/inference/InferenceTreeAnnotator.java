@@ -117,10 +117,14 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
 		// Annotated the enclosing type if it exists
         AnnotatedDeclaredType declType = (AnnotatedDeclaredType) classType;
         AnnotatedDeclaredType enclosingType = declType.getEnclosingType();
-        ClassTree enclosingClass = TreeUtils.enclosingClass(atypeFactory.getPath(classTree).getParentPath());
-        if (enclosingType != null && enclosingClass != null) {
-            variableAnnotator.visit(declType.getEnclosingType(), enclosingClass);
+        TreePath classPath = atypeFactory.getPath(classTree);
+        if (classPath != null) {
+            ClassTree enclosingClass = TreeUtils.enclosingClass(classPath.getParentPath());
+            if (enclosingType != null && enclosingClass != null) {
+                variableAnnotator.visit(enclosingType, enclosingClass);
+            }
         }
+
 
         // For anonymous classes, also fully annotate the classTree, which will be
         // used in the class type validation. Note that this will result in new

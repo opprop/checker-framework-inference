@@ -114,15 +114,20 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
         InferenceUtil.testArgument(classType instanceof AnnotatedDeclaredType,
                 "Unexpected type for ClassTree ( " + classTree + " ) AnnotatedTypeMirror ( " + classType + " ) ");
 
-        // Annotated the enclosing type if it exists
+		// Annotated the enclosing type if it exists
         AnnotatedDeclaredType declType = (AnnotatedDeclaredType) classType;
         AnnotatedDeclaredType enclosingType = declType.getEnclosingType();
-        ClassTree enclosingClass = TreeUtils.enclosingClass(atypeFactory.getPath(classTree));
+        ClassTree enclosingClass = TreeUtils.enclosingClass(atypeFactory.getPath(classTree).getParentPath());
         if (enclosingType != null && enclosingClass != null) {
             variableAnnotator.visit(declType.getEnclosingType(), enclosingClass);
         }
 
-        variableAnnotator.visit(classType, classTree);
+        // For anonymous classes, also fully annotate the classTree, which will be
+        // used in the class type validation. Note that this will result in new
+        // variables for extends/implements clauses, so the these variables should
+        // be set un-insertable at creation.
+        this.variableAnnotator.visit(classType, classTree);
+
         return null;
     }
 
@@ -156,6 +161,15 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
                             variableAnnotator.visit(identifierType, node);
                         }
                     }
+
+                } else if (parentNode.getKind() == Kind.CLASS) {
+                    // This happens when a class explicitly extends another class or implements
+                    // another interface
+                    variableAnnotator.visit(identifierType, node);
+
+                } else if (parentNode.getKind() == Kind.NEW_CLASS
+                        && ((NewClassTree) parentNode).getIdentifier() == node) {
+                    variableAnnotator.visit(identifierType, node);
 
                 }
             }
@@ -272,6 +286,7 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
         variableAnnotator.visit(atm, newClassTree.getIdentifier());
 
         annotateMethodTypeArgs(newClassTree);
+
         return null;
     }
 

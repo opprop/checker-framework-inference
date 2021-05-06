@@ -503,6 +503,14 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         } else {
             AnnotationLocation location = treeToLocation(tree);
             variable = replaceOrCreateEquivalentVarAnno(atm, tree, location);
+
+            // If a variable slot is created on any element of the anonymous constructor, it can't be
+            // inserted by AFU, so set it as uninsertable
+            MethodTree enclosingMethod = TreeUtils.enclosingMethod(inferenceTypeFactory.getPath(tree));
+            if (enclosingMethod != null && TreeUtils.isAnonymousConstructor(enclosingMethod)) {
+                variable.setInsertable(false);
+            }
+
             final Pair<VariableSlot, Set<? extends AnnotationMirror>> varATMPair = Pair
                     .of(variable,
                     AnnotationUtils.createAnnotationSet());

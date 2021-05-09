@@ -72,6 +72,7 @@ public class ExistentialVariableSlot extends VariableSlot {
                                              + "potentialSlot=" + potentialSlot);
         }
 
+        this.setLocation(potentialSlot.getLocation());
         this.potentialSlot = potentialSlot;
         this.alternativeSlot = alternativeSlot;
     }

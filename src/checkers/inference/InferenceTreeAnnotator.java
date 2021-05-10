@@ -114,23 +114,12 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
         InferenceUtil.testArgument(classType instanceof AnnotatedDeclaredType,
                 "Unexpected type for ClassTree ( " + classTree + " ) AnnotatedTypeMirror ( " + classType + " ) ");
 
-		// Annotated the enclosing type if it exists
-        AnnotatedDeclaredType declType = (AnnotatedDeclaredType) classType;
-        AnnotatedDeclaredType enclosingType = declType.getEnclosingType();
-        TreePath classPath = atypeFactory.getPath(classTree);
-        if (classPath != null) {
-            ClassTree enclosingClass = TreeUtils.enclosingClass(classPath.getParentPath());
-            if (enclosingType != null && enclosingClass != null) {
-                variableAnnotator.visit(enclosingType, enclosingClass);
-            }
+        // For anonymous classes, we do not create additional variables, as they
+        // were already handled by the visitNewClass. This would otherwise result
+        // in new variables for an extends clause, which then cannot be inserted.
+        if (!InferenceUtil.isAnonymousClass(classTree)) {
+            this.variableAnnotator.visit(classType, classTree);
         }
-
-
-        // For anonymous classes, also fully annotate the classTree, which will be
-        // used in the class type validation. Note that this will result in new
-        // variables for extends/implements clauses, so the these variables should
-        // be set un-insertable at creation.
-        this.variableAnnotator.visit(classType, classTree);
 
         return null;
     }
@@ -165,15 +154,6 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
                             variableAnnotator.visit(identifierType, node);
                         }
                     }
-
-                } else if (parentNode.getKind() == Kind.CLASS) {
-                    // This happens when a class explicitly extends another class or implements
-                    // another interface
-                    variableAnnotator.visit(identifierType, node);
-
-                } else if (parentNode.getKind() == Kind.NEW_CLASS
-                        && ((NewClassTree) parentNode).getIdentifier() == node) {
-                    variableAnnotator.visit(identifierType, node);
 
                 }
             }

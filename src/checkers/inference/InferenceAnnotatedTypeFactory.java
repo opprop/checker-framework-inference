@@ -1,7 +1,5 @@
 package checkers.inference;
 
-import checkers.inference.model.ConstantSlot;
-import checkers.inference.model.Slot;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAnalysis;
@@ -23,7 +21,6 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -46,10 +43,8 @@ import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
-import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 
 import checkers.inference.dataflow.InferenceAnalysis;
@@ -579,28 +574,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     @Override
     protected Set<? extends AnnotationMirror> getDefaultTypeDeclarationBounds() {
-        return qualHierarchy.getTopAnnotations();
-    }
-
-    /**
-     * Get the annotation from the class declaration.
-     * @param type a type
-     * @return the set of {@link VarAnnot} on the class bound. Unlike type checking,
-     * the returned set is always singleton in inference.
-     * {@link org.checkerframework.framework.type.AnnotatedTypeFactory#getTypeDeclarationBounds}
-     * if the class is not handled by the {@link VariableAnnotator}.
-     */
-    @Override
-    public Set<AnnotationMirror> getTypeDeclarationBounds(TypeMirror type) {
-        final TypeElement elt = (TypeElement) getProcessingEnv().getTypeUtils().asElement(type);
-        AnnotationMirror vAnno =
-                variableAnnotator.getClassDeclVarAnnot(elt);
-        if (vAnno != null) {
-            return Collections.singleton(vAnno);
-        }
-
-        // If the declaration bound of the underlying type is not cached, use default
-        return (Set<AnnotationMirror>) getDefaultTypeDeclarationBounds();
+        return realTypeFactory.getQualifierHierarchy().getTopAnnotations();
     }
 }
 

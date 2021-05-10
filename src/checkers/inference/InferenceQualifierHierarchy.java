@@ -1,6 +1,10 @@
 package checkers.inference;
 
-import checkers.inference.model.*;
+import checkers.inference.model.ConstantSlot;
+import checkers.inference.model.ConstraintManager;
+import checkers.inference.model.LubVariableSlot;
+import checkers.inference.model.Slot;
+import checkers.inference.model.VariableSlot;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotationMirrorSet;

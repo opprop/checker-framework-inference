@@ -828,6 +828,11 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         return new InferenceValidator(checker, this, atypeFactory);
     }
 
+    /**
+     * Don't do constructor result checking in inference mode, because an equality hard constraint
+     * "classBound == top" is not expected.
+     * TODO: consider preference constraints corresponding to type checks that issue a warning
+     */
     @Override
     protected void checkConstructorResult(
             AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {

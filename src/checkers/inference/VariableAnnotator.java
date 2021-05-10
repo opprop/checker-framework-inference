@@ -1612,7 +1612,6 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * If it does not already exist, this method creates the annotation and stores it in classDeclAnnos.
      */
     private VariableSlot getOrCreateDeclBound(AnnotatedDeclaredType type) {
-
         TypeElement classDecl = (TypeElement) type.getUnderlyingType().asElement();
 
         VariableSlot topConstant = getTopConstant();
@@ -1620,9 +1619,10 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         if (declSlot == null) {
             Tree decl = inferenceTypeFactory.declarationFromElement(classDecl);
             if (decl != null) {
-                VariableSlot potentialDeclSlot = createVariable(decl);
-                declSlot = getOrCreateExistentialVariable(potentialDeclSlot, topConstant);
-                classDeclAnnos.put(classDecl, potentialDeclSlot);
+                // Since each class decl should have a slot,
+                // do not use existential slot here.
+                declSlot = createVariable(decl);
+                classDeclAnnos.put(classDecl, declSlot);
 
             } else {
                 declSlot = topConstant;
@@ -1631,6 +1631,21 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
 
         return declSlot;
     }
+
+    /**
+     * Get the {@link VarAnnot} on the class declaration of the Element.
+     * @param ele an element
+     * @return the {@link VarAnnot} on the class declaration,
+     * or {@code null} if the class declaration of the Element is not handled by the
+     * {@link VariableAnnotator#getOrCreateDeclBound(AnnotatedDeclaredType)}.
+     */
+    public AnnotationMirror getClassDeclVarAnnot(TypeElement ele) {
+        if (classDeclAnnos.get(ele) != null) {
+            return slotManager.getAnnotation(classDeclAnnos.get(ele));
+        }
+        return null;
+    }
+
 
     private void addDeclarationConstraints(VariableSlot declSlot, VariableSlot instanceSlot) {
         constraintManager.addSubtypeConstraint(instanceSlot, declSlot);

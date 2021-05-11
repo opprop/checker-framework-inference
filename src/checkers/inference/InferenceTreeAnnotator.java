@@ -1,5 +1,7 @@
 package checkers.inference;
 
+import checkers.inference.model.ConstraintManager;
+import checkers.inference.model.VariableSlot;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -75,7 +77,7 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitAnnotatedType(AnnotatedTypeTree node, AnnotatedTypeMirror atm) {
-        visit(node.getUnderlyingType(), atm);
+        variableAnnotator.visit(atm, node);
         return null;
     }
 
@@ -290,6 +292,23 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
         variableAnnotator.visit(atm, newClassTree.getIdentifier());
 
         annotateMethodTypeArgs(newClassTree);
+
+
+        if (newClassTree.getClassBody() != null) {
+            // For a fully annotated anonymous class instantiation as follows,
+            //     new @VarAnnot(1) A() @VarAnnot(2) {...}
+            // create the implied equality constraint "1 == 2"
+            ConstraintManager constraintManager = InferenceMain.getInstance().getConstraintManager();
+            SlotManager slotManager = InferenceMain.getInstance().getSlotManager();
+
+            // Get the varSlot on the type identifier
+            final VariableSlot identifierSlot = slotManager.getVariableSlot(atm);
+            AnnotatedTypeMirror classType = atypeFactory.getAnnotatedType(newClassTree.getClassBody());
+            // Get the varSlot on the anonymous class body
+            final VariableSlot classBodySlot = slotManager.getVariableSlot(classType);
+            classBodySlot.setInsertable(false);
+            constraintManager.addEqualityConstraint(identifierSlot, classBodySlot);
+        }
 
         return null;
     }

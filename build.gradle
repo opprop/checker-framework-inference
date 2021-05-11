@@ -50,20 +50,20 @@ dependencies {
     compile files("${checkerJar}")
     compile group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
 
-    compile 'org.plumelib:options:1.0.4'
+    compile 'org.plumelib:options:1.0.5'
     // Serialize constraints
     compile 'com.googlecode.json-simple:json-simple:1.1.1'
     // Pretty print serialized constraints
     compile 'com.google.code.gson:gson:2.8.6'
 
-    compile 'org.ow2.sat4j:org.ow2.sat4j.core:2.3.5'
-    compile 'org.ow2.sat4j:org.ow2.sat4j.maxsat:2.3.5'
+    compile 'org.ow2.sat4j:org.ow2.sat4j.core:2.3.6'
+    compile 'org.ow2.sat4j:org.ow2.sat4j.maxsat:2.3.6'
     compile files(z3Jar)
 
     testCompile fileTree(dir: "${checkerFrameworkPath}/framework-test/build/libs", include: "framework-test-*.jar")
     // Mocking library. Used in a couple tests
     testCompile 'org.mockito:mockito-all:2.0.2-beta'
-    testCompile 'junit:junit:4.13.1'
+    testCompile 'junit:junit:4.13.2'
 }
 
 sourceSets {
@@ -248,7 +248,7 @@ task release(type: Zip) {
 
 task cloneAndBuildDependencies(type: Exec) {
     description 'Clones (or updates) and builds all dependencies'
-    executable './.travis-build-without-test.sh'
+    executable './.ci-build-without-test.sh'
 }
 
 task testCheckerInferenceScript(type: Exec, dependsOn: dist) {
@@ -272,7 +272,7 @@ task testCheckerInferenceDevScript(type: Exec, dependsOn: [dist, dependenciesJar
 
 task testDataflowExternalSolvers(type: Exec, dependsOn: [dist, dependenciesJar]) {
     description 'Test Dataflow type system on its external solvers Lingeling and LogicBlox'
-    executable './testing/dataflowexample/travis-test.sh'
+    executable './testing/dataflowexample/ci-test.sh'
 }
 
 afterEvaluate {

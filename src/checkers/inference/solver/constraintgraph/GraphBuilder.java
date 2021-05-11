@@ -32,15 +32,11 @@ import dataflow.util.DataflowUtils;
 public class GraphBuilder {
     private final Collection<Constraint> constraints;
     private final ConstraintGraph graph;
-    private AnnotationMirror top;
-
-    public GraphBuilder(Collection<Slot> slots, Collection<Constraint> constraints) {
-        this.constraints = constraints;
-        this.graph = new ConstraintGraph();
-    }
+    private final AnnotationMirror top;
 
     public GraphBuilder(Collection<Slot> slots, Collection<Constraint> constraints, AnnotationMirror top) {
-        this(slots, constraints);
+        this.constraints = constraints;
+        this.graph = new ConstraintGraph();
         this.top = top;
     }
 

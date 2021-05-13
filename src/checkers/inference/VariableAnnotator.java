@@ -1619,8 +1619,6 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         if (declSlot == null) {
             Tree decl = inferenceTypeFactory.declarationFromElement(classDecl);
             if (decl != null) {
-                // Since each class decl should have a slot,
-                // do not use existential slot here.
                 declSlot = createVariable(decl);
                 classDeclAnnos.put(classDecl, declSlot);
 
@@ -1640,8 +1638,9 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * {@link VariableAnnotator#getOrCreateDeclBound(AnnotatedDeclaredType)}.
      */
     public AnnotationMirror getClassDeclVarAnnot(TypeElement ele) {
-        if (classDeclAnnos.get(ele) != null) {
-            return slotManager.getAnnotation(classDeclAnnos.get(ele));
+        final VariableSlot slot = classDeclAnnos.get(ele);
+        if (slot != null) {
+            return slotManager.getAnnotation(slot);
         }
         return null;
     }

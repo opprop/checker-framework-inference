@@ -574,15 +574,6 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Get the real top annotation from {@link #realTypeFactory}.
-     * @return the real top annotation.
-     */
-    @Override
-    protected Set<? extends AnnotationMirror> getDefaultTypeDeclarationBounds() {
-        return qualHierarchy.getTopAnnotations();
-    }
-
-    /**
      * Get the annotation from the class declaration.
      * @param type a type
      * @return the set of {@link VarAnnot} on the class bound. Unlike type checking,

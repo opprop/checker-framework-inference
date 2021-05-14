@@ -576,16 +576,12 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     /**
      * Get the annotation from the class declaration.
      * @param type a type
-     * @return the set of {@link VarAnnot} on the class bound. Unlike type checking,
-     * the returned set is always singleton in inference.
-     * {@link org.checkerframework.framework.type.AnnotatedTypeFactory#getTypeDeclarationBounds}
-     * if the class is not handled by the {@link VariableAnnotator}.
+     * @return the singleton set with the {@link VarAnnot} on the class bound
      */
     @Override
     public Set<AnnotationMirror> getTypeDeclarationBounds(TypeMirror type) {
         final TypeElement elt = (TypeElement) getProcessingEnv().getTypeUtils().asElement(type);
-        AnnotationMirror vAnno =
-                variableAnnotator.getClassDeclVarAnnot(elt);
+        AnnotationMirror vAnno = variableAnnotator.getClassDeclVarAnnot(elt);
         if (vAnno != null) {
             return Collections.singleton(vAnno);
         }

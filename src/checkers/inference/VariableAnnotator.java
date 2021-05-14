@@ -1631,10 +1631,10 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
     }
 
     /**
-     * Get the {@link VarAnnot} on the class declaration of the Element.
-     * @param ele an element
+     * Get the {@link VarAnnot} on the class declaration of the TypeElement.
+     * @param ele a type element
      * @return the {@link VarAnnot} on the class declaration,
-     * or {@code null} if the class declaration of the Element is not handled by the
+     * or {@code null} if the class declaration of the TypeElement is not handled by the
      * {@link VariableAnnotator#getOrCreateDeclBound(AnnotatedDeclaredType)}.
      */
     public AnnotationMirror getClassDeclVarAnnot(TypeElement ele) {

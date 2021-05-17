@@ -1,10 +1,10 @@
 package dataflow;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 
 import checkers.inference.InferenceChecker;
 import checkers.inference.InferenceVisitor;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 import javax.lang.model.element.ExecutableElement;
 
@@ -27,6 +27,6 @@ public class DataflowVisitor extends InferenceVisitor<DataflowChecker, BaseAnnot
      */
     @Override
     protected void checkConstructorResult(
-            AnnotatedTypeMirror.AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
+            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
     }
 }

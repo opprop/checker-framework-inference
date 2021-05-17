@@ -6,6 +6,7 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -23,6 +24,7 @@ import checkers.inference.SlotManager;
 import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
+import checkers.inference.model.ConstantSlot;
 
 /**
  * InferenceValue extends CFValue for inference.
@@ -220,5 +222,30 @@ public class InferenceValue extends CFValue {
         }
 
         return underlyingType;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder("InferenceValue{annotation=");
+        Slot slot = getEffectiveSlot(this);
+        if (slot.isConstant()) {
+            AnnotationFormatter formatter = analysis.getTypeFactory().getAnnotationFormatter();
+            AnnotationMirror anno = ((ConstantSlot) slot).getValue();
+            sb.append(formatter.formatAnnotationMirror(anno));
+            sb.append(" (== ");
+            // TODO: improve output of ConstantSlot itself
+            sb.append(slot.getClass().getSimpleName());
+            sb.append("(");
+            sb.append(((VariableSlot)slot).getId());
+            sb.append(")");
+
+            sb.append(")");
+        } else {
+            sb.append(slot);
+        }
+        sb.append(", underlyingType=");
+        sb.append(underlyingType);
+        sb.append("}");
+        return sb.toString();
     }
 }

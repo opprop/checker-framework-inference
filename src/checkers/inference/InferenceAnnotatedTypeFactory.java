@@ -589,5 +589,22 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // If the declaration bound of the underlying type is not cached, use default
         return (Set<AnnotationMirror>) getDefaultTypeDeclarationBounds();
     }
+
+    /**
+     * Unlike the cases in type checking, in inference we should:
+     * (1) if the clause tree contains explicit annotation, return the corresponding @VarAnnot
+     * (2) otherwise, return the primary variable created for the clause
+     *
+     * Note that in case (2) we don't consider the bound of the extended type, because the
+     * well-formedness constraint will ensure that for {@code extends @1 A}, @1 is a subtype
+     * of the type bound of A
+     *
+     * @param clause the tree that represents an extends or implements clause
+     * @return the annotated type of the clause tree
+     */
+    @Override
+    public AnnotatedTypeMirror getTypeOfExtendsImplements(Tree clause) {
+        return getAnnotatedTypeFromTypeTree(clause);
+    }
 }
 

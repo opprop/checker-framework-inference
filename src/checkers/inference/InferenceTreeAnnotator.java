@@ -75,7 +75,7 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitAnnotatedType(AnnotatedTypeTree node, AnnotatedTypeMirror atm) {
-        visit(node.getUnderlyingType(), atm);
+        variableAnnotator.visit(atm, node);
         return null;
     }
 

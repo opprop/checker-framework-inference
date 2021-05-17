@@ -510,6 +510,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             treeToVarAnnoPair.put(tree, varATMPair);
         }
 
+        atm.removeAnnotationInHierarchy(realTop);
         atm.replaceAnnotation(slotManager.getAnnotation(variable));
 
         return variable;
@@ -567,6 +568,11 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             varSlot = createVariable(location);
         }
 
+        if (realQualifier != null) {
+            // Remove the real qualifier in the atm, to make sure the source code
+            // is only annotated with @VarAnnot
+            atm.removeAnnotation(realQualifier);
+        }
         atm.replaceAnnotation(slotManager.getAnnotation(varSlot));
         return varSlot;
     }
@@ -1619,7 +1625,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         if (declSlot == null) {
             Tree decl = inferenceTypeFactory.declarationFromElement(classDecl);
             if (decl != null) {
-                declSlot = createVariable(decl);
+                declSlot = replaceOrCreateEquivalentVarAnno(type, decl, treeToLocation(decl));
                 classDeclAnnos.put(classDecl, declSlot);
 
             } else {

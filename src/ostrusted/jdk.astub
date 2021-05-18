@@ -30,11 +30,9 @@ class System {
 }
 
 
-
-
-
-
-
+public class Object {
+    public @OsTrusted Object() {}
+}
 
 
 

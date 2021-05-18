@@ -1618,15 +1618,16 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * If it does not already exist, this method creates the annotation and stores it in classDeclAnnos.
      */
     private VariableSlot getOrCreateDeclBound(AnnotatedDeclaredType type) {
-        TypeElement classDecl = (TypeElement) type.getUnderlyingType().asElement();
+        TypeElement classElt = (TypeElement) type.getUnderlyingType().asElement();
 
         VariableSlot topConstant = getTopConstant();
-        VariableSlot declSlot = classDeclAnnos.get(classDecl);
+        VariableSlot declSlot = classDeclAnnos.get(classElt);
         if (declSlot == null) {
-            Tree decl = inferenceTypeFactory.declarationFromElement(classDecl);
-            if (decl != null) {
-                declSlot = replaceOrCreateEquivalentVarAnno(type, decl, treeToLocation(decl));
-                classDeclAnnos.put(classDecl, declSlot);
+            Tree classTree = inferenceTypeFactory.declarationFromElement(classElt);
+            if (classTree != null) {
+                final AnnotatedDeclaredType declType = inferenceTypeFactory.fromElement(classElt);
+                declSlot = replaceOrCreateEquivalentVarAnno(declType, classTree, treeToLocation(classTree));
+                classDeclAnnos.put(classElt, declSlot);
 
             } else {
                 declSlot = topConstant;

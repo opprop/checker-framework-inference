@@ -155,6 +155,11 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
                         }
                     }
 
+                } else if (parentNode.getKind() == Kind.CLASS) {
+                    // This happens when a class explicitly extends another class or implements
+                    // another interface
+                    variableAnnotator.visit(identifierType, node);
+
                 }
             }
         }

@@ -22,8 +22,8 @@ public class DataflowVisitor extends InferenceVisitor<DataflowChecker, BaseAnnot
     }
 
     /**
-     * Skip this test because every class has at least one non-top upper bound
-     * determined by the Java type it extends.
+     * Skip this test because a constructor always produces objects of that underlying type.
+     * TODO: validate constructor result appropriately.
      */
     @Override
     protected void checkConstructorResult(

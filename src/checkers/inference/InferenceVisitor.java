@@ -829,9 +829,11 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     }
 
     /**
-     * Don't do constructor result checking in inference mode, because an equality hard constraint
-     * "classBound == top" is not expected.
-     * TODO: consider preference constraints corresponding to type checks that issue a warning
+     * The super method issues a warning if the result type of the constructor is not top.
+     * If we keep the same logic in inference, a hard constraint "classBound == top" will be
+     * created, which is not what we want. Therefore, skip this checking when it's in the
+     * inference mode.
+     * TODO: consider using preference constraints where warnings are issued in the type-checking mode.
      */
     @Override
     protected void checkConstructorResult(

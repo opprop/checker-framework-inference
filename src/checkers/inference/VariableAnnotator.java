@@ -779,12 +779,12 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             superTypes.get(0).replaceAnnotation(slotManager.getAnnotation(extendsSlot));
 
         } else {
-            // To annotate the explicit extends tree, a non-null tree path is required.
-            // This is because only identifier trees with a path is handled. See
-            // checkers.inference.InferenceTreeAnnotator#visitIdentifier.
-            // The classTree path will be null if the VariableAnnotater is visiting it from
-            // a different compilation unit. So don't visit the extends tree in this case.
-            // Only annotate extends trees when the compilation unit of its own is visited
+            // Since only extends trees with a non-null tree path are handled (see
+            // checkers.inference.InferenceTreeAnnotator#visitIdentifier for more details),
+            // here don't dig deeper onto the extends tree when the classTree path is null.
+            // Note: the classTree path is null when the variableAnnotater is visiting it from
+            // a different compilation unit. The extends tree should be annotated when the
+            // compiler moves forward to the compilation unit containing the class definition.
             if (inferenceTypeFactory.getPath(classTree) != null) {
                 final AnnotatedTypeMirror extendsType = inferenceTypeFactory.getAnnotatedTypeFromTypeTree(extendsTree);
                 visit(extendsType, extendsTree);

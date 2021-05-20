@@ -518,6 +518,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             treeToVarAnnoPair.put(tree, varATMPair);
         }
 
+        atm.removeAnnotationInHierarchy(realTop);
         atm.replaceAnnotation(slotManager.getAnnotation(variable));
 
         return variable;
@@ -573,6 +574,12 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             varSlot = slotManager.createConstantSlot(realQualifier);
         } else {
             varSlot = createVariable(location);
+        }
+
+        if (realQualifier != null) {
+            // Remove the real qualifier in the atm, to make sure the source code
+            // is only annotated with @VarAnnot
+            atm.removeAnnotation(realQualifier);
         }
 
         atm.replaceAnnotation(slotManager.getAnnotation(varSlot));
@@ -1620,15 +1627,16 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * If it does not already exist, this method creates the annotation and stores it in classDeclAnnos.
      */
     private VariableSlot getOrCreateDeclBound(AnnotatedDeclaredType type) {
-        TypeElement classDecl = (TypeElement) type.getUnderlyingType().asElement();
+        TypeElement classElt = (TypeElement) type.getUnderlyingType().asElement();
 
         VariableSlot topConstant = getTopConstant();
-        VariableSlot declSlot = classDeclAnnos.get(classDecl);
+        VariableSlot declSlot = classDeclAnnos.get(classElt);
         if (declSlot == null) {
-            Tree decl = inferenceTypeFactory.declarationFromElement(classDecl);
-            if (decl != null) {
-                declSlot = createVariable(decl);
-                classDeclAnnos.put(classDecl, declSlot);
+            Tree classTree = inferenceTypeFactory.declarationFromElement(classElt);
+            if (classTree != null) {
+                final AnnotatedDeclaredType declType = inferenceTypeFactory.fromElement(classElt);
+                declSlot = replaceOrCreateEquivalentVarAnno(declType, classTree, treeToLocation(classTree));
+                classDeclAnnos.put(classElt, declSlot);
 
             } else {
                 declSlot = topConstant;

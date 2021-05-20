@@ -116,7 +116,7 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
         InferenceUtil.testArgument(classType instanceof AnnotatedDeclaredType,
                 "Unexpected type for ClassTree ( " + classTree + " ) AnnotatedTypeMirror ( " + classType + " ) ");
 
-		// Annotated the enclosing type if it exists
+        // Annotated the enclosing type if it exists
         AnnotatedDeclaredType declType = (AnnotatedDeclaredType) classType;
         AnnotatedDeclaredType enclosingType = declType.getEnclosingType();
         TreePath classPath = atypeFactory.getPath(classTree);

@@ -6,6 +6,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import java.util.List;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 
 import checkers.inference.model.AnnotationLocation;
 import checkers.inference.model.ArithmeticVariableSlot;
@@ -15,6 +16,7 @@ import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
+import checkers.inference.model.SourceVariableSlot;
 
 /**
  * SlotManager stores variables for later access, provides ids for creating variables and
@@ -31,16 +33,15 @@ public interface SlotManager {
     int getNumberOfSlots();
 
     /**
-     * Create new VariableSlot and return the reference to it if no VariableSlot
-     * on this location exists. Otherwise return the reference to existing
-     * VariableSlot on this location. Each location uniquely identifies a
-     * VariableSlot
+     * Create new SourceVariableSlot and return the reference to it if no SourceVariableSlot
+     * on this location exists. Otherwise return the reference to existing SourceVariableSlot
+     * on this location. Each location uniquely identifies a SourceVariableSlot
      *
      * @param location
      *            used to locate this variable in code
-     * @return VariableSlot that corresponds to this location
+     * @return SourceVariableSlot that corresponds to this location
      */
-    VariableSlot createVariableSlot(AnnotationLocation location);
+    SourceVariableSlot createSourceVariableSlot(AnnotationLocation location, TypeMirror type);
 
     /**
      * Create new RefinementVariableSlot (as well as the refinement constraint if
@@ -118,15 +119,14 @@ public interface SlotManager {
      * uniquely identify an ExistentialVariableSlot
      *
      * @param potentialSlot
-     *            a variable whose annotation may or may not exist in source
-     *            code
+     *            a slot whose annotation may or may not exist in source
      * @param alternativeSlot
-     *            the variable which would take part in a constraint if
-     *            potentialSlot does not exist
+     *            the slot which would take part in a constraint if
+     *            {@code potentialSlot} does not exist
      * @return the ExistentialVariableSlot that wraps this potentialSlot and
      *         alternativeSlot
      */
-    ExistentialVariableSlot createExistentialVariableSlot(VariableSlot potentialSlot, VariableSlot alternativeSlot);
+    ExistentialVariableSlot createExistentialVariableSlot(Slot potentialSlot, Slot alternativeSlot);
 
     /**
      * Create new ArithmeticVariableSlot at the given location and return a reference to it if no
@@ -159,8 +159,8 @@ public interface SlotManager {
      */
      AnnotationMirror createEquivalentVarAnno(final AnnotationMirror realQualifier);
 
-    /** Return the variable identified by the given id or null if no such variable has been added */
-    VariableSlot getVariable( int id );
+    /** Return the slot identified by the given id or null if no such slot has been added */
+    Slot getSlot( int id );
 
     /**
      * Given a slot return an annotation that represents the slot when added to an AnnotatedTypeMirror.
@@ -183,11 +183,11 @@ public interface SlotManager {
     Slot getSlot( AnnotationMirror am );
 
     /**
-     * Return the VariableSlot in the primary annotation location of annotated type mirror.  If
-     * there is no VariableSlot this method throws an exception
+     * Return the Slot in the primary annotation location of annotated type mirror.  If
+     * there is no Slot this method throws an exception
      * @param atm An annotated type mirror with a VarAnnot in its primary annotations list
      */
-    VariableSlot getVariableSlot(AnnotatedTypeMirror atm);
+    Slot getSlot(AnnotatedTypeMirror atm);
 
     /**
      * Return all slots collected by this SlotManager

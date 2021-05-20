@@ -25,7 +25,7 @@ import java.util.List;
 public class ExistentialConstraint extends Constraint {
 
     // A variable whose annotation may or may not exist
-    private final VariableSlot potentialVariable;
+    private final Slot potentialVariable;
 
     // The constraints to enforce if potentialVariable exists
     private final List<Constraint> potentialConstraints;
@@ -33,7 +33,7 @@ public class ExistentialConstraint extends Constraint {
     // the constraints to enforce if potentialVariable DOES NOT exist
     private final List<Constraint> alternateConstraints;
 
-    public ExistentialConstraint(VariableSlot potentialVariable,
+    public ExistentialConstraint(Slot potentialVariable,
                                  List<Constraint> potentialConstraints,
                                  List<Constraint> alternateConstraints, AnnotationLocation location) {
         super(combineSlots(potentialVariable, potentialConstraints, alternateConstraints), location);
@@ -42,7 +42,7 @@ public class ExistentialConstraint extends Constraint {
         this.alternateConstraints = Collections.unmodifiableList(alternateConstraints);
     }
 
-    protected static ExistentialConstraint create(VariableSlot potentialVariable,
+    protected static ExistentialConstraint create(Slot potentialVariable,
             List<Constraint> potentialConstraints, List<Constraint> alternateConstraints,
             AnnotationLocation location) {
         if (potentialVariable == null || potentialConstraints == null
@@ -69,7 +69,7 @@ public class ExistentialConstraint extends Constraint {
         return Collections.unmodifiableList(slots);
     }
 
-    public VariableSlot getPotentialVariable() {
+    public Slot getPotentialVariable() {
         return potentialVariable;
     }
 

@@ -62,8 +62,8 @@ public class RefinementVariableSlot extends VariableSlot {
 
     private final Slot refined;
 
-    public RefinementVariableSlot(AnnotationLocation location, int id, Slot refined) {
-        super(location, id);
+    public RefinementVariableSlot(int id, AnnotationLocation location, Slot refined) {
+        super(id, location);
         this.refined = refined;
     }
 

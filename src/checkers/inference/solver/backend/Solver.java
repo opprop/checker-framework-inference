@@ -10,7 +10,6 @@ import javax.lang.model.element.AnnotationMirror;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
-import checkers.inference.model.VariableSlot;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.SolverEnvironment;
 
@@ -113,7 +112,7 @@ public abstract class Solver<T extends FormatTranslator<?, ?, ?>> {
     protected void collectVarSlots(Constraint constraint) {
         for (Slot slot : constraint.getSlots()) {
             if (!(slot instanceof ConstantSlot)) {
-                this.varSlotIds.add(((VariableSlot) slot).getId());
+                this.varSlotIds.add(slot.getId());
             }
         }
     }

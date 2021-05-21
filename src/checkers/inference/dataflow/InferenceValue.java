@@ -7,7 +7,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotationFormatter;
-import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
 import java.util.Collections;
@@ -79,7 +78,7 @@ public class InferenceValue extends CFValue {
             AnnotatedTypeVariable type =
                     (AnnotatedTypeVariable) analysis.getTypeFactory().getAnnotatedType(typevar.asElement());
             AnnotatedTypeMirror ubType = InferenceUtil.findUpperBoundType(type, InferenceMain.isHackMode());
-            return getInferenceAnalysis().getSlotManager().getVariableSlot(ubType);
+            return getInferenceAnalysis().getSlotManager().getSlot(ubType);
         }
         Iterator<AnnotationMirror> iterator = value.getAnnotations().iterator();
         AnnotationMirror annotationMirror = iterator.next();
@@ -120,30 +119,28 @@ public class InferenceValue extends CFValue {
      *
      */
     public CFValue mostSpecificFromSlot(final Slot thisSlot, final Slot otherSlot, final CFValue other, final CFValue backup) {
-           if (thisSlot.isVariable() && otherSlot.isVariable()) {
-               VariableSlot thisVarSlot = (VariableSlot) thisSlot;
-               VariableSlot otherVarSlot = (VariableSlot) otherSlot;
-               if (thisVarSlot.isMergedTo(otherVarSlot)) {
-                   return other;
-               } else if (otherVarSlot.isMergedTo(thisVarSlot)) {
-                   return this;
-               } else if (thisVarSlot instanceof RefinementVariableSlot
-                       && ((RefinementVariableSlot) thisVarSlot).getRefined().equals(otherVarSlot)) {
+        if (thisSlot.isVariable() && otherSlot.isVariable()) {
+            if (thisSlot.isMergedTo(otherSlot)) {
+                return other;
+            } else if (otherSlot.isMergedTo(thisSlot)) {
+                return this;
+            } else if (thisSlot instanceof RefinementVariableSlot
+                    && ((RefinementVariableSlot) thisSlot).getRefined().equals(otherSlot)) {
 
                 return this;
-            } else if (otherVarSlot instanceof RefinementVariableSlot
-                    && ((RefinementVariableSlot) otherVarSlot).getRefined().equals(thisVarSlot)) {
+            } else if (otherSlot instanceof RefinementVariableSlot
+                    && ((RefinementVariableSlot) otherSlot).getRefined().equals(thisSlot)) {
 
                 return other;
             } else {
                 // Check if one of these has refinement variables that were merged to the other.
-                for (RefinementVariableSlot slot : thisVarSlot.getRefinedToSlots()) {
-                    if (slot.isMergedTo(otherVarSlot)) {
+                for (RefinementVariableSlot slot : ((VariableSlot) thisSlot).getRefinedToSlots()) {
+                    if (slot.isMergedTo(otherSlot)) {
                         return other;
                     }
                 }
-                for (RefinementVariableSlot slot : otherVarSlot.getRefinedToSlots()) {
-                    if (slot.isMergedTo(thisVarSlot)) {
+                for (RefinementVariableSlot slot : ((VariableSlot) otherSlot).getRefinedToSlots()) {
+                    if (slot.isMergedTo(thisSlot)) {
                         return this;
                     }
                 }
@@ -228,7 +225,7 @@ public class InferenceValue extends CFValue {
     public String toString() {
         StringBuilder sb = new StringBuilder("InferenceValue{annotation=");
         Slot slot = getEffectiveSlot(this);
-        if (slot.isConstant()) {
+        if (!slot.isVariable()) {
             AnnotationFormatter formatter = analysis.getTypeFactory().getAnnotationFormatter();
             AnnotationMirror anno = ((ConstantSlot) slot).getValue();
             sb.append(formatter.formatAnnotationMirror(anno));

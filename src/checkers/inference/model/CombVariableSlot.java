@@ -16,8 +16,8 @@ public class CombVariableSlot extends VariableSlot {
     private final Slot first;
     private final Slot second;
 
-    public CombVariableSlot(AnnotationLocation location, int id, Slot first, Slot second) {
-        super(location, id);
+    public CombVariableSlot(int id, AnnotationLocation location, Slot first, Slot second) {
+        super(id, location);
         this.first = first;
         this.second = second;
     }

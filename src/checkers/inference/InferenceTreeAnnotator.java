@@ -1,7 +1,8 @@
 package checkers.inference;
 
 import checkers.inference.model.ConstraintManager;
-import checkers.inference.model.VariableSlot;
+import checkers.inference.model.SourceVariableSlot;
+import checkers.inference.model.Slot;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -302,11 +303,12 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
             SlotManager slotManager = InferenceMain.getInstance().getSlotManager();
 
             // Get the varSlot on the type identifier
-            final VariableSlot identifierSlot = slotManager.getVariableSlot(atm);
+            final Slot identifierSlot = slotManager.getSlot(atm);
             AnnotatedTypeMirror classType = atypeFactory.getAnnotatedType(newClassTree.getClassBody());
             // Get the varSlot on the anonymous class body
-            final VariableSlot classBodySlot = slotManager.getVariableSlot(classType);
-            classBodySlot.setInsertable(false);
+            final Slot classBodySlot = slotManager.getSlot(classType);
+            assert classBodySlot instanceof SourceVariableSlot;
+            ((SourceVariableSlot) classBodySlot).setInsertable(false);
             constraintManager.addEqualityConstraint(identifierSlot, classBodySlot);
         }
 

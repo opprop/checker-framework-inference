@@ -7,10 +7,12 @@ import java.util.Map;
 
 import checkers.inference.model.LubVariableSlot;
 import checkers.inference.model.ImplicationConstraint;
+import checkers.inference.model.VariableSlot;
 import org.sat4j.core.VecInt;
 
 import checkers.inference.SlotManager;
 import checkers.inference.model.ArithmeticConstraint;
+import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.CombineConstraint;
 import checkers.inference.model.ComparableConstraint;
@@ -25,7 +27,7 @@ import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Serializer;
 import checkers.inference.model.Slot;
 import checkers.inference.model.SubtypeConstraint;
-import checkers.inference.model.VariableSlot;
+import checkers.inference.model.SourceVariableSlot;
 
 /**
  */
@@ -216,7 +218,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
     }
 
     @Override
-    public VecInt[] serialize(VariableSlot slot) {
+    public VecInt[] serialize(SourceVariableSlot slot) {
         // doesn't really mean anything
         return null;
     }
@@ -241,6 +243,12 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
 
     @Override
     public VecInt[] serialize(LubVariableSlot slot) {
+        return null;
+    }
+    
+    @Override
+    public VecInt[] serialize(ArithmeticVariableSlot slot) {
+        // doesn't really mean anything
         return null;
     }
 

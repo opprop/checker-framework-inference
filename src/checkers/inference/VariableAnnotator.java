@@ -126,7 +126,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
     /** Key is the NewArray Tree */
     private final Map<Tree, AnnotatedArrayType> newArrayMissingTrees;
     /** Class declarations may (or may not) have annotations that act as bound. */
-    private final Map<Element, SourceVariableSlot> classDeclAnnos;
+    private final Map<Element, Slot> classDeclAnnos;
 
     /** When inferring the type of polymorphic qualifiers we create one new Variable to
      * represent the call-site value of that qualifier.  This map keeps track of
@@ -1644,7 +1644,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             if (classTree != null) {
                 final AnnotatedDeclaredType declType = inferenceTypeFactory.fromElement(classElt);
                 declSlot = replaceOrCreateEquivalentVarAnno(declType, classTree, treeToLocation(classTree));
-                classDeclAnnos.put(classElt, (SourceVariableSlot) declSlot);
+                classDeclAnnos.put(classElt, declSlot);
 
             } else {
                 declSlot = topConstant;
@@ -1662,7 +1662,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * {@link VariableAnnotator#getOrCreateDeclBound(AnnotatedDeclaredType)}.
      */
     public AnnotationMirror getClassDeclVarAnnot(TypeElement ele) {
-        final SourceVariableSlot slot = classDeclAnnos.get(ele);
+        final Slot slot = classDeclAnnos.get(ele);
         if (slot != null) {
             return slotManager.getAnnotation(slot);
         }

@@ -306,8 +306,9 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
             AnnotatedTypeMirror classType = atypeFactory.getAnnotatedType(newClassTree.getClassBody());
             // Get the varSlot on the anonymous class body
             final Slot classBodySlot = slotManager.getSlot(classType);
-            assert classBodySlot instanceof SourceVariableSlot;
-            ((SourceVariableSlot) classBodySlot).setInsertable(false);
+            if (classBodySlot instanceof SourceVariableSlot) {
+                ((SourceVariableSlot) classBodySlot).setInsertable(false);
+            }
             constraintManager.addEqualityConstraint(identifierSlot, classBodySlot);
         }
 

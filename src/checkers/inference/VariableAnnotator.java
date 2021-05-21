@@ -586,7 +586,6 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             // is only annotated with @VarAnnot
             atm.removeAnnotation(realQualifier);
         }
-
         atm.replaceAnnotation(slotManager.getAnnotation(varSlot));
         return varSlot;
     }
@@ -790,8 +789,16 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             superTypes.get(0).replaceAnnotation(slotManager.getAnnotation(extendsSlot));
 
         } else {
-            final AnnotatedTypeMirror extendsType = inferenceTypeFactory.getAnnotatedTypeFromTypeTree(extendsTree);
-            visit(extendsType, extendsTree);
+            // Since only extends trees with a non-null tree path are handled (see
+            // checkers.inference.InferenceTreeAnnotator#visitIdentifier for more details),
+            // here don't dig deeper onto the extends tree when the classTree path is null.
+            // Note: the classTree path is null when the variableAnnotater is visiting it from
+            // a different compilation unit. The extends tree should be annotated when the
+            // compiler moves forward to the compilation unit containing the class definition.
+            if (inferenceTypeFactory.getPath(classTree) != null) {
+                final AnnotatedTypeMirror extendsType = inferenceTypeFactory.getAnnotatedTypeFromTypeTree(extendsTree);
+                visit(extendsType, extendsTree);
+            }
         }
 
 //        // TODO: NOT SURE THIS HANDLES MEMBER SELECT CORRECTLY
@@ -1634,7 +1641,6 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * If it does not already exist, this method creates the annotation and stores it in classDeclAnnos.
      */
     private Slot getOrCreateDeclBound(AnnotatedDeclaredType type) {
-
         TypeElement classElt = (TypeElement) type.getUnderlyingType().asElement();
 
         Slot topConstant = getTopConstant();

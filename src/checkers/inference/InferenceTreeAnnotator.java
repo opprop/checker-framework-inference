@@ -128,7 +128,6 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
             }
         }
 
-
         // For anonymous classes, also fully annotate the classTree, which will be
         // used in the class type validation. Note that this will result in new
         // variables for extends/implements clauses, so the these variables should

@@ -18,7 +18,6 @@ import javax.lang.model.element.AnnotationMirror;
 import checkers.inference.model.ConstraintManager;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.Slot;
-import checkers.inference.model.VariableSlot;
 
 /**
  *
@@ -94,7 +93,7 @@ public class ExistentialVariableInserter {
     /**
      * See class comments for information on insert
      */
-    public void insert(final VariableSlot potentialVariable, final AnnotatedTypeMirror typeUse,
+    public void insert(final Slot potentialVariable, final AnnotatedTypeMirror typeUse,
                        final AnnotatedTypeMirror declaration) {
          insert(potentialVariable, typeUse, declaration, false);
     }
@@ -102,9 +101,9 @@ public class ExistentialVariableInserter {
     /**
      * See class comments for information on insert
      */
-    public void insert(final VariableSlot potentialVariable, final AnnotatedTypeMirror typeUse,
+    public void insert(final Slot potentialVariable, final AnnotatedTypeMirror typeUse,
                        final AnnotatedTypeMirror declaration,  boolean mustExist) {
-        if (potentialVariable == null || !(potentialVariable instanceof VariableSlot)) {
+        if (potentialVariable == null) {
             throw new BugInCF("Bad type variable slot: slot=" + potentialVariable);
         }
 
@@ -121,10 +120,10 @@ public class ExistentialVariableInserter {
     }
 
     private class InsertionVisitor extends EquivalentAtmComboScanner<Void, Void> {
-        private VariableSlot potentialVariable;
+        private Slot potentialVariable;
         private AnnotationMirror potentialVarAnno;
 
-        public InsertionVisitor(final VariableSlot potentialVariable,
+        public InsertionVisitor(final Slot potentialVariable,
                                 final AnnotationMirror potentialVarAnno,
                                 final boolean mustExist) {
             this.potentialVariable = potentialVariable;
@@ -132,7 +131,7 @@ public class ExistentialVariableInserter {
         }
 
         public void matchAndReplacePrimary(final AnnotatedTypeMirror typeUse, final AnnotatedTypeMirror declaration) {
-            if (InferenceMain.isHackMode(slotManager.getVariableSlot(typeUse) == null)) {
+            if (InferenceMain.isHackMode(slotManager.getSlot(typeUse) == null)) {
                 return;
             }
 
@@ -140,8 +139,8 @@ public class ExistentialVariableInserter {
                 typeUse.addAnnotation(realTop);
             }
 
-            if (slotManager.getVariableSlot(typeUse).equals(potentialVariable)) {
-                final Slot declSlot = slotManager.getVariableSlot(declaration);
+            if (slotManager.getSlot(typeUse).equals(potentialVariable)) {
+                final Slot declSlot = slotManager.getSlot(declaration);
 
                 if (declSlot == null) {
                     if (!InferenceMain.isHackMode()) {
@@ -151,10 +150,9 @@ public class ExistentialVariableInserter {
                     }
                 }
 
-                if (declSlot instanceof VariableSlot) {
-                    final VariableSlot varSlot = slotManager.getVariableSlot(declaration);
+                if (declSlot.isVariable()) {
                     final ExistentialVariableSlot existVar =
-                            varAnnotator.getOrCreateExistentialVariable(typeUse, potentialVariable, varSlot);
+                            varAnnotator.getOrCreateExistentialVariable(typeUse, potentialVariable, declSlot);
 
                 } else if (!InferenceMain.isHackMode()) {
                         throw new BugInCF("Unexpected constant slot in:" + declaration);
@@ -277,12 +275,12 @@ public class ExistentialVariableInserter {
                 return false;
             }
 
-            VariableSlot varSlot = slotManager.getVariableSlot(type);
-            if (varSlot == null) {
+            Slot slot = slotManager.getSlot(type);
+            if (slot == null) {
                 return false;
             }
 
-            return varSlot.equals(potentialVariable);
+            return slot.equals(potentialVariable);
         }
     }
 }

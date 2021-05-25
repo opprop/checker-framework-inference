@@ -206,14 +206,13 @@ public class InferenceTransfer extends CFTransfer {
             AnnotatedTypeMirror atm, AnnotatedTypeMirror valueAtm) {
 
         SlotManager slotManager = getInferenceAnalysis().getSlotManager();
-
-        Slot slotToRefine = slotManager.getVariableSlot(atm);
+        Slot slotToRefine = slotManager.getSlot(atm);
         if(slotToRefine instanceof RefinementVariableSlot) {
             slotToRefine = ((RefinementVariableSlot) slotToRefine).getRefined();
         }
         assert slotToRefine instanceof VariableSlot;
 
-        Slot refineTo = slotManager.getVariableSlot(valueAtm);
+        Slot refineTo = slotManager.getSlot(valueAtm);
 
         logger.fine("Creating refinement variable for tree: " + assignmentTree);
         RefinementVariableSlot refVar;
@@ -289,8 +288,8 @@ public class InferenceTransfer extends CFTransfer {
 
         SlotManager slotManager = getInferenceAnalysis().getSlotManager();
 
-        final Slot upperBoundBaseSlot = slotManager.getVariableSlot(upperBoundType);
-        final Slot lowerBoundBaseSlot = slotManager.getVariableSlot(lowerBoundType);
+        final Slot upperBoundBaseSlot = slotManager.getSlot(upperBoundType);
+        final Slot lowerBoundBaseSlot = slotManager.getSlot(lowerBoundType);
 
         if (upperBoundBaseSlot == null || lowerBoundBaseSlot == null) {
             if (!InferenceMain.isHackMode()) {

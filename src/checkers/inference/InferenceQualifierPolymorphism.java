@@ -9,7 +9,8 @@ import javax.lang.model.element.AnnotationMirror;
 import com.sun.source.tree.Tree;
 
 import checkers.inference.model.ConstantSlot;
-import checkers.inference.model.VariableSlot;
+import checkers.inference.model.Slot;
+import checkers.inference.model.SourceVariableSlot;
 
 /**
  * InferenceQualifierPolymorphism handle PolymorphicQualifiers for the Inference Framework.
@@ -52,13 +53,13 @@ public class InferenceQualifierPolymorphism {
         /**
          * The variable slot created for this method call
          */
-        private VariableSlot polyVar = null;
+        private SourceVariableSlot polyVar = null;
 
         private PolyReplacer(Tree methodCall) {
             this.methodCall = methodCall;
         }
 
-        private VariableSlot getOrCreatePolyVar() {
+        private SourceVariableSlot getOrCreatePolyVar() {
             if (polyVar == null) {
                 polyVar = variableAnnotator.getOrCreatePolyVar(methodCall);
             }
@@ -69,12 +70,12 @@ public class InferenceQualifierPolymorphism {
         @Override
         public Void scan(AnnotatedTypeMirror type, Void v) {
             if (type != null) {
-                AnnotationMirror varSlot = type.getAnnotationInHierarchy(varAnnot);
-                if (varSlot != null) {
-                    VariableSlot var = (VariableSlot) slotManager.getSlot(varSlot);
-                    if (InferenceMain.isHackMode(var == null)) {
-                    } else if (var.isConstant()) {
-                        AnnotationMirror constant = ((ConstantSlot)var).getValue();
+                AnnotationMirror anno = type.getAnnotationInHierarchy(varAnnot);
+                if (anno != null) {
+                    Slot slot = slotManager.getSlot(anno);
+                    if (InferenceMain.isHackMode(slot == null)) {
+                    } else if (!slot.isVariable()) {
+                        AnnotationMirror constant = ((ConstantSlot) slot).getValue();
                         if (InferenceQualifierHierarchy.isPolymorphic(constant)) {
                             type.replaceAnnotation(slotManager.getAnnotation(getOrCreatePolyVar()));
                         }

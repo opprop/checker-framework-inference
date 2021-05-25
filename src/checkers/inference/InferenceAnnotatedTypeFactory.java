@@ -21,6 +21,7 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
+import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
@@ -43,13 +44,14 @@ import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 
 import checkers.inference.dataflow.InferenceAnalysis;
 import checkers.inference.model.ConstraintManager;
-import checkers.inference.model.VariableSlot;
 import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.ConstantToVariableAnnotator;
 import checkers.inference.util.InferenceUtil;
@@ -117,16 +119,6 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     // Java files you are compiling, you can use this number to gauge progress of inference.
     // See setRoot below
     public int compilationUnitsHandled = 0;
-
-    // there are locations in the code that are constant for which we still need to apply a variable
-    // though we know the value of that variable.  In this case, rather than creating a new variable
-    // for every one of these locations and increase the number of variables we solve for, use
-    // the same variable slot for all of these locations.  This map contains those variables.
-    private Map<Class<? extends Annotation>, VariableSlot> constantToVarAnnot = new HashMap<>();
-
-    /** The map from the artificial variable for postfix expression to its real refined value **/
-    private Map<Tree, AnnotatedTypeMirror> tempVarToRefinedType = new HashMap<>();
-
 
     public InferenceAnnotatedTypeFactory(
             InferenceChecker inferenceChecker,
@@ -265,10 +257,6 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected DependentTypesHelper createDependentTypesHelper() {
         return null;
-    }
-
-    protected Map<Class<? extends Annotation>, VariableSlot> getConstantVars() {
-        return Collections.unmodifiableMap(constantToVarAnnot);
     }
 
     /**
@@ -573,12 +561,33 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     /**
-     * Get the real top annotation from {@link #realTypeFactory}.
-     * @return the real top annotation.
+     * Get the annotation from the class declaration.
+     * @param type a type
+     * @return the singleton set with the {@link VarAnnot} on the class bound
      */
     @Override
-    protected Set<? extends AnnotationMirror> getDefaultTypeDeclarationBounds() {
-        return realTypeFactory.getQualifierHierarchy().getTopAnnotations();
+    public Set<AnnotationMirror> getTypeDeclarationBounds(TypeMirror type) {
+        final TypeElement elt = (TypeElement) getProcessingEnv().getTypeUtils().asElement(type);
+        AnnotationMirror vAnno = variableAnnotator.getClassDeclVarAnnot(elt);
+        if (vAnno != null) {
+            return Collections.singleton(vAnno);
+        }
+
+        // If the declaration bound of the underlying type is not cached, use default
+        return (Set<AnnotationMirror>) getDefaultTypeDeclarationBounds();
+    }
+
+    /**
+     * Unlike the cases in type checking, in inference we should:
+     * (1) if the clause tree contains explicit annotation, return the corresponding @VarAnnot
+     * (2) otherwise, return the primary variable created for the clause
+     *
+     * @param clause the tree that represents an extends or implements clause
+     * @return the annotated type of the clause tree
+     */
+    @Override
+    public AnnotatedTypeMirror getTypeOfExtendsImplements(Tree clause) {
+        return getAnnotatedTypeFromTypeTree(clause);
     }
 }
 

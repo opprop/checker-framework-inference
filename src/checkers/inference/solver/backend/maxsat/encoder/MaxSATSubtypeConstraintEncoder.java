@@ -1,6 +1,7 @@
 package checkers.inference.solver.backend.maxsat.encoder;
 
 import checkers.inference.model.ConstantSlot;
+import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.solver.backend.encoder.binary.SubtypeConstraintEncoder;
 import checkers.inference.solver.backend.maxsat.MathUtils;
@@ -28,7 +29,7 @@ public class MaxSATSubtypeConstraintEncoder extends MaxSATAbstractConstraintEnco
      * For subtype constraint, if supertype is constant slot, then the subtype
      * cannot be the super type of supertype, same for subtype
      */
-    protected VecInt[] getMustNotBe(Set<AnnotationMirror> mustNotBe, VariableSlot vSlot, ConstantSlot cSlot) {
+    protected VecInt[] getMustNotBe(Set<AnnotationMirror> mustNotBe, Slot vSlot, ConstantSlot cSlot) {
 
         List<Integer> resultList = new ArrayList<Integer>();
 
@@ -49,7 +50,7 @@ public class MaxSATSubtypeConstraintEncoder extends MaxSATAbstractConstraintEnco
         return emptyValue;
     }
 
-    protected int[] getMaybe(AnnotationMirror type, VariableSlot knownType, VariableSlot unknownType,
+    protected int[] getMaybe(AnnotationMirror type, Slot knownType, Slot unknownType,
                              Collection<AnnotationMirror> maybeSet) {
         int[] maybeArray = new int[maybeSet.size() + 1];
         int i = 1;

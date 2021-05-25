@@ -121,7 +121,7 @@ public class ConstraintManager {
     /**
      * Creates a {@link CombineConstraint} between the three slots.
      */
-    public CombineConstraint createCombineConstraint(Slot target, Slot decl, Slot result) {
+    public CombineConstraint createCombineConstraint(Slot target, Slot decl, CombVariableSlot result) {
         return CombineConstraint.create(target, decl, result, getCurrentLocation());
     }
 
@@ -138,7 +138,7 @@ public class ConstraintManager {
      */
     public ExistentialConstraint createExistentialConstraint(Slot slot,
             List<Constraint> ifExistsConstraints, List<Constraint> ifNotExistsConstraints) {
-        return ExistentialConstraint.create((VariableSlot) slot, ifExistsConstraints,
+        return ExistentialConstraint.create(slot, ifExistsConstraints,
                 ifNotExistsConstraints, getCurrentLocation());
     }
 
@@ -248,7 +248,7 @@ public class ConstraintManager {
     /**
      * Creates and adds a {@link CombineConstraint} to the constraint set.
      */
-    public void addCombineConstraint(Slot target, Slot decl, Slot result) {
+    public void addCombineConstraint(Slot target, Slot decl, CombVariableSlot result) {
         add(createCombineConstraint(target, decl, result));
     }
 

@@ -13,6 +13,7 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 
 import checkers.inference.InferenceMain;
 import checkers.inference.model.ArithmeticConstraint;
+import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.CombineConstraint;
 import checkers.inference.model.ComparableConstraint;
@@ -27,6 +28,8 @@ import checkers.inference.model.LubVariableSlot;
 import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Serializer;
+import checkers.inference.model.Slot;
+import checkers.inference.model.SourceVariableSlot;
 import checkers.inference.model.SubtypeConstraint;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.model.serialization.ToStringSerializer;
@@ -154,11 +157,13 @@ public class PrintUtils {
         }
 
         stream.println("--- Related Slots :");
-        for (VariableSlot slot : slotsCollector.getSlots()) {
+        for (Slot slot : slotsCollector.getSlots()) {
             stream.println(toStringSerializer.getCurrentIndentString()
                     + slot.serialize(toStringSerializer) + " : "
                     + slot.getClass().getSimpleName());
-            stream.println("\t" + slot.getLocation());
+            if (slot.isVariable()) {
+                stream.println("\t" + ((VariableSlot) slot).getLocation());
+            }
         }
 
         stream.println("=========================================================");
@@ -201,17 +206,17 @@ public class PrintUtils {
     public static final class UniqueSlotCollector implements Serializer<Void, Void> {
 
         /** Stores a set of uniquely visited slots, sorted based on slot ID. */
-        private final Set<VariableSlot> uniqueRelatedSlots;
+        private final Set<Slot> uniqueRelatedSlots;
 
         public UniqueSlotCollector() {
             uniqueRelatedSlots = new TreeSet<>();
         }
 
-        public Set<VariableSlot> getSlots() {
+        public Set<Slot> getSlots() {
             return uniqueRelatedSlots;
         }
 
-        private void addSlotIfNotAdded(VariableSlot slot) {
+        private void addSlotIfNotAdded(Slot slot) {
             if (!(slot instanceof ConstantSlot)) {
                 uniqueRelatedSlots.add(slot);
             }
@@ -288,7 +293,7 @@ public class PrintUtils {
         }
 
         @Override
-        public Void serialize(VariableSlot slot) {
+        public Void serialize(SourceVariableSlot slot) {
             addSlotIfNotAdded(slot);
             return null;
         }
@@ -320,6 +325,12 @@ public class PrintUtils {
         public Void serialize(LubVariableSlot slot) {
             slot.getLeft().serialize(this);
             slot.getRight().serialize(this);
+            addSlotIfNotAdded(slot);
+            return null;
+        }
+        
+        @Override
+        public Void serialize(ArithmeticVariableSlot slot) {
             addSlotIfNotAdded(slot);
             return null;
         }

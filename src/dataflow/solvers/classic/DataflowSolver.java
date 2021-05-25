@@ -15,6 +15,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;
 
+import dataflow.qual.DataFlowTop;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -47,7 +48,8 @@ public class DataflowSolver implements InferenceSolver {
 
         Elements elements = processingEnvironment.getElementUtils();
         DATAFLOW = AnnotationBuilder.fromClass(elements, DataFlow.class);
-        GraphBuilder graphBuilder = new GraphBuilder(slots, constraints);
+        AnnotationMirror dataflowTop = AnnotationBuilder.fromClass(elements, DataFlowTop.class);
+        GraphBuilder graphBuilder = new GraphBuilder(slots, constraints, dataflowTop);
         ConstraintGraph constraintGraph = graphBuilder.buildGraph();
 
         List<DatatypeSolver> dataflowSolvers = new ArrayList<>();

@@ -29,29 +29,6 @@ class System {
 	public static void loadLibrary(@OsTrusted String libname);
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+public class Object {
+    public @OsTrusted Object() {}
+}

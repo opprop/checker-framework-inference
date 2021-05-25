@@ -51,14 +51,13 @@ package checkers.inference.model;
 public class ExistentialVariableSlot extends VariableSlot {
 
     // a variable whose annotation may or may not exist in source code
-    private final VariableSlot potentialSlot;
+    private final Slot potentialSlot;
 
     // the variable which would take part in a constraint if potentialSlot does not exist
-    private final VariableSlot alternativeSlot;
+    private final Slot alternativeSlot;
 
-    public ExistentialVariableSlot(int id, VariableSlot potentialSlot, VariableSlot alternativeSlot) {
-        super(id);
-        setInsertable(false);
+    public ExistentialVariableSlot(int id, Slot potentialSlot, Slot alternativeSlot) {
+        super(id, AnnotationLocation.MISSING_LOCATION);
 
         if (potentialSlot == null) {
             throw new IllegalArgumentException("PotentialSlot cannot be null\n"
@@ -74,6 +73,16 @@ public class ExistentialVariableSlot extends VariableSlot {
 
         this.potentialSlot = potentialSlot;
         this.alternativeSlot = alternativeSlot;
+
+        // The existential slot shares the same location with the potentialSlot
+        if (potentialSlot.isVariable()) {
+            setLocation(((VariableSlot) potentialSlot).getLocation());
+        }
+    }
+
+    @Override
+    public boolean isInsertable() {
+        return false;
     }
 
     @Override
@@ -86,11 +95,11 @@ public class ExistentialVariableSlot extends VariableSlot {
         return Kind.EXISTENTIAL_VARIABLE;
     }
 
-    public VariableSlot getPotentialSlot() {
+    public Slot getPotentialSlot() {
         return potentialSlot;
     }
 
-    public VariableSlot getAlternativeSlot() {
+    public Slot getAlternativeSlot() {
         return alternativeSlot;
     }
 

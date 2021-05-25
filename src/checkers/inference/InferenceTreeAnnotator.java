@@ -75,7 +75,7 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitAnnotatedType(AnnotatedTypeTree node, AnnotatedTypeMirror atm) {
-        visit(node.getUnderlyingType(), atm);
+        variableAnnotator.visit(atm, node);
         return null;
     }
 
@@ -154,6 +154,11 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
                             variableAnnotator.visit(identifierType, node);
                         }
                     }
+
+                } else if (parentNode.getKind() == Kind.CLASS) {
+                    // This happens when a class explicitly extends another class or implements
+                    // another interface
+                    variableAnnotator.visit(identifierType, node);
 
                 }
             }

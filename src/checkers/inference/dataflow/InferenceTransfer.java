@@ -210,7 +210,6 @@ public class InferenceTransfer extends CFTransfer {
         if(slotToRefine instanceof RefinementVariableSlot) {
             slotToRefine = ((RefinementVariableSlot) slotToRefine).getRefined();
         }
-        assert slotToRefine instanceof VariableSlot;
 
         Slot refineTo = slotManager.getSlot(valueAtm);
 

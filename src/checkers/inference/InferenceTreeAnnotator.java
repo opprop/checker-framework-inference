@@ -130,8 +130,8 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
 
         // For anonymous classes, also fully annotate the classTree, which will be
         // used in the class type validation. Note that this will result in new
-        // variables for extends/implements clauses, so these variables should
-        // be set un-insertable at creation.
+        // variables created for the anonymous class body, which should be set
+        // uninsertable at creation.
         this.variableAnnotator.visit(classType, classTree);
 
         return null;
@@ -312,9 +312,9 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
             AnnotatedTypeMirror classType = atypeFactory.getAnnotatedType(newClassTree.getClassBody());
             // Get the varSlot on the anonymous class body
             Slot classBodySlot = slotManager.getSlot(classType);
-            // When the NewClassTree is pre-annotated, the compiler automatically annotate the class body
+            // When the NewClassTree is pre-annotated, the compiler automatically annotates the class body
             // with the same annotation on the type identifier. In this case the slot on the class body is
-            // constant, alway equals to the slot on the type identifier
+            // constant, and always equals to the slot on the type identifier
             if (classBodySlot instanceof SourceVariableSlot) {
                 constraintManager.addEqualityConstraint(identifierSlot, classBodySlot);
 

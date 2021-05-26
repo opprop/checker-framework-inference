@@ -56,6 +56,14 @@ public class SourceVariableSlot extends VariableSlot {
         return insertable;
     }
 
+    /**
+     * This method is not encouraged to use, since whether a specific {@code SourceVariableSlot}
+     * is insertable should be determined at creation depending on the type use location, while
+     * sometime it's more convenient to set this flag of a {@code SourceVariableSlot} when it's
+     * use.
+     * TODO: determine whether the slot is insertable at creation and remove this method
+     * @param insertable whether this slot should be inserted back into the source code
+     */
     public void setInsertable(boolean insertable) {
         this.insertable = insertable;
     }

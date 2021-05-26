@@ -175,6 +175,12 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
 
                 } else if (parentNode.getKind() == Kind.NEW_CLASS
                         && ((NewClassTree) parentNode).getIdentifier() == node) {
+                    // This can happen at two locations in a NewClassTree:
+                    // (1) The type identifier of the NewClassTree, as `A` of `new @HERE A() {}`,
+                    // where `@HERE` is either an explicit annotation or a variable annotation.
+                    // (2) The type identifier on the anonymous class's extends/implements clause.
+                    // Note that the identifiers trees described in the two cases above are identical
+                    // for one NewClassTree, i.e. they share the same slot
                     variableAnnotator.visit(identifierType, node);
 
                 }
@@ -306,10 +312,16 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
             AnnotatedTypeMirror classType = atypeFactory.getAnnotatedType(newClassTree.getClassBody());
             // Get the varSlot on the anonymous class body
             Slot classBodySlot = slotManager.getSlot(classType);
+            // When the NewClassTree is pre-annotated, the compiler automatically annotate the class body
+            // with the same annotation on the type identifier. In this case the slot on the class body is
+            // constant, alway equals to the slot on the type identifier
             if (classBodySlot instanceof SourceVariableSlot) {
+                constraintManager.addEqualityConstraint(identifierSlot, classBodySlot);
+
+                // The location for `@VarAnnot(2)` in the above case is not syntactically valid, so the
+                // slot for this location should not be inserted back to source code
                 ((SourceVariableSlot) classBodySlot).setInsertable(false);
             }
-            constraintManager.addEqualityConstraint(identifierSlot, classBodySlot);
         }
 
         return null;

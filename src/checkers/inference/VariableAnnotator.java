@@ -511,8 +511,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             // inserted by AFU, so set it as uninsertable
             MethodTree enclosingMethod = TreeUtils.enclosingMethod(inferenceTypeFactory.getPath(tree));
             if (enclosingMethod != null
-                    && TreeUtils.isAnonymousConstructor(enclosingMethod)
-                    && (variable instanceof SourceVariableSlot)) {
+                    && TreeUtils.isAnonymousConstructor(enclosingMethod)) {
                 ((SourceVariableSlot) variable).setInsertable(false);
             }
 

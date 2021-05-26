@@ -117,7 +117,7 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
         InferenceUtil.testArgument(classType instanceof AnnotatedDeclaredType,
                 "Unexpected type for ClassTree ( " + classTree + " ) AnnotatedTypeMirror ( " + classType + " ) ");
 
-        // Annotated the enclosing type if it exists
+        // Annotate the enclosing type if it exists
         AnnotatedDeclaredType declType = (AnnotatedDeclaredType) classType;
         AnnotatedDeclaredType enclosingType = declType.getEnclosingType();
         TreePath classPath = atypeFactory.getPath(classTree);
@@ -130,7 +130,7 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
 
         // For anonymous classes, also fully annotate the classTree, which will be
         // used in the class type validation. Note that this will result in new
-        // variables for extends/implements clauses, so the these variables should
+        // variables for extends/implements clauses, so these variables should
         // be set un-insertable at creation.
         this.variableAnnotator.visit(classType, classTree);
 
@@ -302,10 +302,10 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
             SlotManager slotManager = InferenceMain.getInstance().getSlotManager();
 
             // Get the varSlot on the type identifier
-            final Slot identifierSlot = slotManager.getSlot(atm);
+            Slot identifierSlot = slotManager.getSlot(atm);
             AnnotatedTypeMirror classType = atypeFactory.getAnnotatedType(newClassTree.getClassBody());
             // Get the varSlot on the anonymous class body
-            final Slot classBodySlot = slotManager.getSlot(classType);
+            Slot classBodySlot = slotManager.getSlot(classType);
             if (classBodySlot instanceof SourceVariableSlot) {
                 ((SourceVariableSlot) classBodySlot).setInsertable(false);
             }

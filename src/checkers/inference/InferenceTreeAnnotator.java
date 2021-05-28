@@ -120,15 +120,13 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
         // Annotate the current class type
         variableAnnotator.visit(classType, classTree);
 
-
         // Annotate the enclosing type recursively:
         // We start at the current class tree and the current class type, then in each iteration
         // get the enclosing (parent) class, and run VariableAnnotator on each of them
-        ClassTree enclosingClass;
         AnnotatedDeclaredType enclosingType = (AnnotatedDeclaredType) classType;
         TreePath classPath = atypeFactory.getPath(classTree);
         while (classPath != null) {
-            enclosingClass = TreeUtils.enclosingClass(classPath.getParentPath());
+            ClassTree enclosingClass = TreeUtils.enclosingClass(classPath.getParentPath());
             enclosingType = enclosingType.getEnclosingType();
             if (enclosingType == null || enclosingClass == null) {
                 break;

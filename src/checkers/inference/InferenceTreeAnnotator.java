@@ -117,22 +117,27 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
         InferenceUtil.testArgument(classType instanceof AnnotatedDeclaredType,
                 "Unexpected type for ClassTree ( " + classTree + " ) AnnotatedTypeMirror ( " + classType + " ) ");
 
-        // Annotate the enclosing type if it exists
-        AnnotatedDeclaredType declType = (AnnotatedDeclaredType) classType;
-        AnnotatedDeclaredType enclosingType = declType.getEnclosingType();
-        TreePath classPath = atypeFactory.getPath(classTree);
-        if (classPath != null) {
-            ClassTree enclosingClass = TreeUtils.enclosingClass(classPath.getParentPath());
-            if (enclosingType != null && enclosingClass != null) {
-                variableAnnotator.visit(enclosingType, enclosingClass);
-            }
-        }
+        // Annotate the current class type
+        variableAnnotator.visit(classType, classTree);
 
-        // For anonymous classes, also fully annotate the classTree, which will be
-        // used in the class type validation. Note that this will result in new
-        // variables created for the anonymous class body, which should be set
-        // uninsertable at creation.
-        this.variableAnnotator.visit(classType, classTree);
+
+        // Annotate the enclosing type recursively:
+        // We start at the current class tree and the current class type, then in each iteration
+        // get the enclosing (parent) class, and run VariableAnnotator on each of them
+        ClassTree enclosingClass;
+        AnnotatedDeclaredType enclosingType = (AnnotatedDeclaredType) classType;
+        TreePath classPath = atypeFactory.getPath(classTree);
+        while (classPath != null) {
+            enclosingClass = TreeUtils.enclosingClass(classPath.getParentPath());
+            enclosingType = enclosingType.getEnclosingType();
+            if (enclosingType == null || enclosingClass == null) {
+                break;
+            }
+            // Annotate the enclosing type if it exists
+            variableAnnotator.visit(enclosingType, enclosingClass);
+            // Get the enclosing class and type
+            classPath = atypeFactory.getPath(enclosingClass);
+        }
 
         return null;
     }
@@ -176,8 +181,7 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
                 } else if (parentNode.getKind() == Kind.NEW_CLASS
                         && ((NewClassTree) parentNode).getIdentifier() == node) {
                     // This can happen at two locations in a NewClassTree:
-                    // (1) The type identifier of the NewClassTree, as `A` of `new @HERE A() {}`,
-                    // where `@HERE` is either an explicit annotation or a variable annotation.
+                    // (1) The type identifier of the NewClassTree, as `A` of `new A() {}`,
                     // (2) The type identifier on the anonymous class's extends/implements clause.
                     // Note that the identifiers trees described in the two cases above are identical
                     // for one NewClassTree, i.e. they share the same slot

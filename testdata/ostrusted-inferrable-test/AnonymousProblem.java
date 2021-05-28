@@ -14,6 +14,13 @@ public class AnonymousProblem {
     OutterI.InnerI<Object> f = new OutterI.InnerI<Object>() {};
 
     A a = new @OsUntrusted A() {};
+
+    void foo() {
+        A a = new A() {
+            B b = new B() {};
+        };
+    }
+
 }
 
 interface OutterI<T> {
@@ -22,3 +29,5 @@ interface OutterI<T> {
 }
 
 class A {}
+class B {}
+

@@ -183,6 +183,9 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
                     // (2) The type identifier on the anonymous class's extends/implements clause.
                     // Note that the identifiers trees described in the two cases above are identical
                     // for one NewClassTree, i.e. they share the same slot
+                    // TODO: Handle NewClassTree only visitNewClass exclusively without out messing
+                    // around with IdentifierTree or ClassTree, see issue:
+                    // https://github.com/opprop/checker-framework-inference/issues/332
                     variableAnnotator.visit(identifierType, node);
 
                 }

@@ -123,6 +123,9 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
         // Annotate the enclosing type recursively:
         // We start at the current class tree and the current class type, then in each iteration
         // get the enclosing (parent) class, and run VariableAnnotator on each of them
+        // This is a workaround for the issue:
+        // https://github.com/opprop/checker-framework-inference/issues/333
+        // TODO: reconsidered this when the issue is resolved
         AnnotatedDeclaredType enclosingType = (AnnotatedDeclaredType) classType;
         TreePath classPath = atypeFactory.getPath(classTree);
         while (classPath != null) {

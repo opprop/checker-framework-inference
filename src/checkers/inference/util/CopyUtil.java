@@ -113,6 +113,14 @@ public class CopyUtil {
             // Do nothing.
             return;
         } else if (fromKind == DECLARED && toKind == DECLARED) {
+            // Copy annotations on enclosing types recursively
+            AnnotatedDeclaredType enclosingOfFrom = ((AnnotatedDeclaredType) from).getEnclosingType();
+            AnnotatedDeclaredType enclosingOfTo = ((AnnotatedDeclaredType) to).getEnclosingType();
+            while (enclosingOfFrom != null && enclosingOfTo != null) {
+                copyAnnotationsImpl(enclosingOfFrom, enclosingOfTo, copyMethod, visited);
+                enclosingOfFrom = enclosingOfFrom.getEnclosingType();
+                enclosingOfTo = enclosingOfTo.getEnclosingType();
+            }
 
             copyAnnotationsTogether(((AnnotatedDeclaredType) from).getTypeArguments(),
                                      ((AnnotatedDeclaredType)   to).getTypeArguments(),

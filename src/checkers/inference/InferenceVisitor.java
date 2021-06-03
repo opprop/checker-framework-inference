@@ -38,6 +38,7 @@ import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.InferenceUtil;
 
 import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ThrowTree;
@@ -86,21 +87,6 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     @Override
     protected Factory createTypeFactory() {
         return (Factory)((BaseInferrableChecker)checker).getTypeFactory();
-    }
-
-    public boolean isValidUse(final AnnotatedDeclaredType declarationType,
-                              final AnnotatedDeclaredType useType) {
-        // TODO at least for the UTS we don't check annotations on the class declaration
-        //   println("InferenceChecker::isValidUse: decl: " + declarationType)
-        //   println("InferenceChecker::isValidUse: use: " + useType)
-
-        // TODO JB: Currently visitDeclared strips the useType of it's @VarAnnots etc...
-        // TODO JB: So the constraints coming from use don't get passed on via visitParameterizedType->checkTypeArguments
-
-        // TODO JB: At the moment this leads to erroneous subtyping between some type parameter elements,
-        // TODO JB: Comment this out and visit CalledMethod.java
-        return atypeFactory.getTypeHierarchy().isSubtype(useType.getErased(), declarationType.getErased());
-        // return true;
     }
 
     public void doesNotContain(AnnotatedTypeMirror ty, AnnotationMirror mod, String msgkey, Tree node) {
@@ -254,7 +240,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
             ConstraintManager cManager = InferenceMain.getInstance().getConstraintManager();
             SlotManager sManager = InferenceMain.getInstance().getSlotManager();
             Slot vSlot = sManager.getSlot(type);
-            if (!vSlot.isVariable()) {
+            if (vSlot instanceof ConstantSlot) {
                 throw new BugInCF("Trying to add Preference to a constant target: " + vSlot);
             }
             ConstantSlot cSlot = InferenceMain.getInstance().getSlotManager().createConstantSlot(anno);
@@ -778,51 +764,6 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         } else {
             super.checkExceptionParameter(node);
         }
-    }
-
-    // TODO: WE NEED TO FIX this method and have it do something sensible
-    // TODO: The issue here is that I have removed the error reporting from this method
-    // TODO: In order to allow verigames to move forward.
-    /**
-     * Tests whether the tree expressed by the passed type tree is a valid type,
-     * and emits an error if that is not the case (e.g. '@Mutable String').
-     * If the tree is a method or constructor, check the return type.
-     *
-     * @param tree  the AST type supplied by the user
-     */
-    @Override
-    public boolean validateTypeOf(Tree tree) {
-        AnnotatedTypeMirror type;
-        // It's quite annoying that there is no TypeTree
-        switch (tree.getKind()) {
-            case PRIMITIVE_TYPE:
-            case PARAMETERIZED_TYPE:
-            case TYPE_PARAMETER:
-            case ARRAY_TYPE:
-            case UNBOUNDED_WILDCARD:
-            case EXTENDS_WILDCARD:
-            case SUPER_WILDCARD:
-            case ANNOTATED_TYPE:
-                type = atypeFactory.getAnnotatedTypeFromTypeTree(tree);
-                break;
-            case METHOD:
-                type = atypeFactory.getMethodReturnType((MethodTree) tree);
-                if (type == null ||
-                        type.getKind() == TypeKind.VOID) {
-                    // Nothing to do for void methods.
-                    // Note that for a constructor the AnnotatedExecutableType does
-                    // not use void as return type.
-                    return true;
-                }
-                break;
-            default:
-                type = atypeFactory.getAnnotatedType(tree);
-        }
-
-        // TODO: THIS MIGHT FAIL
-//        typeValidator.isValid(type, tree);
-        // more checks (also specific to checker, potentially)
-        return true;
     }
 
     @Override

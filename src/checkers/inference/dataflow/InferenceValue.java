@@ -233,7 +233,7 @@ public class InferenceValue extends CFValue {
             // TODO: improve output of ConstantSlot itself
             sb.append(slot.getClass().getSimpleName());
             sb.append("(");
-            sb.append(((VariableSlot)slot).getId());
+            sb.append(slot.getId());
             sb.append(")");
 
             sb.append(")");

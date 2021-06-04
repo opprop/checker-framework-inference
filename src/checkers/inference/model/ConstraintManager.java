@@ -257,7 +257,7 @@ public class ConstraintManager {
     /**
      * Creates and adds a {@link ComparisonConstraint} between the two slots to the constraint set.
      */
-    public void addComparableConstraint(ComparisonOperationKind operation, Slot left, Slot right,
+    public void addComparsionConstraint(ComparisonOperationKind operation, Slot left, Slot right,
     		ComparisonVariableSlot result) {
         add(createComparisonConstraint(operation, left, right, result));
     }

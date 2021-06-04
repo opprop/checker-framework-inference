@@ -9,7 +9,7 @@ package checkers.inference.model;
  */
 public class ComparisonVariableSlot extends VariableSlot {
 
-    public ComparisonVariableSlot(int id, AnnotationLocation location) {
+    public ComparisonVariableSlot(int id, AnnotationLocation location, Slot refined) {
         super(id, location);
     }
 

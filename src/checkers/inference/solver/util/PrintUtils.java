@@ -161,7 +161,7 @@ public class PrintUtils {
             stream.println(toStringSerializer.getCurrentIndentString()
                     + slot.serialize(toStringSerializer) + " : "
                     + slot.getClass().getSimpleName());
-            if (slot.isVariable()) {
+            if (slot instanceof VariableSlot) {
                 stream.println("\t" + ((VariableSlot) slot).getLocation());
             }
         }

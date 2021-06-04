@@ -1,5 +1,6 @@
 package checkers.inference;
 
+import checkers.inference.model.VariableSlot;
 import org.checkerframework.javacutil.BugInCF;
 
 import java.util.ArrayList;
@@ -297,7 +298,7 @@ public class ConstraintNormalizer {
             if (alwaysExists) {
                 sb.append("[");
                 sb.append(
-                        slot.isVariable() ? slot.getId()
+                        slot instanceof VariableSlot ? slot.getId()
                                           : ((ConstantSlot) slot).getValue());
                 sb.append("]");
             } else {

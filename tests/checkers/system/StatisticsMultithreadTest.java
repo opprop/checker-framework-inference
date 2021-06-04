@@ -164,10 +164,6 @@ public class StatisticsMultithreadTest extends TestCase {
             return false;
         }
 
-        @Override
-        public boolean isVariable() {
-            return false;
-        }
     }
 
     private class DummyTwoSlot extends Slot {
@@ -190,10 +186,6 @@ public class StatisticsMultithreadTest extends TestCase {
             return false;
         }
 
-        @Override
-        public boolean isVariable() {
-            return false;
-        }
     }
 
     // =======================================

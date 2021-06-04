@@ -42,8 +42,6 @@ public abstract class Slot implements Comparable<Slot> {
 
     public abstract boolean isInsertable();
 
-    public abstract boolean isVariable();
-
     public abstract <S, T> S serialize(Serializer<S, T> serializer);
 
     public Set<LubVariableSlot> getMergedToSlots() {

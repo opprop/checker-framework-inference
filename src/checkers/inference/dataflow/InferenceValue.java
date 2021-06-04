@@ -119,7 +119,8 @@ public class InferenceValue extends CFValue {
      *
      */
     public CFValue mostSpecificFromSlot(final Slot thisSlot, final Slot otherSlot, final CFValue other, final CFValue backup) {
-        if (thisSlot.isVariable() && otherSlot.isVariable()) {
+        // TODO: refactor this method
+        if (thisSlot instanceof VariableSlot && otherSlot instanceof VariableSlot) {
             if (thisSlot.isMergedTo(otherSlot)) {
                 return other;
             } else if (otherSlot.isMergedTo(thisSlot)) {
@@ -225,7 +226,7 @@ public class InferenceValue extends CFValue {
     public String toString() {
         StringBuilder sb = new StringBuilder("InferenceValue{annotation=");
         Slot slot = getEffectiveSlot(this);
-        if (!slot.isVariable()) {
+        if (slot instanceof ConstantSlot) {
             AnnotationFormatter formatter = analysis.getTypeFactory().getAnnotationFormatter();
             AnnotationMirror anno = ((ConstantSlot) slot).getValue();
             sb.append(formatter.formatAnnotationMirror(anno));
@@ -233,7 +234,7 @@ public class InferenceValue extends CFValue {
             // TODO: improve output of ConstantSlot itself
             sb.append(slot.getClass().getSimpleName());
             sb.append("(");
-            sb.append(((VariableSlot)slot).getId());
+            sb.append(slot.getId());
             sb.append(")");
 
             sb.append(")");

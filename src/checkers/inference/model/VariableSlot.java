@@ -58,11 +58,6 @@ public abstract class VariableSlot extends Slot {
     }
 
     @Override
-    public boolean isVariable() {
-        return true;
-    }
-
-    @Override
     public String toString() {
         return this.getClass().getSimpleName() + "(" + id + ")";
     }

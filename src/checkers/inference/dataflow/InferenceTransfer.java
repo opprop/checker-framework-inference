@@ -443,6 +443,13 @@ public class InferenceTransfer extends CFTransfer {
         constraintManager.addSubtypeConstraint(thenSlot, slotToRefine);
         ComparisonVariableSlot elseSlot = slotManager.createComparisonVariableSlot(location, slotToRefine, false);
         constraintManager.addSubtypeConstraint(elseSlot, slotToRefine);
+
+        if (slotToRefine instanceof VariableSlot) {
+            // ComparisonVariableSlots stores the refined value after comparison, so add it to the "refinedTo" list
+            ((VariableSlot) slotToRefine).getRefinedToSlots().add(thenSlot);
+            ((VariableSlot) slotToRefine).getRefinedToSlots().add(elseSlot);
+        }
+
         AnnotationMirror thenAm = slotManager.getAnnotation(thenSlot);
         AnnotationMirror elseAm = slotManager.getAnnotation(elseSlot);
 

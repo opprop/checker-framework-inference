@@ -8,9 +8,15 @@ package checkers.inference.model;
  * Note that this slot is serialized identically to a {@link VariableSlot}.
  */
 public class ComparisonVariableSlot extends VariableSlot {
+    private final Slot refined;
 
     public ComparisonVariableSlot(int id, AnnotationLocation location, Slot refined) {
         super(id, location);
+        this.refined = refined;
+    }
+
+    public Slot getRefined() {
+        return refined;
     }
 
     @Override

@@ -104,6 +104,18 @@ if [[ "${GROUP}" == downstream* && "${SLUGOWNER}" == "opprop" ]]; then
         clone_downstream $VALUE_GIT $VALUE_BRANCH
         test_downstream $VALUE_GIT $VALUE_COMMAND
     fi
+
+    # Unit inference test
+    if [[ "${GROUP}" == "downstream-units-inference" ]]; then
+        UNIT_GIT=units-inference
+        UNIT_BRANCH=master
+        UNIT_COMMAND="./gradlew build"
+
+        ./gradlew testLibJar
+
+        clone_downstream $UNIT_GIT $UNIT_BRANCH
+        test_downstream $UNIT_GIT $UNIT_COMMAND
+    fi
 fi
 
 echo Exiting "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in `pwd`

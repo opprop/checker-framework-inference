@@ -13,7 +13,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        group: [ cfi-tests, downstream-value-inference ]
+        group: [ cfi-tests, downstream-value-inference, downstream-units-inference ]
         jdk: [ 8, 11 ]
     runs-on: ubuntu-latest
     steps:

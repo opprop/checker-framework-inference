@@ -8,7 +8,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
@@ -39,6 +38,7 @@ import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.InferenceUtil;
 
 import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ThrowTree;
@@ -89,21 +89,6 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         return (Factory)((BaseInferrableChecker)checker).getTypeFactory();
     }
 
-    public boolean isValidUse(final AnnotatedDeclaredType declarationType,
-                              final AnnotatedDeclaredType useType) {
-        // TODO at least for the UTS we don't check annotations on the class declaration
-        //   println("InferenceChecker::isValidUse: decl: " + declarationType)
-        //   println("InferenceChecker::isValidUse: use: " + useType)
-
-        // TODO JB: Currently visitDeclared strips the useType of it's @VarAnnots etc...
-        // TODO JB: So the constraints coming from use don't get passed on via visitParameterizedType->checkTypeArguments
-
-        // TODO JB: At the moment this leads to erroneous subtyping between some type parameter elements,
-        // TODO JB: Comment this out and visit CalledMethod.java
-        return atypeFactory.getTypeHierarchy().isSubtype(useType.getErased(), declarationType.getErased());
-        // return true;
-    }
-
     public void doesNotContain(AnnotatedTypeMirror ty, AnnotationMirror mod, String msgkey, Tree node) {
         doesNotContain(ty, new AnnotationMirror[] {mod}, msgkey, node);
     }
@@ -132,7 +117,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         visited.add(ty);
 
         final SlotManager slotManager = InferenceMain.getInstance().getSlotManager();
-        Slot el = slotManager.getVariableSlot(ty);
+        Slot el = slotManager.getSlot(ty);
 
         if (el == null) {
             // TODO: prims not annotated in UTS, others might
@@ -201,7 +186,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         if (infer) {
 
             final SlotManager slotManager = InferenceMain.getInstance().getSlotManager();
-            Slot el = slotManager.getVariableSlot(ty);
+            Slot el = slotManager.getSlot(ty);
 
             if (el == null) {
                 // TODO: prims not annotated in UTS, others might
@@ -227,7 +212,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         if (infer) {
 
             final SlotManager slotManager = InferenceMain.getInstance().getSlotManager();
-            Slot el = slotManager.getVariableSlot(ty);
+            Slot el = slotManager.getSlot(ty);
 
             if (el == null) {
                 // TODO: prims not annotated in UTS, others might
@@ -254,9 +239,12 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         if (infer) {
             ConstraintManager cManager = InferenceMain.getInstance().getConstraintManager();
             SlotManager sManager = InferenceMain.getInstance().getSlotManager();
-            VariableSlot vSlot = sManager.getVariableSlot(type);
+            Slot vSlot = sManager.getSlot(type);
+            if (vSlot instanceof ConstantSlot) {
+                throw new BugInCF("Trying to add Preference to a constant target: " + vSlot);
+            }
             ConstantSlot cSlot = InferenceMain.getInstance().getSlotManager().createConstantSlot(anno);
-            cManager.addPreferenceConstraint(vSlot, cSlot, weight);
+            cManager.addPreferenceConstraint((VariableSlot) vSlot, cSlot, weight);
         }
         // Nothing to do in type check mode.
     }
@@ -320,8 +308,8 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     public void areComparable(AnnotatedTypeMirror ty1, AnnotatedTypeMirror ty2, String msgkey, Tree node) {
         if (infer) {
             final SlotManager slotManager = InferenceMain.getInstance().getSlotManager();
-            Slot el1 = slotManager.getVariableSlot(ty1);
-            Slot el2 = slotManager.getVariableSlot(ty2);
+            Slot el1 = slotManager.getSlot(ty1);
+            Slot el2 = slotManager.getSlot(ty2);
 
             if (el1 == null || el2 == null) {
                 // TODO: prims not annotated in UTS, others might
@@ -342,8 +330,8 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     public void areEqual(AnnotatedTypeMirror ty1, AnnotatedTypeMirror ty2, String msgkey, Tree node) {
         if (infer) {
             final SlotManager slotManager = InferenceMain.getInstance().getSlotManager();
-            Slot el1 = slotManager.getVariableSlot(ty1);
-            Slot el2 = slotManager.getVariableSlot(ty2);
+            Slot el1 = slotManager.getSlot(ty1);
+            Slot el2 = slotManager.getSlot(ty2);
 
             if (el1 == null || el2 == null) {
                 // TODO: prims not annotated in UTS, others might
@@ -563,8 +551,8 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                                                   final AnnotatedTypeMirror valueType,
                                                   final SlotManager slotManager,
                                                   final ConstraintManager constraintManager) {
-        Slot sup = slotManager.getVariableSlot(varType);
-        Slot sub = slotManager.getVariableSlot(valueType);
+        Slot sup = slotManager.getSlot(varType);
+        Slot sub = slotManager.getSlot(valueType);
         logger.fine("InferenceVisitor::commonAssignmentCheck: Equality constraint for qualifiers sub: " + sub + " sup: " + sup);
 
         // Equality between the refvar and the value
@@ -580,6 +568,12 @@ public class InferenceVisitor<Checker extends InferenceChecker,
      * pseudo-assignment that created it.
      *
      * This method detects the assignments that cause refinements and generates the above constraints.
+     *
+     * For declared type, we create the refinement constraint once the refinement variable is created in 
+     * {@link checkers.inference.dataflow.InferenceTransfer#createRefinementVar} during dataflow analysis.
+     * Therefore nothing needs to be done here.
+     * TODO: handle type variables and wildcards the same way as declared types, so that finally all 
+     * refinement-related constraints are created in the dataflow analysis, and this method is removed.
      */
     public boolean maybeAddRefinementVariableConstraints(final AnnotatedTypeMirror varType, final AnnotatedTypeMirror valueType) {
         boolean inferenceRefinementVariable = false;
@@ -606,8 +600,8 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                     }
                 }
 
-                final Slot upperBoundSlot = slotManager.getVariableSlot(varUpperBoundAtm);
-                final Slot lowerBoundSlot = slotManager.getVariableSlot(varLowerBoundAtm);
+                final Slot upperBoundSlot = slotManager.getSlot(varUpperBoundAtm);
+                final Slot lowerBoundSlot = slotManager.getSlot(varLowerBoundAtm);
                 if (upperBoundSlot instanceof RefinementVariableSlot
                         && lowerBoundSlot instanceof RefinementVariableSlot) {
                     final AnnotatedTypeVariable valueTypeTv = (AnnotatedTypeVariable) valueType;
@@ -626,7 +620,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                     addRefinementVariableConstraints(varUpperBoundAtm, valUpperBoundAtm, slotManager, constraintManager);
 
                     constraintManager.addEqualityConstraint(lowerBoundSlot,
-                            slotManager.getVariableSlot(valLowerBoundAtm));
+                            slotManager.getSlot(valLowerBoundAtm));
                     constraintManager.addSubtypeConstraint(lowerBoundSlot, upperBoundSlot);
 
                     inferenceRefinementVariable = true;
@@ -639,32 +633,6 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                 if (!InferenceMain.isHackMode()) {
                     throw new BugInCF("Unexpected assignment to type variable"); // TODO: Either more detail, or remove because of type args?
                     // TODO: OR A DIFFERENT SET OF CONSTRAINTS?
-                }
-            }
-        } else {
-
-            // TODO: RECONSIDER THIS WHEN WE CONSIDER WILDCARDS
-            if (varType.getKind() != TypeKind.WILDCARD) {
-                Slot sup = InferenceMain.getInstance().getSlotManager().getVariableSlot(varType);
-                if (sup instanceof RefinementVariableSlot && !InferenceMain.getInstance().isPerformingFlow()) {
-                    inferenceRefinementVariable = true;
-
-                    final AnnotatedTypeMirror upperBound;
-                    if (valueType.getKind() == TypeKind.TYPEVAR) {
-                        upperBound = InferenceUtil.findUpperBoundType((AnnotatedTypeVariable) valueType);
-                    } else {
-                        upperBound = valueType;
-                    }
-
-                    Slot sub = slotManager.getVariableSlot(upperBound);
-                    logger.fine("InferenceVisitor::commonAssignmentCheck: Equality constraint for qualifiers sub: " + sub + " sup: " + sup);
-
-                    // Equality between the refvar and the value
-                    constraintManager.addEqualityConstraint(sup, sub);
-
-                    // Refinement variable still needs to be a subtype of its declared type value
-                    constraintManager.addSubtypeConstraint(sup,
-                            ((RefinementVariableSlot) sup).getRefined());
                 }
             }
         }
@@ -707,7 +675,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                 switch (throwType.getKind()) {
                     case NULL:
                     case DECLARED:
-                    constraintManager.addSubtypeConstraint(slotManager.getVariableSlot(throwType),
+                    constraintManager.addSubtypeConstraint(slotManager.getSlot(throwType),
                             slotManager.getSlot(throwBound)
                         );
                         break;
@@ -798,59 +766,24 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         }
     }
 
-    // TODO: WE NEED TO FIX this method and have it do something sensible
-    // TODO: The issue here is that I have removed the error reporting from this method
-    // TODO: In order to allow verigames to move forward.
-    /**
-     * Tests whether the tree expressed by the passed type tree is a valid type,
-     * and emits an error if that is not the case (e.g. '@Mutable String').
-     * If the tree is a method or constructor, check the return type.
-     *
-     * @param tree  the AST type supplied by the user
-     */
-    @Override
-    public boolean validateTypeOf(Tree tree) {
-        AnnotatedTypeMirror type;
-        // It's quite annoying that there is no TypeTree
-        switch (tree.getKind()) {
-            case PRIMITIVE_TYPE:
-            case PARAMETERIZED_TYPE:
-            case TYPE_PARAMETER:
-            case ARRAY_TYPE:
-            case UNBOUNDED_WILDCARD:
-            case EXTENDS_WILDCARD:
-            case SUPER_WILDCARD:
-            case ANNOTATED_TYPE:
-                type = atypeFactory.getAnnotatedTypeFromTypeTree(tree);
-                break;
-            case METHOD:
-                type = atypeFactory.getMethodReturnType((MethodTree) tree);
-                if (type == null ||
-                        type.getKind() == TypeKind.VOID) {
-                    // Nothing to do for void methods.
-                    // Note that for a constructor the AnnotatedExecutableType does
-                    // not use void as return type.
-                    return true;
-                }
-                break;
-            default:
-                type = atypeFactory.getAnnotatedType(tree);
-        }
-
-        // TODO: THIS MIGHT FAIL
-//        typeValidator.isValid(type, tree);
-        // more checks (also specific to checker, potentially)
-        return true;
-    }
-
     @Override
     protected InferenceValidator createTypeValidator() {
         return new InferenceValidator(checker, this, atypeFactory);
     }
-    
+
+    /**
+     * The super method issues a warning if the result type of the constructor is not top.
+     * If we keep the same logic in inference, a hard constraint "classBound == top" will be
+     * created, which is not what we want. Therefore, skip this checking when it's in the
+     * inference mode.
+     * TODO: consider using preference constraints where warnings are issued in the type-checking mode.
+     */
     @Override
-    // Do NOT perform this check until issue #218 is resolved
     protected void checkConstructorResult(
-            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {}
-    
+            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
+        if (!infer) {
+            super.checkConstructorResult(constructorType, constructorElement);
+        }
+    }
+
 }

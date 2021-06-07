@@ -19,8 +19,10 @@ import checkers.inference.model.Constraint;
 import checkers.inference.model.ExistentialConstraint;
 import checkers.inference.model.Slot;
 import checkers.inference.model.SubtypeConstraint;
+import checkers.inference.model.VariableSlot;
 import dataflow.DataflowVisitor;
 import dataflow.util.DataflowUtils;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * GraphBuilder builds the constraint graph and runs graph traversal algorithms
@@ -32,15 +34,11 @@ import dataflow.util.DataflowUtils;
 public class GraphBuilder {
     private final Collection<Constraint> constraints;
     private final ConstraintGraph graph;
-    private AnnotationMirror top;
-
-    public GraphBuilder(Collection<Slot> slots, Collection<Constraint> constraints) {
-        this.constraints = constraints;
-        this.graph = new ConstraintGraph();
-    }
+    private final AnnotationMirror top;
 
     public GraphBuilder(Collection<Slot> slots, Collection<Constraint> constraints, AnnotationMirror top) {
-        this(slots, constraints);
+        this.constraints = constraints;
+        this.graph = new ConstraintGraph();
         this.top = top;
     }
 
@@ -141,9 +139,13 @@ public class GraphBuilder {
                             }
                         }
                     } else {
-                        if (next.getSlot().getLocation() != null) {
-                            if (next.getSlot().getLocation().getKind().equals(Kind.MISSING)) {
+                        VariableSlot slot = (VariableSlot) next.getSlot();
+                        if (slot.getLocation() != null && slot.getLocation().getKind().equals(Kind.MISSING)) {
+                            if (InferenceMain.isHackMode()) {
                                 continue;
+                            } else {
+                                throw new BugInCF("In GraphBuilder.BFSSearch: find a slot of which " +
+                                        "the location is either null or MISSING_LOCATION!");
                             }
                         }
                     }

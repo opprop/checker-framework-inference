@@ -18,11 +18,13 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Optimize;
 
+import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.LubVariableSlot;
 import checkers.inference.model.RefinementVariableSlot;
+import checkers.inference.model.SourceVariableSlot;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.solver.frontend.Lattice;
 
@@ -83,10 +85,6 @@ public abstract class Z3BitVectorFormatTranslator extends AbstractFormatTranslat
     }
 
     public BitVecExpr serializeVarSlot(VariableSlot slot) {
-        if (slot instanceof ConstantSlot) {
-            throw new BugInCF("Attempt to serializing ConstantSlot by serializeVarSlot() method. Should use serializeConstantSlot() instead!");
-        }
-
         int slotId = slot.getId();
 
         if (serializedSlots.containsKey(slotId)) {
@@ -121,7 +119,7 @@ public abstract class Z3BitVectorFormatTranslator extends AbstractFormatTranslat
     }
 
     @Override
-    public BitVecExpr serialize(VariableSlot slot) {
+    public BitVecExpr serialize(SourceVariableSlot slot) {
         return serializeVarSlot(slot);
     }
 
@@ -147,6 +145,11 @@ public abstract class Z3BitVectorFormatTranslator extends AbstractFormatTranslat
 
     @Override
     public BitVecExpr serialize(LubVariableSlot slot) {
+        return serializeVarSlot(slot);
+    }
+    
+    @Override
+    public BitVecExpr serialize(ArithmeticVariableSlot slot) {
         return serializeVarSlot(slot);
     }
 

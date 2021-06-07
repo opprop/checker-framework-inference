@@ -12,7 +12,6 @@ import java.util.Set;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
 import checkers.inference.model.SubtypeConstraint;
-import checkers.inference.model.VariableSlot;
 
 /**
  * ConstraintGraph represents constraints in a graph form. Each constraint is an
@@ -89,8 +88,8 @@ public class ConstraintGraph {
     }
 
     protected void createEdge(Slot slot1, Slot slot2, Constraint constraint) {
-        Integer slot1Id = ((VariableSlot) slot1).getId();
-        Integer slot2Id = ((VariableSlot) slot2).getId();
+        Integer slot1Id = slot1.getId();
+        Integer slot2Id = slot2.getId();
         Vertex vertex1;
         Vertex vertex2;
 

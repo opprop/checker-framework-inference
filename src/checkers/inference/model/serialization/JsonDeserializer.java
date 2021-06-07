@@ -17,10 +17,11 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import checkers.inference.InferenceMain;
+import checkers.inference.model.AnnotationLocation;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.ConstraintManager;
 import checkers.inference.model.Slot;
-import checkers.inference.model.VariableSlot;
+import checkers.inference.model.SourceVariableSlot;
 import static checkers.inference.model.serialization.JsonSerializer.COMP_CONSTRAINT_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.CONSTRAINTS_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.CONSTRAINT_KEY;
@@ -115,7 +116,7 @@ public class JsonDeserializer {
                             jsonArrayToConstraints((JSONArray) constraint.get(EXISTENTIAL_THEN));
                     List<Constraint> elseConstraints =
                             jsonArrayToConstraints((JSONArray) constraint.get(EXISTENTIAL_ELSE));
-                    results.add(constraintManager.createExistentialConstraint((VariableSlot) potential,
+                    results.add(constraintManager.createExistentialConstraint(potential,
                             thenConstraints, elseConstraints));
                 }  else {
                     throw new IllegalArgumentException("Parse error: unknown constraint type: " + obj);
@@ -142,7 +143,7 @@ public class JsonDeserializer {
 
                 String constraintType = (String) constraint.get(CONSTRAINT_KEY);
                 if (constraintType.equals(EXISTENTIAL_CONSTRAINT_KEY)) {
-                    VariableSlot potential = (VariableSlot) parseSlot((String) constraint.get(EXISTENTIAL_ID));
+                    Slot potential = parseSlot((String) constraint.get(EXISTENTIAL_ID));
                     potentialVariableIds.add(String.valueOf(potential.getId()));
 
                     Object thenConstraints = constraint.get(EXISTENTIAL_THEN);
@@ -204,7 +205,7 @@ public class JsonDeserializer {
     private Slot parseSlot(String slot) {
         if (slot.startsWith(VAR_PREFIX)) {
             int id = Integer.valueOf(slot.split(":")[1]);
-            return new VariableSlot(id);
+            return new SourceVariableSlot(id, AnnotationLocation.MISSING_LOCATION, null, true);
         } else {
             // TODO: THIS NEEDS FIXING
             AnnotationMirror value = annotationSerializer.deserialize(slot);

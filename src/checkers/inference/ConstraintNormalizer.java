@@ -1,5 +1,6 @@
 package checkers.inference;
 
+import checkers.inference.model.VariableSlot;
 import org.checkerframework.javacutil.BugInCF;
 
 import java.util.ArrayList;
@@ -18,7 +19,6 @@ import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.Slot;
-import checkers.inference.model.VariableSlot;
 
 /**
  * This class currently just removes ExistentialVariables from the set of constraints
@@ -255,7 +255,7 @@ public class ConstraintNormalizer {
             ret.add(InferenceMain
                     .getInstance()
                     .getConstraintManager()
-                    .createExistentialConstraint((VariableSlot) slot, ifExistsConstraints,
+                    .createExistentialConstraint(slot, ifExistsConstraints,
                             ifNotExistsConstraints));
             return ret;
         }
@@ -298,14 +298,14 @@ public class ConstraintNormalizer {
             if (alwaysExists) {
                 sb.append("[");
                 sb.append(
-                        slot.isVariable() ? ((VariableSlot) slot).getId()
+                        slot instanceof VariableSlot ? slot.getId()
                                           : ((ConstantSlot) slot).getValue());
                 sb.append("]");
             } else {
                 if (!exists) {
                     sb.append("!");
                 }
-                sb.append(((VariableSlot) slot).getId());
+                sb.append(slot.getId());
             }
             return sb.toString();
         }
@@ -333,7 +333,7 @@ public class ConstraintNormalizer {
                 }
             }
 
-            return ((VariableSlot) o1).getId() - ((VariableSlot) o2).getId();
+            return o1.getId() - o2.getId();
         }
     }
 

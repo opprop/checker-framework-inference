@@ -3,7 +3,7 @@ package checkers.inference;
 import scenelib.annotations.io.ASTRecord;
 import checkers.inference.model.AnnotationLocation;
 import checkers.inference.model.AnnotationLocation.AstPathLocation;
-import checkers.inference.model.VariableSlot;
+import checkers.inference.model.SourceVariableSlot;
 import checkers.inference.util.ASTPathUtil;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -78,7 +78,7 @@ public class ImpliedTypeAnnotator {
                     typeFactory.getAnnotatedType(typeVariableUse.getUnderlyingType().asElement());
 
             AnnotationLocation location = getLocation(typeVariableUse, astRecords);
-            VariableSlot potentialVar = slotManager.createVariableSlot(location);
+            SourceVariableSlot potentialVar = slotManager.createSourceVariableSlot(location, typeVariableUse.getUnderlyingType());
             existentialVariableInserter.insert(potentialVar, typeVariableUse, declaration);
         }
 
@@ -120,7 +120,7 @@ public class ImpliedTypeAnnotator {
          */
         protected void addVariablePrimaryAnnotation(final AnnotatedTypeMirror type, Map<AnnotatedTypeMirror, ASTRecord> astRecords) {
             AnnotationLocation location = getLocation(type, astRecords);
-            VariableSlot slot = slotManager.createVariableSlot(location);
+            SourceVariableSlot slot = slotManager.createSourceVariableSlot(location, type.getUnderlyingType());
             type.addAnnotation(slotManager.getAnnotation(slot));
         }
 

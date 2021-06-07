@@ -75,7 +75,7 @@ public class ExistentialVariableSlot extends VariableSlot {
         this.alternativeSlot = alternativeSlot;
 
         // The existential slot shares the same location with the potentialSlot
-        if (potentialSlot.isVariable()) {
+        if (potentialSlot instanceof VariableSlot) {
             setLocation(((VariableSlot) potentialSlot).getLocation());
         }
     }

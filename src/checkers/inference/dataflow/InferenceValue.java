@@ -143,7 +143,7 @@ public class InferenceValue extends CFValue {
             return other;
         }
 
-        if (thisSlot.isVariable()) {
+        if (thisSlot instanceof VariableSlot) {
             // Check if one of these has refinement variables that were merged to the other.
             for (VariableSlot slot : ((VariableSlot) thisSlot).getRefinedToSlots()) {
                 if (slot.isMergedTo(otherSlot)) {
@@ -151,7 +151,7 @@ public class InferenceValue extends CFValue {
                 }
             }
         }
-        if (otherSlot.isVariable()) {
+        if (otherSlot instanceof VariableSlot) {
             for (VariableSlot slot : ((VariableSlot) otherSlot).getRefinedToSlots()) {
                 if (slot.isMergedTo(thisSlot)) {
                     return this;
@@ -237,7 +237,7 @@ public class InferenceValue extends CFValue {
     public String toString() {
         StringBuilder sb = new StringBuilder("InferenceValue{annotation=");
         Slot slot = getEffectiveSlot(this);
-        if (!slot.isVariable()) {
+        if (slot instanceof ConstantSlot) {
             AnnotationFormatter formatter = analysis.getTypeFactory().getAnnotationFormatter();
             AnnotationMirror anno = ((ConstantSlot) slot).getValue();
             sb.append(formatter.formatAnnotationMirror(anno));

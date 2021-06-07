@@ -2,6 +2,7 @@ package checkers.inference.solver;
 
 import checkers.inference.DefaultInferenceResult;
 import checkers.inference.InferenceResult;
+import checkers.inference.model.VariableSlot;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -201,7 +202,7 @@ public class PropagationSolver implements InferenceSolver {
 
         Map<Integer, AnnotationMirror> solutions = new HashMap<Integer, AnnotationMirror>();
         for (Slot slot : slots) {
-            if (slot.isVariable()) {
+            if (slot instanceof VariableSlot) {
                 AnnotationMirror result;
                 if (fixedBottom.contains(slot)) {
                     result = bottom;
@@ -256,7 +257,7 @@ public class PropagationSolver implements InferenceSolver {
     private boolean checkContainsVariable(Constraint constraint) {
         boolean containsVariable = false;
         for (Slot slot : constraint.getSlots()) {
-            if (slot.isVariable()) {
+            if (slot instanceof VariableSlot) {
                 containsVariable = true;
             }
         }

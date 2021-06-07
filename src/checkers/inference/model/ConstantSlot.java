@@ -46,11 +46,6 @@ public class ConstantSlot extends Slot {
     }
 
     @Override
-    public boolean isVariable() {
-        return false;
-    }
-
-    @Override
     public Kind getKind() {
         return Kind.CONSTANT;
     }

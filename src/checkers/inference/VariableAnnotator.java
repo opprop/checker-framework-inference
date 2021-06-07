@@ -1545,7 +1545,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
                             b.getEffectiveAnnotations());
             atm.clearAnnotations();
             atm.addAnnotations(lubs);
-            if (slotManager.getSlot(atm).isVariable()) {
+            if (slotManager.getSlot(atm) instanceof VariableSlot) {
                 final Pair<Slot, Set<? extends AnnotationMirror>> varATMPair = Pair.<Slot, Set<? extends AnnotationMirror>>of(
                         slotManager.getSlot(atm), lubs);
                 treeToVarAnnoPair.put(binaryTree, varATMPair);

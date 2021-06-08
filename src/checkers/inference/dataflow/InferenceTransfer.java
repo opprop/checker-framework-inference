@@ -89,14 +89,13 @@ public class InferenceTransfer extends CFTransfer {
      */
     @Override
     public TransferResult<CFValue, CFStore> visitAssignment(AssignmentNode assignmentNode, TransferInput<CFValue, CFStore> transferInput) {
-        final Node lhsNode = assignmentNode.getTarget();
-        // Target tree is null for field access's
-        final Tree targetTree = lhsNode.getTree();
-        // The underlying tree represented by the AssignmentNode
-        final Tree assignmentTree = assignmentNode.getTree();
 
+        Node lhs = assignmentNode.getTarget();
         CFStore store = transferInput.getRegularStore();
         InferenceAnnotatedTypeFactory typeFactory = (InferenceAnnotatedTypeFactory) analysis.getTypeFactory();
+
+        // Target tree is null for field access's
+        Tree targetTree = assignmentNode.getTarget().getTree();
 
         AnnotatedTypeMirror atm;
         if (targetTree != null) {
@@ -106,7 +105,7 @@ public class InferenceTransfer extends CFTransfer {
             atm = typeFactory.getAnnotatedType(targetTree);
         } else {
             // Target trees can be null for refining library fields.
-            atm = typeFactory.getAnnotatedType(assignmentTree);
+            atm = typeFactory.getAnnotatedType(assignmentNode.getTree());
         }
 
         // Get the rhs value and pass it to slot manager to generate the equality constraint
@@ -114,50 +113,6 @@ public class InferenceTransfer extends CFTransfer {
         Tree valueTree = assignmentNode.getExpression().getTree();
         AnnotatedTypeMirror valueType = typeFactory.getAnnotatedType(valueTree);
 
-        // If the rhs is a type variable, the refinement value is the upper bound of it,
-        // because this is the most precise type we can use
-        if (valueType.getKind() == TypeKind.TYPEVAR) {
-            valueType = InferenceUtil.findUpperBoundType((AnnotatedTypeVariable) valueType);
-        }
-
-        // 1. Deal with two special kinds of assignments
-        if (assignmentTree instanceof CompoundAssignmentTree
-                || assignmentTree instanceof UnaryTree) {
-            // TODO: We do not currently refine UnaryTrees and Compound Assignments (See Issue 9)
-            CFValue result = analysis.createAbstractValue(atm);
-            return new RegularTransferResult<CFValue, CFStore>(finishValue(result, store), store);
-        }
-        if (assignmentTree.getKind() == Tree.Kind.VARIABLE) {
-            // Add declarations with initializers to the store.
-
-            // This is needed to trigger a merge refinement variable creation when two stores are merged:
-            // String a = null; // Add VarAnno to store
-            // if ( ? ) {
-            //   a = ""; // Add RefVar to store
-            // }
-            // // merge RefVar will be created only if VarAnno and RefVar are both in store
-            // a.toString()
-
-            // TODO: Remove after establishing there are no other cases.
-            assert (lhsNode instanceof LocalVariableNode
-                    || lhsNode instanceof FieldAccessNode);
-
-
-            if (lhsNode instanceof LocalVariableNode) {
-                if (atm.getKind() == TypeKind.TYPEVAR) {
-                    return createTypeVarRefinementVars(lhsNode, assignmentTree,
-                            store, (AnnotatedTypeVariable) atm);
-
-                } else {
-                    return createRefinementVar(lhsNode, assignmentTree, store, atm, valueType);
-                }
-            }
-
-            return storeDeclaration(lhsNode, (VariableTree) assignmentTree, store, typeFactory);
-        }
-
-
-        // 2. Deal with normal assignment expressions
         if (targetTree != null && targetTree.getKind() == Tree.Kind.ARRAY_ACCESS) {
             // Don't create refinement variables on array assignments.
 
@@ -170,22 +125,58 @@ public class InferenceTransfer extends CFTransfer {
             CFValue result = analysis.createAbstractValue(atm);
             return new RegularTransferResult<CFValue, CFStore>(finishValue(result, store), store);
 
-        } else if (targetTree.getKind() == Tree.Kind.IDENTIFIER
-                || targetTree.getKind() == Tree.Kind.MEMBER_SELECT) {
+        } else if (isDeclarationWithInitializer(assignmentNode)) {
+            // Add declarations with initializers to the store.
+
+            // This is needed to trigger a merge refinement variable creation when two stores are merged:
+            // String a = null; // Add VarAnno to store
+            // if ( ? ) {
+            //   a = ""; // Add RefVar to store
+            // }
+            // // merge RefVar will be created only if VarAnno and RefVar are both in store
+            // a.toString()
+
+            // TODO: Remove after establishing there are no other cases.
+            if (! (assignmentNode.getTarget() instanceof LocalVariableNode
+                    || assignmentNode.getTarget() instanceof FieldAccessNode)) {
+                assert false;
+            }
+
+            if (assignmentNode.getTarget() instanceof LocalVariableNode
+                    && atm.getKind() != TypeKind.TYPEVAR) {
+                return createRefinementVar(assignmentNode.getTarget(), assignmentNode.getTree(), store, atm, valueType);
+            }
+
+            return storeDeclaration(lhs, (VariableTree) assignmentNode.getTree(), store, typeFactory);
+
+        } else if (lhs.getTree().getKind() == Tree.Kind.IDENTIFIER
+                || lhs.getTree().getKind() == Tree.Kind.MEMBER_SELECT) {
             // Create Refinement Variable
+
+            // TODO: We do not currently refine UnaryTrees and Compound Assignments (See Issue 9)
+            if (assignmentNode.getTree() instanceof CompoundAssignmentTree
+                    || assignmentNode.getTree() instanceof UnaryTree) {
+                CFValue result = analysis.createAbstractValue(atm);
+                return new RegularTransferResult<CFValue, CFStore>(finishValue(result, store), store);
+            }
 
             final TransferResult<CFValue, CFStore> result;
             if (atm.getKind() == TypeKind.TYPEVAR) {
-                result = createTypeVarRefinementVars(lhsNode, assignmentTree,
+                result = createTypeVarRefinementVars(assignmentNode.getTarget(), assignmentNode.getTree(),
                                                      store, (AnnotatedTypeVariable) atm);
             } else {
-                result = createRefinementVar(lhsNode, assignmentTree, store, atm, valueType);
+                // If the rhs is a type variable, the refinement value is the upper bound of it,
+                // because this is the most precise type we can use
+                if (valueType.getKind() == TypeKind.TYPEVAR) {
+                    valueType = InferenceUtil.findUpperBoundType((AnnotatedTypeVariable) valueType);
+                }
+                result = createRefinementVar(assignmentNode.getTarget(), assignmentNode.getTree(), store, atm, valueType);
             }
 
             return result;
 
         } else {
-            throw new BugInCF("Unexpected tree kind in visit assignment:" + assignmentTree);
+            throw new BugInCF("Unexpected tree kind in visit assignment:" + assignmentNode.getTree());
         }
     }
 
@@ -412,4 +403,7 @@ public class InferenceTransfer extends CFTransfer {
         return new RegularTransferResult<CFValue, CFStore>(finishValue(result, store), store);
     }
 
+    private boolean isDeclarationWithInitializer(AssignmentNode assignmentNode) {
+        return (assignmentNode.getTree().getKind() == Tree.Kind.VARIABLE);
+    }
 }

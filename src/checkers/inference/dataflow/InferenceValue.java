@@ -121,15 +121,32 @@ public class InferenceValue extends CFValue {
     public CFValue mostSpecificFromSlot(final Slot thisSlot, final Slot otherSlot, final CFValue other, final CFValue backup) {
         if (thisSlot.isMergedTo(otherSlot)) {
             return other;
-        } else if (otherSlot.isMergedTo(thisSlot)) {
+        }
+
+        if (otherSlot.isMergedTo(thisSlot)) {
             return this;
-        } else if (thisSlot instanceof RefinementVariableSlot
+        }
+
+        if (thisSlot instanceof RefinementVariableSlot
                 && ((RefinementVariableSlot) thisSlot).getRefined().equals(otherSlot)) {
-
             return this;
-        } else if (otherSlot instanceof RefinementVariableSlot
-                && ((RefinementVariableSlot) otherSlot).getRefined().equals(thisSlot)) {
+        }
 
+        if (otherSlot instanceof RefinementVariableSlot
+                && ((RefinementVariableSlot) otherSlot).getRefined().equals(thisSlot)) {
+            return other;
+        }
+
+        if (thisSlot instanceof RefinementVariableSlot
+                && otherSlot instanceof RefinementVariableSlot
+                && ((RefinementVariableSlot) thisSlot).getRefined().equals(((RefinementVariableSlot) otherSlot).getRefined())) {
+            // This happens when a local variable is declared with initializer, and is reassigned afterwards. E.g.
+            //      Object o = null;
+            //      o = new Object();
+            //      return o;
+            // At the return point, the factory type of o corresponds to `thisSlot = RefinementVariableSlot(x)`,
+            // while the store value of o corresponds to `otherSlot = RefinementVariableSlot(y)`.
+            // So choosing `other` is to choose the store value
             return other;
         }
 

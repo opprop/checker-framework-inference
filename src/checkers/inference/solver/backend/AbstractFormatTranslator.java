@@ -147,6 +147,7 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
         equalityConstraintEncoder = encoderFactory.createEqualityConstraintEncoder();
         inequalityConstraintEncoder = encoderFactory.createInequalityConstraintEncoder();
         comparableConstraintEncoder = encoderFactory.createComparableConstraintEncoder();
+        comparisonConstraintEncoder = encoderFactory.createComparisonConstraintEncoder();
         preferenceConstraintEncoder = encoderFactory.createPreferenceConstraintEncoder();
         combineConstraintEncoder = encoderFactory.createCombineConstraintEncoder();
         existentialConstraintEncoder = encoderFactory.createExistentialConstraintEncoder();
@@ -188,7 +189,7 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
     
     @Override
     public ConstraintEncodingT serialize(ComparisonConstraint constraint) {
-        return comparableConstraintEncoder == null ? null :
+        return comparisonConstraintEncoder == null ? null :
                 ConstraintEncoderCoordinator.dispatch(constraint, comparisonConstraintEncoder);
     }
 
@@ -200,7 +201,7 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
 
     @Override
     public ConstraintEncodingT serialize(CombineConstraint combineConstraint) {
-        return comparableConstraintEncoder == null ? null :
+        return combineConstraintEncoder == null ? null :
                 ConstraintEncoderCoordinator.dispatch(combineConstraint, combineConstraintEncoder);
     }
 

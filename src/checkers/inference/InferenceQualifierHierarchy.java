@@ -177,7 +177,7 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
         final AnnotationMirror rhsVarAnnot = findVarAnnot(rhsAnnos);
         final AnnotationMirror lhsVarAnnot = findVarAnnot(lhsAnnos);
 
-        if (InferenceMain.isHackMode((rhsVarAnnot == null || lhsAnnos == null))) {
+        if (InferenceMain.isHackMode(rhsVarAnnot == null || lhsVarAnnot == null)) {
                 InferenceMain.getInstance().logger.info(
                     "Hack:\n"
                   + "    rhs=" + SystemUtil.join(", ", rhsAnnos) + "\n"
@@ -270,35 +270,29 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
                 AnnotationMirror realLub = realQualifierHierarhcy.leastUpperBound(realAnno1, realAnno2);
                 Slot constantSlot = slotMgr.createConstantSlot(realLub);
                 return slotMgr.getAnnotation(constantSlot);
+            } else if (!Collections.disjoint(slot1.getMergedToSlots(), slot2.getMergedToSlots())) {
+                // They have common merge variables, return the annotations on one of the common merged variables.
+                Slot commonMergedSlot = getOneIntersected(slot1.getMergedToSlots(), slot2.getMergedToSlots());
+                return slotMgr.getAnnotation(commonMergedSlot);
+            } else if (slot1.isMergedTo(slot2)) {
+                // var2 is a merge variable that var1 has been merged to. So just return annotation on var2.
+                return slotMgr.getAnnotation(slot2);
+            } else if (slot2.isMergedTo(slot1)) {
+                // Vice versa.
+                return slotMgr.getAnnotation(slot1);
             } else {
-                if (slot1 == slot2) {
-                    // They are the same slot.
-                    return slotMgr.getAnnotation(slot1);
+                // Create a new LubVariable for var1 and var2.
+                final LubVariableSlot mergeVariableSlot = slotMgr.createLubVariableSlot(slot1, slot2);
+                constraintMgr.addSubtypeConstraint(slot1, mergeVariableSlot);
+                constraintMgr.addSubtypeConstraint(slot2, mergeVariableSlot);
 
-                } else if (!Collections.disjoint(slot1.getMergedToSlots(), slot2.getMergedToSlots())) {
-                    // They have common merge variables, return the annotations on one of the common merged variables.
-                    Slot commonMergedSlot = getOneIntersected(slot1.getMergedToSlots(), slot2.getMergedToSlots());
-                    return slotMgr.getAnnotation(commonMergedSlot);
+                slot1.addMergedToSlot(mergeVariableSlot);
+                slot2.addMergedToSlot(mergeVariableSlot);
 
-                } else if (slot1.isMergedTo(slot2)) {
-                    // var2 is a merge variable that var1 has been merged to. So just return annotation on var2.
-                    return slotMgr.getAnnotation(slot2);
-                } else if (slot2.isMergedTo(slot1)) {
-                    // Vice versa.
-                    return slotMgr.getAnnotation(slot1);
-                } else {
-                    // Create a new LubVariable for var1 and var2.
-                    final LubVariableSlot mergeVariableSlot = slotMgr.createLubVariableSlot(slot1, slot2);
-                    constraintMgr.addSubtypeConstraint(slot1, mergeVariableSlot);
-                    constraintMgr.addSubtypeConstraint(slot2, mergeVariableSlot);
-
-                    slot1.addMergedToSlot(mergeVariableSlot);
-                    slot2.addMergedToSlot(mergeVariableSlot);
-
-                    return slotMgr.getAnnotation(mergeVariableSlot);
-                }
+                return slotMgr.getAnnotation(mergeVariableSlot);
             }
         } else {
+            // They are the same slot.
             return slotMgr.getAnnotation(slot1);
         }
     }

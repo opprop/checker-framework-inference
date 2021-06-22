@@ -166,7 +166,7 @@ public class CopyUtil {
              // Primitives only take one annotation, which was already copied
 
         } else if (fromKind == NONE || fromKind == NULL || fromKind == VOID ||
-                toKind == NONE || toKind == NULL || fromKind == NULL) {
+                toKind == NONE || toKind == NULL || toKind == VOID) {
              // No annotations
         } else if (fromKind == INTERSECTION && toKind == INTERSECTION) {
             AnnotatedIntersectionType fromIntersec = (AnnotatedIntersectionType) from;

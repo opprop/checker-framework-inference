@@ -18,6 +18,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
 import java.lang.annotation.Annotation;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -284,7 +285,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
 
             if (el == null) {
                 // TODO: prims not annotated in UTS, others might
-                logger.warning("InferenceVisitor::isNoneOf: no annotation in type: " + targets);
+                logger.warning("InferenceVisitor::isNoneOf: no annotation in type: " + Arrays.toString(targets));
             } else {
                 if (!InferenceMain.getInstance().isPerformingFlow()) {
                     logger.fine("InferenceVisitor::mainIsNoneOf: Inequality constraint constructor invocation(s).");

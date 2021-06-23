@@ -226,9 +226,11 @@ public class InferenceTransfer extends CFTransfer {
 
         SlotManager slotManager = getInferenceAnalysis().getSlotManager();
         Slot slotToRefine = slotManager.getSlot(atm);
-        // Getting the declared type of a RefinementVariableSlot
-        // getRefined() should always return the slot of the declared type value
+
+        // Make sure the refinement slot is created on the declared type
         if (slotToRefine instanceof RefinementVariableSlot) {
+            // Getting the declared type of a RefinementVariableSlot
+            // getRefined() always returns the slot of the declared type value
             slotToRefine = ((RefinementVariableSlot)slotToRefine).getRefined();
         }
 

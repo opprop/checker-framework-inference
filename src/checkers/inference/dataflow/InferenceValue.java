@@ -21,9 +21,9 @@ import javax.lang.model.util.Types;
 import checkers.inference.InferenceMain;
 import checkers.inference.SlotManager;
 import checkers.inference.model.RefinementVariableSlot;
-import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
+import checkers.inference.model.ConstantSlot;
 
 /**
  * InferenceValue extends CFValue for inference.
@@ -119,31 +119,27 @@ public class InferenceValue extends CFValue {
      *
      */
     public CFValue mostSpecificFromSlot(final Slot thisSlot, final Slot otherSlot, final CFValue other, final CFValue backup) {
-        if (thisSlot.isMergedTo(otherSlot)) {
-            return other;
-        } else if (otherSlot.isMergedTo(thisSlot)) {
-            return this;
-        } else if (thisSlot instanceof RefinementVariableSlot
-                && ((RefinementVariableSlot) thisSlot).getRefined().equals(otherSlot)) {
-            return this;
-        } else if (otherSlot instanceof RefinementVariableSlot
-                && ((RefinementVariableSlot) otherSlot).getRefined().equals(thisSlot)) {
-            return other;
-        } else if (thisSlot instanceof RefinementVariableSlot
-                && otherSlot instanceof RefinementVariableSlot
-                && ((RefinementVariableSlot) thisSlot).getRefined().equals(((RefinementVariableSlot) otherSlot).getRefined())) {
-            return other;
-        } else {
-            // Check if one of these has refinement variables that were merged to the other.
-            if (thisSlot instanceof VariableSlot) {
+        // TODO: refactor this method
+        if (thisSlot instanceof VariableSlot && otherSlot instanceof VariableSlot) {
+            if (thisSlot.isMergedTo(otherSlot)) {
+                return other;
+            } else if (otherSlot.isMergedTo(thisSlot)) {
+                return this;
+            } else if (thisSlot instanceof RefinementVariableSlot
+                    && ((RefinementVariableSlot) thisSlot).getRefined().equals(otherSlot)) {
+
+                return this;
+            } else if (otherSlot instanceof RefinementVariableSlot
+                    && ((RefinementVariableSlot) otherSlot).getRefined().equals(thisSlot)) {
+
+                return other;
+            } else {
+                // Check if one of these has refinement variables that were merged to the other.
                 for (RefinementVariableSlot slot : ((VariableSlot) thisSlot).getRefinedToSlots()) {
                     if (slot.isMergedTo(otherSlot)) {
                         return other;
                     }
                 }
-            }
-
-            if (otherSlot instanceof VariableSlot) {
                 for (RefinementVariableSlot slot : ((VariableSlot) otherSlot).getRefinedToSlots()) {
                     if (slot.isMergedTo(thisSlot)) {
                         return this;
@@ -234,12 +230,12 @@ public class InferenceValue extends CFValue {
             AnnotationFormatter formatter = analysis.getTypeFactory().getAnnotationFormatter();
             AnnotationMirror anno = ((ConstantSlot) slot).getValue();
             sb.append(formatter.formatAnnotationMirror(anno));
-            sb.append(" ( == ");
+            sb.append(" (== ");
             // TODO: improve output of ConstantSlot itself
             sb.append(slot.getClass().getSimpleName());
             sb.append("(");
             sb.append(slot.getId());
-            sb.append(") )");
+            sb.append("))");
         } else {
             sb.append(slot);
         }

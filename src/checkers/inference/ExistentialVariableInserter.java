@@ -1,5 +1,6 @@
 package checkers.inference;
 
+import checkers.inference.model.VariableSlot;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
@@ -104,7 +105,7 @@ public class ExistentialVariableInserter {
     public void insert(final Slot potentialVariable, final AnnotatedTypeMirror typeUse,
                        final AnnotatedTypeMirror declaration,  boolean mustExist) {
         if (potentialVariable == null) {
-            throw new BugInCF("Bad type variable slot: slot=" + potentialVariable);
+            throw new BugInCF("Bad type variable slot: slot is null");
         }
 
         // propagates the potentialVariable in all of the locations that will be replaced by an ExistentialVariable
@@ -150,7 +151,7 @@ public class ExistentialVariableInserter {
                     }
                 }
 
-                if (declSlot.isVariable()) {
+                if (declSlot instanceof VariableSlot) {
                     final ExistentialVariableSlot existVar =
                             varAnnotator.getOrCreateExistentialVariable(typeUse, potentialVariable, declSlot);
 

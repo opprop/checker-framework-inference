@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
+import checkers.inference.model.VariableSlot;
 
 /**
  * Recorder for statistics.
@@ -53,7 +54,7 @@ public class Statistics {
         long totalVariableSlots = 0;
 
         for (Slot slot : slots) {
-            if (slot.isVariable()) {
+            if (slot instanceof VariableSlot) {
                 totalVariableSlots++;
             }
 

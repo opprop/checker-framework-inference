@@ -85,10 +85,12 @@ public abstract class Solver<T extends FormatTranslator<?, ?, ?>> {
      * 1. Calls {@link #encodeAllConstraints()}, let {@link FormatTranslator} to convert constraints into
      * the corresponding encoding form. Optionally, encode well-formedness restriction if the backend has it.
      * 2. Calls the underlying solver to solve the encoding.
-     * 3. Let {@link FormatTranslator} decodes the solution from the underlying solver and create a map between an
-     * Integer(Slot Id) and an AnnotationMirror as it's inferred annotation.
+     * 3. For UNSAT case, returns null. Otherwise let {@link FormatTranslator} decodes the solution from
+     * the underlying solver and create a map between an Integer(Slot Id) and an AnnotationMirror as it's
+     * inferred annotation.
      *
-     * It is the concrete solver adapter's responsibility to implemented the logic of above instructions and statistic collection.
+     * It is the concrete solver adapter's responsibility to implemented the logic of above instructions and
+     * statistic collection.
      * See {@link checkers.inference.solver.backend.maxsat.MaxSatSolver#solve()}} for an example.
      */
     public abstract Map<Integer, AnnotationMirror> solve();

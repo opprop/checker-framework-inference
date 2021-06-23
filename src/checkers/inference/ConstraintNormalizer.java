@@ -1,5 +1,6 @@
 package checkers.inference;
 
+import checkers.inference.model.VariableSlot;
 import org.checkerframework.javacutil.BugInCF;
 
 import java.util.ArrayList;
@@ -134,7 +135,6 @@ public class ConstraintNormalizer {
             // we have already added their positive cases to implications
             final HashSet<Value> previouslyEncountered = new HashSet<>(initialSize);
 
-            final List<Slot> currentLeft = new ArrayList<Slot>(leftSlots.size());
             final int lastLeftIndex  = leftSlots.size() - 1;
             final int lastRightIndex = rightSlots.size() - 1;
 
@@ -142,7 +142,6 @@ public class ConstraintNormalizer {
                 final Slot left  = leftSlots.get(leftIndex);
                 final boolean lastLeft = leftIndex == lastLeftIndex;
 
-                currentLeft.add(left);
                 final TreeSet<Value> encountered = new TreeSet<>(previouslyEncountered);
                 final Value lhsValue = new Value(left, true, lastLeft);
 
@@ -297,7 +296,7 @@ public class ConstraintNormalizer {
             if (alwaysExists) {
                 sb.append("[");
                 sb.append(
-                        slot.isVariable() ? slot.getId()
+                        slot instanceof VariableSlot ? slot.getId()
                                           : ((ConstantSlot) slot).getValue());
                 sb.append("]");
             } else {

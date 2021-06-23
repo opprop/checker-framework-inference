@@ -2,6 +2,7 @@ package sparta.checkers.propagation;
 
 import checkers.inference.DefaultInferenceResult;
 import checkers.inference.InferenceResult;
+import checkers.inference.model.VariableSlot;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 
@@ -98,11 +99,11 @@ public abstract class IFlowSolver implements InferenceSolver {
                     Set<String> supertypePerms = getInferredSlotPermissions(supertype);
 
                     if (isSinkSolver()) {
-                        if (subtype.isVariable()) {
+                        if (subtype instanceof VariableSlot) {
                             changed |= subtypePerms.addAll(supertypePerms);
                         }
                     } else {
-                        if (supertype.isVariable()) {
+                        if (supertype instanceof VariableSlot) {
                             changed |= supertypePerms.addAll(subtypePerms);
                         }
                     }
@@ -113,11 +114,11 @@ public abstract class IFlowSolver implements InferenceSolver {
                     Set<String> firstPerms = getInferredSlotPermissions(first);
                     Set<String> secondPerms = getInferredSlotPermissions(second);
 
-                    if (first.isVariable()) {
+                    if (first instanceof VariableSlot) {
                         changed |= firstPerms.addAll(secondPerms);
                     }
 
-                    if (second.isVariable()) {
+                    if (second instanceof VariableSlot) {
                         changed |= secondPerms.addAll(firstPerms);
                     }
                 } else {
@@ -169,13 +170,13 @@ public abstract class IFlowSolver implements InferenceSolver {
      * @return The slots current Set of Strings.
      */
     private Set<String> getInferredSlotPermissions(Slot slot) {
-        if (slot.isVariable()) {
+        if (slot instanceof VariableSlot) {
             if (slot.getKind() == Kind.EXISTENTIAL_VARIABLE) {
                 throw new IllegalArgumentException("Unexpected variable type:" + slot);
             }
             return getFlowSet(slot.getId());
 
-        } else if (!slot.isVariable()) {
+        } else if (slot instanceof ConstantSlot) {
             Set<String> constantSet = new HashSet<>();
             for (Entry<? extends ExecutableElement, ? extends AnnotationValue> entry :
                     ((ConstantSlot) slot).getValue().getElementValues().entrySet()) {

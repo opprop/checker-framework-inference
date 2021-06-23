@@ -108,11 +108,6 @@ public class InferenceTransfer extends CFTransfer {
             atm = typeFactory.getAnnotatedType(assignmentNode.getTree());
         }
 
-        // Get the rhs value and pass it to slot manager to generate the equality constraint
-        // as "refinement variable == rhs value"
-        Tree valueTree = assignmentNode.getExpression().getTree();
-        AnnotatedTypeMirror valueType = typeFactory.getAnnotatedType(valueTree);
-
         if (targetTree != null && targetTree.getKind() == Tree.Kind.ARRAY_ACCESS) {
             // Don't create refinement variables on array assignments.
 
@@ -144,6 +139,10 @@ public class InferenceTransfer extends CFTransfer {
 
             if (assignmentNode.getTarget() instanceof LocalVariableNode
                     && atm.getKind() != TypeKind.TYPEVAR) {
+                // Get the rhs value and pass it to slot manager to generate the equality constraint
+                // as "refinement variable == rhs value"
+                Tree valueTree = assignmentNode.getExpression().getTree();
+                AnnotatedTypeMirror valueType = typeFactory.getAnnotatedType(valueTree);
                 return createRefinementVar(assignmentNode.getTarget(), assignmentNode.getTree(), store, atm, valueType);
             }
 
@@ -165,6 +164,11 @@ public class InferenceTransfer extends CFTransfer {
                 result = createTypeVarRefinementVars(assignmentNode.getTarget(), assignmentNode.getTree(),
                                                      store, (AnnotatedTypeVariable) atm);
             } else {
+                // Get the rhs value and pass it to slot manager to generate the equality constraint
+                // as "refinement variable == rhs value"
+                Tree valueTree = assignmentNode.getExpression().getTree();
+                AnnotatedTypeMirror valueType = typeFactory.getAnnotatedType(valueTree);
+
                 // If the rhs is a type variable, the refinement value is the upper bound of it,
                 // because this is the most precise type we can use
                 if (valueType.getKind() == TypeKind.TYPEVAR) {

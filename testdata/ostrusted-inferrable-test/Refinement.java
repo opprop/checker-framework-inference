@@ -2,9 +2,12 @@ import ostrusted.qual.OsTrusted;
 
 public class Refinement {
 
-    void foo(Object in) {
-        Object o = in;
-        
+    void foo(Object in1, Object in2) {
+        Object o = in1;
+        // :: fixable-error: (argument.type.incompatible)
+        bar(o);
+
+        o = in2;
         // :: fixable-error: (argument.type.incompatible) 
         bar(o);
     }

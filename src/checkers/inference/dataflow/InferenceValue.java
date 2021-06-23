@@ -141,12 +141,15 @@ public class InferenceValue extends CFValue {
                 && otherSlot instanceof RefinementVariableSlot
                 && ((RefinementVariableSlot) thisSlot).getRefined().equals(((RefinementVariableSlot) otherSlot).getRefined())) {
             // This happens when a local variable is declared with initializer, and is reassigned afterwards. E.g.
-            //      Object o = null;
-            //      o = new Object();
-            //      return o;
-            // At the return point, the factory type of o corresponds to `thisSlot = RefinementVariableSlot(x)`,
-            // while the store value of o corresponds to `otherSlot = RefinementVariableSlot(y)`.
-            // So choosing `other` is to choose the store value
+            //      Object obj = null;
+            //      obj = new Object();
+            //      return obj;
+            // Suppose RefinementVar(1) is created at variable declaration, RefinementVar(2) is created at re-assignment.
+            // Then at the return point, when getting the most specific type of obj,
+            // "thisSlot" is RefinementVar(1), coming from "getValueFromFactory".
+            // "otherSlot" is RefinementVar(2), coming from the store value.
+            // The store value is more precise, so we choose "other" as the most specific type.
+            assert thisSlot.getId() <= otherSlot.getId();
             return other;
         }
 

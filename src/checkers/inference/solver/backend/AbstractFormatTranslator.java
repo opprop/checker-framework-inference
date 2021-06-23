@@ -53,9 +53,9 @@ import checkers.inference.solver.frontend.Lattice;
  * For example, {@link checkers.inference.solver.backend.maxsat.encoder.MaxSATConstraintEncoderFactory}
  * depends on {@link checkers.inference.solver.backend.maxsat.MaxSatFormatTranslator#typeToInt typeToInt}
  * filed in {@link checkers.inference.solver.backend.maxsat.MaxSatFormatTranslator}. So only after those
- * dependant fields are initialized in subclasses constructors, encoders can be then initialized.
+ * dependent fields are initialized in subclasses constructors, encoders can be then initialized.
  * Calling {@link #finishInitializingEncoders()} at the last step of initialization makes sure all the
- * dependant fields are already initialized.
+ * dependent fields are already initialized.
  * <p>
  * In terms of "last step of initialization", different {@code FormatTranslator}s have different definitions.
  * For {@link checkers.inference.solver.backend.maxsat.MaxSatFormatTranslator} and

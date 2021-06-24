@@ -1,5 +1,7 @@
 package checkers.inference;
 
+import checkers.inference.model.ConstantSlot;
+import checkers.inference.model.Slot;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAnalysis;
@@ -52,6 +54,7 @@ import javax.lang.model.type.TypeVariable;
 
 import checkers.inference.dataflow.InferenceAnalysis;
 import checkers.inference.model.ConstraintManager;
+import checkers.inference.model.Slot;
 import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.ConstantToVariableAnnotator;
 import checkers.inference.util.InferenceUtil;

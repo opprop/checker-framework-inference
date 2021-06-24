@@ -135,6 +135,15 @@ public class InferenceTransfer extends CFTransfer {
                 assert false;
             }
 
+            if (assignmentNode.getTarget() instanceof LocalVariableNode
+                    && atm.getKind() != TypeKind.TYPEVAR) {
+                // Get the rhs value and pass it to slot manager to generate the equality constraint
+                // as "refinement variable == rhs value"
+                Tree valueTree = assignmentNode.getExpression().getTree();
+                AnnotatedTypeMirror valueType = typeFactory.getAnnotatedType(valueTree);
+                return createRefinementVar(assignmentNode.getTarget(), assignmentNode.getTree(), store, atm, valueType);
+            }
+
             return storeDeclaration(lhs, (VariableTree) assignmentNode.getTree(), store, typeFactory);
 
         } else if (lhs.getTree().getKind() == Tree.Kind.IDENTIFIER
@@ -207,8 +216,12 @@ public class InferenceTransfer extends CFTransfer {
 
         SlotManager slotManager = getInferenceAnalysis().getSlotManager();
         Slot slotToRefine = slotManager.getSlot(atm);
-        if(slotToRefine instanceof RefinementVariableSlot) {
-            slotToRefine = ((RefinementVariableSlot) slotToRefine).getRefined();
+
+        // Make sure the refinement slot is created on the declared type
+        if (slotToRefine instanceof RefinementVariableSlot) {
+            // Getting the declared type of a RefinementVariableSlot
+            // getRefined() always returns the slot of the declared type value
+            slotToRefine = ((RefinementVariableSlot)slotToRefine).getRefined();
         }
 
         Slot refineTo = slotManager.getSlot(valueAtm);

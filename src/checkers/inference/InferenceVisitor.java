@@ -448,11 +448,17 @@ public class InferenceVisitor<Checker extends InferenceChecker,
             return;
         }
 
-        // commonAssignmentCheck eventually create an equality constraint between varTree and valueExp.
-        // For inference, we need this constraint to be between the RefinementVariable and the value.
-        // Refinement variables come from flow inference, so we need to call getAnnotatedType instead of getDefaultedAnnotatedType
         AnnotatedTypeMirror var;
-        if (this.infer) {
+        if (infer && varTree.getKind() == Kind.TYPE_PARAMETER) {
+            // When the lhs is a type variable, due to the partially resolved issue
+            // https://github.com/opprop/checker-framework-inference/issues/316,
+            // currently it is still "commonAssignmentCheck" who creates the refinement constraint.
+            // We need this constraint to be between the refinement variable and the rhs value.
+            // Since refinement variables come from flow inference, we must call "getAnnotatedType"
+            // instead of "getAnnotatedTypeLhs".
+            // TODO: use "getAnnotatedTypeLhs" uniformly when issue 316 is completely resolved.
+            //  (In that way, the refinement constraints are uniformly created during dataflow analysis, so
+            //  "commonAssignmentCheck" only needs to enforce the general type rule regarding assignment.)
             var = atypeFactory.getAnnotatedType(varTree);
         } else {
             var = atypeFactory.getAnnotatedTypeLhs(varTree);

@@ -235,7 +235,9 @@ public class InferenceValue extends CFValue {
             sb.append(slot.getClass().getSimpleName());
             sb.append("(");
             sb.append(slot.getId());
-            sb.append("))");
+            sb.append(")");
+
+            sb.append(")");
         } else {
             sb.append(slot);
         }

@@ -47,6 +47,8 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 
+import static com.sun.source.tree.Tree.Kind.METHOD;
+
 
 /**
  *  InferenceVisitor visits trees in each compilation unit both in typecheck/inference mode.
@@ -793,4 +795,16 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         }
     }
 
+    @Override
+    public boolean validateTypeOf(Tree tree) {
+        boolean res = true;
+        if (tree.getKind() == METHOD) {
+            AnnotatedExecutableType methodType = (AnnotatedExecutableType) atypeFactory.getAnnotatedType(tree);
+            AnnotatedTypeMirror type = methodType.getReceiverType();
+            if (!validateType(tree, type)) {
+                res = false;
+            }
+        }
+        return super.validateTypeOf(tree) && res;
+    }
 }

@@ -7,6 +7,8 @@ import org.checkerframework.javacutil.AnnotationUtils;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -23,6 +25,7 @@ import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
 import checkers.inference.model.serialization.CnfVecIntSerializer;
+import org.sat4j.specs.ContradictionException;
 
 /**
  * This solver is used to convert any constraint set using a type system with only 2 types (Top/Bottom),
@@ -71,7 +74,9 @@ public class MaxSat2TypeSolver implements InferenceSolver {
     public InferenceResult solve() {
         final Map<Integer, AnnotationMirror> solutions = new HashMap<>();
 
-        final List<VecInt> clauses = serializer.convertAll(constraints);
+        final List<VecInt> softClauses = new LinkedList<>();
+        final List<VecInt> hardClauses = new LinkedList<>();
+        serializer.convertAll(constraints, hardClauses, softClauses);
 
         // nextId describes the LARGEST id that might be found in a variable
         // if an exception occurs while creating a variable the id might be incremented
@@ -82,7 +87,7 @@ public class MaxSat2TypeSolver implements InferenceSolver {
         // TODO: thus here the value of totalVars is the real slots number stored in slotManager, and plus the
         // TODO: "fake" slots number stored in existentialToPotentialVar
         final int totalVars = slotManager.getNumberOfSlots() + serializer.getExistentialToPotentialVar().size();
-        final int totalClauses =  clauses.size();
+        final int totalClauses =  hardClauses.size() + softClauses.size();
 
 
         // When .newBoth is called, SAT4J will run two solvers and return the result of the first to halt
@@ -96,7 +101,12 @@ public class MaxSat2TypeSolver implements InferenceSolver {
 
         VecInt lastClause = null;
         try {
-            for (VecInt clause : clauses) {
+            for (VecInt clause : hardClauses) {
+                lastClause = clause;
+                solver.addHardClause(clause);
+            }
+
+            for (VecInt clause : softClauses) {
 
                 lastClause = clause;
                 solver.addSoftClause(clause);
@@ -127,11 +137,17 @@ public class MaxSat2TypeSolver implements InferenceSolver {
                 System.out.println("Not solvable!");
             }
 
+        } catch (ContradictionException ce) {
+            System.out.println("Find contradiction when adding " + lastClause + ". Not solvable!");
+            // pass empty set as the unsat explanation
+            // TODO: explain UNSAT
+            return new DefaultInferenceResult(new HashSet<>());
+
         } catch(Throwable th) {
            throw new RuntimeException("Error MAX-SAT solving! " + lastClause, th);
         }
 
-
         return new DefaultInferenceResult(solutions);
     }
+
 }

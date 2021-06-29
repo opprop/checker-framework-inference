@@ -10,6 +10,7 @@ class Unsat {
 
     void m() {
         String s = bar();
+        // :: error: (argument.type.incompatible)
         foo(s);
     }
 }

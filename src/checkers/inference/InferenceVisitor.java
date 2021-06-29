@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -798,11 +799,33 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     @Override
     public boolean validateTypeOf(Tree tree) {
         boolean res = true;
-        if (tree.getKind() == METHOD) {
+        if (infer && tree.getKind() == METHOD) {
+            // Validate implicit receiver parameters separately, while explicit receivers are validated
+            // in the super.validateTypeOf()
             AnnotatedExecutableType methodType = (AnnotatedExecutableType) atypeFactory.getAnnotatedType(tree);
-            AnnotatedTypeMirror type = methodType.getReceiverType();
-            if (!validateType(tree, type)) {
-                res = false;
+            AnnotatedDeclaredType type = methodType.getReceiverType();
+            if (type != null && ((MethodTree) tree).getReceiverParameter() == null) {
+                res = validateType(tree, type);
+
+                // receiver type arguments are bounded by the declaration upper/lower bounds
+                List<AnnotatedTypeMirror> typeArgs = type.getTypeArguments();
+                Element declarationEle = type.getUnderlyingType().asElement();
+                AnnotatedDeclaredType declaration =
+                        (AnnotatedDeclaredType) atypeFactory.getAnnotatedType(declarationEle);
+                List<AnnotatedTypeMirror> declarationTypeVars = declaration.getTypeArguments();
+
+                assert typeArgs.size() == declarationTypeVars.size();
+
+                final Iterator<AnnotatedTypeMirror> declTypeVarIterator = declarationTypeVars.iterator();
+                final Iterator<AnnotatedTypeMirror> typeArgIterator = typeArgs.iterator();
+                while (declTypeVarIterator.hasNext()) {
+                    AnnotatedTypeMirror declTypeVar = declTypeVarIterator.next();
+                    AnnotatedTypeMirror typeArg = typeArgIterator.next();
+                    AnnotatedTypeMirror declUpperBound = ((AnnotatedTypeVariable) declTypeVar).getUpperBound();
+                    AnnotatedTypeMirror declLowerBound = ((AnnotatedTypeVariable) declTypeVar).getLowerBound();
+                    atypeFactory.getTypeHierarchy().isSubtype(declLowerBound, typeArg);
+                    atypeFactory.getTypeHierarchy().isSubtype(typeArg, declUpperBound);
+                }
             }
         }
         return super.validateTypeOf(tree) && res;

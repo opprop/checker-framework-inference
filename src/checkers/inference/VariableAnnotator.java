@@ -539,18 +539,28 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * We create a variable annotation for @1 and place it in the primary annotation position of
      * the type.
      */
-    public SourceVariableSlot addImpliedPrimaryVariable(AnnotatedTypeMirror atm, final AnnotationLocation location) {
-        SourceVariableSlot variable = slotManager.createSourceVariableSlot(location, atm.getUnderlyingType());
-        atm.addAnnotation(slotManager.getAnnotation(variable));
+    public void annotateImpliedMethodReceiver(AnnotatedTypeMirror atm, final AnnotationLocation location) {
+        if (atm instanceof AnnotatedTypeVariable) {
+            // Create existential slots for type variables
+            AnnotatedTypeVariable typeVar = (AnnotatedTypeVariable) atm;
 
-        AnnotationMirror realAnno = atm.getAnnotationInHierarchy(realTop);
-        if (realAnno != null) {
-            constraintManager.addEqualityConstraint(slotManager.getSlot(realAnno), variable);
+            // Get bounds for the type variable. i.e. alternative slots
+            Element typeVarDeclElem = typeVar.getUnderlyingType().asElement();
+            assert elementToAtm.containsKey(typeVarDeclElem);
+            AnnotatedTypeMirror typeVarDecl = elementToAtm.get(typeVarDeclElem);
+
+            // Create the potential slot for the type variable
+            final Slot potentialVariable = createVariable(location, atm.getUnderlyingType());
+
+            existentialInserter.insert(potentialVariable, typeVar, typeVarDecl);
+
+        } else {
+            // Create source variable slots for declared types
+            replaceOrCreateEquivalentVarAnno(atm, null, location);
         }
 
         logger.fine("Created implied variable for type:\n" + atm + " => " + location);
 
-        return variable;
     }
 
     /**
@@ -1443,7 +1453,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
                     final AnnotatedTypeMirror type = typeToPath.getKey();
                     final ASTRecord path = typeToPath.getValue();
 
-                    addImpliedPrimaryVariable(type, new AstPathLocation(path));
+                    annotateImpliedMethodReceiver(type, new AstPathLocation(path));
                 }
 
                 receiverMissingTrees.put(methodElem, receiverType.deepCopy());

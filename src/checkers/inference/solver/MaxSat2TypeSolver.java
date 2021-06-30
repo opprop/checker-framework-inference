@@ -118,18 +118,20 @@ public class MaxSat2TypeSolver implements InferenceSolver {
                 int[] solution = solver.model();
 
                 for (Integer var : solution) {
-                    boolean isTop = var < 0;
-                    if (isTop) {
-                        var = -var;
-                    }
-
                     Integer potential = existentialToPotentialIds.get(var);
                     if (potential != null) {
                         // idToExistence.put(potential, !isTop);
                         // TODO: which AnnotationMirror should be used?
-                        solutions.put(potential, bottom);
+                        if (var < 0) {
+                            // potential variable does not exist, remove it from the solution
+                            solutions.remove(potential);
+                        }
                     } else {
-                        solutions.put(var, isTop ? top : bottom );
+                        boolean isTop = var < 0;
+                        if (isTop) {
+                            var = -var;
+                        }
+                        solutions.put(var, isTop ? top : bottom);
                     }
 
                 }

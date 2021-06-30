@@ -292,7 +292,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
         return convertAll(constraints, new LinkedList<VecInt>());
     }
 
-    public List<VecInt>  convertAll(Iterable<Constraint> constraints, List<VecInt> results) {
+    public List<VecInt> convertAll(Iterable<Constraint> constraints, List<VecInt> results) {
         for (Constraint constraint : constraints) {
             for (VecInt res : constraint.serialize(this)) {
                 if (res.size() != 0) {
@@ -300,6 +300,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
                 }
             }
         }
+
         return results;
     }
 

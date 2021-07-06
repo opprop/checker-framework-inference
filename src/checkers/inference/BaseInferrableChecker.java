@@ -1,6 +1,5 @@
 package checkers.inference;
 
-import com.sun.source.tree.LiteralTree;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
@@ -77,7 +76,7 @@ public abstract class BaseInferrableChecker extends InferenceChecker implements 
 
     @Override
     public boolean isConstant(Tree node) {
-        return (node instanceof LiteralTree);
+        return false;
     }
 
     @Override

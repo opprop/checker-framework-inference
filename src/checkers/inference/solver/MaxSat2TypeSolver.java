@@ -151,7 +151,7 @@ public class MaxSat2TypeSolver implements InferenceSolver {
                     "when adding clause: " + lastClause + ".");
 
             // pass empty set as the unsat explanation
-            // TODO: explain UNSAT
+            // TODO: explain UNSAT possibly by reusing MaxSatSolver.MaxSATUnsatisfiableConstraintExplainer
             return new DefaultInferenceResult(new HashSet<>());
 
         } catch(Throwable th) {

@@ -126,7 +126,8 @@ public class MaxSat2TypeSolver implements InferenceSolver {
                         // already inserted into 'solutions'
                         assert solutions.containsKey(potential);
                         if (var < 0) {
-                            // potential variable does not exist, remove it from the solution
+                            // The existential variable is false, so the potential variable should not be inserted. 
+                            // Remove it from the solution.
                             solutions.remove(potential);
                         }
                     } else {

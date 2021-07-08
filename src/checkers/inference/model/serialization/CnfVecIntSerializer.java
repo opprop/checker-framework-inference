@@ -291,7 +291,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
 
     /**
      * Convert all the given mandatory constraints into hard clauses. A BugInCF exception is
-     * raised if the given constraints contains any {@link PreferenceConstraint}.
+     * raised if the given constraints contain any {@link PreferenceConstraint}.
      *
      * For conversion of constraints containing {@link PreferenceConstraint}, use
      * {@link CnfVecIntSerializer#convertAll(Iterable, List, List)}

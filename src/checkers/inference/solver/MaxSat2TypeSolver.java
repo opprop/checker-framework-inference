@@ -118,10 +118,13 @@ public class MaxSat2TypeSolver implements InferenceSolver {
                 int[] solution = solver.model();
 
                 for (Integer var : solution) {
-                    Integer potential = existentialToPotentialIds.get(var);
+                    Integer potential = existentialToPotentialIds.get(Math.abs(var));
                     if (potential != null) {
-                        // idToExistence.put(potential, !isTop);
-                        // TODO: which AnnotationMirror should be used?
+                        // Assume the 'solution' output by the solver is already sorted in the ascending order
+                        // of their absolute values. So the existential variables come after the slot variables,
+                        // which means the potential slot corresponding to the current existential variable is
+                        // already inserted into 'solutions'
+                        assert solutions.containsKey(potential);
                         if (var < 0) {
                             // potential variable does not exist, remove it from the solution
                             solutions.remove(potential);
@@ -136,11 +139,16 @@ public class MaxSat2TypeSolver implements InferenceSolver {
 
                 }
             } else {
+                // TODO: explain UNSAT
                 System.out.println("Not solvable!");
             }
 
         } catch (ContradictionException ce) {
-            System.out.println("Find contradiction when adding " + lastClause + ". Not solvable!");
+            // This case indicates that constraints are not solvable, too. This is normal so continue
+            // the execution
+            System.out.println("Not solvable! Contradiction exception " +
+                    "when adding clause: " + lastClause + ".");
+
             // pass empty set as the unsat explanation
             // TODO: explain UNSAT
             return new DefaultInferenceResult(new HashSet<>());
@@ -151,5 +159,4 @@ public class MaxSat2TypeSolver implements InferenceSolver {
 
         return new DefaultInferenceResult(solutions);
     }
-
 }

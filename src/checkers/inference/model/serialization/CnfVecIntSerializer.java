@@ -8,6 +8,7 @@ import java.util.Map;
 import checkers.inference.model.LubVariableSlot;
 import checkers.inference.model.ImplicationConstraint;
 import checkers.inference.model.VariableSlot;
+import org.checkerframework.javacutil.BugInCF;
 import org.sat4j.core.VecInt;
 
 import checkers.inference.SlotManager;
@@ -288,12 +289,37 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
                 "MaxSAT backend. Use MaxSATSolver instead!");
     }
 
+    /**
+     * Convert all the given mandatory constraints into hard clauses. A BugInCF exception is
+     * raised if the given constraints contains any {@link PreferenceConstraint}.
+     *
+     * For conversion of constraints containing {@link PreferenceConstraint}, use
+     * {@link CnfVecIntSerializer#convertAll(Iterable, List, List)}
+     *
+     * @param constraints
+     * @return the output clauses for the given constraints
+     */
     public List<VecInt> convertAll(Iterable<Constraint> constraints) {
         return convertAll(constraints, new LinkedList<VecInt>());
     }
 
+    /**
+     * Convert all the given mandatory constraints into hard clauses. A BugInCF exception is
+     * raised if the given constraints contains any {@link PreferenceConstraint}.
+     *
+     * For conversion of constraints containing {@link PreferenceConstraint}, use
+     * {@link CnfVecIntSerializer#convertAll(Iterable, List, List)}
+     *
+     * @param constraints
+     * @param results the output clauses for the given constraints
+     * @return same as {@code results}
+     */
     public List<VecInt> convertAll(Iterable<Constraint> constraints, List<VecInt> results) {
         for (Constraint constraint : constraints) {
+            if (constraint instanceof PreferenceConstraint) {
+                throw new BugInCF("CnfVecIntSerializer: adding PreferenceConstraint ( " + constraint +
+                        " ) to the hard clauses");
+            }
             for (VecInt res : constraint.serialize(this)) {
                 if (res.size() != 0) {
                     results.add(res);
@@ -304,6 +330,14 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
         return results;
     }
 
+    /**
+     * Convert all the given mandatory constraints to hard clauses, and preference constraints
+     * to soft clauses.
+     *
+     * @param constraints
+     * @param hardClauses the output hard clauses for the mandatory constraints
+     * @param softClauses the output soft clauses for {@link PreferenceConstraint}
+     */
     public void convertAll(Iterable<Constraint> constraints, List<VecInt> hardClauses, List<VecInt> softClauses) {
         for (Constraint constraint : constraints) {
             for (VecInt res : constraint.serialize(this)) {

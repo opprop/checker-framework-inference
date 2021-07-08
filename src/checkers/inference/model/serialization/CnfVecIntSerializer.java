@@ -334,7 +334,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
      * Convert all the given mandatory constraints to hard clauses, and preference constraints
      * to soft clauses.
      *
-     * @param constraints
+     * @param constraints the constraints to convert
      * @param hardClauses the output hard clauses for the mandatory constraints
      * @param softClauses the output soft clauses for {@link PreferenceConstraint}
      */

@@ -318,7 +318,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
         for (Constraint constraint : constraints) {
             if (constraint instanceof PreferenceConstraint) {
                 throw new BugInCF("CnfVecIntSerializer: adding PreferenceConstraint ( " + constraint +
-                        " ) to the hard clauses");
+                        " ) to hard clauses is forbidden");
             }
             for (VecInt res : constraint.serialize(this)) {
                 if (res.size() != 0) {

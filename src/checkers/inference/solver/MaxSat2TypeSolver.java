@@ -121,7 +121,7 @@ public class MaxSat2TypeSolver implements InferenceSolver {
                     Integer potential = existentialToPotentialIds.get(Math.abs(var));
                     if (potential != null) {
                         // Assume the 'solution' output by the solver is already sorted in the ascending order
-                        // of their absolute values. So the existential variables come after the slot variables,
+                        // of their absolute values. So the existential variables come after the potential variables,
                         // which means the potential slot corresponding to the current existential variable is
                         // already inserted into 'solutions'
                         assert solutions.containsKey(potential);

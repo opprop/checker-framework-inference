@@ -29,7 +29,10 @@ public abstract class CFInferenceUnsatTest extends CFInferenceTest{
 
         InferenceTestResult testResult = new InferenceTestExecutor().runTest(config);
         final InferenceTestPhase lastPhaseRun = testResult.getLastPhaseRun();
-        if (lastPhaseRun != InferenceTestPhase.INFER) {
+        if (lastPhaseRun == InferenceTestPhase.INITIAL_TYPECHECK) {
+            InferenceTestUtilities.assertResultsAreValid(testResult);
+
+        } else if (lastPhaseRun == InferenceTestPhase.FINAL_TYPECHECK) {
             String summary = "Inference is expected to fail, but succeeded on source files: \n"
                     + SystemUtil.join("\n", testResult.getConfiguration().getInitialTypecheckConfig().getTestSourceFiles()) + "\n\n";
             InferenceTestUtilities.assertFail(InferenceTestPhase.INFER, summary);

@@ -139,7 +139,7 @@ public class MaxSat2TypeSolver implements InferenceSolver {
 
                 }
             } else {
-                // TODO: explain UNSAT
+                // TODO: explain UNSAT possibly by reusing MaxSatSolver.MaxSATUnsatisfiableConstraintExplainer
                 System.out.println("Not solvable!");
             }
 

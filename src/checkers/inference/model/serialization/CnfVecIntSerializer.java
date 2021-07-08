@@ -296,7 +296,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
      * For conversion of constraints containing {@link PreferenceConstraint}, use
      * {@link CnfVecIntSerializer#convertAll(Iterable, List, List)}
      *
-     * @param constraints
+     * @param constraints the constraints to convert
      * @return the output clauses for the given constraints
      */
     public List<VecInt> convertAll(Iterable<Constraint> constraints) {

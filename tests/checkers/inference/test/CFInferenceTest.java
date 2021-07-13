@@ -57,6 +57,10 @@ public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
                 solverArgs.second, useHacks(), shouldEmitDebugInfo, getPathToAfuScripts(), getPathToInferenceScript());
 
         InferenceTestResult testResult = new InferenceTestExecutor().runTest(config);
+        postProcessResult(testResult);
+    }
+
+    protected void postProcessResult(InferenceTestResult testResult) {
         InferenceTestUtilities.assertResultsAreValid(testResult);
     }
 }

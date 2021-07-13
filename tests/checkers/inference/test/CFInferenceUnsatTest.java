@@ -1,14 +1,17 @@
 package checkers.inference.test;
 
-import org.checkerframework.framework.test.TestUtilities;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.SystemUtil;
-import org.junit.Test;
 
 import javax.annotation.processing.AbstractProcessor;
 import java.io.File;
-import java.util.List;
 
+/**
+ * This test suite runs inference individually on target files that are unsatisfiable. This means each
+ * test case is expected to pass the initial check phase while fail at the inference phase and terminate.
+ *
+ * The use of this class is the same as {@link CFInferenceTest}. Note that the target directory of the test
+ * cases can only contain unsatisfiable cases.
+ */
 public abstract class CFInferenceUnsatTest extends CFInferenceTest{
     public CFInferenceUnsatTest(File testFile, Class<? extends AbstractProcessor> checker,
                            String testDir, String... checkerOptions) {
@@ -16,18 +19,7 @@ public abstract class CFInferenceUnsatTest extends CFInferenceTest{
     }
 
     @Override
-    @Test
-    public void run() {
-        boolean shouldEmitDebugInfo = TestUtilities.getShouldEmitDebugInfo();
-        Pair<String, List<String>> solverArgs = getSolverNameAndOptions();
-
-        final File testDataDir = new File("testdata");
-
-        InferenceTestConfiguration config = InferenceTestConfigurationBuilder.buildDefaultConfiguration(testDir,
-                testFile, testDataDir, checkerName, checkerOptions, getAdditionalInferenceOptions(), solverArgs.first,
-                solverArgs.second, useHacks(), shouldEmitDebugInfo, getPathToAfuScripts(), getPathToInferenceScript());
-
-        InferenceTestResult testResult = new InferenceTestExecutor().runTest(config);
+    protected void postProcessResult(InferenceTestResult testResult) {
         final InferenceTestPhase lastPhaseRun = testResult.getLastPhaseRun();
         if (lastPhaseRun == InferenceTestPhase.INITIAL_TYPECHECK) {
             InferenceTestUtilities.assertResultsAreValid(testResult);

@@ -26,6 +26,7 @@ import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
 import checkers.inference.model.serialization.CnfVecIntSerializer;
 import org.sat4j.specs.ContradictionException;
+import org.sat4j.specs.TimeoutException;
 
 /**
  * This solver is used to convert any constraint set using a type system with only 2 types (Top/Bottom),
@@ -72,7 +73,6 @@ public class MaxSat2TypeSolver implements InferenceSolver {
     }
 
     public InferenceResult solve() {
-        final Map<Integer, AnnotationMirror> solutions = new HashMap<>();
 
         final List<VecInt> softClauses = new LinkedList<>();
         final List<VecInt> hardClauses = new LinkedList<>();
@@ -87,7 +87,7 @@ public class MaxSat2TypeSolver implements InferenceSolver {
         // TODO: thus here the value of totalVars is the real slots number stored in slotManager, and plus the
         // TODO: "fake" slots number stored in existentialToPotentialVar
         final int totalVars = slotManager.getNumberOfSlots() + serializer.getExistentialToPotentialVar().size();
-        final int totalClauses =  hardClauses.size() + softClauses.size();
+        final int totalClauses = hardClauses.size() + softClauses.size();
 
 
         // When .newBoth is called, SAT4J will run two solvers and return the result of the first to halt
@@ -105,59 +105,65 @@ public class MaxSat2TypeSolver implements InferenceSolver {
                 lastClause = clause;
                 solver.addHardClause(clause);
             }
-
             for (VecInt clause : softClauses) {
 
                 lastClause = clause;
                 solver.addSoftClause(clause);
             }
 
-            // isSatisfiable launches the solvers and waits until one of them finishes
-            if (solver.isSatisfiable()) {
-                final Map<Integer, Integer> existentialToPotentialIds = serializer.getExistentialToPotentialVar();
-                int[] solution = solver.model();
-
-                for (Integer var : solution) {
-                    Integer potential = existentialToPotentialIds.get(Math.abs(var));
-                    if (potential != null) {
-                        // Assume the 'solution' output by the solver is already sorted in the ascending order
-                        // of their absolute values. So the existential variables come after the potential variables,
-                        // which means the potential slot corresponding to the current existential variable is
-                        // already inserted into 'solutions'
-                        assert solutions.containsKey(potential);
-                        if (var < 0) {
-                            // The existential variable is false, so the potential variable should not be inserted. 
-                            // Remove it from the solution.
-                            solutions.remove(potential);
-                        }
-                    } else {
-                        boolean isTop = var < 0;
-                        if (isTop) {
-                            var = -var;
-                        }
-                        solutions.put(var, isTop ? top : bottom);
-                    }
-
-                }
-            } else {
-                // TODO: explain UNSAT possibly by reusing MaxSatSolver.MaxSATUnsatisfiableConstraintExplainer
-                System.out.println("Not solvable!");
-            }
-
         } catch (ContradictionException ce) {
-            // This case indicates that constraints are not solvable, too. This is normal so continue
-            // the execution
+            // This happens when adding a clause causes trivial contradiction, such as adding -1 to {1}
             System.out.println("Not solvable! Contradiction exception " +
                     "when adding clause: " + lastClause + ".");
 
             // pass empty set as the unsat explanation
             // TODO: explain UNSAT possibly by reusing MaxSatSolver.MaxSATUnsatisfiableConstraintExplainer
             return new DefaultInferenceResult(new HashSet<>());
-
-        } catch(Throwable th) {
-           throw new RuntimeException("Error MAX-SAT solving! " + lastClause, th);
         }
 
-        return new DefaultInferenceResult(solutions);
+        boolean isSatisfiable;
+        try {
+            // isSatisfiable() launches the solvers and waits until one of them finishes
+            isSatisfiable = solver.isSatisfiable();
+
+        } catch(TimeoutException te) {
+            throw new RuntimeException("MAX-SAT solving timeout! ");
+        }
+
+        if (!isSatisfiable) {
+            System.out.println("Not solvable!");
+            // pass empty set as the unsat explanation
+            // TODO: explain UNSAT possibly by reusing MaxSatSolver.MaxSATUnsatisfiableConstraintExplainer
+            return new DefaultInferenceResult(new HashSet<>());
+        }
+
+        int[] solution = solver.model();
+        // The following code decodes VecInt solution to the slot-annotation mappings
+        final Map<Integer, AnnotationMirror> decodedSolution = new HashMap<>();
+        final Map<Integer, Integer> existentialToPotentialIds = serializer.getExistentialToPotentialVar();
+
+        for (Integer var : solution) {
+            Integer potential = existentialToPotentialIds.get(Math.abs(var));
+            if (potential != null) {
+                // Assume the 'solution' output by the solver is already sorted in the ascending order
+                // of their absolute values. So the existential variables come after the potential variables,
+                // which means the potential slot corresponding to the current existential variable is
+                // already inserted into 'solutions'
+                assert decodedSolution.containsKey(potential);
+                if (var < 0) {
+                    // The existential variable is false, so the potential variable should not be inserted.
+                    // Remove it from the solution.
+                    decodedSolution.remove(potential);
+                }
+            } else {
+                boolean isTop = var < 0;
+                if (isTop) {
+                    var = -var;
+                }
+                decodedSolution.put(var, isTop ? top : bottom);
+            }
+        }
+
+        return new DefaultInferenceResult(decodedSolution);
     }
 }

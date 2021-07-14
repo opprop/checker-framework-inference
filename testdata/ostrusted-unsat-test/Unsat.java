@@ -5,8 +5,7 @@ class Unsat {
 
     void foo(@OsTrusted String s) {}
 
-    @OsUntrusted
-    String bar() { return ""; }
+    @OsUntrusted String bar() { return ""; }
 
     void m() {
         String s = bar();

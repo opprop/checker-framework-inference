@@ -60,6 +60,11 @@ public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
         postProcessResult(testResult);
     }
 
+    /**
+     * Report a summary of the failed test based on the {@link InferenceTestResult}.
+     *
+     * @param testResult the test result returned by {@code InferenceTestExecutor}
+     */
     protected void postProcessResult(InferenceTestResult testResult) {
         InferenceTestUtilities.assertResultsAreValid(testResult);
     }

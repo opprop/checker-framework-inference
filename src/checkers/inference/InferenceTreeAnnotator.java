@@ -3,6 +3,7 @@ package checkers.inference;
 import checkers.inference.model.ConstraintManager;
 import checkers.inference.model.SourceVariableSlot;
 import checkers.inference.model.Slot;
+import com.sun.source.tree.AnnotationTree;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -182,16 +183,28 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
                 } else if (parentNode.getKind() == Kind.NEW_CLASS
                         && ((NewClassTree) parentNode).getIdentifier() == node) {
                     // This can happen at two locations in a NewClassTree:
-                    // (1) The type identifier of the NewClassTree, as `A` of `new A() {}`,
+                    // (1) The type identifier of anonymous class instantiations, as `A` of `new A() {}`,
                     // (2) The type identifier on the anonymous class's extends/implements clause.
                     // Note that the identifiers trees described in the two cases above are identical
                     // for one NewClassTree, i.e. they share the same slot
                     // TODO: A NewClassTree should be handled in visitNewClass method exclusively 
                     // without messing around with the IdentifierTree or ClassTree, see issue:
                     // https://github.com/opprop/checker-framework-inference/issues/332
-                    variableAnnotator.visit(identifierType, node);
 
+                    NewClassTree newClassTree = (NewClassTree) parentNode;
+                    assert (newClassTree.getClassBody() != null);
+
+                    // Get the explicit annotation if any exists so that no variable slot is created.
+                    // If the explicit annotations is in the location as follows:
+                    //      new @HERE Class() {}
+                    // @HERE is on the modifier of the anonymous class body, instead of on the type identifier.
+                    List<? extends AnnotationTree> annos =
+                            newClassTree.getClassBody().getModifiers().getAnnotations();
+
+                    identifierType.addAnnotations(TreeUtils.annotationsFromTypeAnnotationTrees(annos));
+                    variableAnnotator.visit(identifierType, node);
                 }
+
             }
         }
 

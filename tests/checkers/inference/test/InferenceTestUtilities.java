@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.checkerframework.javacutil.SystemUtil;
 import org.junit.Assert;
 
 /**
@@ -96,7 +97,7 @@ public class InferenceTestUtilities {
         Assert.fail(message);
     }
 
-    public static void assertResultsAreValid(InferenceTestResult testResult) {
+    public static void assertResultsAreValid(InferenceTestResult testResult, InferenceTestPhase expectedLastPhase) {
         final InferenceTestPhase lastPhaseRun = testResult.getLastPhaseRun();
 
         switch (lastPhaseRun) {
@@ -105,7 +106,9 @@ public class InferenceTestUtilities {
                 break;
 
             case INFER:
-                assertFail(InferenceTestPhase.INFER, testResult.getInferenceResult().summarize());
+                if (expectedLastPhase != InferenceTestPhase.INFER) {
+                    assertFail(InferenceTestPhase.INFER, testResult.getInferenceResult().summarize());
+                }
                 break;
 
             case INSERT:
@@ -113,6 +116,13 @@ public class InferenceTestUtilities {
                 break;
 
             case FINAL_TYPECHECK:
+                if (expectedLastPhase == InferenceTestPhase.INFER) {
+                    String summary = "Inference is expected to fail, but succeeded on the source file: \n"
+                            + SystemUtil.join("\n", testResult.getConfiguration().getInitialTypecheckConfig().getTestSourceFiles()) + "\n\n";
+
+                    assertFail(InferenceTestPhase.INFER, summary);
+                }
+
                 TypecheckResult finalTypecheckResult = testResult.getFinalTypecheckResult();
                 if (finalTypecheckResult.didTestFail()) {
                     assertFail(InferenceTestPhase.FINAL_TYPECHECK, finalTypecheckResult.summarize());

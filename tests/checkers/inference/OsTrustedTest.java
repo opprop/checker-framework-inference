@@ -1,7 +1,6 @@
 package checkers.inference;
 
 import checkers.inference.solver.MaxSat2TypeSolver;
-import checkers.inference.solver.SolverEngine;
 import checkers.inference.test.CFInferenceTest;
 import org.checkerframework.framework.test.TestUtilities;
 import org.checkerframework.javacutil.Pair;
@@ -20,7 +19,7 @@ public class OsTrustedTest extends CFInferenceTest {
 
     @Override
     public Pair<String, List<String>> getSolverNameAndOptions() {
-        return Pair.<String, List<String>>of(SolverEngine.class.getCanonicalName(), new ArrayList<String>());
+        return Pair.<String, List<String>>of(MaxSat2TypeSolver.class.getCanonicalName(), new ArrayList<String>());
     }
 
     @Parameters

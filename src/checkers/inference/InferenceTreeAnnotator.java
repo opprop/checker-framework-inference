@@ -182,26 +182,27 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
 
                 } else if (parentNode.getKind() == Kind.NEW_CLASS
                         && ((NewClassTree) parentNode).getIdentifier() == node) {
-                    // This can happen at two locations in a NewClassTree:
-                    // (1) The type identifier of anonymous class instantiations, as `A` of `new A() {}`,
-                    // (2) The type identifier on the anonymous class's extends/implements clause.
-                    // Note that the identifiers trees described in the two cases above are identical
-                    // for one NewClassTree, i.e. they share the same slot
-                    // TODO: A NewClassTree should be handled in visitNewClass method exclusively 
+                    // This can happen in two cases related to NewClassTrees:
+                    // (1) The type identifier of non-anonymous class instantiations, without explict
+                    //     annotations, such as `A` of `new A()`;
+                    // (2) The type identifier of anonymous class instantiations, with or without
+                    //     explicit annotations.
+                    // TODO: A NewClassTree should be handled in visitNewClass method exclusively
                     // without messing around with the IdentifierTree or ClassTree, see issue:
                     // https://github.com/opprop/checker-framework-inference/issues/332
 
                     NewClassTree newClassTree = (NewClassTree) parentNode;
-                    assert (newClassTree.getClassBody() != null);
+                    if (newClassTree.getClassBody() != null) {
+                        // For case 2, get the explicit annotation if any exists so that no variable slot
+                        // is created. Note the annotation cannot be retrieved from the identifier, but
+                        // from the the modifier of the anonymous class body. e.g. for the following case
+                        //      new @HERE Class() {}
+                        // @HERE is on the modifier of the anonymous class body, instead of on the type identifier.
+                        List<? extends AnnotationTree> annos =
+                                newClassTree.getClassBody().getModifiers().getAnnotations();
 
-                    // Get the explicit annotation if any exists so that no variable slot is created.
-                    // If the explicit annotations is in the location as follows:
-                    //      new @HERE Class() {}
-                    // @HERE is on the modifier of the anonymous class body, instead of on the type identifier.
-                    List<? extends AnnotationTree> annos =
-                            newClassTree.getClassBody().getModifiers().getAnnotations();
-
-                    identifierType.addAnnotations(TreeUtils.annotationsFromTypeAnnotationTrees(annos));
+                        identifierType.addAnnotations(TreeUtils.annotationsFromTypeAnnotationTrees(annos));
+                    }
                     variableAnnotator.visit(identifierType, node);
                 }
 

@@ -576,6 +576,14 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return Collections.singleton(vAnno);
         }
 
+        final List<? extends AnnotationMirror> annos = type.getAnnotationMirrors();
+        AnnotationMirror realAnno = qualHierarchy.findAnnotationInHierarchy(annos, realTop);
+        if (realAnno != null) {
+            Slot slot = slotManager.getSlot(realAnno);
+            vAnno = slotManager.getAnnotation(slot);
+            return Collections.singleton(vAnno);
+        }
+
         // If the declaration bound of the underlying type is not cached, use default
         return (Set<AnnotationMirror>) getDefaultTypeDeclarationBounds();
     }
@@ -591,6 +599,19 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public AnnotatedTypeMirror getTypeOfExtendsImplements(Tree clause) {
         return getAnnotatedTypeFromTypeTree(clause);
+    }
+
+    @Override
+    public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
+        AnnotatedDeclaredType type = super.fromNewClass(newClassTree);
+        AnnotationMirror explicitAnno = type.getAnnotationInHierarchy(realTop);
+        if (explicitAnno!= null) {
+            Slot slot = slotManager.getSlot(explicitAnno);
+            AnnotationMirror varAnno = slotManager.getAnnotation(slot);
+            type.removeAnnotation(explicitAnno);
+            type.addAnnotation(varAnno);
+        }
+        return type;
     }
 }
 

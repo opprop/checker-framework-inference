@@ -1182,8 +1182,21 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
                 astRecord = astRecord.newArrayLevel(level);
                 location = new AstPathLocation(astRecord);
             } else {
-                // astRecord for `topLevelTree` is null when it's an artificial array creation tree like for
-                // varargs. We don't need to create AstPathLocation for them.
+                // astRecord for `pathToTopLevelTree` is null when `topLevelTree` is an artificial array creation
+                // tree like for varargs, as the following case shows
+                //
+                //    void foo() {
+                //        bar(new String("a"), new String("b"));
+                //    }
+                //
+                //    void bar(Object... args) {}
+                //
+                // At the method invocation of `bar`, an artificial new array is created as
+                //      "new Object[]{new String("a"), new String("b")}"
+                // There's no exclusive AST path (i.e. AnnotationLocation) for the artificial tree. Currently we
+                // create slots for the array primary type and component types all on MISSING_LOCATION.
+                // TODO: consider an appropriate AST path for the artificial array creation or other ways to get
+                //  rid of MISSING_LOCATION. See https://github.com/opprop/checker-framework-inference/issues/346
                 location = AnnotationLocation.MISSING_LOCATION;
             }
 

@@ -9,7 +9,6 @@ import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -24,6 +23,7 @@ import javax.lang.model.element.AnnotationMirror;
 
 import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.InferenceUtil;
+import org.checkerframework.org.plumelib.util.StringsPlume;
 
 /**
  * A qualifier hierarchy that generates constraints rather than evaluating them.  Calls to isSubtype
@@ -180,15 +180,15 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
         if (InferenceMain.isHackMode(rhsVarAnnot == null || lhsVarAnnot == null)) {
                 InferenceMain.getInstance().logger.info(
                     "Hack:\n"
-                  + "    rhs=" + SystemUtil.join(", ", rhsAnnos) + "\n"
-                  + "    lhs=" + SystemUtil.join(", ", lhsAnnos ));
+                  + "    rhs=" + StringsPlume.join(", ", rhsAnnos) + "\n"
+                  + "    lhs=" + StringsPlume.join(", ", lhsAnnos ));
                 return true;
         }
 
         assert rhsVarAnnot != null && lhsVarAnnot != null :
                 "All types should have exactly 1 VarAnnot!\n"
-              + "    rhs=" + SystemUtil.join(", ", rhsAnnos) + "\n"
-              + "    lhs=" + SystemUtil.join(", ", lhsAnnos );
+              + "    rhs=" + StringsPlume.join(", ", rhsAnnos) + "\n"
+              + "    lhs=" + StringsPlume.join(", ", lhsAnnos );
 
         return isSubtype(rhsVarAnnot, lhsVarAnnot);
     }

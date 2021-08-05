@@ -56,12 +56,11 @@ public abstract class BaseInferrableChecker extends InferenceChecker implements 
     public CFAnalysis createInferenceAnalysis(
                     InferenceChecker checker,
                     GenericAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis> factory,
-                    List<Pair<VariableElement, CFValue>> fieldValues,
                     SlotManager slotManager,
                     ConstraintManager constraintManager,
                     InferrableChecker realChecker) {
 
-        return new InferenceAnalysis(checker, factory, fieldValues, slotManager, constraintManager, realChecker);
+        return new InferenceAnalysis(checker, factory, slotManager, constraintManager, realChecker);
     }
 
     @Override

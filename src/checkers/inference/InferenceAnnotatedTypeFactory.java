@@ -166,8 +166,8 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected CFAnalysis createFlowAnalysis(List<Pair<VariableElement, CFValue>> fieldValues) {
-        return realChecker.createInferenceAnalysis(inferenceChecker, this, fieldValues, slotManager, constraintManager, realChecker);
+    protected CFAnalysis createFlowAnalysis() {
+        return realChecker.createInferenceAnalysis(inferenceChecker, this, slotManager, constraintManager, realChecker);
     }
 
     @Override
@@ -220,12 +220,14 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
-        return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return MultiGraphQualifierHierarchy.createMultiGraphQualifierHierarchy(this);
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy( MultiGraphQualifierHierarchy.MultiGraphFactory factory ) {
+    public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
+            MultiGraphQualifierHierarchy.MultiGraphFactory factory
+    ) {
         return new InferenceQualifierHierarchy(factory);
     }
 
@@ -283,7 +285,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         Set<AnnotationMirror> annotations = type.getEffectiveAnnotations();
         for (AnnotatedTypeMirror supertype : supertypes) {
             if (!annotations.equals(supertype.getEffectiveAnnotations())) {
-                supertype.clearAnnotations();
+                supertype.clearPrimaryAnnotations();
                 supertype.addAnnotations(annotations);
             }
         }
@@ -293,7 +295,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * We do not want annotations inherited from superclass, we would like to infer all positions.
      */
     @Override
-    protected void addAnnotationsFromDefaultQualifierForUse(
+    protected void addAnnotationsFromDefaultForType(
             Element element, AnnotatedTypeMirror type)  { }
 
 
@@ -347,7 +349,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         if (methodInvocationTree.getKind() == Tree.Kind.METHOD_INVOCATION &&
             TreeUtils.isMethodInvocation(methodInvocationTree, objectGetClass, processingEnv)) {
-            adaptGetClassReturnTypeToReceiver(method, receiverType);
+            adaptGetClassReturnTypeToReceiver(method, receiverType, methodInvocationTree);
         }
         return mType;
     }
@@ -496,7 +498,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public AnnotatedDeclaredType getBoxedType(AnnotatedPrimitiveType type) {
         AnnotatedDeclaredType boxedType = super.getBoxedType(type);
-        for (AnnotatedTypeMirror supertype : boxedType.directSuperTypes()) {
+        for (AnnotatedTypeMirror supertype : boxedType.directSupertypes()) {
             supertype.replaceAnnotations(type.getAnnotations());
         }
 

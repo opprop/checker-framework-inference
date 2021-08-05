@@ -276,15 +276,15 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-
     @Override
-    protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
-        return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return MultiGraphQualifierHierarchy.createMultiGraphQualifierHierarchy(this);
     }
 
     @Override
-    public QualifierHierarchy createQualifierHierarchy(
-            MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
+    public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
+            MultiGraphQualifierHierarchy.MultiGraphFactory factory
+    ) {
         return new FlowQualifierHierarchy(factory);
     }
 

@@ -50,7 +50,7 @@ public class CopyUtil {
          */
         @Override
         public void copy(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
-            to.clearAnnotations();
+            to.clearPrimaryAnnotations();
             to.addAnnotations(from.getAnnotations());
         }
     }
@@ -80,7 +80,7 @@ public class CopyUtil {
         // TODO: Constructor receivers might be null?
         if (from.getReceiverType() != null && to.getReceiverType() != null) {
             // Only the primary does anything at the moment, so no deep copy.
-            to.getReceiverType().clearAnnotations();
+            to.getReceiverType().clearPrimaryAnnotations();
             to.getReceiverType().addAnnotations(from.getReceiverType().getAnnotations());
         }
 
@@ -171,10 +171,12 @@ public class CopyUtil {
         } else if (fromKind == INTERSECTION && toKind == INTERSECTION) {
             AnnotatedIntersectionType fromIntersec = (AnnotatedIntersectionType) from;
             AnnotatedIntersectionType toIntersec = (AnnotatedIntersectionType) to;
-            List<AnnotatedDeclaredType> fromSuperTypes = fromIntersec.directSuperTypes();
-            List<AnnotatedDeclaredType> toSuperTypes = toIntersec.directSuperTypes();
+            List<? extends AnnotatedTypeMirror> fromSuperTypes = fromIntersec.directSupertypes();
+            List<? extends AnnotatedTypeMirror> toSuperTypes = toIntersec.directSupertypes();
 
-            copyAnnotationsOnDeclaredTypeList(fromSuperTypes, toSuperTypes, copyMethod, visited);
+            // TODO(Zhiping): verify the correctness of this change
+//            copyAnnotationsOnDeclaredTypeList(fromSuperTypes, toSuperTypes, copyMethod, visited);
+            copyAnnotationsTogether(fromSuperTypes, toSuperTypes, copyMethod, visited);
 
         } else if (fromKind == UNION && toKind == UNION) {
             AnnotatedUnionType fromUnion = (AnnotatedUnionType) from;

@@ -15,7 +15,6 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.javacutil.SystemUtil;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
@@ -23,6 +22,7 @@ import checkers.inference.InferenceChecker;
 import checkers.inference.InferrableChecker;
 import checkers.inference.SlotManager;
 import checkers.inference.model.ConstraintManager;
+import org.checkerframework.org.plumelib.util.StringsPlume;
 
 /**
  * InferenceAnalysis tweaks dataflow for Checker-Framework-Inference.
@@ -53,12 +53,11 @@ public class InferenceAnalysis extends CFAnalysis {
     public InferenceAnalysis(
             InferenceChecker checker,
             GenericAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis> factory,
-            List<Pair<VariableElement, CFValue>> fieldValues,
             SlotManager slotManager,
             ConstraintManager constraintManager,
             InferrableChecker realChecker) {
 
-        super(checker, factory, fieldValues);
+        super(checker, factory);
         this.slotManager = slotManager;
         this.constraintManager = constraintManager;
         this.realChecker = realChecker;
@@ -85,7 +84,7 @@ public class InferenceAnalysis extends CFAnalysis {
             // Note: You can have 1 annotation if a primary annotation in the real type system is
             // present for a type variable use or wildcard
             throw new BugInCF("Found type in inference with the wrong number of "
-                    + "annotations. Should always have 0, 1, or 2: " + SystemUtil.join(", ",
+                    + "annotations. Should always have 0, 1, or 2: " + StringsPlume.join(", ",
                     annos));
         } else {
             return new InferenceValue((InferenceAnalysis) analysis, annos, underlyingType);
@@ -105,7 +104,7 @@ public class InferenceAnalysis extends CFAnalysis {
      */
     @Override
     public InferenceStore createCopiedStore(CFStore other) {
-        return new InferenceStore(this, other);
+        return new InferenceStore(other);
     }
 
     public SlotManager getSlotManager() {

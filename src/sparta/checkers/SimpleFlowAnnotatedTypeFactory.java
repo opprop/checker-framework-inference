@@ -276,11 +276,13 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
         return MultiGraphQualifierHierarchy.createMultiGraphQualifierHierarchy(this);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
             MultiGraphQualifierHierarchy.MultiGraphFactory factory
@@ -288,6 +290,7 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new FlowQualifierHierarchy(factory);
     }
 
+    @SuppressWarnings("deprecation")
     protected class FlowQualifierHierarchy extends MultiGraphQualifierHierarchy {
 
         public FlowQualifierHierarchy(MultiGraphFactory f) {

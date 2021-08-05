@@ -30,6 +30,7 @@ import org.checkerframework.org.plumelib.util.StringsPlume;
  * generates subtype and equality constraints between the input types based on the expected subtype
  * relationship (as described by the method signature).
  */
+@SuppressWarnings("deprecation")
 public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
     private final InferenceMain inferenceMain = InferenceMain.getInstance();
 

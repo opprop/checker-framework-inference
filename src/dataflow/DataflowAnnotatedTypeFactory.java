@@ -1,7 +1,9 @@
 package dataflow;
 
+import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -14,6 +16,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.PrimitiveType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.util.Elements;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
@@ -21,12 +24,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.MostlyNoElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.GraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory;
+import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
@@ -41,6 +43,7 @@ import com.sun.source.tree.Tree.Kind;
 import dataflow.qual.DataFlow;
 import dataflow.qual.DataFlowTop;
 import dataflow.util.DataflowUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 
 /**
  * DataflowAnnotatedTypeFactory is the type factory for Dataflow type system. It
@@ -74,12 +77,7 @@ public class DataflowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public QualifierHierarchy createQualifierHierarchy() {
-        return MultiGraphQualifierHierarchy.createMultiGraphQualifierHierarchy(this);
-    }
-
-    @Override
-    public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(MultiGraphFactory factory) {
-        return new DataFlowQualifierHierarchy(factory, DATAFLOWBOTTOM);
+        return new DataFlowQualifierHierarchy(getSupportedTypeQualifiers(), elements);
     }
 
     /**
@@ -114,10 +112,17 @@ public class DataflowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return pt;
     }
 
-    private final class DataFlowQualifierHierarchy extends GraphQualifierHierarchy {
+    private final class DataFlowQualifierHierarchy extends MostlyNoElementQualifierHierarchy {
 
-        public DataFlowQualifierHierarchy(MultiGraphFactory f, AnnotationMirror bottom) {
-            super(f, bottom);
+        /** Qualifier kind for the @{@link DataFlow} annotation. */
+        private final QualifierKind DATAFLOW_KIND;
+
+        public DataFlowQualifierHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses,
+                Elements elements
+        ) {
+            super(qualifierClasses, elements);
+            DATAFLOW_KIND = getQualifierKind(DATAFLOW);
         }
 
         /**
@@ -180,20 +185,69 @@ public class DataflowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror rhs, AnnotationMirror lhs) {
-            if (AnnotationUtils.areSameByName(rhs, DATAFLOW)
-                    && AnnotationUtils.areSameByName(lhs, DATAFLOW)) {
-                return isSubtypeWithRoots(rhs, lhs);
-                // return isSubtypeWithoutRoots(rhs, lhs);
-            } else {
-                // if (rhs != null && lhs != null)
-                if (AnnotationUtils.areSameByName(rhs, DATAFLOW)) {
-                    rhs = DATAFLOW;
-                } else if (AnnotationUtils.areSameByName(lhs, DATAFLOW)) {
-                    lhs = DATAFLOW;
-                }
-                return super.isSubtype(rhs, lhs);
+        protected boolean isSubtypeWithElements(
+                AnnotationMirror subAnno,
+                QualifierKind subKind,
+                AnnotationMirror superAnno,
+                QualifierKind superKind
+        ) {
+            if (subKind == DATAFLOW_KIND && superKind == DATAFLOW_KIND) {
+                return isSubtypeWithRoots(subAnno, superAnno);
             }
+
+            throw new TypeSystemError("Unexpected qualifiers: %s %s", subAnno, superAnno);
+        }
+
+        @Override
+        protected AnnotationMirror leastUpperBoundWithElements(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2,
+                QualifierKind lubKind
+        ) {
+            if (qualifierKind1.isBottom()) {
+                return a2;
+            } else if (qualifierKind2.isBottom()) {
+                return a1;
+            }
+
+            if (qualifierKind1 != DATAFLOW_KIND || qualifierKind2 != DATAFLOW_KIND) {
+                throw new TypeSystemError("Unexpected qualifiers: %s %s", a1, a2);
+            }
+
+            if (isSubtypeWithRoots(a1, a2)) {
+                return a2;
+            } else if (isSubtypeWithRoots(a2, a1)) {
+                return a1;
+            }
+            return DATAFLOWTOP;
+        }
+
+        @Override
+        protected AnnotationMirror greatestLowerBoundWithElements(
+                AnnotationMirror a1,
+                QualifierKind qualifierKind1,
+                AnnotationMirror a2,
+                QualifierKind qualifierKind2,
+                QualifierKind glbKind
+        ) {
+            if (qualifierKind1.isTop()) {
+                return a2;
+            } else if (qualifierKind2.isTop()) {
+                return a1;
+            }
+
+            if (qualifierKind1 != DATAFLOW_KIND || qualifierKind2 != DATAFLOW_KIND) {
+                throw new TypeSystemError("Unexpected qualifiers: %s %s", a1, a2);
+            }
+
+            if (isSubtypeWithRoots(a1, a2)) {
+                return a1;
+            } else if (isSubtypeWithRoots(a2, a1)) {
+                return a2;
+            }
+            return DATAFLOWBOTTOM;
         }
     }
 
@@ -252,7 +306,7 @@ public class DataflowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
     
     /**
-     * Simplefication algoirthm.
+     * Simplification algorithm.
      * 
      * @param type
      * @return A simplified annotation.

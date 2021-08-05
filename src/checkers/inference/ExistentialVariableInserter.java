@@ -136,10 +136,6 @@ public class ExistentialVariableInserter {
                 return;
             }
 
-            if (typeUse.getAnnotationInHierarchy(realTop) == null) {
-                typeUse.addAnnotation(realTop);
-            }
-
             if (slotManager.getSlot(typeUse).equals(potentialVariable)) {
                 final Slot declSlot = slotManager.getSlot(declaration);
 

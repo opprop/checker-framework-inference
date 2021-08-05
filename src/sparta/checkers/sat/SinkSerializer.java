@@ -24,7 +24,7 @@ public class SinkSerializer extends IFlowSerializer {
     }
 
     private boolean annoHasPermission(AnnotationMirror anno) {
-        if (AnnotationUtils.areSameByClass(anno, PolySink.class)) {
+        if (IFlowUtils.isPolySink(anno)) {
             return false; // Treat PolySink as top
         }
         Set<PFPermission> sinks = IFlowUtils.getSinks(anno);

@@ -14,11 +14,19 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
 import sparta.checkers.qual.FlowPermission;
+import sparta.checkers.qual.PolyFlow;
+import sparta.checkers.qual.PolySink;
+import sparta.checkers.qual.PolySource;
 import sparta.checkers.qual.Sink;
 import sparta.checkers.qual.Source;
 
 public class IFlowUtils {
     private static PFPermission ANY = new PFPermission(FlowPermission.ANY);
+
+    private static final String SINK_NAME = Sink.class.getCanonicalName();
+    private static final String SOURCE_NAME = Source.class.getCanonicalName();
+    private static final String POLYSINK_NAME = PolySink.class.getCanonicalName();
+    private static final String POLYSOURCE_NAME = PolySource.class.getCanonicalName();
 
     Set<PFPermission> sources;
     Set<PFPermission> sinks;
@@ -134,7 +142,7 @@ public class IFlowUtils {
 
     public static Set<PFPermission> getSinks(final AnnotatedTypeMirror type) {
         for (AnnotationMirror anno : type.getEffectiveAnnotations()) {
-            if (AnnotationUtils.areSameByClass(anno, Sink.class)) {
+            if (isSink(anno)) {
                 return getSinks(anno);
             }
         }
@@ -143,7 +151,7 @@ public class IFlowUtils {
 
     public static Set<PFPermission> getSources(final AnnotatedTypeMirror type) {
         for (AnnotationMirror anno : type.getEffectiveAnnotations()) {
-            if (AnnotationUtils.areSameByClass(anno, Source.class)) {
+            if (isSource(anno)) {
                 return getSources(anno);
             }
         }
@@ -477,4 +485,19 @@ public class IFlowUtils {
         return builder.build();
     }
 
+    public static boolean isSink(AnnotationMirror am) {
+        return AnnotationUtils.areSameByName(am, SINK_NAME);
+    }
+
+    public static boolean isPolySink(AnnotationMirror am) {
+        return AnnotationUtils.areSameByName(am, POLYSINK_NAME);
+    }
+
+    public static boolean isSource(AnnotationMirror am) {
+        return AnnotationUtils.areSameByName(am, SOURCE_NAME);
+    }
+
+    public static boolean isPolySource(AnnotationMirror am) {
+        return AnnotationUtils.areSameByName(am, POLYSOURCE_NAME);
+    }
 }

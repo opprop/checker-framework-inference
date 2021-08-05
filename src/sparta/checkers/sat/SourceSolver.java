@@ -16,7 +16,7 @@ import java.util.*;
 public class SourceSolver extends IFlowSolver {
 
     protected Set<PFPermission> getPermissionList(AnnotationMirror anno) {
-        if (AnnotationUtils.areSameByClass(anno, PolySource.class)) {
+        if (IFlowUtils.isPolySource(anno)) {
             return new HashSet<>();
         }
         return IFlowUtils.getSources(anno);

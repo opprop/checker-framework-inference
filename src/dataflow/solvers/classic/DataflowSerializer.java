@@ -19,6 +19,9 @@ import dataflow.qual.DataFlowTop;
 import dataflow.util.DataflowUtils;
 
 public class DataflowSerializer extends CnfVecIntSerializer {
+
+    private static final String DATAFLOWTOP_NAME = DataFlowTop.class.getCanonicalName();
+
     protected final String datatype;
     private final Set<Integer> touchedSlots = new HashSet<Integer>();
     private boolean isRoot = false;
@@ -37,7 +40,7 @@ public class DataflowSerializer extends CnfVecIntSerializer {
     }
 
     private boolean annoIsPresented(AnnotationMirror anno) {
-        if (AnnotationUtils.areSameByClass(anno, DataFlowTop.class)) {
+        if (AnnotationUtils.areSameByName(anno, DATAFLOWTOP_NAME)) {
             return true;
         }
         String[] datatypes;

@@ -32,6 +32,9 @@ import org.checkerframework.org.plumelib.util.StringsPlume;
  */
 @SuppressWarnings("deprecation")
 public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
+
+    private static final String VARANNOT_NAME = VarAnnot.class.getCanonicalName();
+
     private final InferenceMain inferenceMain = InferenceMain.getInstance();
 
     private final SlotManager slotMgr;
@@ -97,11 +100,11 @@ public class InferenceQualifierHierarchy extends MultiGraphQualifierHierarchy {
      * @return true if anno is an instance of @VarAnnot
      */
     public static boolean isVarAnnot(AnnotationMirror anno) {
-        if (InferenceMain.isHackMode(anno == null)) {
-            return false;
-        }
+//        if (InferenceMain.isHackMode(anno == null)) {
+//            return false;
+//        }
 
-        return AnnotationUtils.areSameByClass(anno, VarAnnot.class);
+        return AnnotationUtils.areSameByName(anno, VARANNOT_NAME);
     }
 
     /**

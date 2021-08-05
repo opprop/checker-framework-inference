@@ -378,20 +378,20 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         private boolean isSourceQualifier(AnnotationMirror anno) {
-            return AnnotationUtils.areSameByClass(anno, Source.class)
+            return IFlowUtils.isSource(anno)
                     || isPolySourceQualifier(anno);
         }
 
         private boolean isPolySourceQualifier(AnnotationMirror anno) {
-            return AnnotationUtils.areSameByClass(anno, PolySource.class);
+            return IFlowUtils.isPolySource(anno);
         }
 
         private boolean isSinkQualifier(AnnotationMirror anno) {
-            return isPolySinkQualifier(anno) || AnnotationUtils.areSameByClass(anno, Sink.class);
+            return isPolySinkQualifier(anno) || IFlowUtils.isSink(anno);
         }
 
         private boolean isPolySinkQualifier(AnnotationMirror anno) {
-            return AnnotationUtils.areSameByClass(anno, PolySink.class);
+            return IFlowUtils.isPolySink(anno);
         }
 
     }

@@ -239,7 +239,7 @@ public class DefaultSlotManager implements SlotManager {
 
             } else {
                 for (Class<? extends Annotation> realAnno : realQualifiers) {
-                    if (AnnotationUtils.areSameByClass(annotationMirror, realAnno)) {
+                    if (InferenceMain.getInstance().getRealTypeFactory().areSameByClass(annotationMirror, realAnno)) {
                         return createConstantSlot(annotationMirror);
                     }
                 }

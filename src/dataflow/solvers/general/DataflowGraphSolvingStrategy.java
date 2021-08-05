@@ -40,6 +40,8 @@ import dataflow.util.DataflowUtils;
 
 public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
 
+    private static final String DATAFLOW_NAME = DataFlow.class.getCanonicalName();
+
     protected ProcessingEnvironment processingEnvironment;
 
     public DataflowGraphSolvingStrategy(SolverFactory solverFactory) {
@@ -96,7 +98,7 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
                 for (Map.Entry<Integer, AnnotationMirror> entry : inferenceSolutionMap.entrySet()) {
                     Integer id = entry.getKey();
                     AnnotationMirror dataflowAnno = entry.getValue();
-                    if (AnnotationUtils.areSameByClass(dataflowAnno, DataFlow.class)) {
+                    if (AnnotationUtils.areSameByName(dataflowAnno, DATAFLOW_NAME)) {
                         Set<AnnotationMirror> datas = dataflowResults.get(id);
                         if (datas == null) {
                             datas = AnnotationUtils.createAnnotationSet();

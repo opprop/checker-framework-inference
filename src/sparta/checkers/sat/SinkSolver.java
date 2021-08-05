@@ -18,7 +18,7 @@ import java.util.Set;
 public class SinkSolver extends IFlowSolver {
     @Override
     protected Set<PFPermission> getPermissionList(AnnotationMirror anno) {
-        if (AnnotationUtils.areSameByClass(anno, PolySink.class)) {
+        if (IFlowUtils.isPolySink(anno)) {
             return new HashSet<>();
         }
         return IFlowUtils.getSinks(anno);

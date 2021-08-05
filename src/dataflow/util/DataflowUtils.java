@@ -33,6 +33,7 @@ public class DataflowUtils {
         return getDataflowValue(type, "typeNameRoots");
     }
 
+    @SuppressWarnings("deprecation")
     private static String[] getDataflowValue(AnnotationMirror type, String valueName) {
         List<String> allTypesList = AnnotationUtils.getElementValueArray(type, valueName, String.class,
                 true);

@@ -116,6 +116,7 @@ import nninf.qual.KeyFor;
     /**
      * Returns true if the key is a member of the specified map
      */
+    @SuppressWarnings("deprecation")
     private boolean keyForInMap(ExpressionTree key,
             String mapName) {
         AnnotatedTypeMirror keyForType = keyForFactory.getAnnotatedType(key);
@@ -129,6 +130,7 @@ import nninf.qual.KeyFor;
         return maps.contains(mapName);
     }
 
+    @SuppressWarnings("deprecation")
     private boolean keyForInMap(ExpressionTree key,
             Element mapElement, TreePath path) {
         AnnotatedTypeMirror keyForType = keyForFactory.getAnnotatedType(key);

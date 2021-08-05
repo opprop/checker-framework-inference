@@ -158,6 +158,7 @@ public class IFlowUtils {
         return new TreeSet<PFPermission>();
     }
 
+    @SuppressWarnings("deprecation")
     public static Set<PFPermission> getSinks(final AnnotationMirror am) {
         if (am == null) {
             return new TreeSet<PFPermission>();
@@ -172,6 +173,7 @@ public class IFlowUtils {
         return convertToAnySink(sinkFlowPermissions, false);
     }
 
+    @SuppressWarnings("deprecation")
     public static Set<PFPermission> getSources(final AnnotationMirror am) {
         if (am == null) {
             return new TreeSet<PFPermission>();

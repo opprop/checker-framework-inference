@@ -122,6 +122,7 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
 
+    @SuppressWarnings("deprecation")
     @Override
     protected TreeAnnotator createTreeAnnotator() {
 

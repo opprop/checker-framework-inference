@@ -185,11 +185,13 @@ public class ExistentialVariableInserter {
 
             // component types will not have the potentialVarAnno on them, so instead copy over other annotations
             // from the declared type
-            AnnotatedTypeReplacer.replace(declaration.getComponentType(), typeUse.getComponentType());
+            InferenceMain.getInstance().getRealTypeFactory().replaceAnnotations(
+                    declaration.getComponentType(),
+                    typeUse.getComponentType()
+            );
             return null;
         }
 
-        @SuppressWarnings("deprecation")
         @Override
         public Void visitDeclared_Declared(AnnotatedDeclaredType typeUse, AnnotatedDeclaredType declaration, Void v) {
             if (visited.contains(typeUse, declaration)) {
@@ -211,7 +213,7 @@ public class ExistentialVariableInserter {
                 AnnotatedTypeMirror nextDecl = declArgs.next();
                 if (nextUse != nextDecl) { // these two can be the same when a recursive type parameter uses
                                            // itself (e.g.  <T extends List<T>>
-                    AnnotatedTypeReplacer.replace(nextDecl, nextUse);
+                    InferenceMain.getInstance().getRealTypeFactory().replaceAnnotations(nextDecl, nextUse);
                 }
             }
 

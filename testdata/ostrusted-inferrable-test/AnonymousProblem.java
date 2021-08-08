@@ -11,7 +11,8 @@ public class AnonymousProblem {
     @SuppressWarnings("cast.unsafe.constructor.invocation")
     SimpleFileVisitor s = new SimpleFileVisitor<String>(){};
 
-    OutterI.InnerI<Object> f = new OutterI.InnerI<Object>() {};
+    // TODO(Zhiping): need to create constraints/slots for instantiation
+    OutterI.InnerI<Object> f = new OutterI.@OsTrusted InnerI<Object>() {};
 
     A a = new @OsUntrusted A() {};
 

@@ -261,11 +261,6 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new InferenceTypeVariableSubstitutor(this, existentialInserter);
     }
 
-    @Override
-    protected DependentTypesHelper createDependentTypesHelper() {
-        return null;
-    }
-
     /**
      *  Copies the primary annotations on the use type "type" onto each "supertype".
      *  E.g. for a call:

@@ -24,7 +24,11 @@ public class NninfChecker extends BaseInferrableChecker {
         NULLABLE = AnnotationBuilder.fromClass(elements, Nullable.class);
         NONNULL  = AnnotationBuilder.fromClass(elements, NonNull.class);
         UNKNOWNKEYFOR = AnnotationBuilder.fromClass(elements, UnknownKeyFor.class);
-        KEYFOR = AnnotationBuilder.fromClass(elements, KeyFor.class);
+        KEYFOR = AnnotationBuilder.fromClass(
+                elements,
+                KeyFor.class,
+                AnnotationBuilder.elementNamesValues("value", new String[0])
+        );
 
         super.initChecker();
     }

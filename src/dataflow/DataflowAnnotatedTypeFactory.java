@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -62,11 +63,14 @@ public class DataflowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     private final Map<String, TypeMirror> typeNamesMap = new HashMap<String, TypeMirror>();
 
+    public final DataflowUtils dataflowUtils;
+
     public DataflowAnnotatedTypeFactory(BaseTypeChecker checker) {
         super(checker);
         DATAFLOW = AnnotationBuilder.fromClass(elements, DataFlow.class);
         DATAFLOWBOTTOM = DataflowUtils.createDataflowAnnotation(DataflowUtils.convert(""), processingEnv);
         DATAFLOWTOP = AnnotationBuilder.fromClass(elements, DataFlowTop.class);
+        dataflowUtils = new DataflowUtils(processingEnv);
         postInit();
     }
 
@@ -135,18 +139,14 @@ public class DataflowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          */
         private boolean isSubtypeWithRoots(AnnotationMirror rhs, AnnotationMirror lhs) {
 
-            Set<String> rTypeNamesSet = new HashSet<String>(Arrays.asList(DataflowUtils
-                    .getTypeNames(rhs)));
-            Set<String> lTypeNamesSet = new HashSet<String>(Arrays.asList(DataflowUtils
-                    .getTypeNames(lhs)));
-            Set<String> rRootsSet = new HashSet<String>(Arrays.asList(DataflowUtils
-                    .getTypeNameRoots(rhs)));
-            Set<String> lRootsSet = new HashSet<String>(Arrays.asList(DataflowUtils
-                    .getTypeNameRoots(lhs)));
-            Set<String> combinedTypeNames = new HashSet<String>();
+            Set<String> rTypeNamesSet = new HashSet<>(dataflowUtils.getTypeNames(rhs));
+            Set<String> lTypeNamesSet = new HashSet<>(dataflowUtils.getTypeNames(lhs));
+            Set<String> rRootsSet = new HashSet<>(dataflowUtils.getTypeNameRoots(rhs));
+            Set<String> lRootsSet = new HashSet<>(dataflowUtils.getTypeNameRoots(lhs));
+            Set<String> combinedTypeNames = new HashSet<>();
             combinedTypeNames.addAll(rTypeNamesSet);
             combinedTypeNames.addAll(lTypeNamesSet);
-            Set<String> combinedRoots = new HashSet<String>();
+            Set<String> combinedRoots = new HashSet<>();
             combinedRoots.addAll(rRootsSet);
             combinedRoots.addAll(lRootsSet);
 
@@ -173,15 +173,9 @@ public class DataflowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
          * @return true is rhs is subtype of lhs, otherwise return false.
          */
         private boolean isSubtypeWithoutRoots(AnnotationMirror rhs, AnnotationMirror lhs) {
-            Set<String> rTypeNamesSet = new HashSet<String>(Arrays.asList(DataflowUtils
-                    .getTypeNames(rhs)));
-            Set<String> lTypeNamesSet = new HashSet<String>(Arrays.asList(DataflowUtils
-                    .getTypeNames(lhs)));
-            if (lTypeNamesSet.containsAll(rTypeNamesSet)) {
-                return true;
-            } else {
-                return false;
-            }
+            Set<String> rTypeNamesSet = new HashSet<>(dataflowUtils.getTypeNames(rhs));
+            Set<String> lTypeNamesSet = new HashSet<>(dataflowUtils.getTypeNames(lhs));
+            return lTypeNamesSet.containsAll(rTypeNamesSet);
         }
 
         @Override
@@ -312,13 +306,13 @@ public class DataflowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return A simplified annotation.
      */
     public AnnotationMirror refineDataflow(AnnotationMirror type) {
-        String[] typeNameRoots = DataflowUtils.getTypeNameRoots(type);
+        List<String> typeNameRoots = dataflowUtils.getTypeNameRoots(type);
         Set<String> refinedRoots = new HashSet<String>();
 
-        if (typeNameRoots.length == 1) {
-            refinedRoots.add(typeNameRoots[0]);
-        } else if (typeNameRoots.length != 0) {
-            List<String> rootsList = new ArrayList<>(Arrays.asList(typeNameRoots));
+        if (typeNameRoots.size() == 1) {
+            refinedRoots.add(typeNameRoots.get(0));
+        } else if (typeNameRoots.size() != 0) {
+            List<String> rootsList = new ArrayList<>(typeNameRoots);
             while (rootsList.size() != 0) {
                 TypeMirror decType = getTypeMirror(rootsList.get(0));
                 if (!isComparable(decType, rootsList)) {
@@ -328,12 +322,12 @@ public class DataflowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
         }
 
-        String[] typeNames = DataflowUtils.getTypeNames(type);
-        Arrays.sort(typeNames);
-        Set<String> refinedtypeNames = new HashSet<String>();
+        List<String> typeNames = dataflowUtils.getTypeNames(type);
+        Collections.sort(typeNames);
+        Set<String> refinedtypeNames = new HashSet<>();
 
         if (refinedRoots.size() == 0) {
-            refinedtypeNames = new HashSet<String>(Arrays.asList(typeNames));
+            refinedtypeNames = new HashSet<>(typeNames);
             return DataflowUtils.createDataflowAnnotation(refinedtypeNames, processingEnv);
         } else {
             for (String typeName : typeNames) {

@@ -1,11 +1,13 @@
 package checkers.inference.solver.constraintgraph;
 
+import dataflow.DataflowAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -132,8 +134,10 @@ public class GraphBuilder {
                             continue;
                         } else {
                             if (InferenceMain.getInstance().getVisitor() instanceof DataflowVisitor) {
-                                String[] typeNames = DataflowUtils.getTypeNames(next.getValue());
-                                if (typeNames.length == 1 && typeNames[0].length() == 0) {
+                                DataflowAnnotatedTypeFactory typeFactory = (DataflowAnnotatedTypeFactory)
+                                        InferenceMain.getInstance().getRealTypeFactory();
+                                List<String> typeNames = typeFactory.dataflowUtils.getTypeNames(next.getValue());
+                                if (typeNames.size() == 1 && typeNames.get(0).isEmpty()) {
                                     continue;
                                 }
                             }

@@ -60,6 +60,8 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     final QualifierDefaults polyFlowDefaults = new QualifierDefaults(elements, this);
     final QualifierDefaults polyFlowReceiverDefaults = new QualifierDefaults(elements, this);
 
+    public final IFlowUtils flowUtils;
+
     /**
      * Constructs a factory from the given {@link ProcessingEnvironment}
      * instance and syntax tree root. (These parameters are required so that the
@@ -84,6 +86,9 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         ANYSINK = buildAnnotationMirrorFlowPermission(Sink.class, FlowPermission.ANY.toString());
         POLYSOURCE = buildAnnotationMirror(PolySource.class);
         POLYSINK = buildAnnotationMirror(PolySink.class);
+
+        flowUtils = new IFlowUtils(this.processingEnv);
+
         this.postInit();
     }
 
@@ -121,8 +126,6 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
 
-
-    @SuppressWarnings("deprecation")
     @Override
     protected TreeAnnotator createTreeAnnotator() {
 
@@ -147,9 +150,14 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 boolean empty = true;
                 for (AnnotationMirror am: defaultedSet) {
-                   List<String> s = AnnotationUtils.getElementValueArray(am, "value",
-                            String.class, true);
-                   empty = s.isEmpty() && empty;
+                    List<String> s = Collections.emptyList();
+                    if (IFlowUtils.isSink(am)) {
+                        s = flowUtils.getRawSinks(am);
+                    } else if (IFlowUtils.isSource(am)) {
+                        s = flowUtils.getRawSources(am);
+                    }
+
+                    empty = s.isEmpty() && empty;
                 }
 
                 if (empty) {
@@ -338,27 +346,27 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return true;
             } else if (isPolySourceQualifier(supertype) && isSourceQualifier(subtype)) {
                 // If super is poly, only bottom is a subtype
-                return IFlowUtils.getSources(subtype).isEmpty();
+                return getSources(subtype).isEmpty();
             } else if (isSourceQualifier(supertype) && isPolySourceQualifier(subtype)) {
                 // if sub is poly, only top is a supertype
-                return IFlowUtils.getSources(supertype).contains(PFPermission.ANY);
+                return getSources(supertype).contains(PFPermission.ANY);
             } else if (isSourceQualifier(supertype) && isSourceQualifier(subtype)) {
                 // Check the set
-                Set<PFPermission> superset = IFlowUtils.getSources(supertype);
-                Set<PFPermission> subset = IFlowUtils.getSources(subtype);
+                Set<PFPermission> superset = getSources(supertype);
+                Set<PFPermission> subset = getSources(subtype);
                 return isSuperSet(superset, subset);
             } else if (isPolySinkQualifier(supertype) && isPolySinkQualifier(subtype)) {
                 return true;
             } else if (isPolySinkQualifier(supertype) && isSinkQualifier(subtype)) {
                 // If super is poly, only bottom is a subtype
-                return IFlowUtils.getSinks(subtype).contains(PFPermission.ANY);
+                return getSinks(subtype).contains(PFPermission.ANY);
             } else if (isSinkQualifier(supertype) && isPolySinkQualifier(subtype)) {
                 // if sub is poly, only top is a supertype
-                return IFlowUtils.getSinks(supertype).isEmpty();
+                return getSinks(supertype).isEmpty();
             } else if (isSinkQualifier(supertype) && isSinkQualifier(subtype)) {
                 // Check the set (sinks are backward)
-                Set<PFPermission> subset = IFlowUtils.getSinks(supertype);
-                Set<PFPermission> superset = IFlowUtils.getSinks(subtype);
+                Set<PFPermission> subset = getSinks(supertype);
+                Set<PFPermission> superset = getSinks(subtype);
                 return isSuperSet(superset, subset);
             } else {
                 // annotations should either both be sources or sinks.
@@ -395,5 +403,18 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return IFlowUtils.isPolySink(anno);
         }
 
+        private Set<PFPermission> getSinks(AnnotationMirror anno) {
+            if (IFlowUtils.isSink(anno)) {
+                return flowUtils.getSinks(anno);
+            }
+            return Collections.emptySet();
+        }
+
+        private Set<PFPermission> getSources(AnnotationMirror anno) {
+            if (IFlowUtils.isSource(anno)) {
+                return flowUtils.getSources(anno);
+            }
+            return Collections.emptySet();
+        }
     }
 }

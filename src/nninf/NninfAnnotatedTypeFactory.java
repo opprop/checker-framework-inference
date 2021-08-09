@@ -4,6 +4,7 @@ import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.Tree;
+import nninf.qual.KeyFor;
 import org.checkerframework.checker.nullness.KeyForAnnotatedTypeFactory;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
@@ -23,12 +24,17 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 
 public class NninfAnnotatedTypeFactory extends GameAnnotatedTypeFactory {
     NninfChecker checker;
     MapGetHeuristics mapGetHeuristics;
+
+    /** The KeyFor.value element/field. */
+    public final ExecutableElement keyForValueElement =
+            TreeUtils.getMethod(KeyFor.class, "value", processingEnv);
 
     public NninfAnnotatedTypeFactory(NninfChecker checker) {
         super(checker);
@@ -73,6 +79,7 @@ public class NninfAnnotatedTypeFactory extends GameAnnotatedTypeFactory {
         return mType;
     }
 
+    // TODO(Zhiping): try overriding getselftype
     /**
      * Determine whether the tree dereferences the most enclosing "this" object. That is, we have an
      * expression like "f.g" and want to know whether it is an access "this.f.g". Returns false if f

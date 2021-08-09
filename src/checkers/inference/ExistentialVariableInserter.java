@@ -172,7 +172,6 @@ public class ExistentialVariableInserter {
                                    + "type2=" + type2 + "\n");
         }
 
-        @SuppressWarnings("deprecation")
         @Override
         public Void visitArray_Array(AnnotatedArrayType typeUse, AnnotatedArrayType declaration, Void aVoid) {
             if (visited.contains(typeUse, declaration)) {

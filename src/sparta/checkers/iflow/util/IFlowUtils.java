@@ -6,13 +6,16 @@ import org.checkerframework.javacutil.AnnotationUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 
+import org.checkerframework.javacutil.TreeUtils;
 import sparta.checkers.qual.FlowPermission;
 import sparta.checkers.qual.PolyFlow;
 import sparta.checkers.qual.PolySink;
@@ -28,119 +31,18 @@ public class IFlowUtils {
     private static final String POLYSINK_NAME = PolySink.class.getCanonicalName();
     private static final String POLYSOURCE_NAME = PolySource.class.getCanonicalName();
 
-    Set<PFPermission> sources;
-    Set<PFPermission> sinks;
+    /** The Sink.value element/field. */
+    private final ExecutableElement sinkValueElement;
 
-    public IFlowUtils(Set<PFPermission> sources, Set<PFPermission> sinks) {
-        this.sources = sources;
-        this.sinks = sinks;
+    /** The Source.value element/field. */
+    private final ExecutableElement sourceValueElement;
+
+    public IFlowUtils(ProcessingEnvironment processingEnv) {
+        sinkValueElement = TreeUtils.getMethod(Sink.class, "value", processingEnv);
+        sourceValueElement = TreeUtils.getMethod(Source.class, "value", processingEnv);
     }
 
-    public IFlowUtils(PFPermission source, Set<PFPermission> sinks) {
-        this.sources = new TreeSet<PFPermission>();
-        if (source != null) {
-            sources.add(source);
-        }
-        this.sinks = convertToAnySink(sinks, false);
-    }
-
-    public IFlowUtils(Set<PFPermission> sources, PFPermission sink) {
-        this.sources = convertToAnySource(sources, false);
-        this.sinks = new TreeSet<PFPermission>();
-        sinks.add(sink);
-    }
-
-    public IFlowUtils(AnnotatedTypeMirror atm) {
-        this.sinks = getSinks(atm);
-        this.sources = getSources(atm);
-    }
-
-    public IFlowUtils() {
-        this.sinks = new TreeSet<PFPermission>();
-        this.sources = new TreeSet<PFPermission>();
-    }
-
-    public IFlowUtils(PFPermission source) {
-        this.sinks = new TreeSet<PFPermission>();
-        this.sources = new TreeSet<PFPermission>();
-        sources.add(source);
-    }
-
-    @Override
-    public String toString() {
-        StringBuffer flow = new StringBuffer();
-        if (sources.isEmpty()) {
-            flow.append(" {}");
-        } else {
-            flow.append(sources);
-        }
-        flow.append("->");
-        if (sinks.isEmpty()) {
-            flow.append(" {}");
-        } else {
-            flow.append(sinks);
-        }
-        String flowstring = flow.toString().replace('[', ' ');
-        flowstring = flowstring.toString().replace(']', ' ');
-        return flowstring;
-    }
-
-    public void addSink(PFPermission sink) {
-        sinks.add(sink);
-    }
-
-    public boolean hasSink() {
-        return !sinks.isEmpty();
-    }
-
-    public void addSink(Set<PFPermission> sinks) {
-        this.sinks.addAll(convertToAnySink(sinks, false));
-
-    }
-
-    public void addSource(PFPermission source) {
-        sources.add(source);
-    }
-    public void addSource(Set<PFPermission> source) {
-        this.sources.addAll(convertToAnySource(source, false));
-    }
-
-    public boolean isBottom() {
-        return sinks.contains(ANY) && sources.isEmpty();
-    }
-
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((sinks == null) ? 0 : sinks.hashCode());
-        result = prime * result + ((sources == null) ? 0 : sources.hashCode());
-        return result;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        IFlowUtils other = (IFlowUtils) obj;
-        if (sinks == null) {
-            if (other.sinks != null)
-                return false;
-        } else if (!sinks.equals(other.sinks))
-            return false;
-        if (sources == null) {
-            if (other.sources != null)
-                return false;
-        } else if (!sources.equals(other.sources))
-            return false;
-        return true;
-    }
-
-    public static Set<PFPermission> getSinks(final AnnotatedTypeMirror type) {
+    public Set<PFPermission> getSinks(final AnnotatedTypeMirror type) {
         for (AnnotationMirror anno : type.getEffectiveAnnotations()) {
             if (isSink(anno)) {
                 return getSinks(anno);
@@ -149,7 +51,7 @@ public class IFlowUtils {
         return new TreeSet<PFPermission>();
     }
 
-    public static Set<PFPermission> getSources(final AnnotatedTypeMirror type) {
+    public Set<PFPermission> getSources(final AnnotatedTypeMirror type) {
         for (AnnotationMirror anno : type.getEffectiveAnnotations()) {
             if (isSource(anno)) {
                 return getSources(anno);
@@ -158,13 +60,12 @@ public class IFlowUtils {
         return new TreeSet<PFPermission>();
     }
 
-    @SuppressWarnings("deprecation")
-    public static Set<PFPermission> getSinks(final AnnotationMirror am) {
+    public Set<PFPermission> getSinks(final AnnotationMirror am) {
         if (am == null) {
             return new TreeSet<PFPermission>();
         }
-        List<String> sinks = AnnotationUtils.getElementValueArray(am, "value",
-                String.class, true);
+
+        List<String> sinks = getRawSinks(am);
         Set<PFPermission> sinkFlowPermissions = new TreeSet<PFPermission>();
         for (String permissionString : sinks) {
             sinkFlowPermissions.add(PFPermission.convertStringToPFPermission(permissionString));
@@ -173,20 +74,26 @@ public class IFlowUtils {
         return convertToAnySink(sinkFlowPermissions, false);
     }
 
-    @SuppressWarnings("deprecation")
-    public static Set<PFPermission> getSources(final AnnotationMirror am) {
+    public List<String> getRawSinks(final AnnotationMirror am) {
+        return AnnotationUtils.getElementValueArray(am, sinkValueElement, String.class, Collections.emptyList());
+    }
+
+    public Set<PFPermission> getSources(final AnnotationMirror am) {
         if (am == null) {
             return new TreeSet<PFPermission>();
         }
 
-        List<String> sources = AnnotationUtils.getElementValueArray(am,
-                "value", String.class, true);
+        List<String> sources = getRawSources(am);
         Set<PFPermission> sourceFlowPermissions = new TreeSet<PFPermission>();
         for (String permissionString : sources) {
             sourceFlowPermissions.add(PFPermission.convertStringToPFPermission(permissionString));
         }
 
         return convertToAnySource(sourceFlowPermissions, false);
+    }
+
+    public List<String> getRawSources(final AnnotationMirror am) {
+        return AnnotationUtils.getElementValueArray(am, sourceValueElement, String.class, Collections.emptyList());
     }
 
     /**
@@ -300,12 +207,13 @@ public class IFlowUtils {
         return retSet;
     }
 
-    public static boolean isTop(AnnotatedTypeMirror atm) {
+    public boolean isTop(AnnotatedTypeMirror atm) {
         Set<PFPermission> sources = getSources(atm);
         Set<PFPermission> sinks = getSinks(atm);
         return sources.contains(ANY) && sinks.isEmpty();
     }
-    public static boolean isBottom(AnnotatedTypeMirror atm) {
+
+    public boolean isBottom(AnnotatedTypeMirror atm) {
         Set<PFPermission> sources = getSources(atm);
         Set<PFPermission> sinks = getSinks(atm);
         return sinks.contains(ANY) && sources.isEmpty();
@@ -317,7 +225,7 @@ public class IFlowUtils {
      * @param a2 AnnotationMirror, could be {ANY}
      * @return intersection of a1 and a2
      */
-    public static Set<PFPermission> intersectSources(AnnotationMirror a1, AnnotationMirror a2) {
+    public Set<PFPermission> intersectSources(AnnotationMirror a1, AnnotationMirror a2) {
         final Set<PFPermission> a1Set = getSources(a1);
         final Set<PFPermission> a2Set = getSources(a2);
         return intersectSources(a1Set, a2Set);
@@ -350,7 +258,7 @@ public class IFlowUtils {
      * @param a2 AnnotationMirror, could be {ANY}
      * @return intersection of a1 and a2
      */
-    public static Set<PFPermission> intersectSinks(AnnotationMirror a1, AnnotationMirror a2){
+    public Set<PFPermission> intersectSinks(AnnotationMirror a1, AnnotationMirror a2){
         final Set<PFPermission> a1Set = getSinks(a1);
         final Set<PFPermission> a2Set = getSinks(a2);
         return intersectSinks(a1Set, a2Set);
@@ -380,7 +288,7 @@ public class IFlowUtils {
      * @param a2
      * @return
      */
-    public static Set<PFPermission> unionSources(AnnotationMirror a1, AnnotationMirror a2){
+    public Set<PFPermission> unionSources(AnnotationMirror a1, AnnotationMirror a2){
         return unionSources(getSources(a1), getSources(a2));
     }
     public static Set<PFPermission> unionSources(Set<PFPermission> a1, Set<PFPermission> a2){
@@ -397,7 +305,7 @@ public class IFlowUtils {
      * @param a2
      * @return
      */
-    public static Set<PFPermission> unionSinks(AnnotationMirror a1, AnnotationMirror a2){
+    public Set<PFPermission> unionSinks(AnnotationMirror a1, AnnotationMirror a2){
         return unionSinks(getSinks(a1), getSinks(a2));
     }
     /**

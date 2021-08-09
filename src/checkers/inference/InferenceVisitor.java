@@ -63,6 +63,7 @@ import org.checkerframework.org.plumelib.util.ArraysPlume;
  *  That is, the methods from BaseTypeVisiotr should be migrated here and InferenceVisitor
  *  should replace it in the Visitor hierarchy.
  */
+// TODO(Zhiping): new logics from BaseTypeVisiotr should be migrated here
 public class InferenceVisitor<Checker extends InferenceChecker,
         Factory extends BaseAnnotatedTypeFactory>
         extends BaseTypeVisitor<Factory> {

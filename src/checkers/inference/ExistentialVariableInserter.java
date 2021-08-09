@@ -105,7 +105,7 @@ public class ExistentialVariableInserter {
     public void insert(final Slot potentialVariable, final AnnotatedTypeMirror typeUse,
                        final AnnotatedTypeMirror declaration,  boolean mustExist) {
         if (potentialVariable == null) {
-            throw new BugInCF("Bad type variable slot: slot=" + potentialVariable);
+            throw new BugInCF("Bad type variable slot: slot is null");
         }
 
         // propagates the potentialVariable in all of the locations that will be replaced by an ExistentialVariable

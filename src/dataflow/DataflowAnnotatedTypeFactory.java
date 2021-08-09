@@ -255,12 +255,10 @@ public class DataflowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         String[] typeNameRoots = DataflowUtils.getTypeNameRoots(type);
         Set<String> refinedRoots = new HashSet<String>();
 
-        if (typeNameRoots.length == 0) {
-
-        } else if (typeNameRoots.length == 1) {
+        if (typeNameRoots.length == 1) {
             refinedRoots.add(typeNameRoots[0]);
-        } else {
-            List<String> rootsList = new ArrayList<String>(Arrays.asList(typeNameRoots));
+        } else if (typeNameRoots.length != 0) {
+            List<String> rootsList = new ArrayList<>(Arrays.asList(typeNameRoots));
             while (rootsList.size() != 0) {
                 TypeMirror decType = getTypeMirror(rootsList.get(0));
                 if (!isComparable(decType, rootsList)) {
@@ -279,7 +277,7 @@ public class DataflowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return DataflowUtils.createDataflowAnnotation(refinedtypeNames, processingEnv);
         } else {
             for (String typeName : typeNames) {
-                if (typeName == "") {
+                if (typeName.isEmpty()) {
                     continue;
                 }
                 TypeMirror decType = getTypeMirror(typeName);
@@ -312,7 +310,7 @@ public class DataflowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private boolean isComparable(TypeMirror decType, List<String> rootsList) {
         for (int i = 1; i < rootsList.size(); i++) {
-            if (rootsList.get(i) == "") {
+            if (rootsList.get(i).isEmpty()) {
                 continue;
             }
             TypeMirror comparedDecType = getTypeMirror(rootsList.get(i));
@@ -330,7 +328,7 @@ public class DataflowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     private boolean shouldPresent(TypeMirror decType, Set<String> refinedRoots) {
         for (String refinedRoot : refinedRoots) {
-            if (refinedRoot == "") {
+            if (refinedRoot.isEmpty()) {
                 continue;
             }
             TypeMirror comparedDecType = getTypeMirror(refinedRoot);

@@ -12,6 +12,7 @@ import java.util.Set;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
@@ -178,6 +179,12 @@ public class NninfVisitor extends InferenceVisitor<NninfChecker, BaseAnnotatedTy
     @Override
     protected void checkConstructorInvocation(AnnotatedDeclaredType dt,
             AnnotatedExecutableType constructor, NewClassTree src) {
+    }
+
+    @Override
+    protected void checkConstructorResult(
+            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
+        // Nothing to check
     }
 
     /** Check for null dereferencing */

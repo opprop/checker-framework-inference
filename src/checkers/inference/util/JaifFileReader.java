@@ -156,12 +156,10 @@ public class JaifFileReader implements Iterable<JaifPackage> {
 
                 }
 
-                if (line == null) {
-                    addBlocks(lineBuffer, blockBuffer);
-                    next = new JaifPackage(nextPackageName, blockBuffer);
-                    endOfStream = true;
-                    close();
-                }
+                addBlocks(lineBuffer, blockBuffer);
+                next = new JaifPackage(nextPackageName, blockBuffer);
+                endOfStream = true;
+                close();
             }
 
             // return null if none-remain

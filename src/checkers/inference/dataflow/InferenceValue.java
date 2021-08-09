@@ -123,17 +123,37 @@ public class InferenceValue extends CFValue {
         if (thisSlot.isMergedTo(otherSlot)) {
             return other;
         }
+
         if (otherSlot.isMergedTo(thisSlot)) {
             return this;
         }
+
         if (thisSlot instanceof RefinementVariableSlot
                 && ((RefinementVariableSlot) thisSlot).getRefined().equals(otherSlot)) {
             return this;
         }
+
         if (otherSlot instanceof RefinementVariableSlot
                 && ((RefinementVariableSlot) otherSlot).getRefined().equals(thisSlot)) {
             return other;
         }
+
+        if (thisSlot instanceof RefinementVariableSlot
+                && otherSlot instanceof RefinementVariableSlot
+                && ((RefinementVariableSlot) thisSlot).getRefined().equals(((RefinementVariableSlot) otherSlot).getRefined())) {
+            // This happens when a local variable is declared with initializer, and is reassigned afterwards. E.g.
+            //      Object obj = null;
+            //      obj = new Object();
+            //      return obj;
+            // Suppose RefinementVar(1) is created at variable declaration, RefinementVar(2) is created at re-assignment.
+            // Then at the return point, when getting the most specific type of obj,
+            // "thisSlot" is RefinementVar(1), coming from "getValueFromFactory".
+            // "otherSlot" is RefinementVar(2), coming from the store value.
+            // The store value is more precise, so we choose "other" as the most specific type.
+            assert thisSlot.getId() <= otherSlot.getId();
+            return other;
+        }
+
         if (thisSlot instanceof ComparisonVariableSlot
                 && ((ComparisonVariableSlot) thisSlot).getRefined().equals(otherSlot)) {
             return this;
@@ -151,7 +171,9 @@ public class InferenceValue extends CFValue {
                 }
             }
         }
+
         if (otherSlot instanceof VariableSlot) {
+            // Same as above
             for (VariableSlot slot : ((VariableSlot) otherSlot).getRefinedToSlots()) {
                 if (slot.isMergedTo(thisSlot)) {
                     return this;

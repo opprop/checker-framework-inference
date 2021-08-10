@@ -8,7 +8,6 @@ import nninf.qual.KeyFor;
 import org.checkerframework.checker.nullness.KeyForAnnotatedTypeFactory;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 
 import java.lang.annotation.Annotation;
 import java.util.HashSet;

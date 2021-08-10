@@ -6,6 +6,7 @@ import checkers.inference.model.LubVariableSlot;
 import checkers.inference.model.Slot;
 import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.InferenceUtil;
+import org.checkerframework.com.google.common.collect.ImmutableMap;
 import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
@@ -52,13 +53,13 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
     @Override
     protected Map<QualifierKind, AnnotationMirror> createTopsMap() {
         QualifierKind varAnnotKind = qualifierKindHierarchy.getQualifierKind(VARANNOT_NAME);
-        return Map.of(varAnnotKind, findTopVarAnnot());
+        return ImmutableMap.of(varAnnotKind, findTopVarAnnot());
     }
 
     @Override
     protected Map<QualifierKind, AnnotationMirror> createBottomsMap() {
         QualifierKind varAnnotKind = qualifierKindHierarchy.getQualifierKind(VARANNOT_NAME);
-        return Map.of(varAnnotKind, findBottomVarAnnot());
+        return ImmutableMap.of(varAnnotKind, findBottomVarAnnot());
     }
 
     /**

@@ -219,18 +219,9 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return new InferenceTypeHierarchy(checker, getQualifierHierarchy(), varAnnot);
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return MultiGraphQualifierHierarchy.createMultiGraphQualifierHierarchy(this);
-    }
-
-    @SuppressWarnings("deprecation")
-    @Override
-    public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
-            MultiGraphQualifierHierarchy.MultiGraphFactory factory
-    ) {
-        return new InferenceQualifierHierarchy(factory);
+        return new InferenceQualifierHierarchy(getSupportedTypeQualifiers(), elements);
     }
 
     @Override

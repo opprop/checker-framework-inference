@@ -78,7 +78,7 @@ public class NninfAnnotatedTypeFactory extends GameAnnotatedTypeFactory {
         return mType;
     }
 
-    // TODO(Zhiping): try overriding getselftype
+    // TODO(Zhiping): try overriding getselftype and remove these deprecated methods
     /**
      * Determine whether the tree dereferences the most enclosing "this" object. That is, we have an
      * expression like "f.g" and want to know whether it is an access "this.f.g". Returns false if f

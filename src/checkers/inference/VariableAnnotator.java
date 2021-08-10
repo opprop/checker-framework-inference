@@ -631,6 +631,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         case CLASS:
         case INTERFACE:
         case ENUM: // TODO: MORE TO DO HERE?
+            addPrimaryVariable(adt, tree);
             handleClassDeclaration(adt, (ClassTree) tree);
             break;
 
@@ -819,7 +820,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         visitTogether(classType.getTypeArguments(), classTree.getTypeParameters());
 
         Slot varSlot = getOrCreateDeclBound(classType);
-        classType.addAnnotation(slotManager.getAnnotation(varSlot));
+        classType.replaceAnnotation(slotManager.getAnnotation(varSlot));
 
         // before we were relying on trees but the ClassTree has it's type args erased
         // when the compiler moves on to the next class

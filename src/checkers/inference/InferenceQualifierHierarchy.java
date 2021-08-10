@@ -362,11 +362,7 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
             return tops.iterator().next();
         }
 
-        if (InferenceMain.isHackMode()) {
-            return inferenceMain.getRealTypeFactory().getQualifierHierarchy().getTopAnnotation(am);
-        } else {
-            throw new BugInCF("trying to get real top annotation from the inference hierarchy");
-        }
+        throw new BugInCF("trying to get real top annotation from the inference hierarchy");
     }
 
     @Override
@@ -375,10 +371,6 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
             return bottoms.iterator().next();
         }
 
-        if (InferenceMain.isHackMode()) {
-            return inferenceMain.getRealTypeFactory().getQualifierHierarchy().getBottomAnnotation(am);
-        } else {
-            throw new BugInCF("trying to get real bottom annotation from the inference hierarchy");
-        }
+        throw new BugInCF("trying to get real bottom annotation from the inference hierarchy");
     }
 }

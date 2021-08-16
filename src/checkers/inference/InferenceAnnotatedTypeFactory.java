@@ -28,6 +28,7 @@ import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -147,7 +148,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         existentialInserter = new ExistentialVariableInserter(slotManager, constraintManager,
                                                               realTop, varAnnot, variableAnnotator);
 
-        inferencePoly = new InferenceQualifierPolymorphism(slotManager, variableAnnotator, varAnnot);
+        inferencePoly = new InferenceQualifierPolymorphism(slotManager, variableAnnotator, this, varAnnot);
 
         constantToVariableAnnotator = new ConstantToVariableAnnotator(realTop, varAnnot);
         // Every subclass must call postInit!
@@ -319,14 +320,17 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             receiverType = getSelfType(methodInvocationTree);
         }
 
-        assert receiverType != null : "Null receiver type when getting method from use for tree ( " + methodInvocationTree + " )";
+        assert ElementUtils.isStatic(methodElem) || receiverType != null :
+                "Null receiver type when getting method from use for tree ( " + methodInvocationTree + " )";
 
         // TODO: Add CombConstraints for method parameter types as well as return types
 
         // TODO: Is the asMemberOf correct, was not in Werner's original implementation but I had added it
         // TODO: It is also what the AnnotatedTypeFactory default implementation does
         final AnnotatedExecutableType methodOfReceiver = AnnotatedTypes.asMemberOf(types, this, receiverType, methodElem);
-        if (viewpointAdapter != null) {
+        if (viewpointAdapter != null && receiverType != null) {
+            // TODO: What should we do for static methods?
+            // TODO: Currently, we ignore static methods using receiverType != null.
             viewpointAdapter.viewpointAdaptMethod(receiverType, methodElem, methodOfReceiver);
         }
         ParameterizedExecutableType mType = substituteTypeArgs(methodInvocationTree, methodElem, methodOfReceiver);

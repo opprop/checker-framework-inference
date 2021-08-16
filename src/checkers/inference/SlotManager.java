@@ -97,19 +97,21 @@ public interface SlotManager {
     CombVariableSlot createCombVariableSlot(Slot receiver, Slot declared);
 
     /**
+     * TODO(Zhiping): will rename LubVariableSlot to MergeVariableSlot
      * Creates new LubVariableSlot using left slot and right slot, and returns
-     * reference to it if no LubVariableSlot representing least upper bound of
-     * left slot and right slot exists. Otherwise, returns the existing CombVariableSlot.
-     * Left slot and right slot can uniquely identify a LubVariableSlot
+     * reference to it if no LubVariableSlot representing the merge type of
+     * left slot and right slot exists. Otherwise, returns the existing LubVariableSlot.
+     * Each combination of left slot, right slot, and isLub should uniquely identify
+     * a LubVariableSlot.
      *
-     * @param left
-     *            left side of least upper bound operation
-     * @param right
-     *            right side of least upper bound operation
+     * @param left left side of merge operation
+     * @param right right side of merge operation
+     * @param isLub indicates the type of the merge operation. True if the operation
+     *              is LUB, and false if the operation is GLB.
      * @return LubVariableSlot that represents the least upper bound result
      *         of left slot and right slot
      */
-    LubVariableSlot createLubVariableSlot(Slot left, Slot right);
+    LubVariableSlot createMergeVariableSlot(Slot left, Slot right, boolean isLub);
 
     /**
      * Create new ExistentialVariableSlot using potential slot and alternative

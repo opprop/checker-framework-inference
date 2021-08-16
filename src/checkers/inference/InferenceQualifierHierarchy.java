@@ -6,15 +6,16 @@ import checkers.inference.model.LubVariableSlot;
 import checkers.inference.model.Slot;
 import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.InferenceUtil;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.com.google.common.collect.ImmutableMap;
-import org.checkerframework.framework.qual.PolymorphicQualifier;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
+import org.checkerframework.framework.util.DefaultQualifierKindHierarchy;
 import org.checkerframework.framework.util.QualifierKind;
+import org.checkerframework.framework.util.QualifierKindHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.org.apache.commons.lang3.NotImplementedException;
 import org.checkerframework.org.plumelib.util.StringsPlume;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -22,7 +23,6 @@ import javax.lang.model.util.Elements;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -60,21 +60,6 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
     protected Map<QualifierKind, AnnotationMirror> createBottomsMap() {
         QualifierKind varAnnotKind = qualifierKindHierarchy.getQualifierKind(VARANNOT_NAME);
         return ImmutableMap.of(varAnnotKind, findBottomVarAnnot());
-    }
-
-    /**
-     * @return true if anno is meta-annotated with PolymorphicQualifier
-     */
-    public static boolean isPolymorphic(AnnotationMirror anno) {
-        // This is kind of an expensive way to compute this
-        List<? extends AnnotationMirror> metaAnnotations = anno.getAnnotationType().asElement().getAnnotationMirrors();
-        for (AnnotationMirror metaAnno : metaAnnotations) {
-            if (metaAnno.getAnnotationType().toString().equals(PolymorphicQualifier.class.getCanonicalName())) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     /**
@@ -197,12 +182,9 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
         return constraintMgr.addSubtypeConstraintNoErrorMsg(subSlot, superSlot);
     }
 
-    // Currently, we don't need GLB for VarAnnot. If we need this method in
-    // the future, please check the implementation of leastUpperBound for
-    // how to create all the constraints.
     @Override
     public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
-        throw new NotImplementedException("InferenceQualifierHierarchy::greatestLowerBound");
+        return merge(a1, a2, false);
     }
 
     @Override
@@ -226,41 +208,53 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
 
     @Override
     public AnnotationMirror leastUpperBound(final AnnotationMirror a1, final AnnotationMirror a2) {
+        return merge(a1, a2, true);
+    }
+
+    private AnnotationMirror merge(final AnnotationMirror a1, final AnnotationMirror a2, boolean isLub) {
         if (InferenceMain.isHackMode( (a1 == null || a2 == null))) {
             InferenceMain.getInstance().logger.info(
                     "Hack:\n"
-                  + "a1=" + a1 + "\n"
-                  + "a2=" + a2);
+                            + "a1=" + a1 + "\n"
+                            + "a2=" + a2);
             return a1 != null ? a1 : a2;
         }
-        assert a1 != null && a2 != null : "leastUpperBound accepts only NonNull types! 1 (" + a1 + " ) a2 (" + a2 + ")";
+        assert a1 != null && a2 != null : "merge accepts only NonNull types! 1 (" + a1 + " ) a2 (" + a2 + ")";
 
-        QualifierHierarchy realQualifierHierarhcy = inferenceMain.getRealTypeFactory().getQualifierHierarchy();
-        // for some reason LUB compares all annotations even if they are not in the same sub-hierarchy
-        if (!isVarAnnot(a1)) {
-            if (!isVarAnnot(a2)) {
-                return inferenceMain.getRealTypeFactory().getQualifierHierarchy().leastUpperBound(a1, a2);
+        final QualifierHierarchy realQualifierHierarchy = inferenceMain.getRealTypeFactory().getQualifierHierarchy();
+        final boolean isA1VarAnnot = isVarAnnot(a1);
+        final boolean isA2VarAnnot = isVarAnnot(a2);
+
+        if (!isA1VarAnnot && !isA2VarAnnot) {
+            if (isLub) {
+                return realQualifierHierarchy.leastUpperBound(a1, a2);
             } else {
-                return null;
+                return realQualifierHierarchy.greatestLowerBound(a1, a2);
             }
-        } else if (!isVarAnnot(a2)) {
+        } else if (!isA1VarAnnot || !isA2VarAnnot) {
+            // two annotations are not under the same qualifier hierarchy
             return null;
         }
 
-        // TODO: How to get the path to the CombVariable?
         final Slot slot1 = slotMgr.getSlot(a1);
         final Slot slot2 = slotMgr.getSlot(a2);
         if (slot1 != slot2) {
             if ((slot1 instanceof ConstantSlot) && (slot2 instanceof ConstantSlot)) {
-                // If both slots are constant slots, using real qualifier hierarchy to compute the LUB,
-                // then return a VarAnnot represent the constant LUB.
+                // If both slots are constant slots, using real qualifier hierarchy to compute the merged type,
+                // then return a VarAnnot represent the constant result.
                 // (Because we passing in two VarAnnots that represent constant slots, so it is consistent
-                // to also return a VarAnnot that represents the constant LUB of these two constants.)
+                // to also return a VarAnnot that represents the constant merged type of these two constants.)
                 AnnotationMirror realAnno1 = ((ConstantSlot) slot1).getValue();
                 AnnotationMirror realAnno2 = ((ConstantSlot) slot2).getValue();
 
-                AnnotationMirror realLub = realQualifierHierarhcy.leastUpperBound(realAnno1, realAnno2);
-                Slot constantSlot = slotMgr.createConstantSlot(realLub);
+                AnnotationMirror mergedType;
+                if (isLub) {
+                    mergedType = realQualifierHierarchy.leastUpperBound(realAnno1, realAnno2);
+                } else {
+                    mergedType = realQualifierHierarchy.greatestLowerBound(realAnno1, realAnno2);
+                }
+
+                Slot constantSlot = slotMgr.createConstantSlot(mergedType);
                 return slotMgr.getAnnotation(constantSlot);
             } else if (!Collections.disjoint(slot1.getMergedToSlots(), slot2.getMergedToSlots())) {
                 // They have common merge variables, return the annotations on one of the common merged variables.
@@ -273,14 +267,19 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
                 // Vice versa.
                 return slotMgr.getAnnotation(slot1);
             } else {
-                // Create a new LubVariable for var1 and var2.
-                final LubVariableSlot mergeVariableSlot = slotMgr.createLubVariableSlot(slot1, slot2);
-                constraintMgr.addSubtypeConstraint(slot1, mergeVariableSlot);
-                constraintMgr.addSubtypeConstraint(slot2, mergeVariableSlot);
+                // Create a new MergeVariable for var1 and var2.
+                final LubVariableSlot mergeVariableSlot = slotMgr.createMergeVariableSlot(slot1, slot2, isLub);
+
+                if (isLub) {
+                    constraintMgr.addSubtypeConstraint(slot1, mergeVariableSlot);
+                    constraintMgr.addSubtypeConstraint(slot2, mergeVariableSlot);
+                } else {
+                    constraintMgr.addSubtypeConstraint(mergeVariableSlot, slot1);
+                    constraintMgr.addSubtypeConstraint(mergeVariableSlot, slot2);
+                }
 
                 slot1.addMergedToSlot(mergeVariableSlot);
                 slot2.addMergedToSlot(mergeVariableSlot);
-
                 return slotMgr.getAnnotation(mergeVariableSlot);
             }
         } else {
@@ -293,12 +292,21 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
      * @return The first element found in both set1 and set2. Otherwise return null.
      */
     private <T> T getOneIntersected(Set<T> set1, Set<T> set2) {
+        T result = null;
+        int intersectionSize = 0;
+
         for (T refVar : set1) {
             if (set2.contains(refVar)) {
-                return refVar;
+                ++intersectionSize;
+                if (result == null) {
+                    result = refVar;
+                }
             }
         }
-        return null;
+
+        // asserts the two sets have at most one element in common
+        assert intersectionSize <= 1;
+        return result;
     }
 
     /**
@@ -362,7 +370,11 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
             return tops.iterator().next();
         }
 
-        throw new BugInCF("trying to get real top annotation from the inference hierarchy");
+        if (InferenceMain.isHackMode()) {
+            return inferenceMain.getRealTypeFactory().getQualifierHierarchy().getTopAnnotation(am);
+        } else {
+            throw new BugInCF("trying to get real top annotation from the inference hierarchy");
+        }
     }
 
     @Override
@@ -371,6 +383,47 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
             return bottoms.iterator().next();
         }
 
-        throw new BugInCF("trying to get real bottom annotation from the inference hierarchy");
+        if (InferenceMain.isHackMode()) {
+            return inferenceMain.getRealTypeFactory().getQualifierHierarchy().getBottomAnnotation(am);
+        } else {
+            throw new BugInCF("trying to get real bottom annotation from the inference hierarchy");
+        }
+    }
+
+    @Override
+    protected QualifierKindHierarchy createQualifierKindHierarchy(
+            Collection<Class<? extends Annotation>> qualifierClasses
+    ) {
+        return new InferenceQualifierKindHierarchy(qualifierClasses);
+    }
+
+    /**
+     * Since {@link InferenceQualifierHierarchy} has its own implementations to compute LUB and GLB,
+     * this class ensures we don't need any LUBs or GLBs for real qualifiers.
+     */
+    private static final class InferenceQualifierKindHierarchy extends DefaultQualifierKindHierarchy {
+        public InferenceQualifierKindHierarchy(Collection<Class<? extends Annotation>> qualifierClasses) {
+            super(qualifierClasses);
+        }
+
+        @Override
+        public @Nullable QualifierKind leastUpperBound(QualifierKind q1, QualifierKind q2) {
+            throw new BugInCF("InferenceQualifierKindHierarchy.leastUpperBound should never be invoked");
+        }
+
+        @Override
+        public @Nullable QualifierKind greatestLowerBound(QualifierKind q1, QualifierKind q2) {
+            throw new BugInCF("InferenceQualifierKindHierarchy.greatestLowerBound should never be invoked");
+        }
+
+        @Override
+        protected Map<QualifierKind, Map<QualifierKind, QualifierKind>> createLubsMap() {
+            return Collections.emptyMap();
+        }
+
+        @Override
+        protected Map<QualifierKind, Map<QualifierKind, QualifierKind>> createGlbsMap() {
+            return Collections.emptyMap();
+        }
     }
 }

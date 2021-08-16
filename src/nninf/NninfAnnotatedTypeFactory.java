@@ -35,8 +35,8 @@ public class NninfAnnotatedTypeFactory extends GameAnnotatedTypeFactory {
     public final ExecutableElement keyForValueElement =
             TreeUtils.getMethod(KeyFor.class, "value", processingEnv);
 
-    public NninfAnnotatedTypeFactory(NninfChecker checker) {
-        super(checker);
+    public NninfAnnotatedTypeFactory(NninfChecker checker, boolean isInfer) {
+        super(checker, isInfer);
 
         this.checker = checker;
 
@@ -78,7 +78,8 @@ public class NninfAnnotatedTypeFactory extends GameAnnotatedTypeFactory {
         return mType;
     }
 
-    // TODO(Zhiping): try overriding getselftype and remove these deprecated methods
+    // TODO(Zhiping): try overriding getselftype and remove these deprecated methods copied
+    // TODO(Zhiping): from the Checker Framework: isMostEnclosingThisDeref, isSubtype, isAnyEnclosingThisDeref
     /**
      * Determine whether the tree dereferences the most enclosing "this" object. That is, we have an
      * expression like "f.g" and want to know whether it is an access "this.f.g". Returns false if f

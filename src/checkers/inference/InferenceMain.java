@@ -27,6 +27,7 @@ import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.InferenceUtil;
 import checkers.inference.util.JaifBuilder;
 import org.checkerframework.javacutil.SystemUtil;
+import org.checkerframework.org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * InferenceMain is the central coordinator to the inference system.
@@ -323,7 +324,6 @@ public class InferenceMain {
         return inferenceTypeFactory;
     }
 
-
     /**
      * This method is NOT deprecated but SHOULD NOT BE USED other than in getInferenceTypeFactory AND
      * InferenceAnnotatedTypeFactory.getSupportedQualifierTypes.  We have made it deprecated in order to bring
@@ -332,7 +332,7 @@ public class InferenceMain {
      */
     public BaseAnnotatedTypeFactory getRealTypeFactory() {
         if (realTypeFactory == null) {
-            realTypeFactory = getRealChecker().createRealTypeFactory();
+            realTypeFactory = getRealChecker().createRealTypeFactory(true);
             logger.finer(String.format("Created real type factory: %s", realTypeFactory));
         }
         return realTypeFactory;

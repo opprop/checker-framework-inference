@@ -39,8 +39,8 @@ public class NninfChecker extends BaseInferrableChecker {
     }
 
     @Override
-    public NninfAnnotatedTypeFactory createRealTypeFactory() {
-        return new NninfAnnotatedTypeFactory(this);
+    public NninfAnnotatedTypeFactory createRealTypeFactory(boolean infer) {
+        return new NninfAnnotatedTypeFactory(this, infer);
     }
 
     @Override

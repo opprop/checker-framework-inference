@@ -37,7 +37,7 @@ public interface InferrableChecker {
     void initChecker();
 
     // Instantiate the real type factory
-    BaseAnnotatedTypeFactory createRealTypeFactory();
+    BaseInferenceRealTypeFactory createRealTypeFactory(boolean infer);
 
     public InferenceAnnotatedTypeFactory createInferenceATF(InferenceChecker inferenceChecker,
             InferrableChecker realChecker, BaseAnnotatedTypeFactory realTypeFactory,

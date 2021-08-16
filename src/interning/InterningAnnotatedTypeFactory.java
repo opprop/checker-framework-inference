@@ -1,5 +1,6 @@
 package interning;
 
+import checkers.inference.BaseInferenceRealTypeFactory;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.DefaultQualifier;
@@ -49,7 +50,7 @@ import com.sun.source.tree.Tree;
  * user-specified defaults via {@link DefaultQualifier}.
  * Case 5 is handled by the stub library.
  */
-public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class InterningAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
 
     /** The {@link Interned} annotation. */
     final AnnotationMirror INTERNED, TOP;
@@ -60,8 +61,8 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *
      * @param checker the checker to use
      */
-    public InterningAnnotatedTypeFactory(BaseTypeChecker checker) {
-        super(checker);
+    public InterningAnnotatedTypeFactory(BaseTypeChecker checker, boolean isInfer) {
+        super(checker, isInfer);
         this.INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
         this.TOP = AnnotationBuilder.fromClass(elements, UnknownInterned.class);
 

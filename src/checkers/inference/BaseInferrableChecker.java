@@ -38,7 +38,7 @@ public abstract class BaseInferrableChecker extends InferenceChecker implements 
             this.messager = processingEnv.getMessager();
             this.messagesProperties = getMessagesProperties();
 
-            this.visitor = createVisitor(null, createRealTypeFactory(), false);
+            this.visitor = createVisitor(null, createRealTypeFactory(false), false);
         }
     }
 
@@ -48,8 +48,8 @@ public abstract class BaseInferrableChecker extends InferenceChecker implements 
     }
 
     @Override
-    public BaseAnnotatedTypeFactory createRealTypeFactory() {
-        return new BaseAnnotatedTypeFactory(this);
+    public BaseInferenceRealTypeFactory createRealTypeFactory(boolean infer) {
+        return new BaseInferenceRealTypeFactory(this, infer);
     }
 
     @Override

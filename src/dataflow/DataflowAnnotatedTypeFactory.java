@@ -19,6 +19,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 
+import checkers.inference.BaseInferenceRealTypeFactory;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -54,7 +55,7 @@ import org.checkerframework.javacutil.TypeSystemError;
  * @author jianchu
  *
  */
-public class DataflowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
 
     protected final AnnotationMirror DATAFLOW, DATAFLOWBOTTOM, DATAFLOWTOP;
     /**
@@ -65,8 +66,8 @@ public class DataflowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     public final DataflowUtils dataflowUtils;
 
-    public DataflowAnnotatedTypeFactory(BaseTypeChecker checker) {
-        super(checker);
+    public DataflowAnnotatedTypeFactory(BaseTypeChecker checker, boolean isInfer) {
+        super(checker, isInfer);
         DATAFLOW = AnnotationBuilder.fromClass(elements, DataFlow.class);
         DATAFLOWBOTTOM = DataflowUtils.createDataflowAnnotation(DataflowUtils.convert(""), processingEnv);
         DATAFLOWTOP = AnnotationBuilder.fromClass(elements, DataFlowTop.class);

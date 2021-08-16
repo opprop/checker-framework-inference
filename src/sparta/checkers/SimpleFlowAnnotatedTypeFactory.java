@@ -1,5 +1,6 @@
 package sparta.checkers;
 
+import checkers.inference.BaseInferenceRealTypeFactory;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.LiteralKind;
@@ -47,7 +48,7 @@ import com.sun.source.tree.Tree;
 /**
  * Created by mcarthur on 4/3/14.
  */
-public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
 
     static AnnotationMirror ANYSOURCE, NOSOURCE, ANYSINK, NOSINK;
     private final AnnotationMirror POLYSOURCE;
@@ -76,8 +77,8 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @throws IllegalArgumentException
      *             if either argument is {@code null}
      */
-    public SimpleFlowAnnotatedTypeFactory(BaseTypeChecker checker) {
-        super(checker);
+    public SimpleFlowAnnotatedTypeFactory(BaseTypeChecker checker, boolean isInfer) {
+        super(checker, isInfer);
 
         NOSOURCE = buildAnnotationMirrorFlowPermission(Source.class);
         ANYSOURCE = buildAnnotationMirrorFlowPermission(Source.class, FlowPermission.ANY.toString());

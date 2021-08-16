@@ -202,7 +202,7 @@ public class NninfVisitor extends InferenceVisitor<NninfChecker, BaseAnnotatedTy
         // We currently create an access and then a set constraint.
             // TODO: determining whether something is "this" doesn't seem to work correctly,
             // as I still get constraints with LiteralThis.
-        // TODO(Zhiping): check if we are handling this properly
+        // TODO(Zhiping): verify if we are handling this properly
         checkForNullability(node.getExpression(), "dereference.of.nullable");
 //        logFieldAccess(node);
         return null;

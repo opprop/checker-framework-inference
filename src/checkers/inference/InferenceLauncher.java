@@ -20,7 +20,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import checkers.inference.InferenceOptions.InitStatus;
-import org.checkerframework.org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsPlume;
 
 
 /**

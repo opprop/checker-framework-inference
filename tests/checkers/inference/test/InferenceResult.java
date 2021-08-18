@@ -1,6 +1,6 @@
 package checkers.inference.test;
 
-import org.checkerframework.org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * This is the output from running inference NOT the result of a test.

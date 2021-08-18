@@ -22,7 +22,7 @@ import checkers.inference.InferenceChecker;
 import checkers.inference.InferrableChecker;
 import checkers.inference.SlotManager;
 import checkers.inference.model.ConstraintManager;
-import org.checkerframework.org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsPlume;
 
 /**
  * InferenceAnalysis tweaks dataflow for Checker-Framework-Inference.

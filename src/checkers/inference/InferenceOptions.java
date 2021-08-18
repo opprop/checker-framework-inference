@@ -12,7 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.checkerframework.org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsPlume;
 import ostrusted.OsTrustedChecker;
 import org.plumelib.options.Option;
 import org.plumelib.options.OptionGroup;

@@ -16,7 +16,7 @@ import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.QualifierKindHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsPlume;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.util.Elements;

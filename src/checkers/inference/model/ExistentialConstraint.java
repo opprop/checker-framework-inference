@@ -1,7 +1,7 @@
 package checkers.inference.model;
 
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.org.plumelib.util.StringsPlume;
+import org.plumelib.util.StringsPlume;
 
 import java.util.ArrayList;
 import java.util.Collections;

@@ -268,12 +268,14 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
                 return slotMgr.getAnnotation(slot1);
             } else {
                 // Create a new MergeVariable for var1 and var2.
-                final LubVariableSlot mergeVariableSlot = slotMgr.createMergeVariableSlot(slot1, slot2, isLub);
+                final LubVariableSlot mergeVariableSlot;
 
                 if (isLub) {
+                    mergeVariableSlot = slotMgr.createLubMergeVariableSlot(slot1, slot2);
                     constraintMgr.addSubtypeConstraint(slot1, mergeVariableSlot);
                     constraintMgr.addSubtypeConstraint(slot2, mergeVariableSlot);
                 } else {
+                    mergeVariableSlot = slotMgr.createGlbMergeVariableSlot(slot1, slot2);
                     constraintMgr.addSubtypeConstraint(mergeVariableSlot, slot1);
                     constraintMgr.addSubtypeConstraint(mergeVariableSlot, slot2);
                 }

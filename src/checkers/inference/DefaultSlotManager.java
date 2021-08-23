@@ -376,7 +376,16 @@ public class DefaultSlotManager implements SlotManager {
     }
 
     @Override
-    public LubVariableSlot createMergeVariableSlot(Slot left, Slot right, boolean isLub) {
+    public LubVariableSlot createLubMergeVariableSlot(Slot left, Slot right) {
+        return createMergeVariableSlot(left, right, true);
+    }
+
+    @Override
+    public LubVariableSlot createGlbMergeVariableSlot(Slot left, Slot right) {
+        return createMergeVariableSlot(left, right, false);
+    }
+
+    private LubVariableSlot createMergeVariableSlot(Slot left, Slot right, boolean isLub) {
         // Order of two ingredient slots doesn't matter, but for simplicity, we still use pair.
         LubVariableSlot mergeVariableSlot;
         Map<Pair<Slot, Slot>, Integer> cache = isLub ? lubSlotPairCache : glbSlotPairCache;

@@ -96,22 +96,34 @@ public interface SlotManager {
      */
     CombVariableSlot createCombVariableSlot(Slot receiver, Slot declared);
 
+    // TODO(Zhiping): will rename LubVariableSlot to MergeVariableSlot
     /**
-     * TODO(Zhiping): will rename LubVariableSlot to MergeVariableSlot
      * Creates new LubVariableSlot using left slot and right slot, and returns
-     * reference to it if no LubVariableSlot representing the merge type of
+     * reference to it if no LubVariableSlot representing least upper bound of
      * left slot and right slot exists. Otherwise, returns the existing LubVariableSlot.
-     * Each combination of left slot, right slot, and isLub should uniquely identify
-     * a LubVariableSlot.
+     * Left slot and right slot can uniquely identify a slot that stores their
+     * least upper bound.
      *
      * @param left left side of merge operation
      * @param right right side of merge operation
-     * @param isLub indicates the type of the merge operation. True if the operation
-     *              is LUB, and false if the operation is GLB.
      * @return LubVariableSlot that represents the least upper bound result
      *         of left slot and right slot
      */
-    LubVariableSlot createMergeVariableSlot(Slot left, Slot right, boolean isLub);
+    LubVariableSlot createLubMergeVariableSlot(Slot left, Slot right);
+
+    /**
+     * Creates new LubVariableSlot using left slot and right slot, and returns
+     * reference to it if no LubVariableSlot representing greatest lower bound of
+     * left slot and right slot exists. Otherwise, returns the existing LubVariableSlot.
+     * Left slot and right slot can uniquely identify a slot that stores their
+     * greatest lower bound.
+     *
+     * @param left left side of merge operation
+     * @param right right side of merge operation
+     * @return LubVariableSlot that represents the greatest lower bound result
+     *         of left slot and right slot
+     */
+    LubVariableSlot createGlbMergeVariableSlot(Slot left, Slot right);
 
     /**
      * Create new ExistentialVariableSlot using potential slot and alternative

@@ -6,8 +6,8 @@ import checkers.inference.model.LubVariableSlot;
 import checkers.inference.model.Slot;
 import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.InferenceUtil;
+import com.google.common.collect.ImmutableMap;
 import org.checkerframework.checker.nullness.qual.Nullable;
-import org.checkerframework.com.google.common.collect.ImmutableMap;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
@@ -166,7 +166,11 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
         // findAnnotationInSameHierarchy may return null since @VarAnnot and some constant real qualifier
         // are not in the same qualifier hierarchy.
         if (subtype == null || supertype == null || !isVarAnnot(subtype) || !isVarAnnot(supertype)) {
-            return true;
+            if (InferenceMain.isHackMode()) {
+                return true;
+            } else {
+                throw new BugInCF("Unexpected arguments for isSubtype: subtype=%s, supertype=%s", subtype, supertype);
+            }
         }
 
         if (supertype.getElementValues().isEmpty()) {
@@ -212,28 +216,37 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
     }
 
     private AnnotationMirror merge(final AnnotationMirror a1, final AnnotationMirror a2, boolean isLub) {
-        if (InferenceMain.isHackMode( (a1 == null || a2 == null))) {
+        if (a1 == null || a2 == null) {
+            if (!InferenceMain.isHackMode()) {
+                throw new BugInCF("merge accepts only NonNull types! a1 (%s) a2 (%s)", a1, a2);
+            }
+
             InferenceMain.getInstance().logger.info(
                     "Hack:\n"
                             + "a1=" + a1 + "\n"
                             + "a2=" + a2);
             return a1 != null ? a1 : a2;
         }
-        assert a1 != null && a2 != null : "merge accepts only NonNull types! 1 (" + a1 + " ) a2 (" + a2 + ")";
 
         final QualifierHierarchy realQualifierHierarchy = inferenceMain.getRealTypeFactory().getQualifierHierarchy();
         final boolean isA1VarAnnot = isVarAnnot(a1);
         final boolean isA2VarAnnot = isVarAnnot(a2);
 
-        if (!isA1VarAnnot && !isA2VarAnnot) {
-            if (isLub) {
-                return realQualifierHierarchy.leastUpperBound(a1, a2);
-            } else {
-                return realQualifierHierarchy.greatestLowerBound(a1, a2);
+        if (!isA1VarAnnot || !isA2VarAnnot) {
+            if (!InferenceMain.isHackMode()) {
+                throw new BugInCF("merge accepts only VarAnnot types! a1 (%s) a2 (%s)", a1, a2);
             }
-        } else if (!isA1VarAnnot || !isA2VarAnnot) {
-            // two annotations are not under the same qualifier hierarchy
-            return null;
+
+            if (!isA1VarAnnot && !isA2VarAnnot) {
+                if (isLub) {
+                    return realQualifierHierarchy.leastUpperBound(a1, a2);
+                } else {
+                    return realQualifierHierarchy.greatestLowerBound(a1, a2);
+                }
+            } else {
+                // two annotations are not under the same qualifier hierarchy
+                return null;
+            }
         }
 
         final Slot slot1 = slotMgr.getSlot(a1);

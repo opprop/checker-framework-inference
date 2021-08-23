@@ -326,8 +326,9 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
 
     /**
      * Find the corresponding {@code VarAnnot} for the real top qualifier.
+     * Currently, there should only be one top qualifier.
      *
-     * @return a singleton that contains the VarAnnot corresponding to the real top qualifier
+     * @return the only VarAnnot corresponding to the real top qualifier
      */
     private static AnnotationMirror findTopVarAnnot() {
         AnnotationMirrorSet annos = new AnnotationMirrorSet();

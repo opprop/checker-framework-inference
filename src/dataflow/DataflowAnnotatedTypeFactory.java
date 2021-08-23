@@ -35,6 +35,7 @@ import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
 
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MethodInvocationTree;
@@ -45,7 +46,6 @@ import com.sun.source.tree.Tree.Kind;
 import dataflow.qual.DataFlow;
 import dataflow.qual.DataFlowTop;
 import dataflow.util.DataflowUtils;
-import org.checkerframework.javacutil.TypeSystemError;
 
 /**
  * DataflowAnnotatedTypeFactory is the type factory for Dataflow type system. It

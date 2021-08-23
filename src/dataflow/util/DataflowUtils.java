@@ -14,11 +14,11 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreeUtils;
 
 import com.sun.source.tree.LiteralTree;
 
 import dataflow.qual.DataFlow;
-import org.checkerframework.javacutil.TreeUtils;
 
 /**
  * Utility class for Dataflow type system.

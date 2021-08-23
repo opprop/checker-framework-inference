@@ -27,7 +27,6 @@ import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.InferenceUtil;
 import checkers.inference.util.JaifBuilder;
 import org.checkerframework.javacutil.SystemUtil;
-import org.checkerframework.org.apache.commons.lang3.exception.ExceptionUtils;
 
 /**
  * InferenceMain is the central coordinator to the inference system.

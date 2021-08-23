@@ -132,14 +132,13 @@ public class GraphBuilder {
                     if (next.isConstant()) {
                         if (AnnotationUtils.areSame(top, next.getValue())) {
                             continue;
-                        } else {
-                            if (InferenceMain.getInstance().getVisitor() instanceof DataflowVisitor) {
-                                DataflowAnnotatedTypeFactory typeFactory = (DataflowAnnotatedTypeFactory)
-                                        InferenceMain.getInstance().getRealTypeFactory();
-                                List<String> typeNames = typeFactory.dataflowUtils.getTypeNames(next.getValue());
-                                if (typeNames.size() == 1 && typeNames.get(0).isEmpty()) {
-                                    continue;
-                                }
+                        } else if (InferenceMain.getInstance().getVisitor() instanceof DataflowVisitor) {
+                            // TODO: find a proper way to adapt this behavior in type-system specific subclasses.
+                            DataflowAnnotatedTypeFactory typeFactory = (DataflowAnnotatedTypeFactory)
+                                    InferenceMain.getInstance().getRealTypeFactory();
+                            List<String> typeNames = typeFactory.dataflowUtils.getTypeNames(next.getValue());
+                            if (typeNames.size() == 1 && typeNames.get(0).isEmpty()) {
+                                continue;
                             }
                         }
                     } else {

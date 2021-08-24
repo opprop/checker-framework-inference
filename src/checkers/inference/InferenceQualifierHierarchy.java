@@ -331,25 +331,31 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
      * @return the only VarAnnot corresponding to the real top qualifier
      */
     private static AnnotationMirror findTopVarAnnot() {
-        AnnotationMirrorSet annos = new AnnotationMirrorSet();
+        int numTops = 0;
+        AnnotationMirror topVarAnnot = null;
         InferenceMain inferenceMain = InferenceMain.getInstance();
         Set<? extends AnnotationMirror> realTops = inferenceMain.getRealTypeFactory().getQualifierHierarchy().getTopAnnotations();
         SlotManager slotManager = inferenceMain.getSlotManager();
+
         for (AnnotationMirror top : realTops) {
             ConstantSlot slot = (ConstantSlot) slotManager.getSlot(top);
             if (slot != null) {
-                annos.add(slotManager.getAnnotation(slot));
+                ++numTops;
+
+                if (topVarAnnot == null) {
+                    topVarAnnot = slotManager.getAnnotation(slot);
+                }
             }
         }
 
-        if (annos.size() != 1) {
+        if (numTops != 1) {
             throw new BugInCF(
                     "There should be exactly 1 top qualifier in inference hierarchy"
                             + "( checkers.inference.qual.VarAnnot ).\n"
-                            + "Tops found ( " + InferenceUtil.join(annos) + " )"
+                            + "Real tops found ( " + InferenceUtil.join(realTops) + " )"
             );
         }
-        return annos.iterator().next();
+        return topVarAnnot;
     }
 
     /**

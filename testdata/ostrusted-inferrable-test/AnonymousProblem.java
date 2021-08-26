@@ -11,6 +11,7 @@ public class AnonymousProblem {
     @SuppressWarnings("cast.unsafe.constructor.invocation")
     SimpleFileVisitor s = new SimpleFileVisitor<String>(){};
 
+    // :: fixable-error: (type.invalid.annotations.on.use)
     OutterI.InnerI<Object> f = new OutterI.InnerI<Object>() {};
 
     A a = new @OsUntrusted A() {};

@@ -1,5 +1,7 @@
 package checkers.inference.model;
 
+import checkers.inference.InferenceMain;
+import checkers.inference.InferenceQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -35,7 +37,7 @@ public class ConstantSlot extends Slot {
     }
 
     private void checkValue(AnnotationMirror value) {
-        if (AnnotationUtils.areSameByClass(value, VarAnnot.class)) {
+        if (InferenceQualifierHierarchy.isVarAnnot(value)) {
             throw new BugInCF("Invalid attempt to create a ConstantSlot with VarAnnot as value: " + value);
         }
     }

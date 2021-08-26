@@ -29,7 +29,7 @@ public class InferenceChecker extends BaseTypeChecker {
         // Add the messages.properties file defined in the same location as
         // InferenceChecker
         Properties messages = super.getMessagesProperties();
-        messages.putAll(getProperties(this.getClass(), MSGS_FILE));
+        messages.putAll(getProperties(this.getClass(), MSGS_FILE, true));
         return messages;
     }
 }

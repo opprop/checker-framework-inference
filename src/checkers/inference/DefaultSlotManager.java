@@ -88,6 +88,7 @@ public class DefaultSlotManager implements SlotManager {
      */
     private final Map<Pair<Slot, Slot>, Integer> combSlotPairCache;
     private final Map<Pair<Slot, Slot>, Integer> lubSlotPairCache;
+    private final Map<Pair<Slot, Slot>, Integer> glbSlotPairCache;
 
     /**
      * A map of {@link AnnotationLocation} to {@link Integer} for caching
@@ -118,6 +119,7 @@ public class DefaultSlotManager implements SlotManager {
         existentialSlotPairCache = new LinkedHashMap<>();
         combSlotPairCache = new LinkedHashMap<>();
         lubSlotPairCache = new LinkedHashMap<>();
+        glbSlotPairCache = new LinkedHashMap<>();
         arithmeticSlotCache = new LinkedHashMap<>();
 
         if (storeConstants) {
@@ -239,7 +241,7 @@ public class DefaultSlotManager implements SlotManager {
 
             } else {
                 for (Class<? extends Annotation> realAnno : realQualifiers) {
-                    if (AnnotationUtils.areSameByClass(annotationMirror, realAnno)) {
+                    if (InferenceMain.getInstance().getRealTypeFactory().areSameByClass(annotationMirror, realAnno)) {
                         return createConstantSlot(annotationMirror);
                     }
                 }
@@ -374,20 +376,31 @@ public class DefaultSlotManager implements SlotManager {
     }
 
     @Override
-    public LubVariableSlot createLubVariableSlot(Slot left, Slot right) {
+    public LubVariableSlot createLubMergeVariableSlot(Slot left, Slot right) {
+        return createMergeVariableSlot(left, right, true);
+    }
+
+    @Override
+    public LubVariableSlot createGlbMergeVariableSlot(Slot left, Slot right) {
+        return createMergeVariableSlot(left, right, false);
+    }
+
+    private LubVariableSlot createMergeVariableSlot(Slot left, Slot right, boolean isLub) {
         // Order of two ingredient slots doesn't matter, but for simplicity, we still use pair.
-        LubVariableSlot lubVariableSlot;
+        LubVariableSlot mergeVariableSlot;
+        Map<Pair<Slot, Slot>, Integer> cache = isLub ? lubSlotPairCache : glbSlotPairCache;
         Pair<Slot, Slot> pair = new Pair<>(left, right);
-        if (lubSlotPairCache.containsKey(pair)) {
-            int id = lubSlotPairCache.get(pair);
-            lubVariableSlot = (LubVariableSlot) getSlot(id);
+
+        if (cache.containsKey(pair)) {
+            int id = cache.get(pair);
+            mergeVariableSlot = (LubVariableSlot) getSlot(id);
         } else {
             // We need a non-null location in the future for better debugging outputs
-            lubVariableSlot = new LubVariableSlot(nextId(), null, left, right);
-            addToSlots(lubVariableSlot);
-            lubSlotPairCache.put(pair, lubVariableSlot.getId());
+            mergeVariableSlot = new LubVariableSlot(nextId(), null, left, right);
+            addToSlots(mergeVariableSlot);
+            cache.put(pair, mergeVariableSlot.getId());
         }
-        return lubVariableSlot;
+        return mergeVariableSlot;
     }
 
     @Override

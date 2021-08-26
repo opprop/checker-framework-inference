@@ -17,6 +17,7 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 import org.checkerframework.javacutil.TypesUtils;
 
@@ -327,7 +328,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * lookups and we re-traverse from the root everytime.
      */
     public static TreePath expensiveBackupGetPath(final Element element, final Tree tree, final InferenceAnnotatedTypeFactory inferenceTypeFactory) {
-        TypeElement typeElement = ElementUtils.enclosingClass(element);
+        TypeElement typeElement = ElementUtils.enclosingTypeElement(element);
         CompilationUnitTree compilationUnitTree = inferenceTypeFactory.getTreeUtils().getPath(typeElement).getCompilationUnit();
         return inferenceTypeFactory.getTreeUtils().getPath(compilationUnitTree, tree);
     }
@@ -409,7 +410,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         if (elementToAtm.containsKey(varElem)
          && !isUpperBoundOfTypeParam
          && !isReturn) {
-            typeVar.clearAnnotations();
+            typeVar.clearPrimaryAnnotations();
             annotateElementFromStore(varElem, typeVar);
             return;
         }
@@ -417,8 +418,9 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         AnnotationMirror explicitPrimary = null;
         if (treeToVarAnnoPair.containsKey(typeTree)) {
             potentialVariable = treeToVarAnnoPair.get(typeTree).first;
-            typeVar.clearAnnotations();  // might have a primary annotation lingering around
-                                         // (that would removed in the else clause)
+            // might have a primary annotation lingering around
+            // (that would removed in the else clause)
+            typeVar.clearPrimaryAnnotations();
 
         } else {
             // element from use and see if we already have this as a local var or field?
@@ -429,7 +431,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
                                            + "typeVar=" + typeVar + "\n"
                                            + "tree=" + tree + "\n");
                 }
-                typeVar.clearAnnotations();
+                typeVar.clearPrimaryAnnotations();
             }
 
             potentialVariable = createVariable(typeTree);
@@ -507,7 +509,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             AnnotationLocation location = treeToLocation(tree);
             variable = replaceOrCreateEquivalentVarAnno(atm, tree, location);
 
-            MethodTree enclosingMethod = TreeUtils.enclosingMethod(inferenceTypeFactory.getPath(tree));
+            MethodTree enclosingMethod = TreePathUtil.enclosingMethod(inferenceTypeFactory.getPath(tree));
             if (enclosingMethod != null
                     && TreeUtils.isAnonymousConstructor(enclosingMethod)) {
                 // Slots created for anonymous constructors should not be inserted to source code
@@ -702,7 +704,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
                     // extends Object. In this case, we need the following for
                     // loop to find out the AnnotatedTypeMirror for the
                     // interface.
-                    for (AnnotatedDeclaredType adtSuper : newAdt.directSuperTypes()) {
+                    for (AnnotatedDeclaredType adtSuper : newAdt.directSupertypes()) {
                         if (TreeUtils.typeOf(parameterizedTypeTree).equals(
                                 adtSuper.getUnderlyingType())) {
                             newAdt = adtSuper;
@@ -734,7 +736,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
     }
 
     private boolean handleWasRawDeclaredTypes(AnnotatedDeclaredType adt) {
-        if (adt.wasRaw() && adt.getTypeArguments().size() != 0) {
+        if (adt.isUnderlyingTypeRaw() && adt.getTypeArguments().size() != 0) {
             // the type arguments should be wildcards AND if I get the real type of "tree"
             // it corresponds to the declaration of adt.getUnderlyingType
             Element declarationEle = adt.getUnderlyingType().asElement();
@@ -783,7 +785,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
                 // Add annotation
                 extendsSlot = extendsMissingTrees.get(classElement);
             }
-            List<AnnotatedDeclaredType> superTypes = classType.directSuperTypes();
+            List<AnnotatedDeclaredType> superTypes = classType.directSupertypes();
             superTypes.get(0).replaceAnnotation(slotManager.getAnnotation(extendsSlot));
 
         } else {
@@ -817,7 +819,8 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         visitTogether(classType.getTypeArguments(), classTree.getTypeParameters());
 
         Slot varSlot = getOrCreateDeclBound(classType);
-        classType.addAnnotation(slotManager.getAnnotation(varSlot));
+        classType.removeAnnotationInHierarchy(realTop);
+        classType.replaceAnnotation(slotManager.getAnnotation(varSlot));
 
         // before we were relying on trees but the ClassTree has it's type args erased
         // when the compiler moves on to the next class
@@ -886,13 +889,13 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         switch (tree.getKind()) {
 
             case INTERSECTION_TYPE:
-                assert ((IntersectionTypeTree) tree).getBounds().size() == intersectionType.directSuperTypes().size();
-                visitTogether(intersectionType.directSuperTypes(), ((IntersectionTypeTree) tree).getBounds());
+                assert ((IntersectionTypeTree) tree).getBounds().size() == intersectionType.directSupertypes().size();
+                visitTogether(intersectionType.directSupertypes(), ((IntersectionTypeTree) tree).getBounds());
                 break;
 
             case TYPE_PARAMETER:
-                assert ((TypeParameterTree) tree).getBounds().size() == intersectionType.directSuperTypes().size();
-                visitTogether(intersectionType.directSuperTypes(), ((TypeParameterTree) tree).getBounds());
+                assert ((TypeParameterTree) tree).getBounds().size() == intersectionType.directSupertypes().size();
+                visitTogether(intersectionType.directSupertypes(), ((TypeParameterTree) tree).getBounds());
                 break;
 
             // TODO: IN JAVA 8, LAMBDAS CAN HAVE INTERSECTION ARGUMENTS
@@ -1035,7 +1038,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         treeKinds.add(Kind.TYPE_ANNOTATION);
         treeKinds.add(Kind.METHOD);
         treeKinds.add(Kind.CLASS);
-        Tree enclosure = TreeUtils.enclosingOfKind(path, treeKinds);
+        Tree enclosure = TreePathUtil.enclosingOfKind(path, treeKinds);
         return enclosure.getKind() == Kind.ANNOTATION
             || enclosure.getKind() == Kind.ANNOTATION_TYPE
             || enclosure.getKind() == Kind.TYPE_ANNOTATION;
@@ -1386,7 +1389,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         final AnnotatedDeclaredType returnType = (AnnotatedDeclaredType) methodType.getReturnType();
         // Use the element, don't try to use the tree
         // (since it might be in a different compilation unit, getting the path wont work)
-        final AnnotatedDeclaredType classType  = inferenceTypeFactory.getAnnotatedType(ElementUtils.enclosingClass(methodElem));
+        final AnnotatedDeclaredType classType  = inferenceTypeFactory.getAnnotatedType(ElementUtils.enclosingTypeElement(methodElem));
 
         // TODO: TEST THIS
         // Copy the annotations from the class declaration type parameter to the return type params
@@ -1486,7 +1489,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         // Note: We do not apply a primary annotation to the declaration of a class but we do
         // apply it to it's extends bound and therefore it's supertype.  Apply that
         AnnotationMirror variableAnno =
-                declarationType.directSuperTypes().get(0).getAnnotationInHierarchy(varAnnot);
+                declarationType.directSupertypes().get(0).getAnnotationInHierarchy(varAnnot);
 
 
         if (variableAnno == null) {
@@ -1559,7 +1562,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             Set<? extends AnnotationMirror> lubs = inferenceTypeFactory
                     .getQualifierHierarchy().leastUpperBounds(a.getEffectiveAnnotations(),
                             b.getEffectiveAnnotations());
-            atm.clearAnnotations();
+            atm.clearPrimaryAnnotations();
             atm.addAnnotations(lubs);
             if (slotManager.getSlot(atm) instanceof VariableSlot) {
                 final Pair<Slot, Set<? extends AnnotationMirror>> varATMPair = Pair.<Slot, Set<? extends AnnotationMirror>>of(

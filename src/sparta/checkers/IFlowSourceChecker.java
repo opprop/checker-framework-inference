@@ -22,8 +22,8 @@ public class IFlowSourceChecker extends BaseInferrableChecker {
     }
 
     @Override
-    public BaseAnnotatedTypeFactory createRealTypeFactory() {
-        return new SimpleFlowAnnotatedTypeFactory(this);
+    public SimpleFlowAnnotatedTypeFactory createRealTypeFactory(boolean infer) {
+        return new SimpleFlowAnnotatedTypeFactory(this, infer);
     }
 
     @Override

@@ -43,8 +43,8 @@ public class TrustedChecker extends BaseInferrableChecker {
     }
 
     @Override
-    public TrustedAnnotatedTypeFactory createRealTypeFactory() {
-        return new TrustedAnnotatedTypeFactory(this);
+    public TrustedAnnotatedTypeFactory createRealTypeFactory(boolean infer) {
+        return new TrustedAnnotatedTypeFactory(this, infer);
     }
 
     @Override

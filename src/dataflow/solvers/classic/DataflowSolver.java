@@ -40,6 +40,8 @@ public class DataflowSolver implements InferenceSolver {
 
     protected AnnotationMirror DATAFLOW;
 
+    protected DataflowUtils dataflowUtils;
+
     @Override
     public InferenceResult solve(Map<String, String> configuration,
                                  Collection<Slot> slots, Collection<Constraint> constraints,
@@ -48,6 +50,7 @@ public class DataflowSolver implements InferenceSolver {
 
         Elements elements = processingEnvironment.getElementUtils();
         DATAFLOW = AnnotationBuilder.fromClass(elements, DataFlow.class);
+        dataflowUtils = new DataflowUtils(processingEnvironment);
         AnnotationMirror dataflowTop = AnnotationBuilder.fromClass(elements, DataFlowTop.class);
         GraphBuilder graphBuilder = new GraphBuilder(slots, constraints, dataflowTop);
         ConstraintGraph constraintGraph = graphBuilder.buildGraph();
@@ -58,13 +61,21 @@ public class DataflowSolver implements InferenceSolver {
         for (Map.Entry<Vertex, Set<Constraint>> entry : constraintGraph.getConstantPath().entrySet()) {
             AnnotationMirror anno = entry.getKey().getValue();
             if (AnnotationUtils.areSameByName(anno, DATAFLOW)) {
-                String[] dataflowValues = DataflowUtils.getTypeNames(anno);
-                String[] dataflowRoots = DataflowUtils.getTypeNameRoots(anno);
-                if (dataflowValues.length == 1) {
-                    DatatypeSolver solver = new DatatypeSolver(dataflowValues[0], entry.getValue(),getSerializer(dataflowValues[0], false));
+                List<String> dataflowValues = dataflowUtils.getTypeNames(anno);
+                List<String> dataflowRoots = dataflowUtils.getTypeNameRoots(anno);
+                if (dataflowValues.size() == 1) {
+                    String datatype = dataflowValues.get(0);
+                    DatatypeSolver solver = new DatatypeSolver(
+                            datatype,
+                            entry.getValue(),
+                            getSerializer(datatype, false));
                     dataflowSolvers.add(solver);
-                } else if (dataflowRoots.length == 1) {
-                    DatatypeSolver solver = new DatatypeSolver(dataflowRoots[0], entry.getValue(),getSerializer(dataflowRoots[0], true));
+                } else if (dataflowRoots.size() == 1) {
+                    String datatype = dataflowRoots.get(0);
+                    DatatypeSolver solver = new DatatypeSolver(
+                            datatype,
+                            entry.getValue(),
+                            getSerializer(datatype, true));
                     dataflowSolvers.add(solver);
                 }
             }
@@ -107,7 +118,7 @@ public class DataflowSolver implements InferenceSolver {
     }
 
     protected DataflowSerializer getSerializer(String datatype, boolean isRoot) {
-        return new DataflowSerializer(datatype, isRoot);
+        return new DataflowSerializer(datatype, isRoot, dataflowUtils);
     }
 
     protected InferenceResult getMergedResultFromSolutions(ProcessingEnvironment processingEnvironment,

@@ -97,7 +97,7 @@ public class ToStringSerializer implements Serializer<String, String> {
                     getCurrentIndentString() + slot.serialize(this));
         }
 
-        return SystemUtil.join(delimiter, serializedSlots.values());
+        return String.join(delimiter, serializedSlots.values());
     }
 
     public String serializeConstraints(Iterable<Constraint> constraints, String delimiter) {
@@ -113,7 +113,7 @@ public class ToStringSerializer implements Serializer<String, String> {
         // Alphabetically sort list so that the output string is always in the same order
         Collections.sort(constraintStrings);
 
-        return SystemUtil.join(delimiter, constraintStrings);
+        return String.join(delimiter, constraintStrings);
     }
 
     @Override

@@ -1,5 +1,7 @@
 package nninf;
 
+import checkers.inference.BaseInferenceRealTypeFactory;
+import com.sun.source.tree.ClassTree;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
@@ -7,17 +9,14 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 
-public class GameAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class GameAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
 
-    public GameAnnotatedTypeFactory(BaseTypeChecker checker, boolean useFlow) {
-        super(checker, useFlow);
+    public GameAnnotatedTypeFactory(BaseTypeChecker checker, boolean isInfer) {
+        super(checker, isInfer);
 
-        // Subclasses call postInit
-        // this.postInit();
-    }
-
-    public GameAnnotatedTypeFactory(BaseTypeChecker checker) {
-        this(checker, flowByDefault);
+        if (this.getClass() == GameAnnotatedTypeFactory.class) {
+            postInit();
+        }
     }
 //
 //    @Override

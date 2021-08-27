@@ -15,6 +15,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 import java.util.List;
@@ -130,7 +131,7 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
         AnnotatedDeclaredType enclosingType = (AnnotatedDeclaredType) classType;
         TreePath classPath = atypeFactory.getPath(classTree);
         while (classPath != null) {
-            ClassTree enclosingClass = TreeUtils.enclosingClass(classPath.getParentPath());
+            ClassTree enclosingClass = TreePathUtil.enclosingClass(classPath.getParentPath());
             enclosingType = enclosingType.getEnclosingType();
             if (enclosingType == null || enclosingClass == null) {
                 break;

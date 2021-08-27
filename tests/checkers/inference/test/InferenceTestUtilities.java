@@ -14,8 +14,9 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.checkerframework.javacutil.SystemUtil;
 import org.junit.Assert;
+
+import org.plumelib.util.StringsPlume;
 
 /**
  * Created by jburke on 7/7/15.
@@ -118,7 +119,7 @@ public class InferenceTestUtilities {
             case FINAL_TYPECHECK:
                 if (expectedLastPhase == InferenceTestPhase.INFER) {
                     String summary = "Inference is expected to fail, but succeeded on the source file: \n"
-                            + SystemUtil.join("\n", testResult.getConfiguration().getInitialTypecheckConfig().getTestSourceFiles()) + "\n\n";
+                            + StringsPlume.join("\n", testResult.getConfiguration().getInitialTypecheckConfig().getTestSourceFiles()) + "\n\n";
 
                     assertFail(InferenceTestPhase.INFER, summary);
                 }

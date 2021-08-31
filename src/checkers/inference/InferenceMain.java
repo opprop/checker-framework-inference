@@ -160,8 +160,7 @@ public class InferenceMain {
                 "-processor", "checkers.inference.InferenceChecker",
                 "-Xmaxwarns", "1000",
                 "-Xmaxerrs", "1000",
-                "-XDignore.symbol.file",
-                "-Awarns"));
+                "-XDignore.symbol.file"));
 
         if (SystemUtil.getJreVersion() == 8) {
             checkerFrameworkArgs.addAll(Arrays.asList("-source", "8", "-target", "8"));

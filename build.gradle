@@ -208,9 +208,9 @@ task dist(dependsOn: shadowJar, type: Copy) {
 
 task dependenciesJar(dependsOn: dist, type: Jar) {
     description 'Create a jar file with all the dependencies.'
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
     from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-        configurations.testCompile.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
     archiveName 'dependencies.jar'
     destinationDir file("${projectDir}/dist/")

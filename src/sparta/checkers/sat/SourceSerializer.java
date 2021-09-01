@@ -1,5 +1,6 @@
 package sparta.checkers.sat;
 
+import checkers.inference.InferenceMain;
 import checkers.inference.model.ConstantSlot;
 import org.checkerframework.javacutil.AnnotationUtils;
 import sparta.checkers.iflow.util.IFlowUtils;
@@ -13,8 +14,12 @@ import java.util.Set;
  * Created by smillst on 9/21/15.
  */
 public class SourceSerializer extends IFlowSerializer {
+
+    protected final IFlowUtils flowUtils;
+
     public SourceSerializer(PFPermission permission) {
         super(permission);
+        flowUtils = new IFlowUtils(InferenceMain.getInstance().getRealTypeFactory().getProcessingEnv());
     }
 
     @Override
@@ -24,10 +29,10 @@ public class SourceSerializer extends IFlowSerializer {
     }
 
     private boolean annoHasPermission(AnnotationMirror anno) {
-        if (AnnotationUtils.areSameByClass(anno, PolySource.class)) {
+        if (IFlowUtils.isPolySource(anno)) {
             return true;  // Treat as top
         }
-            Set<PFPermission> sources = IFlowUtils.getSources(anno);
+        Set<PFPermission> sources = flowUtils.getSources(anno);
         return sources.contains(PFPermission.ANY) || sources.contains(permission);
     }
 }

@@ -53,7 +53,7 @@ public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
         final File testDataDir = new File("testdata");
 
         InferenceTestConfiguration config = InferenceTestConfigurationBuilder.buildDefaultConfiguration(testDir,
-                testFile, testDataDir, checkerName, checkerOptions, getAdditionalInferenceOptions(), solverArgs.first,
+                testFile, testDataDir, checker, checkerOptions, getAdditionalInferenceOptions(), solverArgs.first,
                 solverArgs.second, useHacks(), shouldEmitDebugInfo, getPathToAfuScripts(), getPathToInferenceScript());
 
         InferenceTestResult testResult = new InferenceTestExecutor().runTest(config);

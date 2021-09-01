@@ -124,7 +124,7 @@ import nninf.qual.KeyFor;
         if (anno == null)
             return false;
 
-        List<String> maps = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
+        List<String> maps = AnnotationUtils.getElementValueArray(anno, factory.keyForValueElement, String.class);
 
         return maps.contains(mapName);
     }
@@ -137,7 +137,7 @@ import nninf.qual.KeyFor;
         if (anno == null)
             return false;
 
-        List<String> maps = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
+        List<String> maps = AnnotationUtils.getElementValueArray(anno, factory.keyForValueElement, String.class);
         for (String map: maps) {
             Element elt = resolver.findVariable(map, path);
             if (elt != null &&

@@ -36,7 +36,7 @@ public class ConstraintManager {
         this.inferenceTypeFactory = inferenceTypeFactory;
         this.realQualHierarchy = inferenceTypeFactory.getRealQualifierHierarchy();
         this.visitorState = inferenceTypeFactory.getVisitorState();
-        this.checker = inferenceTypeFactory.getContext().getChecker();
+        this.checker = inferenceTypeFactory.getChecker();
     }
 
     public Set<Constraint> getConstraints() {

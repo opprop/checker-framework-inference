@@ -1,7 +1,6 @@
 package checkers.inference.dataflow;
 
 import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
-import org.checkerframework.dataflow.analysis.FlowExpressions;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
@@ -13,6 +12,7 @@ import org.checkerframework.dataflow.cfg.node.Node;
 import org.checkerframework.dataflow.cfg.node.NotEqualNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
@@ -471,8 +471,8 @@ public class InferenceTransfer extends CFTransfer {
         AnnotationMirror elseAm = slotManager.getAnnotation(elseSlot);
 
         // If node is assignment, iterate over lhs; otherwise, just node.
-        FlowExpressions.Receiver rec;
-        rec = FlowExpressions.internalReprOf(getInferenceAnalysis().getTypeFactory(), var);
+        JavaExpression rec;
+        rec = JavaExpression.fromNode(var);
         thenStore.clearValue(rec);
         thenStore.insertValue(rec, thenAm);
         elseStore.clearValue(rec);

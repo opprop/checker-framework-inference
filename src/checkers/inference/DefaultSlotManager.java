@@ -17,6 +17,7 @@ import java.util.TreeSet;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.inference.model.LubVariableSlot;
@@ -419,7 +420,8 @@ public class DefaultSlotManager implements SlotManager {
     }
 
     @Override
-    public ArithmeticVariableSlot createArithmeticVariableSlot(AnnotationLocation location) {
+    public ArithmeticVariableSlot createArithmeticVariableSlot(
+            AnnotationLocation location, AnnotatedTypeMirror lhsAtm, AnnotatedTypeMirror rhsAtm) {
         if (location == null || location.getKind() == AnnotationLocation.Kind.MISSING) {
             throw new BugInCF(
                     "Cannot create an ArithmeticVariableSlot with a missing annotation location.");
@@ -427,13 +429,31 @@ public class DefaultSlotManager implements SlotManager {
 
         // create the arithmetic var slot if it doesn't exist for the given location
         if (!arithmeticSlotCache.containsKey(location)) {
-            ArithmeticVariableSlot slot = new ArithmeticVariableSlot(nextId(), location);
+
+            TypeKind kind = getArithmeticResultKind(lhsAtm, rhsAtm);
+
+            ArithmeticVariableSlot slot = new ArithmeticVariableSlot(nextId(), location, kind);
             addToSlots(slot);
             arithmeticSlotCache.put(location, slot.getId());
             return slot;
         }
 
         return getArithmeticVariableSlot(location);
+    }
+
+    private boolean isLong(TypeMirror t) {
+        return t.getKind() == TypeKind.LONG
+                || t.toString().equals("java.lang.Long");
+    }
+
+    private TypeKind getArithmeticResultKind(AnnotatedTypeMirror lhsAtm, AnnotatedTypeMirror rhsAtm) {
+        TypeMirror lhsType = lhsAtm.getUnderlyingType();
+        TypeMirror rhsType = rhsAtm.getUnderlyingType();
+        if (isLong(lhsType) || isLong(rhsType)) {
+            return TypeKind.LONG;
+        }
+
+        return TypeKind.INT;
     }
 
     @Override

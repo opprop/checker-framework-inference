@@ -150,7 +150,8 @@ public interface SlotManager {
      * @param location an AnnotationLocation used to locate this variable in code
      * @return the ArithmeticVariableSlot for the given location
      */
-    ArithmeticVariableSlot createArithmeticVariableSlot(AnnotationLocation location);
+    ArithmeticVariableSlot createArithmeticVariableSlot(
+            AnnotationLocation location, AnnotatedTypeMirror lhsAtm, AnnotatedTypeMirror rhsAtm);
 
     /**
      * Retrieves the ArithmeticVariableSlot created for the given location if it has been previously

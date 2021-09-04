@@ -34,6 +34,8 @@ import checkers.inference.model.Slot;
 import checkers.inference.model.SourceVariableSlot;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.qual.VarAnnot;
+import org.checkerframework.javacutil.TypeKindUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The default implementation of SlotManager.
@@ -419,6 +421,25 @@ public class DefaultSlotManager implements SlotManager {
         return existentialVariableSlot;
     }
 
+
+    private TypeKind getArithmeticResultKind(AnnotatedTypeMirror lhsAtm, AnnotatedTypeMirror rhsAtm) {
+        TypeMirror lhsType = lhsAtm.getUnderlyingType();
+        TypeMirror rhsType = rhsAtm.getUnderlyingType();
+
+        assert (TypesUtils.isPrimitiveOrBoxed(lhsType) && TypesUtils.isPrimitiveOrBoxed(rhsType));
+
+        if (TypesUtils.isFloatingPoint(lhsType) || TypesUtils.isFloatingPoint(rhsType)) {
+            return TypeKind.DOUBLE;
+        }
+
+        if (TypeKindUtils.primitiveOrBoxedToTypeKind(lhsType) == TypeKind.LONG
+                || TypeKindUtils.primitiveOrBoxedToTypeKind(rhsType) == TypeKind.LONG) {
+            return TypeKind.LONG;
+        }
+
+        return TypeKind.INT;
+    }
+
     @Override
     public ArithmeticVariableSlot createArithmeticVariableSlot(
             AnnotationLocation location, AnnotatedTypeMirror lhsAtm, AnnotatedTypeMirror rhsAtm) {
@@ -429,9 +450,7 @@ public class DefaultSlotManager implements SlotManager {
 
         // create the arithmetic var slot if it doesn't exist for the given location
         if (!arithmeticSlotCache.containsKey(location)) {
-
             TypeKind kind = getArithmeticResultKind(lhsAtm, rhsAtm);
-
             ArithmeticVariableSlot slot = new ArithmeticVariableSlot(nextId(), location, kind);
             addToSlots(slot);
             arithmeticSlotCache.put(location, slot.getId());
@@ -439,21 +458,6 @@ public class DefaultSlotManager implements SlotManager {
         }
 
         return getArithmeticVariableSlot(location);
-    }
-
-    private boolean isLong(TypeMirror t) {
-        return t.getKind() == TypeKind.LONG
-                || t.toString().equals("java.lang.Long");
-    }
-
-    private TypeKind getArithmeticResultKind(AnnotatedTypeMirror lhsAtm, AnnotatedTypeMirror rhsAtm) {
-        TypeMirror lhsType = lhsAtm.getUnderlyingType();
-        TypeMirror rhsType = rhsAtm.getUnderlyingType();
-        if (isLong(lhsType) || isLong(rhsType)) {
-            return TypeKind.LONG;
-        }
-
-        return TypeKind.INT;
     }
 
     @Override

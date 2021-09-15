@@ -13,8 +13,21 @@ else
   export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(readlink -f $(which javac))))}
 fi
 
+export AFU="${AFU:-../annotation-tools/annotation-file-utilities}"
+# Don't use `AT=${AFU}/..` which causes a git failure.
+AT=$(dirname "${AFU}")
+
+## Build annotation-tools (Annotation File Utilities)
+/tmp/plume-scripts/git-clone-related opprop annotation-tools "${AT}"
+if [ ! -d ../annotation-tools ] ; then
+ ln -s "${AT}" ../annotation-tools
+fi
+
+echo "Running:  (cd ${AT} && ./.build-without-test.sh)"
+(cd "${AT}" && ./.build-without-test.sh)
+echo "... done: (cd ${AT} && ./.build-without-test.sh)"
+
 export JSR308="${JSR308:-$(cd .. && pwd -P)}"
-export AFU="${AFU:-$(pwd -P)/../annotation-tools/annotation-file-utilities}"
 export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)/../checker-framework}"
 
 export PATH=$AFU/scripts:$JAVA_HOME/bin:$PATH

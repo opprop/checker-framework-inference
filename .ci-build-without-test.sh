@@ -13,6 +13,12 @@ else
   export JAVA_HOME=${JAVA_HOME:-$(dirname $(dirname $(readlink -f $(which javac))))}
 fi
 
+if [ -d "/tmp/plume-scripts" ] ; then
+  git -C /tmp/plume-scripts pull -q
+else
+  git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
+fi
+
 export AFU="${AFU:-../annotation-tools/annotation-file-utilities}"
 # Don't use `AT=${AFU}/..` which causes a git failure.
 AT=$(dirname "${AFU}")
@@ -31,12 +37,6 @@ export JSR308="${JSR308:-$(cd .. && pwd -P)}"
 export CHECKERFRAMEWORK="${CHECKERFRAMEWORK:-$(pwd -P)/../checker-framework}"
 
 export PATH=$AFU/scripts:$JAVA_HOME/bin:$PATH
-
-if [ -d "/tmp/plume-scripts" ] ; then
-  git -C /tmp/plume-scripts pull -q
-else
-  git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
-fi
 
 ## Build Checker Framework
 /tmp/plume-scripts/git-clone-related opprop checker-framework ${CHECKERFRAMEWORK}

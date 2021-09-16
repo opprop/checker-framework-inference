@@ -273,7 +273,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         Set<AnnotationMirror> annotations = type.getEffectiveAnnotations();
         for (AnnotatedTypeMirror supertype : supertypes) {
             if (!annotations.equals(supertype.getEffectiveAnnotations())) {
-                supertype.clearPrimaryAnnotations();
+                supertype.clearAnnotations();
                 supertype.addAnnotations(annotations);
             }
         }

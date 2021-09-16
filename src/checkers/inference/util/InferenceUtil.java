@@ -40,7 +40,7 @@ public class InferenceUtil {
         final Set<AnnotationMirror> oldAnnos = AnnotationUtils.createAnnotationSet();
         oldAnnos.addAll(atm.getAnnotations());
 
-        atm.clearPrimaryAnnotations();
+        atm.clearAnnotations();
         return oldAnnos;
     }
 

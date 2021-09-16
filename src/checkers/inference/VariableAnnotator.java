@@ -410,7 +410,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         if (elementToAtm.containsKey(varElem)
          && !isUpperBoundOfTypeParam
          && !isReturn) {
-            typeVar.clearPrimaryAnnotations();
+            typeVar.clearAnnotations();
             annotateElementFromStore(varElem, typeVar);
             return;
         }
@@ -420,7 +420,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             potentialVariable = treeToVarAnnoPair.get(typeTree).first;
             // might have a primary annotation lingering around
             // (that would removed in the else clause)
-            typeVar.clearPrimaryAnnotations();
+            typeVar.clearAnnotations();
 
         } else {
             // element from use and see if we already have this as a local var or field?
@@ -431,7 +431,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
                                            + "typeVar=" + typeVar + "\n"
                                            + "tree=" + tree + "\n");
                 }
-                typeVar.clearPrimaryAnnotations();
+                typeVar.clearAnnotations();
             }
 
             potentialVariable = createVariable(typeTree);
@@ -1546,7 +1546,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             Set<? extends AnnotationMirror> lubs = inferenceTypeFactory
                     .getQualifierHierarchy().leastUpperBounds(a.getEffectiveAnnotations(),
                             b.getEffectiveAnnotations());
-            atm.clearPrimaryAnnotations();
+            atm.clearAnnotations();
             atm.addAnnotations(lubs);
             if (slotManager.getSlot(atm) instanceof VariableSlot) {
                 final Pair<Slot, Set<? extends AnnotationMirror>> varATMPair = Pair.<Slot, Set<? extends AnnotationMirror>>of(

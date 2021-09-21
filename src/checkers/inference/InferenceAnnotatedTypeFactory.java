@@ -287,13 +287,13 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Element element, AnnotatedTypeMirror type)  { }
 
 
-    @Override
-    public void postAsMemberOf(final AnnotatedTypeMirror type,
-                               final AnnotatedTypeMirror owner, final Element element) {
-        if (viewpointAdapter != null) {
-            viewpointAdapter.viewpointAdaptMember(owner, element, type);
-        }
-    }
+//    @Override
+//    public void postAsMemberOf(final AnnotatedTypeMirror type,
+//                               final AnnotatedTypeMirror owner, final Element element) {
+//        if (viewpointAdapter != null) {
+//            viewpointAdapter.viewpointAdaptMember(owner, element, type);
+//        }
+//    }
 
     /**
      * @see org.checkerframework.checker.type.AnnotatedTypeFactory#methodFromUse(com.sun.source.tree.MethodInvocationTree)

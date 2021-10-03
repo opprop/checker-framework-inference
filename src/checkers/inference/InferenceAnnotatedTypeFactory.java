@@ -49,6 +49,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 
@@ -287,13 +288,13 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             Element element, AnnotatedTypeMirror type)  { }
 
 
-//    @Override
-//    public void postAsMemberOf(final AnnotatedTypeMirror type,
-//                               final AnnotatedTypeMirror owner, final Element element) {
-//        if (viewpointAdapter != null) {
-//            viewpointAdapter.viewpointAdaptMember(owner, element, type);
-//        }
-//    }
+    @Override
+    public void postAsMemberOf(final AnnotatedTypeMirror type,
+                               final AnnotatedTypeMirror owner, final Element element) {
+        if (viewpointAdapter != null && type.getKind() != TypeKind.EXECUTABLE) {
+            viewpointAdapter.viewpointAdaptMember(owner, element, type);
+        }
+    }
 
     /**
      * @see org.checkerframework.checker.type.AnnotatedTypeFactory#methodFromUse(com.sun.source.tree.MethodInvocationTree)

@@ -291,7 +291,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public void postAsMemberOf(final AnnotatedTypeMirror type,
                                final AnnotatedTypeMirror owner, final Element element) {
-        //TODO: type.getKind() != TypeKind.EXECUTABLE is added to match with super. Is there a better way to do this?
+        // TODO: this only does a subset of what super does. Why is this override needed at all?
         if (viewpointAdapter != null && type.getKind() != TypeKind.EXECUTABLE) {
             viewpointAdapter.viewpointAdaptMember(owner, element, type);
         }

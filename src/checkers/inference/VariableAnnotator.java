@@ -1657,8 +1657,8 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * This method returns the annotation that may or may not be placed on the class declaration for type.
      * If it does not already exist, this method creates the annotation and stores it in classDeclAnnos.
      *
-     * We can override this method and just return getTopConstant() when we don't want class declaration
-     * annotations (e.g., in the case of universe type system) 
+     * This method can be overridden if a type system wants to use a fixed annotation for class declarations. 
+     * For example, using the top annotation effectively disables declaration bound checks. 
      *
      */
     protected Slot getOrCreateDeclBound(AnnotatedDeclaredType type) {

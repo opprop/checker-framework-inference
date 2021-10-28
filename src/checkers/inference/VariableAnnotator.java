@@ -1658,7 +1658,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * If it does not already exist, this method creates the annotation and stores it in classDeclAnnos.
      *
      * We can override this method and just return getTopConstant() when we don't want class declaration
-     * annotations (e.g., in the case of universe type system)
+     * annotations (e.g., in the case of universe type system) 
      *
      */
     protected Slot getOrCreateDeclBound(AnnotatedDeclaredType type) {

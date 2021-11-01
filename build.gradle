@@ -63,7 +63,7 @@ dependencies {
     // Serialize constraints
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     // Pretty print serialized constraints
-    implementation 'com.google.code.gson:gson:2.8.8'
+    implementation 'com.google.code.gson:gson:2.8.9'
 
     implementation 'org.ow2.sat4j:org.ow2.sat4j.core:2.3.6'
     implementation 'org.ow2.sat4j:org.ow2.sat4j.maxsat:2.3.6'

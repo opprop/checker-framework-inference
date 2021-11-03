@@ -136,10 +136,6 @@ public class ExistentialVariableInserter {
                 return;
             }
 
-            if (typeUse.getAnnotationInHierarchy(realTop) == null) {
-                typeUse.addAnnotation(realTop);
-            }
-
             if (slotManager.getSlot(typeUse).equals(potentialVariable)) {
                 final Slot declSlot = slotManager.getSlot(declaration);
 
@@ -188,7 +184,10 @@ public class ExistentialVariableInserter {
 
             // component types will not have the potentialVarAnno on them, so instead copy over other annotations
             // from the declared type
-            AnnotatedTypeReplacer.replace(declaration.getComponentType(), typeUse.getComponentType());
+            InferenceMain.getInstance().getRealTypeFactory().replaceAnnotations(
+                    declaration.getComponentType(),
+                    typeUse.getComponentType()
+            );
             return null;
         }
 
@@ -213,7 +212,7 @@ public class ExistentialVariableInserter {
                 AnnotatedTypeMirror nextDecl = declArgs.next();
                 if (nextUse != nextDecl) { // these two can be the same when a recursive type parameter uses
                                            // itself (e.g.  <T extends List<T>>
-                    AnnotatedTypeReplacer.replace(nextDecl, nextUse);
+                    InferenceMain.getInstance().getRealTypeFactory().replaceAnnotations(nextDecl, nextUse);
                 }
             }
 

@@ -1,11 +1,7 @@
 package checkers.inference.test;
 
 import org.checkerframework.framework.test.CheckerFrameworkPerFileTest;
-import org.checkerframework.framework.test.TestConfiguration;
 import org.checkerframework.framework.test.TestUtilities;
-import org.checkerframework.framework.test.diagnostics.DiagnosticKind;
-import org.checkerframework.framework.test.diagnostics.JavaDiagnosticReader;
-import org.checkerframework.framework.test.diagnostics.TestDiagnostic;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.SystemUtil;
 
@@ -15,7 +11,6 @@ import java.util.List;
 
 import javax.annotation.processing.AbstractProcessor;
 
-import org.junit.Assert;
 import org.junit.Test;
 
 public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
@@ -62,19 +57,6 @@ public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
                 solverArgs.second, useHacks(), shouldEmitDebugInfo, getPathToAfuScripts(), getPathToInferenceScript());
 
         InferenceTestResult testResult = new InferenceTestExecutor().runTest(config);
-
-        // If the test file contains any hard error, then the test should fail at inference phase and not proceed.
-        // i.e. the last phase is inference.
-        TestConfiguration typecheckConfig = config.getInitialTypecheckConfig();
-        List<TestDiagnostic> expectedDiagnostics = JavaDiagnosticReader.readJavaSourceFiles(typecheckConfig.getTestSourceFiles());
-        InferenceTestPhase expectedLastPhase = InferenceTestPhase.FINAL_TYPECHECK;
-        for (TestDiagnostic diagnostic : expectedDiagnostics) {
-            if (!diagnostic.isFixable()) {
-                expectedLastPhase = InferenceTestPhase.INFER;
-                break;
-            }
-        }
-        InferenceTestUtilities.assertResultsAreValid(testResult, expectedLastPhase);
+        InferenceTestUtilities.assertResultsAreValid(testResult);
     }
-
 }

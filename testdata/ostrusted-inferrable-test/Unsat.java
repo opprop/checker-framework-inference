@@ -15,8 +15,7 @@ class Unsat {
     @OsUntrusted String bar() { return ""; }
 
     void m() {
-        String s = bar();
-        // :: error: (argument.type.incompatible)
-        foo(s);
+        // :: error: (assignment.type.incompatible)
+        @OsTrusted String s = bar();
     }
 }

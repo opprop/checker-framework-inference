@@ -160,7 +160,8 @@ public class InferenceMain {
                 "-processor", "checkers.inference.InferenceChecker",
                 "-Xmaxwarns", "1000",
                 "-Xmaxerrs", "1000",
-                "-XDignore.symbol.file"));
+                "-XDignore.symbol.file",
+                "-Awarns"));
 
         if (SystemUtil.getJreVersion() == 8) {
             checkerFrameworkArgs.addAll(Arrays.asList("-source", "8", "-target", "8"));
@@ -452,6 +453,9 @@ public class InferenceMain {
 
         @Override
         public void handleCompilerResult(boolean success, String javacOutStr) {
+            if (!javacOutStr.isEmpty()) {
+                logger.severe(javacOutStr);
+            }
             if (!success) {
                 logger.severe("Error return code from javac! Quitting.");
                 logger.info(javacOutStr);

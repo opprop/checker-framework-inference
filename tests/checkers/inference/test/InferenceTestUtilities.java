@@ -16,8 +16,6 @@ import java.util.regex.Pattern;
 
 import org.junit.Assert;
 
-import org.plumelib.util.StringsPlume;
-
 /**
  * Created by jburke on 7/7/15.
  */
@@ -98,7 +96,7 @@ public class InferenceTestUtilities {
         Assert.fail(message);
     }
 
-    public static void assertResultsAreValid(InferenceTestResult testResult, InferenceTestPhase expectedLastPhase) {
+    public static void assertResultsAreValid(InferenceTestResult testResult) {
         final InferenceTestPhase lastPhaseRun = testResult.getLastPhaseRun();
 
         switch (lastPhaseRun) {
@@ -107,9 +105,7 @@ public class InferenceTestUtilities {
                 break;
 
             case INFER:
-                if (expectedLastPhase != InferenceTestPhase.INFER) {
-                    assertFail(InferenceTestPhase.INFER, testResult.getInferenceResult().summarize());
-                }
+                assertFail(InferenceTestPhase.INFER, testResult.getInferenceResult().summarize());
                 break;
 
             case INSERT:
@@ -117,13 +113,6 @@ public class InferenceTestUtilities {
                 break;
 
             case FINAL_TYPECHECK:
-                if (expectedLastPhase == InferenceTestPhase.INFER) {
-                    String summary = "Inference is expected to fail, but succeeded on the source file: \n"
-                            + StringsPlume.join("\n", testResult.getConfiguration().getInitialTypecheckConfig().getTestSourceFiles()) + "\n\n";
-
-                    assertFail(InferenceTestPhase.INFER, summary);
-                }
-
                 TypecheckResult finalTypecheckResult = testResult.getFinalTypecheckResult();
                 if (finalTypecheckResult.didTestFail()) {
                     assertFail(InferenceTestPhase.FINAL_TYPECHECK, finalTypecheckResult.summarize());

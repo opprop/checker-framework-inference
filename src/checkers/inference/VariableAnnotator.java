@@ -410,7 +410,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         if (elementToAtm.containsKey(varElem)
          && !isUpperBoundOfTypeParam
          && !isReturn) {
-            typeVar.clearPrimaryAnnotations();
+            typeVar.clearAnnotations();
             annotateElementFromStore(varElem, typeVar);
             return;
         }
@@ -420,7 +420,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             potentialVariable = treeToVarAnnoPair.get(typeTree).first;
             // might have a primary annotation lingering around
             // (that would removed in the else clause)
-            typeVar.clearPrimaryAnnotations();
+            typeVar.clearAnnotations();
 
         } else {
             // element from use and see if we already have this as a local var or field?
@@ -431,7 +431,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
                                            + "typeVar=" + typeVar + "\n"
                                            + "tree=" + tree + "\n");
                 }
-                typeVar.clearPrimaryAnnotations();
+                typeVar.clearAnnotations();
             }
 
             potentialVariable = createVariable(typeTree);
@@ -1178,12 +1178,28 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             TreePath pathToTopLevelTree = inferenceTypeFactory.getPath(topLevelTree);
 
             AnnotationLocation location;
-            // 'pathToTopLevelTree' is null when it's an artificial array creation tree like for
-            // varargs. We don't need to create AstPathLocation for them.
-            if (pathToTopLevelTree != null) {
-                ASTRecord astRecord = ASTPathUtil.getASTRecordForPath(inferenceTypeFactory, pathToTopLevelTree).newArrayLevel(level);
+
+            assert pathToTopLevelTree != null;
+            ASTRecord astRecord = ASTPathUtil.getASTRecordForPath(inferenceTypeFactory, pathToTopLevelTree);
+            if (astRecord != null) {
+                astRecord = astRecord.newArrayLevel(level);
                 location = new AstPathLocation(astRecord);
             } else {
+                // astRecord for `pathToTopLevelTree` is null when `topLevelTree` is an artificial array creation
+                // tree like for varargs, as the following case shows
+                //
+                //    void foo() {
+                //        bar(new String("a"), new String("b"));
+                //    }
+                //
+                //    void bar(Object... args) {}
+                //
+                // At the method invocation of `bar`, an artificial new array is created as
+                //      "new Object[]{new String("a"), new String("b")}"
+                // There's no exclusive AST path (i.e. AnnotationLocation) for the artificial tree. Currently we
+                // create slots for the array primary type and component types all on MISSING_LOCATION.
+                // TODO: consider an appropriate AST path for the artificial array creation or other ways to get
+                //  rid of MISSING_LOCATION. See https://github.com/opprop/checker-framework-inference/issues/346
                 location = AnnotationLocation.MISSING_LOCATION;
             }
 
@@ -1546,7 +1562,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             Set<? extends AnnotationMirror> lubs = inferenceTypeFactory
                     .getQualifierHierarchy().leastUpperBounds(a.getEffectiveAnnotations(),
                             b.getEffectiveAnnotations());
-            atm.clearPrimaryAnnotations();
+            atm.clearAnnotations();
             atm.addAnnotations(lubs);
             if (slotManager.getSlot(atm) instanceof VariableSlot) {
                 final Pair<Slot, Set<? extends AnnotationMirror>> varATMPair = Pair.<Slot, Set<? extends AnnotationMirror>>of(
@@ -1640,8 +1656,12 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
     /**
      * This method returns the annotation that may or may not be placed on the class declaration for type.
      * If it does not already exist, this method creates the annotation and stores it in classDeclAnnos.
+     *
+     * This method can be overridden if a type system wants to use a fixed annotation for class declarations. 
+     * For example, using the top annotation effectively disables declaration bound checks. 
+     *
      */
-    private Slot getOrCreateDeclBound(AnnotatedDeclaredType type) {
+    protected Slot getOrCreateDeclBound(AnnotatedDeclaredType type) {
         TypeElement classElt = (TypeElement) type.getUnderlyingType().asElement();
 
         Slot topConstant = getTopConstant();

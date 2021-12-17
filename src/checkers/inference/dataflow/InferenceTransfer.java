@@ -28,9 +28,7 @@ import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 
-import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.UnaryTree;
 import com.sun.source.tree.VariableTree;
 
 import checkers.inference.InferenceAnnotatedTypeFactory;
@@ -160,14 +158,6 @@ public class InferenceTransfer extends CFTransfer {
         } else if (lhs.getTree().getKind() == Tree.Kind.IDENTIFIER
                 || lhs.getTree().getKind() == Tree.Kind.MEMBER_SELECT) {
             // Create Refinement Variable
-
-            // TODO: We do not currently refine UnaryTrees and Compound Assignments (See Issue 9)
-            if (assignmentNode.getTree() instanceof CompoundAssignmentTree
-                    || assignmentNode.getTree() instanceof UnaryTree) {
-                CFValue result = analysis.createAbstractValue(atm);
-                return new RegularTransferResult<CFValue, CFStore>(finishValue(result, store), store);
-            }
-
             final TransferResult<CFValue, CFStore> result;
             if (atm.getKind() == TypeKind.TYPEVAR) {
                 result = createTypeVarRefinementVars(assignmentNode.getTarget(), assignmentNode.getTree(),

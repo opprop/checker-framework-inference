@@ -241,11 +241,10 @@ public class ToStringSerializer implements Serializer<String, String> {
         final StringBuilder sb = new StringBuilder();
         sb.append(getCurrentIndentString())
           .append(constraint.getVariable().serialize(this))
-          .append(" ~= ")
+          .append(" == ")
           .append(constraint.getGoal().serialize(this))
-          .append(" w(")
-          .append(constraint.getWeight())
-          .append(" )");
+          .append(" weight = ")
+          .append(constraint.getWeight());
         showVerboseVars = prevShowVerboseVars;
         return sb.toString();
     }

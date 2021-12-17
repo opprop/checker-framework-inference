@@ -186,7 +186,7 @@ public class CopyUtil {
             copyAnnotationsOnDeclaredTypeList(fromAlternatives, toAlternatives, copyMethod, visited);
 
         } else {
-            throw new BugInCF("InferenceUtils.copyAnnotationsImpl: unhandled getKind results: " + from +
+            throw new BugInCF("CopyUtils.copyAnnotationsImpl: unhandled getKind results: " + from +
                     " and " + to + "\n    of kinds: " + fromKind + " and " + toKind);
         }
     }

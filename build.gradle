@@ -1,5 +1,5 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '7.0.0'
+    id 'com.github.johnrengelman.shadow' version '7.1.0'
 }
 
 apply plugin: 'java'
@@ -52,7 +52,7 @@ dependencies {
     implementation 'org.plumelib:options:1.0.5'
     implementation 'org.plumelib:plume-util:1.5.8'
 
-    implementation 'com.google.guava:guava:30.1.1-jre'
+    implementation 'com.google.guava:guava:31.0.1-jre'
 
     // AFU is an "includedBuild" imported in settings.gradle, so the version number doesn't matter.
     // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
@@ -63,7 +63,7 @@ dependencies {
     // Serialize constraints
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     // Pretty print serialized constraints
-    implementation 'com.google.code.gson:gson:2.8.8'
+    implementation 'com.google.code.gson:gson:2.8.9'
 
     implementation 'org.ow2.sat4j:org.ow2.sat4j.core:2.3.6'
     implementation 'org.ow2.sat4j:org.ow2.sat4j.maxsat:2.3.6'

@@ -186,7 +186,7 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
 
     @Override
     public ConstraintEncodingT serialize(CombineConstraint combineConstraint) {
-        return comparableConstraintEncoder == null ? null :
+        return combineConstraintEncoder == null ? null :
                 ConstraintEncoderCoordinator.dispatch(combineConstraint, combineConstraintEncoder);
     }
 

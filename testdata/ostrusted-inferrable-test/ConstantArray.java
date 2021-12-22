@@ -5,7 +5,6 @@ public interface ConstantArray {
         "public", "private", "protected", "static", "final", "synchronized",
         "volatile", "transient", "native", "interface", "abstract", "strictfp",
         "synthetic", "annotation", "enum"
-
     };
 }
 

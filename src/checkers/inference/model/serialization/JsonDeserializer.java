@@ -36,6 +36,8 @@ import static checkers.inference.model.serialization.JsonSerializer.EXISTENTIAL_
 import static checkers.inference.model.serialization.JsonSerializer.INEQUALITY_CONSTRAINT_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.INEQUALITY_LHS;
 import static checkers.inference.model.serialization.JsonSerializer.INEQUALITY_RHS;
+import static checkers.inference.model.serialization.JsonSerializer.COMP_LHS;
+import static checkers.inference.model.serialization.JsonSerializer.COMP_RHS;
 import static checkers.inference.model.serialization.JsonSerializer.SUBTYPE_CONSTRAINT_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.SUBTYPE_SUB_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.SUBTYPE_SUPER_KEY;
@@ -107,8 +109,8 @@ public class JsonDeserializer {
                     Slot rhs = parseSlot((String) constraint.get(INEQUALITY_RHS));
                     results.add(constraintManager.createInequalityConstraint(lhs, rhs));
                 } else if (COMP_CONSTRAINT_KEY.equals(constraintType)) {
-                    Slot lhs = parseSlot((String) constraint.get(INEQUALITY_LHS));
-                    Slot rhs = parseSlot((String) constraint.get(INEQUALITY_RHS));
+                    Slot lhs = parseSlot((String) constraint.get(COMP_LHS));
+                    Slot rhs = parseSlot((String) constraint.get(COMP_RHS));
                     results.add(constraintManager.createComparableConstraint(lhs, rhs));
                 } else if (EXISTENTIAL_CONSTRAINT_KEY.equals(constraintType)) {
                     Slot potential = parseSlot((String) constraint.get(EXISTENTIAL_ID));

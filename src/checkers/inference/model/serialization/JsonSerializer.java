@@ -16,6 +16,8 @@ import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.CombineConstraint;
 import checkers.inference.model.ComparableConstraint;
+import checkers.inference.model.ComparisonConstraint;
+import checkers.inference.model.ComparisonVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.EqualityConstraint;
@@ -123,6 +125,11 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
     protected static final String COMP_CONSTRAINT_KEY = "comparable";
     protected static final String COMP_RHS = "rhs";
     protected static final String COMP_LHS = "lhs";
+
+    protected static final String COMPARISON_CONSTRAINT_KEY = "comparison";
+    protected static final String COMPARISON_RHS = "rhs";
+    protected static final String COMPARISON_LHS = "lhs";
+    protected static final String COMPARISON_RESULT = "result";
 
     protected static final String COMB_CONSTRAINT_KEY = "combine";
     protected static final String COMB_TARGET = "target";
@@ -253,6 +260,11 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
         return serializeSlot(slot);
     }
 
+    @Override
+    public String serialize(ComparisonVariableSlot slot) {
+        return serializeSlot(slot);
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public JSONObject serialize(SubtypeConstraint constraint) {
@@ -318,6 +330,21 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
         obj.put(CONSTRAINT_KEY, COMP_CONSTRAINT_KEY);
         obj.put(COMP_LHS, constraint.getFirst().serialize(this));
         obj.put(COMP_RHS, constraint.getSecond().serialize(this));
+        return obj;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public JSONObject serialize(ComparisonConstraint constraint) {
+        if (constraint.getLeft() == null || constraint.getRight() == null) {
+            return null;
+        }
+
+        JSONObject obj = new JSONObject();
+        obj.put(CONSTRAINT_KEY, COMPARISON_CONSTRAINT_KEY);
+        obj.put(COMPARISON_LHS, constraint.getLeft().serialize(this));
+        obj.put(COMPARISON_RHS, constraint.getRight().serialize(this));
+        obj.put(COMPARISON_RESULT, constraint.getResult().serialize(this));
         return obj;
     }
 

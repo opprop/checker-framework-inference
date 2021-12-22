@@ -34,44 +34,63 @@ public abstract class Z3SmtSoftConstraintEncoder<SlotEncodingT, SlotSolutionT>
     protected void addSoftConstraint(Expr serializedConstraint, int weight) {
         softConstraints.append("(assert-soft " + serializedConstraint + " :weight " + weight + ")\n");
     }
-    
+
+
+    protected abstract void encodeSoftSubtypeConstraint(SubtypeConstraint constraint);
+
+    protected abstract void encodeSoftComparableConstraint(ComparableConstraint constraint);
+
+    protected abstract void encodeSoftArithmeticConstraint(ArithmeticConstraint constraint);
+
+    protected abstract void encodeSoftEqualityConstraint(EqualityConstraint constraint);
+
+    protected abstract void encodeSoftInequalityConstraint(InequalityConstraint constraint);
+
+    protected abstract void encodeSoftImplicationConstraint(ImplicationConstraint constraint);
+
+    protected abstract void encodeSoftExistentialConstraint(ExistentialConstraint constraint);
+
+    protected abstract void encodeSoftCombineConstraint(CombineConstraint constraint);
+
+    protected abstract void encodeSoftPreferenceConstraint(PreferenceConstraint constraint);
+
     public String encodeAndGetSoftConstraints(Collection<Constraint> constraints) {
         for (Constraint constraint : constraints) {
             // Generate a soft constraint for subtype constraint
             if (constraint instanceof SubtypeConstraint) {
-                encodeSubtypeConstraint((SubtypeConstraint) constraint);
+                encodeSoftSubtypeConstraint((SubtypeConstraint) constraint);
             }
-            // Generate soft constraint for comparison constraint
-            if (constraint instanceof ComparableConstraint) {
-                encodeComparableConstraint((ComparableConstraint) constraint);
+            // Generate soft constraint for comparable constraint
+            else if (constraint instanceof ComparableConstraint) {
+                encodeSoftComparableConstraint((ComparableConstraint) constraint);
             }
             // Generate soft constraint for arithmetic constraint
-            if (constraint instanceof ArithmeticConstraint) {
-                encodeArithmeticConstraint((ArithmeticConstraint) constraint);
+            else if (constraint instanceof ArithmeticConstraint) {
+                encodeSoftArithmeticConstraint((ArithmeticConstraint) constraint);
             }
             // Generate soft constraint for equality constraint
-            if (constraint instanceof EqualityConstraint) {
-                encodeEqualityConstraint((EqualityConstraint) constraint);
+            else if (constraint instanceof EqualityConstraint) {
+                encodeSoftEqualityConstraint((EqualityConstraint) constraint);
             }
             // Generate soft constraint for inequality constraint
-            if (constraint instanceof InequalityConstraint) {
-                encodeInequalityConstraint((InequalityConstraint) constraint);
+            else if (constraint instanceof InequalityConstraint) {
+                encodeSoftInequalityConstraint((InequalityConstraint) constraint);
             }
             // Generate soft constraint for implication constraint
-            if (constraint instanceof ImplicationConstraint) {
-                encodeImplicationConstraint((ImplicationConstraint) constraint);
+            else if (constraint instanceof ImplicationConstraint) {
+                encodeSoftImplicationConstraint((ImplicationConstraint) constraint);
             }
             // Generate soft constraint for existential constraint
-            if (constraint instanceof ExistentialConstraint) {
-                encodeExistentialConstraint((ExistentialConstraint) constraint);
+            else if (constraint instanceof ExistentialConstraint) {
+                encodeSoftExistentialConstraint((ExistentialConstraint) constraint);
             }
             // Generate soft constraint for combine constraint
-            if (constraint instanceof CombineConstraint) {
-                encodeCombineConstraint((CombineConstraint) constraint);
+            else if (constraint instanceof CombineConstraint) {
+                encodeSoftCombineConstraint((CombineConstraint) constraint);
             }
             // Generate soft constraint for preference constraint
-            if (constraint instanceof PreferenceConstraint) {
-                encodePreferenceConstraint((PreferenceConstraint) constraint);
+            else if (constraint instanceof PreferenceConstraint) {
+                encodeSoftPreferenceConstraint((PreferenceConstraint) constraint);
             }
         }
         return softConstraints.toString();

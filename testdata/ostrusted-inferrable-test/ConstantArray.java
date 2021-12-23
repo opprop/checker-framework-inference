@@ -1,4 +1,4 @@
-// The test case in https://github.com/opprop/checker-framework-inference/pull/366
+// The test for https://github.com/opprop/checker-framework-inference/pull/366
 
 public interface ConstantArray {
     String[] ACCESS_NAMES = {

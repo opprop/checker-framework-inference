@@ -7,4 +7,3 @@ public interface ConstantArray {
         "synthetic", "annotation", "enum"
     };
 }
-

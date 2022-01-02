@@ -1038,6 +1038,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         treeKinds.add(Kind.TYPE_ANNOTATION);
         treeKinds.add(Kind.METHOD);
         treeKinds.add(Kind.CLASS);
+        treeKinds.add(Kind.INTERFACE);
         Tree enclosure = TreePathUtil.enclosingOfKind(path, treeKinds);
         return enclosure.getKind() == Kind.ANNOTATION
             || enclosure.getKind() == Kind.ANNOTATION_TYPE

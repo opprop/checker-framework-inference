@@ -17,6 +17,7 @@ import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.SubtypeConstraint;
 import checkers.inference.solver.backend.z3smt.Z3SmtFormatTranslator;
 import checkers.inference.solver.frontend.Lattice;
+import org.checkerframework.javacutil.BugInCF;
 
 public abstract class Z3SmtSoftConstraintEncoder<SlotEncodingT, SlotSolutionT>
         extends Z3SmtAbstractConstraintEncoder<SlotEncodingT, SlotSolutionT> {
@@ -38,35 +39,15 @@ public abstract class Z3SmtSoftConstraintEncoder<SlotEncodingT, SlotSolutionT>
 
     protected abstract void encodeSoftSubtypeConstraint(SubtypeConstraint constraint);
 
-    protected abstract void encodeSoftComparableConstraint(ComparableConstraint constraint);
-
-    protected abstract void encodeSoftArithmeticConstraint(ArithmeticConstraint constraint);
-
     protected abstract void encodeSoftEqualityConstraint(EqualityConstraint constraint);
 
     protected abstract void encodeSoftInequalityConstraint(InequalityConstraint constraint);
-
-    protected abstract void encodeSoftImplicationConstraint(ImplicationConstraint constraint);
-
-    protected abstract void encodeSoftExistentialConstraint(ExistentialConstraint constraint);
-
-    protected abstract void encodeSoftCombineConstraint(CombineConstraint constraint);
-
-    protected abstract void encodeSoftPreferenceConstraint(PreferenceConstraint constraint);
 
     public String encodeAndGetSoftConstraints(Collection<Constraint> constraints) {
         for (Constraint constraint : constraints) {
             // Generate a soft constraint for subtype constraint
             if (constraint instanceof SubtypeConstraint) {
                 encodeSoftSubtypeConstraint((SubtypeConstraint) constraint);
-            }
-            // Generate soft constraint for comparable constraint
-            else if (constraint instanceof ComparableConstraint) {
-                encodeSoftComparableConstraint((ComparableConstraint) constraint);
-            }
-            // Generate soft constraint for arithmetic constraint
-            else if (constraint instanceof ArithmeticConstraint) {
-                encodeSoftArithmeticConstraint((ArithmeticConstraint) constraint);
             }
             // Generate soft constraint for equality constraint
             else if (constraint instanceof EqualityConstraint) {
@@ -76,22 +57,7 @@ public abstract class Z3SmtSoftConstraintEncoder<SlotEncodingT, SlotSolutionT>
             else if (constraint instanceof InequalityConstraint) {
                 encodeSoftInequalityConstraint((InequalityConstraint) constraint);
             }
-            // Generate soft constraint for implication constraint
-            else if (constraint instanceof ImplicationConstraint) {
-                encodeSoftImplicationConstraint((ImplicationConstraint) constraint);
-            }
-            // Generate soft constraint for existential constraint
-            else if (constraint instanceof ExistentialConstraint) {
-                encodeSoftExistentialConstraint((ExistentialConstraint) constraint);
-            }
-            // Generate soft constraint for combine constraint
-            else if (constraint instanceof CombineConstraint) {
-                encodeSoftCombineConstraint((CombineConstraint) constraint);
-            }
-            // Generate soft constraint for preference constraint
-            else if (constraint instanceof PreferenceConstraint) {
-                encodeSoftPreferenceConstraint((PreferenceConstraint) constraint);
-            }
+            throw new BugInCF("Soft constraint for " + constraint.getClass().getName() + " is not supported");
         }
         return softConstraints.toString();
     }

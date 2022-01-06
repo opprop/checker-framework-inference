@@ -1038,6 +1038,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
         treeKinds.add(Kind.TYPE_ANNOTATION);
         treeKinds.add(Kind.METHOD);
         treeKinds.add(Kind.CLASS);
+        treeKinds.add(Kind.INTERFACE);
         Tree enclosure = TreePathUtil.enclosingOfKind(path, treeKinds);
         return enclosure.getKind() == Kind.ANNOTATION
             || enclosure.getKind() == Kind.ANNOTATION_TYPE
@@ -1656,8 +1657,12 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
     /**
      * This method returns the annotation that may or may not be placed on the class declaration for type.
      * If it does not already exist, this method creates the annotation and stores it in classDeclAnnos.
+     *
+     * This method can be overridden if a type system wants to use a fixed annotation for class declarations. 
+     * For example, using the top annotation effectively disables declaration bound checks. 
+     *
      */
-    private Slot getOrCreateDeclBound(AnnotatedDeclaredType type) {
+    protected Slot getOrCreateDeclBound(AnnotatedDeclaredType type) {
         TypeElement classElt = (TypeElement) type.getUnderlyingType().asElement();
 
         Slot topConstant = getTopConstant();

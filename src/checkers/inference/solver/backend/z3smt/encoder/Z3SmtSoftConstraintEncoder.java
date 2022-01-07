@@ -36,7 +36,6 @@ public abstract class Z3SmtSoftConstraintEncoder<SlotEncodingT, SlotSolutionT>
         softConstraints.append("(assert-soft " + serializedConstraint + " :weight " + weight + ")\n");
     }
 
-
     protected abstract void encodeSoftSubtypeConstraint(SubtypeConstraint constraint);
 
     protected abstract void encodeSoftEqualityConstraint(EqualityConstraint constraint);

@@ -43,15 +43,12 @@ public abstract class Z3SmtSoftConstraintEncoder<SlotEncodingT, SlotSolutionT>
     protected abstract void encodeSoftInequalityConstraint(InequalityConstraint constraint);
 
     /**
-     * Encode a set of constraints as soft constraints. Note that the field of StringBuilder
-     * {@code softConstraints} is first cleared each time this method is called.
+     * Encode a set of constraints as soft constraints.
+     *
      * @param constraints constraints to be encoded as soft constraints
      * @return a string representation of the encoding of soft constraints
      */
     public String encodeAndGetSoftConstraints(Collection<Constraint> constraints) {
-        // clear previous encoding result before encoding
-        softConstraints.setLength(0);
-
         for (Constraint constraint : constraints) {
             if (constraint instanceof SubtypeConstraint) {
                 encodeSoftSubtypeConstraint((SubtypeConstraint) constraint);
@@ -66,6 +63,9 @@ public abstract class Z3SmtSoftConstraintEncoder<SlotEncodingT, SlotSolutionT>
                 throw new BugInCF("Soft constraint for " + constraint.getClass().getName() + " is not supported");
             }
         }
-        return softConstraints.toString();
+        String res = softConstraints.toString();
+        // clear field for next usage
+        softConstraints.setLength(0);
+        return res;
     }
 }

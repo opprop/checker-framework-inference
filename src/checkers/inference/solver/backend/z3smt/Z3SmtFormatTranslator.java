@@ -76,6 +76,11 @@ public abstract class Z3SmtFormatTranslator<SlotEncodingT, SlotSolutionT>
         return serializeVariableSlot(slot);
     }
 
+    @Override
+    public SlotEncodingT serialize(ArithmeticVariableSlot slot) {
+        return serializeVariableSlot(slot);
+    }
+
     /**
      * Subclasses can override this method to perform pre-analysis of slots for encoding
      * optimization

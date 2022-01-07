@@ -1,6 +1,7 @@
 package checkers.inference.model;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.BugInCF;
@@ -114,11 +115,7 @@ public class ComparisonConstraint extends Constraint {
 
     @Override
     public int hashCode() {
-        int code = 1;
-        code = code + ((left == null) ? 0 : left.hashCode());
-        code = code + ((right == null) ? 0 : right.hashCode());
-        code = code + ((operation == null) ? 0 : operation.hashCode());
-        return code;
+        return Objects.hash(left, right, operation);
     }
 
     @Override
@@ -130,11 +127,7 @@ public class ComparisonConstraint extends Constraint {
         if (getClass() != obj.getClass())
             return false;
         ComparisonConstraint other = (ComparisonConstraint) obj;
-        if (left.equals(other.left) && right.equals(other.right) 
-        		&& operation.equals(other.operation)) {
-            return true;
-        } else {
-            return false;
-        }
+        return  left.equals(other.left) && right.equals(other.right)
+        		&& operation.equals(other.operation);
     }
 }

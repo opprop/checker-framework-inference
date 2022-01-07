@@ -443,16 +443,15 @@ public class DefaultSlotManager implements SlotManager {
             throw new BugInCF(
                     "Cannot create an ArithmeticVariableSlot with a missing annotation location.");
         }
-
-        // create the arithmetic var slot if it doesn't exist for the given location
-        if (!arithmeticSlotCache.containsKey(location)) {
-            ArithmeticVariableSlot slot = new ArithmeticVariableSlot(nextId(), location);
+        ArithmeticVariableSlot slot = getArithmeticVariableSlot(location);
+        if (slot == null) {
+            // create the arithmetic var slot if it doesn't exist for the given location
+            slot = new ArithmeticVariableSlot(nextId(), location);
             addToSlots(slot);
             arithmeticSlotCache.put(location, slot.getId());
-            return slot;
         }
 
-        return getArithmeticVariableSlot(location);
+        return slot;
     }
 
     @Override
@@ -474,24 +473,19 @@ public class DefaultSlotManager implements SlotManager {
             throw new BugInCF(
                     "Cannot create an ComparisonVariableSlot with a missing annotation location.");
         }
-
-        // create the comparison var slot if it doesn't exist for the given location
-        if (thenBranch && !comparisonThenSlotCache.containsKey(location)) {
-            ComparisonVariableSlot slot = new ComparisonVariableSlot(nextId(), location, refined);
+        ComparisonVariableSlot slot;
+        slot = getComparisonVariableSlot(location, thenBranch);
+        if (slot == null) {
+            // create the comparison var slot if it doesn't exist for the given location
+            slot = new ComparisonVariableSlot(nextId(), location, refined);
             addToSlots(slot);
-            comparisonThenSlotCache.put(location, slot.getId());
-            return slot;
+            if (thenBranch) {
+                comparisonThenSlotCache.put(location, slot.getId());
+            } else {
+                comparisonElseSlotCache.put(location, slot.getId());
+            }
         }
-
-        // create the comparison var slot if it doesn't exist for the given location
-        if (!thenBranch && !comparisonElseSlotCache.containsKey(location)) {
-            ComparisonVariableSlot slot = new ComparisonVariableSlot(nextId(), location, refined);
-            addToSlots(slot);
-            comparisonElseSlotCache.put(location, slot.getId());
-            return slot;
-        }
-
-        return getComparisonVariableSlot(location, thenBranch);
+        return slot;
     }
 
     @Override

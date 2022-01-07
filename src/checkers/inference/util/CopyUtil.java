@@ -50,7 +50,7 @@ public class CopyUtil {
          */
         @Override
         public void copy(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {
-            to.clearPrimaryAnnotations();
+            to.clearAnnotations();
             to.addAnnotations(from.getAnnotations());
         }
     }
@@ -80,7 +80,7 @@ public class CopyUtil {
         // TODO: Constructor receivers might be null?
         if (from.getReceiverType() != null && to.getReceiverType() != null) {
             // Only the primary does anything at the moment, so no deep copy.
-            to.getReceiverType().clearPrimaryAnnotations();
+            to.getReceiverType().clearAnnotations();
             to.getReceiverType().addAnnotations(from.getReceiverType().getAnnotations());
         }
 
@@ -186,7 +186,7 @@ public class CopyUtil {
             copyAnnotationsOnDeclaredTypeList(fromAlternatives, toAlternatives, copyMethod, visited);
 
         } else {
-            throw new BugInCF("InferenceUtils.copyAnnotationsImpl: unhandled getKind results: " + from +
+            throw new BugInCF("CopyUtils.copyAnnotationsImpl: unhandled getKind results: " + from +
                     " and " + to + "\n    of kinds: " + fromKind + " and " + toKind);
         }
     }

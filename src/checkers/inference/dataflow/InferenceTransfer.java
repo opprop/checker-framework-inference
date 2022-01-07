@@ -59,10 +59,13 @@ public class InferenceTransfer extends CFTransfer {
 
     // Type variables will have two refinement variables (one for each bound).  This covers the
     // case where the correct, inferred RHS has no primary annotation
-    private Map<Tree, Pair<RefinementVariableSlot, RefinementVariableSlot>> createdTypeVarRefinementVariables = new HashMap<>();
+    private final Map<Tree, Pair<RefinementVariableSlot, RefinementVariableSlot>> createdTypeVarRefinementVariables = new HashMap<>();
+
+    private final InferenceAnnotatedTypeFactory typeFactory;
 
     public InferenceTransfer(InferenceAnalysis analysis) {
         super(analysis);
+        typeFactory = (InferenceAnnotatedTypeFactory) analysis.getTypeFactory();
     }
 
     private InferenceAnalysis getInferenceAnalysis() {
@@ -90,7 +93,6 @@ public class InferenceTransfer extends CFTransfer {
 
         Node lhs = assignmentNode.getTarget();
         CFStore store = transferInput.getRegularStore();
-        InferenceAnnotatedTypeFactory typeFactory = (InferenceAnnotatedTypeFactory) analysis.getTypeFactory();
 
         // Target tree is null for field access's
         Tree targetTree = assignmentNode.getTarget().getTree();
@@ -144,7 +146,7 @@ public class InferenceTransfer extends CFTransfer {
                 return createRefinementVar(assignmentNode.getTarget(), assignmentNode.getTree(), store, atm, valueType);
             }
 
-            return storeDeclaration(lhs, (VariableTree) assignmentNode.getTree(), store, typeFactory);
+            return storeDeclaration(lhs, (VariableTree) assignmentNode.getTree(), store);
 
         } else if (lhs.getTree().getKind() == Tree.Kind.IDENTIFIER
                 || lhs.getTree().getKind() == Tree.Kind.MEMBER_SELECT) {
@@ -178,7 +180,6 @@ public class InferenceTransfer extends CFTransfer {
     public TransferResult<CFValue, CFStore> visitStringConcatenateAssignment(StringConcatenateAssignmentNode assignmentNode, TransferInput<CFValue, CFStore> transferInput) {
         // TODO: CompoundAssigment trees are not refined, see Issue 9
         CFStore store = transferInput.getRegularStore();
-        InferenceAnnotatedTypeFactory typeFactory = (InferenceAnnotatedTypeFactory) analysis.getTypeFactory();
 
         Tree targetTree = assignmentNode.getLeftOperand().getTree();
 
@@ -232,7 +233,7 @@ public class InferenceTransfer extends CFTransfer {
             refVar = createdRefinementVariables.get(assignmentTree);
         } else {
             AnnotationLocation location = VariableAnnotator.treeToLocation(analysis.getTypeFactory(), assignmentTree);
-            refVar = getInferenceAnalysis().getSlotManager().createRefinementVariableSlot(location, slotToRefine, refineTo);
+            refVar = slotManager.createRefinementVariableSlot(location, slotToRefine, refineTo);
 
             // Fields from library methods can be refined, but the slotToRefine is a ConstantSlot
             // which does not have a refined slots field.
@@ -243,7 +244,7 @@ public class InferenceTransfer extends CFTransfer {
             createdRefinementVariables.put(assignmentTree, refVar);
         }
 
-        atm.replaceAnnotation(getInferenceAnalysis().getSlotManager().getAnnotation(refVar));
+        atm.replaceAnnotation(slotManager.getAnnotation(refVar));
 
         // add refinement variable value to output
         CFValue result = analysis.createAbstractValue(atm);
@@ -386,12 +387,10 @@ public class InferenceTransfer extends CFTransfer {
      * @param lhs
      * @param assignmentTree
      * @param store
-     * @param typeFactory
      * @return
      */
     private TransferResult<CFValue, CFStore> storeDeclaration(Node lhs,
-            VariableTree assignmentTree, CFStore store,
-            InferenceAnnotatedTypeFactory typeFactory) {
+            VariableTree assignmentTree, CFStore store) {
 
         AnnotatedTypeMirror atm = typeFactory.getAnnotatedType(assignmentTree);
         CFValue result = analysis.createAbstractValue(atm);

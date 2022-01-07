@@ -9,12 +9,17 @@ import javax.lang.model.type.TypeKind;
 public class ArithmeticVariableSlot extends VariableSlot {
     /**
      * The value kind of the arithmetic operation, which indicates the value range.
-     * The result depends on the wider operand. i.e.
-     * If both sides are narrower than int => int
-     * If one sides is long => long
+     * (i) If one operand is long => long
+     * (ii) otherwise => int
      */
     private final TypeKind valueTypeKind;
 
+    /**
+     * Constructor
+     * @param id slot id
+     * @param location location of the slot
+     * @param valueTypeKind the type kind of the arithmetic operation
+     */
     public ArithmeticVariableSlot(int id, AnnotationLocation location, TypeKind valueTypeKind) {
         super(id, location);
         this.valueTypeKind = valueTypeKind;

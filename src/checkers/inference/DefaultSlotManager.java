@@ -422,6 +422,12 @@ public class DefaultSlotManager implements SlotManager {
     }
 
 
+    /**
+     *  Determine the type kind of an arithmetic operation, based on Binary Numeric Promotion in JLS 5.6.2.
+     * @param lhsAtm atm of left operand
+     * @param rhsAtm atm of right operand
+     * @return type kind of the arithmetic operation
+     */
     private TypeKind getArithmeticResultKind(AnnotatedTypeMirror lhsAtm, AnnotatedTypeMirror rhsAtm) {
         TypeMirror lhsType = lhsAtm.getUnderlyingType();
         TypeMirror rhsType = rhsAtm.getUnderlyingType();

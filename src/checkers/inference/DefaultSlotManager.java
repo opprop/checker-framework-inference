@@ -1,11 +1,13 @@
 package checkers.inference;
 
+import checkers.inference.util.TypeTreesDefaultTypeResolver;
+import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -13,6 +15,7 @@ import org.checkerframework.javacutil.BugInCF;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +44,6 @@ import checkers.inference.model.Slot;
 import checkers.inference.model.SourceVariableSlot;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.qual.VarAnnot;
-import org.checkerframework.javacutil.TreeUtils;
 import scenelib.annotations.io.ASTIndex;
 import scenelib.annotations.io.ASTRecord;
 
@@ -101,6 +103,9 @@ public class DefaultSlotManager implements SlotManager {
     private final Map<Pair<Slot, Slot>, Integer> lubSlotPairCache;
     private final Map<Pair<Slot, Slot>, Integer> glbSlotPairCache;
 
+    private Integer currentRootHash;
+    private Map<Integer, AnnotationMirror> defaultAnnotationsCache;
+
     /**
      * A map of {@link AnnotationLocation} to {@link Integer} for caching
      * {@link ArithmeticVariableSlot}s. The annotation location uniquely identifies an
@@ -116,6 +121,7 @@ public class DefaultSlotManager implements SlotManager {
                                final Set<Class<? extends Annotation>> realQualifiers,
                                boolean storeConstants) {
         this.processingEnvironment = processingEnvironment;
+        this.currentRootHash = null;
         // sort the qualifiers so that they are always assigned the same varId
         this.realQualifiers = sortAnnotationClasses(realQualifiers);
         slots = new LinkedHashMap<>();
@@ -132,6 +138,7 @@ public class DefaultSlotManager implements SlotManager {
         lubSlotPairCache = new LinkedHashMap<>();
         glbSlotPairCache = new LinkedHashMap<>();
         arithmeticSlotCache = new LinkedHashMap<>();
+        defaultAnnotationsCache = null;
 
         if (storeConstants) {
             for (Class<? extends Annotation> annoClass : this.realQualifiers) {
@@ -344,55 +351,71 @@ public class DefaultSlotManager implements SlotManager {
         }
 
         BaseAnnotatedTypeFactory realTypeFactory = InferenceMain.getInstance().getRealTypeFactory();
-        AnnotatedTypeMirror annotatedType = null;
         if (location instanceof AnnotationLocation.AstPathLocation) {
-            annotatedType = getRealAnnotatedTypeForLocation(
+            return getRealAnnotationForLocation(
                     realTypeFactory,
                     (AnnotationLocation.AstPathLocation) location);
         } else if (location instanceof AnnotationLocation.ClassDeclLocation) {
-            annotatedType = getRealAnnotatedTypeForLocation(
+            return getRealAnnotationForLocation(
                     realTypeFactory,
                     (AnnotationLocation.ClassDeclLocation) location,
                     type);
         }
 
-        if (annotatedType == null) {
+        return null;
+    }
+
+    private AnnotationMirror getAnnotationInHierarchy(
+            @Nullable AnnotatedTypeMirror atm,
+            AnnotatedTypeFactory realTypeFactory
+    ) {
+        if (atm == null) {
             return null;
         }
 
-        Set<? extends AnnotationMirror> topAnnotations = realTypeFactory.getQualifierHierarchy().getTopAnnotations();
-        if (topAnnotations.size() != 1) {
-            throw new BugInCF("Expected 1 real top qualifier, but received %d instead", topAnnotations.size());
+        Set<? extends AnnotationMirror> tops = realTypeFactory.getQualifierHierarchy().getTopAnnotations();
+        if (tops.size() != 1) {
+            throw new BugInCF("Expected 1 real top qualifier, but received %d instead", tops.size());
         }
 
-        return annotatedType.getAnnotationInHierarchy(topAnnotations.iterator().next());
+        return atm.getAnnotationInHierarchy(tops.iterator().next());
     }
 
-    private @Nullable AnnotatedTypeMirror getRealAnnotatedTypeForLocation(
+    private @Nullable AnnotationMirror getRealAnnotationForLocation(
             BaseAnnotatedTypeFactory realTypeFactory,
             AnnotationLocation.AstPathLocation location
     ) {
         ASTRecord astRecord = location.getAstRecord();
-        Tree node = ASTIndex.getNode(astRecord.ast, astRecord);
-        if (node == null) {
+        CompilationUnitTree root = astRecord.ast;
+        Tree tree = ASTIndex.getNode(root, astRecord);
+
+        if (tree == null) {
             return null;
         }
 
-        AnnotatedTypeMirror annotatedType;
-        if (TreeUtils.isTypeTree(node)) {
-            annotatedType = realTypeFactory.getAnnotatedTypeFromTypeTree(node);
+        int rootHash = root.hashCode();
+        if (this.currentRootHash == null || this.currentRootHash != rootHash) {
+            this.currentRootHash = rootHash;
+            this.defaultAnnotationsCache = new HashMap<>();
 
-            if (annotatedType.isDeclaration() && annotatedType instanceof AnnotatedTypeMirror.AnnotatedTypeVariable) {
-                annotatedType = ((AnnotatedTypeMirror.AnnotatedTypeVariable) annotatedType).getLowerBound();
+            Map<Tree, AnnotatedTypeMirror> defaultTypes = TypeTreesDefaultTypeResolver.resolve(root, realTypeFactory);
+            for (Map.Entry<Tree, AnnotatedTypeMirror> entry : defaultTypes.entrySet()) {
+                this.defaultAnnotationsCache.put(
+                        entry.getKey().hashCode(),
+                        getAnnotationInHierarchy(entry.getValue(), realTypeFactory)
+                );
             }
-        } else {
-            annotatedType = realTypeFactory.getAnnotatedType(node);
         }
 
-        return annotatedType;
+        AnnotationMirror realAnnotation = this.defaultAnnotationsCache.get(tree.hashCode());
+        if (realAnnotation == null) {
+            realAnnotation = getAnnotationInHierarchy(realTypeFactory.getAnnotatedType(tree), realTypeFactory);
+        }
+
+        return realAnnotation;
     }
 
-    private AnnotatedTypeMirror getRealAnnotatedTypeForLocation(
+    private AnnotationMirror getRealAnnotationForLocation(
             BaseAnnotatedTypeFactory realTypeFactory,
             AnnotationLocation.ClassDeclLocation location,
             TypeMirror type
@@ -411,7 +434,7 @@ public class DefaultSlotManager implements SlotManager {
                     type, fullyQualifiedName, location);
         }
 
-        return realTypeFactory.getAnnotatedType(typeElement);
+        return getAnnotationInHierarchy(realTypeFactory.getAnnotatedType(typeElement), realTypeFactory);
     }
 
     @Override

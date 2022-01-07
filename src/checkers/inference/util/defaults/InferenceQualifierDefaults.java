@@ -4,6 +4,7 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.util.Elements;
 
+import com.sun.source.tree.Tree;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.util.defaults.Default;
@@ -41,6 +42,11 @@ public class InferenceQualifierDefaults extends QualifierDefaults {
     protected DefaultApplierElement createDefaultApplierElement(AnnotatedTypeFactory atypeFactory,
             Element annotationScope, AnnotatedTypeMirror type, boolean applyToTypeVar) {
         return new InferenceDefaultApplierElement(atypeFactory, annotationScope, type, applyToTypeVar);
+    }
+
+    @Override
+    public void annotate(Tree tree, AnnotatedTypeMirror type) {
+        super.annotate(tree, type);
     }
 
     public class InferenceDefaultApplierElement extends DefaultApplierElement {

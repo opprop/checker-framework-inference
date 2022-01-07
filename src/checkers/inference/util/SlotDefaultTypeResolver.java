@@ -19,32 +19,62 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class TypeTreesDefaultTypeResolver {
+/**
+ * A utility class to help SlotManager to find the real default type of
+ * each slot.
+ *
+ * Slot manager tries to create a slot for each type declaration or type
+ * use in the class, so the associated tree is usually a type tree.
+ * Currently, AnnotatedTypeFactory cannot properly determine the annotated
+ * type of the type tree because it's unaware of the tree's location.
+ *
+ * For example, AnnotatedTypeFactory returns the same annotated type for
+ * "Object" in the following two cases:
+ * 1. Object s = "123";
+ * 2. List<? extends Object> l = new ArrayList<>();
+ * But it's possible to have a different default type for the upperbound.
+ *
+ * This class aims to properly find the real default type for type trees.
+ */
+public class SlotDefaultTypeResolver {
 
     public static Map<Tree, AnnotatedTypeMirror> resolve(
             CompilationUnitTree root,
             BaseAnnotatedTypeFactory realTypeFactory
     ) {
-        TypeTreeVisitor visitor = new TypeTreeVisitor(realTypeFactory);
-        visitor.scan(root, null);
+        DefaultTypeFinder finder = new DefaultTypeFinder(realTypeFactory);
+        finder.scan(root, null);
 
-        return visitor.defaultTypes;
+        return finder.defaultTypes;
     }
 
-    private static class TypeTreeVisitor extends TreeScanner<Void, Void> {
+    /**
+     * A tree visitor that focuses on collecting the real default types for
+     * type trees under this tree.
+     *
+     * Sometimes, we need to retrieve the default type of a tree that's the
+     * parent of a type tree (e.g., a class tree that contains an extends
+     * clause). So the results may contain the default type of a tree that's
+     * not a type tree.
+     */
+    private static class DefaultTypeFinder extends TreeScanner<Void, Void> {
 
         private final BaseAnnotatedTypeFactory realTypeFactory;
 
         private final Types types;
 
+        // A mapping from a tree to its real default type.
         private final Map<Tree, AnnotatedTypeMirror> defaultTypes;
 
-        private TypeTreeVisitor(BaseAnnotatedTypeFactory realTypeFactory) {
+        private DefaultTypeFinder(BaseAnnotatedTypeFactory realTypeFactory) {
             this.realTypeFactory = realTypeFactory;
             this.types = realTypeFactory.getProcessingEnv().getTypeUtils();
             this.defaultTypes = new HashMap<>();
         }
 
+        // Each visit method should call this method to get the default
+        // type of its argument. This ensures the correct type information
+        // is propagated downwards, especially for nested type trees.
         private AnnotatedTypeMirror getDefaultTypeFor(Tree tree) {
             AnnotatedTypeMirror defaultType = defaultTypes.get(tree);
             if (defaultType == null) {
@@ -80,8 +110,7 @@ public class TypeTreesDefaultTypeResolver {
                 for (Tree im : impls) {
                     for (AnnotatedTypeMirror.AnnotatedDeclaredType superType : defaultType.directSupertypes()) {
                         if (superType.getUnderlyingType().asElement().getKind().isInterface()
-                                && types.isSameType(
-                                superType.getUnderlyingType(), TreeUtils.typeOf(im))) {
+                                && types.isSameType(superType.getUnderlyingType(), TreeUtils.typeOf(im))) {
                             defaultTypes.put(im, superType);
                             break;
                         }
@@ -115,8 +144,15 @@ public class TypeTreesDefaultTypeResolver {
 
             List<? extends Tree> typeArgumentTrees = tree.getTypeArguments();
             List<AnnotatedTypeMirror> typeArgumentTypes = defaultType.getTypeArguments();
-//            assert typeArgumentTrees.size() == typeArgumentTypes.size();
 
+            /*
+            Note that it's not guaranteed that typeArgumentTrees.size() == typeArgumentTypes.size().
+            For example:
+            List<String> strs = new ArrayList<>()
+
+            In the tree of `ArrayList<>`, we have no type arguments, but its type does have "String"
+            as its type argument.
+             */
             for (int i = 0; i < typeArgumentTrees.size(); ++i) {
                 defaultTypes.put(typeArgumentTrees.get(i), typeArgumentTypes.get(i));
             }

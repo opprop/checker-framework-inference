@@ -1,6 +1,6 @@
 package checkers.inference;
 
-import checkers.inference.util.TypeTreesDefaultTypeResolver;
+import checkers.inference.util.SlotDefaultTypeResolver;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
 import com.sun.tools.javac.code.Symbol;
@@ -398,7 +398,7 @@ public class DefaultSlotManager implements SlotManager {
             this.currentRootHash = rootHash;
             this.defaultAnnotationsCache = new HashMap<>();
 
-            Map<Tree, AnnotatedTypeMirror> defaultTypes = TypeTreesDefaultTypeResolver.resolve(root, realTypeFactory);
+            Map<Tree, AnnotatedTypeMirror> defaultTypes = SlotDefaultTypeResolver.resolve(root, realTypeFactory);
             for (Map.Entry<Tree, AnnotatedTypeMirror> entry : defaultTypes.entrySet()) {
                 this.defaultAnnotationsCache.put(
                         entry.getKey().hashCode(),

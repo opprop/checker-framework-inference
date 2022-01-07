@@ -13,7 +13,7 @@ public class ArithmeticVariableSlot extends VariableSlot {
      * If both sides are narrower than int => int
      * If one sides is long => long
      */
-    private TypeKind valueTypeKind;
+    private final TypeKind valueTypeKind;
 
     public ArithmeticVariableSlot(int id, AnnotationLocation location, TypeKind valueTypeKind) {
         super(id, location);

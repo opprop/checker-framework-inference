@@ -58,6 +58,12 @@ public class DefaultSlotManager implements SlotManager {
 
     private final AnnotationMirror varAnnot;
 
+    /**
+     * The top annotation in the real qualifier hierarchy.
+     * Currently, we assume there's only one top.
+     */
+    private final AnnotationMirror realTop;
+
     // This id starts at 1 because in some serializer's
     // (CnfSerializer) 0 is used as line delimiters.
     // Monotonically increasing id for all VariableSlots (including
@@ -106,7 +112,20 @@ public class DefaultSlotManager implements SlotManager {
     private final Map<Pair<Slot, Slot>, Integer> lubSlotPairCache;
     private final Map<Pair<Slot, Slot>, Integer> glbSlotPairCache;
 
+    /**
+     * The hashcode of the latest compilation unit. This is currently used to
+     * determine whether we should reset the defaultAnnotationsCache.
+     */
+    // TODO: we may use this to clear other caches
     private Integer currentRootHash;
+
+    /**
+     * A map of tree hashcode to {@link AnnotationMirror} for caching
+     * a set of pre-computed default types for the current compilation unit.
+     *
+     * The reason we're storing the hashcode is to avoid holding memory
+     * occupied by trees.
+     */
     private Map<Integer, AnnotationMirror> defaultAnnotationsCache;
 
     /**
@@ -121,9 +140,11 @@ public class DefaultSlotManager implements SlotManager {
     private final ProcessingEnvironment processingEnvironment;
 
     public DefaultSlotManager( final ProcessingEnvironment processingEnvironment,
+                               final AnnotationMirror realTop,
                                final Set<Class<? extends Annotation>> realQualifiers,
                                boolean storeConstants) {
         this.processingEnvironment = processingEnvironment;
+        this.realTop = realTop;
         this.currentRootHash = null;
         // sort the qualifiers so that they are always assigned the same varId
         this.realQualifiers = sortAnnotationClasses(realQualifiers);
@@ -320,7 +341,11 @@ public class DefaultSlotManager implements SlotManager {
 
     @Override
     public SourceVariableSlot createSourceVariableSlot(AnnotationLocation location, TypeMirror type) {
-        AnnotationMirror defaultAnnotation = getDefaultAnnotationForLocation(location, type);
+        AnnotationMirror defaultAnnotation = null;
+        if (InferenceOptions.ignoreDefaultAnnotations) {
+            // retrieve the default annotation when needed
+            defaultAnnotation = getDefaultAnnotationForLocation(location, type);
+        }
 
         SourceVariableSlot sourceVarSlot;
         if (location.getKind() == AnnotationLocation.Kind.MISSING) {
@@ -368,22 +393,13 @@ public class DefaultSlotManager implements SlotManager {
         return null;
     }
 
-    private AnnotationMirror getAnnotationInHierarchy(
-            @Nullable AnnotatedTypeMirror atm,
-            AnnotatedTypeFactory realTypeFactory
-    ) {
-        if (atm == null) {
-            return null;
-        }
-
-        Set<? extends AnnotationMirror> tops = realTypeFactory.getQualifierHierarchy().getTopAnnotations();
-        if (tops.size() != 1) {
-            throw new BugInCF("Expected 1 real top qualifier, but received %d instead", tops.size());
-        }
-
-        return atm.getAnnotationInHierarchy(tops.iterator().next());
-    }
-
+    /**
+     * Find the default annotation for {@link AnnotationLocation.AstPathLocation} by
+     * checking the real type factory.
+     * @param realTypeFactory The current real {@link BaseAnnotatedTypeFactory}.
+     * @param location Location to create a new {@link SourceVariableSlot}.
+     * @return The default annotation for the given location.
+     */
     private @Nullable AnnotationMirror getRealAnnotationForLocation(
             BaseAnnotatedTypeFactory realTypeFactory,
             AnnotationLocation.AstPathLocation location
@@ -398,6 +414,7 @@ public class DefaultSlotManager implements SlotManager {
 
         int rootHash = root.hashCode();
         if (this.currentRootHash == null || this.currentRootHash != rootHash) {
+            // should update both root and cache
             this.currentRootHash = rootHash;
             this.defaultAnnotationsCache = new HashMap<>();
 
@@ -405,19 +422,28 @@ public class DefaultSlotManager implements SlotManager {
             for (Map.Entry<Tree, AnnotatedTypeMirror> entry : defaultTypes.entrySet()) {
                 this.defaultAnnotationsCache.put(
                         entry.getKey().hashCode(),
-                        getAnnotationInHierarchy(entry.getValue(), realTypeFactory)
+                        entry.getValue().getAnnotationInHierarchy(this.realTop)
                 );
             }
         }
 
         AnnotationMirror realAnnotation = this.defaultAnnotationsCache.get(tree.hashCode());
         if (realAnnotation == null) {
-            realAnnotation = getAnnotationInHierarchy(realTypeFactory.getAnnotatedType(tree), realTypeFactory);
+            // If its default type can't be found in the cache, we can
+            // fallback to the simplest method.
+            realAnnotation = realTypeFactory.getAnnotatedType(tree).getAnnotationInHierarchy(this.realTop);
         }
 
         return realAnnotation;
     }
 
+    /**
+     * Find the default annotation for ClassDeclLocation by checking the real type factory.
+     * @param realTypeFactory The current real {@link BaseAnnotatedTypeFactory}.
+     * @param location Location to create a new {@link SourceVariableSlot}.
+     * @param type Type of the associated class.
+     * @return The default annotation for the given location.
+     */
     private AnnotationMirror getRealAnnotationForLocation(
             BaseAnnotatedTypeFactory realTypeFactory,
             AnnotationLocation.ClassDeclLocation location,
@@ -437,7 +463,7 @@ public class DefaultSlotManager implements SlotManager {
                     type, fullyQualifiedName, location);
         }
 
-        return getAnnotationInHierarchy(realTypeFactory.getAnnotatedType(typeElement), realTypeFactory);
+        return realTypeFactory.getAnnotatedType(typeElement).getAnnotationInHierarchy(this.realTop);
     }
 
     @Override

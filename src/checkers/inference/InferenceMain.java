@@ -29,6 +29,7 @@ import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.InferenceUtil;
 import checkers.inference.util.JaifBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 
 /**
@@ -291,12 +292,12 @@ public class InferenceMain {
         // Not all VariableSlots will have an inferred value.
         // This happens for VariableSlots that have no constraints.
         AnnotationMirror result = solverResult.getSolutionForVariable(slot.getId());
-        if (result != null && !InferenceOptions.insertDefaultAnnotations && slot instanceof SourceVariableSlot) {
+        if (result != null && slot instanceof SourceVariableSlot) {
             AnnotationMirror defaultAnnotation = ((SourceVariableSlot) slot).getDefaultAnnotation();
 
             if (defaultAnnotation != null
                     && AnnotationUtils.compareAnnotationMirrors(defaultAnnotation, result) == 0) {
-                // Don't need to write a solution that's equivalent to default annotation.
+                // Don't need to write a solution that's equivalent to the default annotation.
                 result = null;
             }
         }
@@ -357,8 +358,17 @@ public class InferenceMain {
 
     public SlotManager getSlotManager() {
         if (slotManager == null ) {
-            slotManager = new DefaultSlotManager(inferenceChecker.getProcessingEnvironment(),
-                    realTypeFactory.getSupportedTypeQualifiers(), true );
+            Set<? extends AnnotationMirror> tops = realTypeFactory.getQualifierHierarchy().getTopAnnotations();
+            if (tops.size() != 1) {
+                throw new BugInCF("Expected 1 real top qualifier, but received %d instead", tops.size());
+            }
+
+            slotManager = new DefaultSlotManager(
+                    inferenceChecker.getProcessingEnvironment(),
+                    tops.iterator().next(),
+                    realTypeFactory.getSupportedTypeQualifiers(),
+                    true
+            );
             logger.finer("Created slot manager" + slotManager);
         }
         return slotManager;

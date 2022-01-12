@@ -3,7 +3,6 @@ package checkers.inference;
 
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.ExecUtil;
-import org.checkerframework.javacutil.SystemUtil;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -189,7 +188,13 @@ public class InferenceLauncher {
         addIfNotNull("--cfArgs", InferenceOptions.cfArgs, argList);
 
         addIfTrue("--hacks", InferenceOptions.hacks, argList);
-        addIfTrue("--insertDefaultAnnotations", InferenceOptions.insertDefaultAnnotations, argList);
+
+        Mode mode = Mode.valueOf(InferenceOptions.mode);
+        if (InferenceOptions.ignoreDefaultAnnotations
+                && (mode == Mode.ROUNDTRIP || mode == Mode.ROUNDTRIP_TYPECHECK)) {
+            // this flag is useful only if we will insert the solutions back
+            argList.add("--ignoreDefaultAnnotations");
+        }
 
         argList.add("--");
 

@@ -14,7 +14,6 @@ import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.TreeUtils;
 
-import javax.lang.model.util.Types;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -52,23 +51,20 @@ public class SlotDefaultTypeResolver {
      * A tree visitor that focuses on collecting the real default types for
      * type trees under this tree.
      *
-     * Sometimes, we need to retrieve the default type of a tree that's the
-     * parent of a type tree (e.g., a class tree that contains an extends
-     * clause). So the results may contain the default type of a tree that's
-     * not a type tree.
+     * The results may contain information for trees that are not a type
+     * tree. For example, the implements clause of a class can either be
+     * an IdentifierTree or a ParameterizedTypeTree, but we always store
+     * its type for simplicity.
      */
     private static class DefaultTypeFinder extends TreeScanner<Void, Void> {
 
         private final BaseAnnotatedTypeFactory realTypeFactory;
-
-        private final Types types;
 
         // A mapping from a tree to its real default type.
         private final Map<Tree, AnnotatedTypeMirror> defaultTypes;
 
         private DefaultTypeFinder(BaseAnnotatedTypeFactory realTypeFactory) {
             this.realTypeFactory = realTypeFactory;
-            this.types = realTypeFactory.getProcessingEnv().getTypeUtils();
             this.defaultTypes = new HashMap<>();
         }
 
@@ -76,6 +72,7 @@ public class SlotDefaultTypeResolver {
         // type of its argument. This ensures the correct type information
         // is propagated downwards, especially for nested type trees.
         private AnnotatedTypeMirror getDefaultTypeFor(Tree tree) {
+            // use a cached type when possible
             AnnotatedTypeMirror defaultType = defaultTypes.get(tree);
             if (defaultType == null) {
                 if (TreeUtils.isTypeTree(tree)) {
@@ -92,30 +89,14 @@ public class SlotDefaultTypeResolver {
 
         @Override
         public Void visitClass(ClassTree tree, Void unused) {
-            AnnotatedTypeMirror.AnnotatedDeclaredType defaultType =
-                    (AnnotatedTypeMirror.AnnotatedDeclaredType) getDefaultTypeFor(tree);
-
             Tree ext = tree.getExtendsClause();
             if (ext != null) {
-                for (AnnotatedTypeMirror.AnnotatedDeclaredType superType : defaultType.directSupertypes()) {
-                    if (superType.getUnderlyingType().asElement().getKind().isClass()) {
-                        defaultTypes.put(ext, superType);
-                        break;
-                    }
-                }
+                defaultTypes.put(ext, realTypeFactory.getTypeOfExtendsImplements(ext));
             }
 
             List<? extends Tree> impls = tree.getImplementsClause();
-            if (impls != null) {
-                for (Tree im : impls) {
-                    for (AnnotatedTypeMirror.AnnotatedDeclaredType superType : defaultType.directSupertypes()) {
-                        if (superType.getUnderlyingType().asElement().getKind().isInterface()
-                                && types.isSameType(superType.getUnderlyingType(), TreeUtils.typeOf(im))) {
-                            defaultTypes.put(im, superType);
-                            break;
-                        }
-                    }
-                }
+            for (Tree im : impls) {
+                defaultTypes.put(im, realTypeFactory.getTypeOfExtendsImplements(im));
             }
 
             return super.visitClass(tree, unused);
@@ -153,9 +134,12 @@ public class SlotDefaultTypeResolver {
             In the tree of `ArrayList<>`, we have no type arguments, but its type does have "String"
             as its type argument.
              */
+            assert typeArgumentTrees.size() == 0 || typeArgumentTrees.size() == typeArgumentTypes.size();
             for (int i = 0; i < typeArgumentTrees.size(); ++i) {
                 defaultTypes.put(typeArgumentTrees.get(i), typeArgumentTypes.get(i));
             }
+
+            // Sometimes, the slot manager annotates the underlying type tree instead of this ParameterizedTypeTree
             defaultTypes.put(tree.getType(), defaultType.getErased());
 
             return super.visitParameterizedType(tree, unused);
@@ -180,6 +164,9 @@ public class SlotDefaultTypeResolver {
             AnnotatedTypeMirror.AnnotatedTypeVariable defaultType =
                     (AnnotatedTypeMirror.AnnotatedTypeVariable) getDefaultTypeFor(tree);
 
+            // Annotated types for TypeParameterTree have the following format:
+            // @LowerBound T extends @UpperBound ...
+            // So the type of this tree should really mean the lower bound.
             defaultTypes.put(tree, defaultType.getLowerBound());
             for (Tree bound : tree.getBounds()) {
                 defaultTypes.put(bound, defaultType.getUpperBound());

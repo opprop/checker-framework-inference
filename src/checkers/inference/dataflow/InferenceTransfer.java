@@ -66,7 +66,7 @@ public class InferenceTransfer extends CFTransfer {
 
     // Type variables will have two refinement variables (one for each bound).  This covers the
     // case where the correct, inferred RHS has no primary annotation
-    private Map<Tree, Pair<RefinementVariableSlot, RefinementVariableSlot>> createdTypeVarRefinementVariables = new HashMap<>();
+    private final Map<Tree, Pair<RefinementVariableSlot, RefinementVariableSlot>> createdTypeVarRefinementVariables = new HashMap<>();
 
     private final InferenceAnnotatedTypeFactory typeFactory;
 

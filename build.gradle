@@ -1,5 +1,5 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
 apply plugin: 'java'
@@ -34,7 +34,6 @@ println '-------------------------------'
 println 'CHECKERFRAMEWORK: ' + checkerFrameworkPath
 
 repositories {
-    jcenter()
     mavenCentral()
 }
 
@@ -47,23 +46,33 @@ dependencies {
         javacJar group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
     }
 
-    compile files("${checkerJar}")
-    compile group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
+    implementation files("${checkerJar}")
+    implementation group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
 
-    compile 'org.plumelib:options:1.0.5'
+    implementation 'org.plumelib:options:1.0.5'
+    implementation 'org.plumelib:plume-util:1.5.8'
+
+    implementation 'com.google.guava:guava:31.0.1-jre'
+
+    // AFU is an "includedBuild" imported in settings.gradle, so the version number doesn't matter.
+    // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
+    implementation('org.checkerframework:annotation-file-utilities:*') {
+        exclude group: 'com.google.errorprone', module: 'javac'
+    }
+
     // Serialize constraints
-    compile 'com.googlecode.json-simple:json-simple:1.1.1'
+    implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     // Pretty print serialized constraints
-    compile 'com.google.code.gson:gson:2.8.7'
+    implementation 'com.google.code.gson:gson:2.8.9'
 
-    compile 'org.ow2.sat4j:org.ow2.sat4j.core:2.3.6'
-    compile 'org.ow2.sat4j:org.ow2.sat4j.maxsat:2.3.6'
-    compile files(z3Jar)
+    implementation 'org.ow2.sat4j:org.ow2.sat4j.core:2.3.6'
+    implementation 'org.ow2.sat4j:org.ow2.sat4j.maxsat:2.3.6'
+    implementation files(z3Jar)
 
-    testCompile fileTree(dir: "${checkerFrameworkPath}/framework-test/build/libs", include: "framework-test-*.jar")
+    testImplementation fileTree(dir: "${checkerFrameworkPath}/framework-test/build/libs", include: "framework-test-*.jar")
     // Mocking library. Used in a couple tests
-    testCompile 'org.mockito:mockito-all:2.0.2-beta'
-    testCompile 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-all:2.0.2-beta'
+    testImplementation 'junit:junit:4.13.2'
 }
 
 sourceSets {
@@ -175,7 +184,7 @@ compileJava {
 jar {
     description = 'Makes a jar with ONLY the classes compiled for checker ' +
             'framework inference and NONE of its dependencies'
-    archiveName = "checker-framework-inference.jar"
+    archiveFileName = "checker-framework-inference.jar"
     manifest.attributes("Main-Class": "checkers.inference.InferenceLauncher")
     exclude("dependency-cache", "libs", "tmp")
 }
@@ -185,8 +194,8 @@ shadowJar {
         exclude(dependency("junit:.*:.*"))
     }
     description 'Creates the "fat" checker.jar in dist'
-    destinationDir = file("${projectDir}/dist")
-    archiveName = "checker-framework-inference.jar"
+    destinationDirectory = file("${projectDir}/dist")
+    archiveFileName = "checker-framework-inference.jar"
 }
 
 task dist(dependsOn: shadowJar, type: Copy) {
@@ -197,6 +206,7 @@ task dist(dependsOn: shadowJar, type: Copy) {
             "${checkerFrameworkPath}/checker/dist/jdk8.jar",
             "${checkerFrameworkPath}/checker/dist/checker.jar",
             "${checkerFrameworkPath}/checker/dist/checker-qual.jar",
+            "${checkerFrameworkPath}/checker/dist/checker-util.jar",
             "${checkerFrameworkPath}/checker/dist/javac.jar",
     )
     into file('dist')
@@ -204,9 +214,9 @@ task dist(dependsOn: shadowJar, type: Copy) {
 
 task dependenciesJar(dependsOn: dist, type: Jar) {
     description 'Create a jar file with all the dependencies.'
+    duplicatesStrategy DuplicatesStrategy.EXCLUDE
     from {
-        configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
-        configurations.testCompile.collect { it.isDirectory() ? it : zipTree(it) }
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
     archiveName 'dependencies.jar'
     destinationDir file("${projectDir}/dist/")
@@ -243,7 +253,7 @@ task release(type: Zip) {
         include '*.py'
     }
 
-    baseName = 'release'
+    archiveBaseName = 'release'
 }
 
 task cloneAndBuildDependencies(type: Exec) {

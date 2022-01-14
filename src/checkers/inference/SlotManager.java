@@ -96,20 +96,34 @@ public interface SlotManager {
      */
     CombVariableSlot createCombVariableSlot(Slot receiver, Slot declared);
 
+    // TODO(Zhiping): will rename LubVariableSlot to MergeVariableSlot
     /**
      * Creates new LubVariableSlot using left slot and right slot, and returns
      * reference to it if no LubVariableSlot representing least upper bound of
-     * left slot and right slot exists. Otherwise, returns the existing CombVariableSlot.
-     * Left slot and right slot can uniquely identify a LubVariableSlot
+     * left slot and right slot exists. Otherwise, returns the existing LubVariableSlot.
+     * Left slot and right slot can uniquely identify a slot that stores their
+     * least upper bound.
      *
-     * @param left
-     *            left side of least upper bound operation
-     * @param right
-     *            right side of least upper bound operation
+     * @param left left side of merge operation
+     * @param right right side of merge operation
      * @return LubVariableSlot that represents the least upper bound result
      *         of left slot and right slot
      */
-    LubVariableSlot createLubVariableSlot(Slot left, Slot right);
+    LubVariableSlot createLubMergeVariableSlot(Slot left, Slot right);
+
+    /**
+     * Creates new LubVariableSlot using left slot and right slot, and returns
+     * reference to it if no LubVariableSlot representing greatest lower bound of
+     * left slot and right slot exists. Otherwise, returns the existing LubVariableSlot.
+     * Left slot and right slot can uniquely identify a slot that stores their
+     * greatest lower bound.
+     *
+     * @param left left side of merge operation
+     * @param right right side of merge operation
+     * @return LubVariableSlot that represents the greatest lower bound result
+     *         of left slot and right slot
+     */
+    LubVariableSlot createGlbMergeVariableSlot(Slot left, Slot right);
 
     /**
      * Create new ExistentialVariableSlot using potential slot and alternative
@@ -134,9 +148,12 @@ public interface SlotManager {
      * ArithmeticVariableSlot.
      *
      * @param location an AnnotationLocation used to locate this variable in code
+     * @param lhsAtm atm of the left operand
+     * @param rhsAtm atm of the right operand
      * @return the ArithmeticVariableSlot for the given location
      */
-    ArithmeticVariableSlot createArithmeticVariableSlot(AnnotationLocation location);
+    ArithmeticVariableSlot createArithmeticVariableSlot(
+            AnnotationLocation location, AnnotatedTypeMirror lhsAtm, AnnotatedTypeMirror rhsAtm);
 
     /**
      * Retrieves the ArithmeticVariableSlot created for the given location if it has been previously

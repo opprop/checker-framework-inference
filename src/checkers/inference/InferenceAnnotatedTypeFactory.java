@@ -24,11 +24,11 @@ import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.TreeUtils;
 
@@ -49,6 +49,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.TypeParameterElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 
@@ -148,7 +149,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         existentialInserter = new ExistentialVariableInserter(slotManager, constraintManager,
                                                               realTop, varAnnot, variableAnnotator);
 
-        inferencePoly = new InferenceQualifierPolymorphism(slotManager, variableAnnotator, varAnnot);
+        inferencePoly = new InferenceQualifierPolymorphism(slotManager, variableAnnotator, this, varAnnot);
 
         constantToVariableAnnotator = new ConstantToVariableAnnotator(realTop, varAnnot);
         // Every subclass must call postInit!
@@ -166,8 +167,8 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected CFAnalysis createFlowAnalysis(List<Pair<VariableElement, CFValue>> fieldValues) {
-        return realChecker.createInferenceAnalysis(inferenceChecker, this, fieldValues, slotManager, constraintManager, realChecker);
+    protected CFAnalysis createFlowAnalysis() {
+        return realChecker.createInferenceAnalysis(inferenceChecker, this, slotManager, constraintManager, realChecker);
     }
 
     @Override
@@ -220,13 +221,8 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
     @Override
-    protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
-        return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
-    }
-
-    @Override
-    public QualifierHierarchy createQualifierHierarchy( MultiGraphQualifierHierarchy.MultiGraphFactory factory ) {
-        return new InferenceQualifierHierarchy(factory);
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return new InferenceQualifierHierarchy(getSupportedTypeQualifiers(), elements);
     }
 
     @Override
@@ -255,11 +251,6 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     protected TypeVariableSubstitutor createTypeVariableSubstitutor() {
         return new InferenceTypeVariableSubstitutor(this, existentialInserter);
-    }
-
-    @Override
-    protected DependentTypesHelper createDependentTypesHelper() {
-        return null;
     }
 
     /**
@@ -293,14 +284,15 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * We do not want annotations inherited from superclass, we would like to infer all positions.
      */
     @Override
-    protected void addAnnotationsFromDefaultQualifierForUse(
+    protected void addAnnotationsFromDefaultForType(
             Element element, AnnotatedTypeMirror type)  { }
 
 
     @Override
     public void postAsMemberOf(final AnnotatedTypeMirror type,
                                final AnnotatedTypeMirror owner, final Element element) {
-        if (viewpointAdapter != null) {
+        // TODO: this only does a subset of what super does. Why is this override needed at all?
+        if (viewpointAdapter != null && type.getKind() != TypeKind.EXECUTABLE) {
             viewpointAdapter.viewpointAdaptMember(owner, element, type);
         }
     }
@@ -330,14 +322,17 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             receiverType = getSelfType(methodInvocationTree);
         }
 
-        assert receiverType != null : "Null receiver type when getting method from use for tree ( " + methodInvocationTree + " )";
+        assert ElementUtils.isStatic(methodElem) || receiverType != null :
+                "Null receiver type when getting method from use for tree ( " + methodInvocationTree + " )";
 
         // TODO: Add CombConstraints for method parameter types as well as return types
 
         // TODO: Is the asMemberOf correct, was not in Werner's original implementation but I had added it
         // TODO: It is also what the AnnotatedTypeFactory default implementation does
         final AnnotatedExecutableType methodOfReceiver = AnnotatedTypes.asMemberOf(types, this, receiverType, methodElem);
-        if (viewpointAdapter != null) {
+        if (viewpointAdapter != null && receiverType != null) {
+            // TODO: What should we do for static methods?
+            // TODO: Currently, we ignore static methods using receiverType != null.
             viewpointAdapter.viewpointAdaptMethod(receiverType, methodElem, methodOfReceiver);
         }
         ParameterizedExecutableType mType = substituteTypeArgs(methodInvocationTree, methodElem, methodOfReceiver);
@@ -347,7 +342,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         if (methodInvocationTree.getKind() == Tree.Kind.METHOD_INVOCATION &&
             TreeUtils.isMethodInvocation(methodInvocationTree, objectGetClass, processingEnv)) {
-            adaptGetClassReturnTypeToReceiver(method, receiverType);
+            adaptGetClassReturnTypeToReceiver(method, receiverType, methodInvocationTree);
         }
         return mType;
     }
@@ -496,7 +491,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public AnnotatedDeclaredType getBoxedType(AnnotatedPrimitiveType type) {
         AnnotatedDeclaredType boxedType = super.getBoxedType(type);
-        for (AnnotatedTypeMirror supertype : boxedType.directSuperTypes()) {
+        for (AnnotatedTypeMirror supertype : boxedType.directSupertypes()) {
             supertype.replaceAnnotations(type.getAnnotations());
         }
 

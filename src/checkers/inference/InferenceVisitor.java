@@ -1,5 +1,6 @@
 package checkers.inference;
 
+import com.sun.source.tree.MethodTree;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -40,15 +41,13 @@ import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.InferenceUtil;
 
 import com.sun.source.tree.CatchTree;
-import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 
-import static com.sun.source.tree.Tree.Kind.METHOD;
+import org.plumelib.util.ArraysPlume;
 
 
 /**
@@ -65,6 +64,7 @@ import static com.sun.source.tree.Tree.Kind.METHOD;
  *  That is, the methods from BaseTypeVisiotr should be migrated here and InferenceVisitor
  *  should replace it in the Visitor hierarchy.
  */
+// TODO(Zhiping): new logics from BaseTypeVisiotr should be migrated here
 public class InferenceVisitor<Checker extends InferenceChecker,
         Factory extends BaseAnnotatedTypeFactory>
         extends BaseTypeVisitor<Factory> {
@@ -168,6 +168,15 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                 InferenceMain.isHackMode());
     }
 
+    private AnnotationMirror findMainAnnotation(AnnotatedTypeMirror type, AnnotationMirror target) {
+        if (infer) {
+            AnnotationMirror varAnnot = ((InferenceAnnotatedTypeFactory) atypeFactory).getVarAnnot();
+            return type.getAnnotationInHierarchy(varAnnot);
+        }
+
+        return type.getAnnotationInHierarchy(target);
+    }
+
     public void effectiveIs(AnnotatedTypeMirror ty, AnnotationMirror mod, String msgkey, Tree node) {
         AnnotationMirror effective = findEffectiveAnnotation(ty, mod);
         if (InferenceMain.isHackMode(effective == null)) {
@@ -183,7 +192,12 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     }
 
     public void mainIs(AnnotatedTypeMirror ty, AnnotationMirror mod, String msgkey, Tree node) {
-        annoIs(ty, ty.getAnnotationInHierarchy(mod), mod, msgkey, node);
+        AnnotationMirror main = findMainAnnotation(ty, mod);
+        if (InferenceMain.isHackMode(main == null)) {
+            return;
+        }
+
+        annoIs(ty, main, mod, msgkey, node);
     }
 
     public void mainIsSubtype(AnnotatedTypeMirror ty, AnnotationMirror mod, String msgkey, Tree node) {
@@ -357,25 +371,29 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     protected void checkTypeArguments(Tree toptree,
                                       List<? extends AnnotatedTypeParameterBounds> paramBounds,
                                       List<? extends AnnotatedTypeMirror> typeargs,
-                                      List<? extends Tree> typeargTrees) {
+                                      List<? extends Tree> typeargTrees,
+                                      CharSequence typeOrMethodName,
+                                      List<?> paramNames) {
         // System.out.printf("BaseTypeVisitor.checkTypeArguments: %s, TVs: %s, TAs: %s, TATs: %s\n",
         //         toptree, paramBounds, typeargs, typeargTrees);
 
         // If there are no type variables, do nothing.
-        if (paramBounds.isEmpty())
+        if (paramBounds.isEmpty()) {
             return;
+        }
 
-        assert paramBounds.size() == typeargs.size() :
-                "BaseTypeVisitor.checkTypeArguments: mismatch between type arguments: " +
-                        typeargs + " and type parameter bounds" + paramBounds;
+        int size = paramBounds.size();
+        assert size == typeargs.size()
+                : "BaseTypeVisitor.checkTypeArguments: mismatch between type arguments: "
+                + typeargs
+                + " and type parameter bounds"
+                + paramBounds;
 
-        Iterator<? extends AnnotatedTypeParameterBounds> boundsIter = paramBounds.iterator();
-        Iterator<? extends AnnotatedTypeMirror> argIter = typeargs.iterator();
+        for (int i = 0; i < size; i++) {
 
-        while (boundsIter.hasNext()) {
-
-            AnnotatedTypeParameterBounds bounds = boundsIter.next();
-            AnnotatedTypeMirror typeArg = argIter.next();
+            AnnotatedTypeParameterBounds bounds = paramBounds.get(i);
+            AnnotatedTypeMirror typeArg = typeargs.get(i);
+            Object curParamName = paramNames.get(i);
 
             AnnotatedTypeMirror varUpperBound = bounds.getUpperBound();
             final AnnotatedTypeMirror typeArgForUpperBoundCheck = typeArg;
@@ -412,23 +430,40 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                 // The inference fails if we provide invalid arguments,
                 // therefore issue an error for the arguments.
                 // I hope this is less confusing for users.
-                commonAssignmentCheck(varUpperBound,
-                        typeArg, toptree,
-                        "type.argument.type.incompatible");
+                commonAssignmentCheck(
+                        varUpperBound,
+                        typeArg,
+                        toptree,
+                        "type.argument.type.incompatible",
+                        curParamName,
+                        typeOrMethodName);
             } else {
-                commonAssignmentCheck(varUpperBound, typeArg,
+                commonAssignmentCheck(varUpperBound,
+                        typeArg,
                         typeargTrees.get(typeargs.indexOf(typeArg)),
-                        "type.argument.type.incompatible");
+                        "type.argument.type.incompatible",
+                        curParamName,
+                        typeOrMethodName);
             }
 
             if (!atypeFactory.getTypeHierarchy().isSubtype(bounds.getLowerBound(), typeArg)) {
                 if (typeargTrees == null || typeargTrees.isEmpty()) {
                     // The type arguments were inferred and we mark the whole method.
-                    checker.reportError(toptree, "type.argument.type.incompatible",
-                                    typeArg, bounds);
+                    checker.reportError(
+                            toptree,
+                            "type.argument.type.incompatible",
+                            curParamName,
+                            typeOrMethodName,
+                            typeArg,
+                            bounds);
                 } else {
-                    checker.reportError(typeargTrees.get(typeargs.indexOf(typeArg)), "type.argument.type.incompatible",
-                                    typeArg, bounds);
+                    checker.reportError(
+                            typeargTrees.get(typeargs.indexOf(typeArg)),
+                            "type.argument.type.incompatible",
+                            curParamName,
+                            typeOrMethodName,
+                            typeArg,
+                            bounds);
                 }
             }
         }
@@ -443,10 +478,14 @@ public class InferenceVisitor<Checker extends InferenceChecker,
      * @param valueExp the AST node for the value
      * @param errorKey the error message to use if the check fails (must be a
      *        compiler message key, see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
+     * @param extraArgs arguments to the error message key, before "found" and "expected" types
      */
     @Override
-    protected void commonAssignmentCheck(Tree varTree, ExpressionTree valueExp,
-            @CompilerMessageKey String errorKey) {
+    protected void commonAssignmentCheck(
+            Tree varTree,
+            ExpressionTree valueExp,
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
         if (!validateTypeOf(varTree)) {
             return;
         }
@@ -469,13 +508,16 @@ public class InferenceVisitor<Checker extends InferenceChecker,
 
         assert var != null : "no variable found for tree: " + varTree;
 
-        commonAssignmentCheck(var, valueExp, errorKey);
+        commonAssignmentCheck(var, valueExp, errorKey, extraArgs);
     }
 
     @Override
-    protected void commonAssignmentCheck(AnnotatedTypeMirror varType,
-            AnnotatedTypeMirror valueType, Tree valueTree, @CompilerMessageKey
-            String errorKey) {
+    protected void commonAssignmentCheck(
+            AnnotatedTypeMirror varType,
+            AnnotatedTypeMirror valueType,
+            Tree valueTree,
+            @CompilerMessageKey String errorKey,
+            Object... extraArgs) {
         // ####### Copied Code ########
 
         String valueTypeString = valueType.toString();
@@ -551,8 +593,10 @@ public class InferenceVisitor<Checker extends InferenceChecker,
 
         // Use an error key only if it's overridden by a checker.
         if (!success) {
-            checker.reportError(valueTree, errorKey,
-                    valueTypeString, varTypeString);
+            checker.reportError(
+                    valueTree,
+                    errorKey,
+                    ArraysPlume.concatenate(extraArgs, valueTypeString, varTypeString));
         }
         // ####### End Copied Code ########
     }
@@ -654,11 +698,11 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         Set<AnnotationMirror> throwBounds = new HashSet<>();
 
         for (AnnotationMirror throwBound : originals) {
-            if (AnnotationUtils.areSameByClass(throwBound, VarAnnot.class)) {
+            if (atypeFactory.areSameByClass(throwBound, VarAnnot.class)) {
                 if (throwBound.getElementValues().size() != 0) {
                     throwBounds.add(throwBound);
                 }
-            } else if (!AnnotationUtils.areSameByClass(throwBound, Unqualified.class)) {
+            } else if (!atypeFactory.areSameByClass(throwBound, Unqualified.class)) {
                 // throwBound represents the qualifier which all thrown types must be subtypes of
                 // there is not point in enforcing thrownType <: TOP, since it will always be true
                 AnnotationMirror top = atypeFactory.getQualifierHierarchy().getTopAnnotation(throwBound);
@@ -799,7 +843,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     @Override
     public boolean validateTypeOf(Tree tree) {
         boolean res = true;
-        if (infer && tree.getKind() == METHOD) {
+        if (infer && tree.getKind() == Kind.METHOD) {
             // Validate implicit receiver parameters separately, while explicit receivers are validated
             // in the super.validateTypeOf()
             AnnotatedExecutableType methodType = (AnnotatedExecutableType) atypeFactory.getAnnotatedType(tree);

@@ -42,8 +42,8 @@ public class DataflowChecker extends BaseInferrableChecker {
     }
 
     @Override
-    public DataflowAnnotatedTypeFactory createRealTypeFactory() {
-        return new DataflowAnnotatedTypeFactory(this);
+    public DataflowAnnotatedTypeFactory createRealTypeFactory(boolean infer) {
+        return new DataflowAnnotatedTypeFactory(this, infer);
     }
 
     @Override

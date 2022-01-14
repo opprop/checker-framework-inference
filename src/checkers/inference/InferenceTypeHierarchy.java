@@ -48,7 +48,8 @@ public class InferenceTypeHierarchy extends DefaultTypeHierarchy {
 
     @Override
     public StructuralEqualityComparer createEqualityComparer() {
-        return new InferenceEqualityComparer(this.typeargVisitHistory,
+        return new InferenceEqualityComparer(
+                this.areEqualVisitHistory,
                 InferenceQualifierHierarchy.findVarAnnot(qualifierHierarchy.getTopAnnotations()));
     }
 

@@ -314,7 +314,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public ParameterizedExecutableType methodFromUse(final MethodInvocationTree methodInvocationTree) {
         assert methodInvocationTree != null : "MethodInvocationTree in methodFromUse was null.  " +
-                                              "Current path:\n" + this.visitorState.getPath();
+                                              "Current path:\n" + getVisitorTreePath();
         final ExecutableElement methodElem = TreeUtils.elementFromUse(methodInvocationTree);
 
         // TODO: Used in comb constraints, going to leave it in to ensure the element has been visited
@@ -375,7 +375,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public ParameterizedExecutableType constructorFromUse(final NewClassTree newClassTree) {
         assert newClassTree != null : "NewClassTree was null when attempting to get constructorFromUse. " +
-                                      "Current path:\n" + this.visitorState.getPath();
+                                      "Current path:\n" + getVisitorTreePath();
 
         final ExecutableElement constructorElem = TreeUtils.constructor(newClassTree);;
         final AnnotatedTypeMirror constructorReturnType = fromNewClass(newClassTree);

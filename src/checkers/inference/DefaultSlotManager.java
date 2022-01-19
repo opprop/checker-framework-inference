@@ -472,29 +472,16 @@ public class DefaultSlotManager implements SlotManager {
                     "Cannot create an ArithmeticVariableSlot with a missing annotation location.");
         }
 
-        ArithmeticVariableSlot slot = getArithmeticVariableSlot(location);
-        if (slot == null) {
-            // create the arithmetic var slot if it doesn't exist for the given location
-            TypeKind kind = getArithmeticResultKind(lhsAtm, rhsAtm);
-            slot = new ArithmeticVariableSlot(nextId(), location, kind);
-            addToSlots(slot);
-            arithmeticSlotCache.put(location, slot.getId());
-        }
-
-        return slot;
-    }
-
-    @Override
-    public ArithmeticVariableSlot getArithmeticVariableSlot(AnnotationLocation location) {
-        if (location == null || location.getKind() == AnnotationLocation.Kind.MISSING) {
-            throw new BugInCF(
-                    "ArithmeticVariableSlots are never created with a missing annotation location.");
-        }
-        if (!arithmeticSlotCache.containsKey(location)) {
-            return null;
-        } else {
+        if (arithmeticSlotCache.containsKey(location)) {
             return (ArithmeticVariableSlot) getSlot(arithmeticSlotCache.get(location));
         }
+
+        // create the arithmetic var slot if it doesn't exist for the given location
+        TypeKind kind = getArithmeticResultKind(lhsAtm, rhsAtm);
+        ArithmeticVariableSlot slot = new ArithmeticVariableSlot(nextId(), location, kind);
+        addToSlots(slot);
+        arithmeticSlotCache.put(location, slot.getId());
+        return slot;
     }
 
     @Override
@@ -503,42 +490,24 @@ public class DefaultSlotManager implements SlotManager {
             throw new BugInCF(
                     "Cannot create an ComparisonVariableSlot with a missing annotation location.");
         }
-        ComparisonVariableSlot slot;
-        slot = getComparisonVariableSlot(location, thenBranch);
-        if (slot == null) {
-            // create the comparison var slot if it doesn't exist for the given location
-            slot = new ComparisonVariableSlot(nextId(), location, refined);
-            addToSlots(slot);
-            if (thenBranch) {
-                comparisonThenSlotCache.put(location, slot.getId());
-            } else {
-                comparisonElseSlotCache.put(location, slot.getId());
-            }
+
+        if (thenBranch && comparisonThenSlotCache.containsKey(location)) {
+            return (ComparisonVariableSlot) getSlot(comparisonThenSlotCache.get(location));
+        }
+        if (!thenBranch && comparisonElseSlotCache.containsKey(location)) {
+            return (ComparisonVariableSlot) getSlot(comparisonElseSlotCache.get(location));
+        }
+
+        // create the comparison var slot if it doesn't exist for the given location
+        ComparisonVariableSlot slot = new ComparisonVariableSlot(nextId(), location, refined);
+        addToSlots(slot);
+        if (thenBranch) {
+            comparisonThenSlotCache.put(location, slot.getId());
+        } else {
+            comparisonElseSlotCache.put(location, slot.getId());
         }
         return slot;
     }
-
-    @Override
-    public ComparisonVariableSlot getComparisonVariableSlot(AnnotationLocation location, boolean thenBranch) {
-        if (location == null || location.getKind() == AnnotationLocation.Kind.MISSING) {
-            throw new BugInCF(
-                    "ComparisonVariableSlot are never created with a missing annotation location.");
-        }
-        if (thenBranch) {
-            if (!comparisonThenSlotCache.containsKey(location)) {
-                return null;
-            } else {
-                return (ComparisonVariableSlot) getSlot(comparisonThenSlotCache.get(location));
-            }
-        } else {
-            if (!comparisonElseSlotCache.containsKey(location)) {
-                return null;
-            } else {
-                return (ComparisonVariableSlot) getSlot(comparisonElseSlotCache.get(location));
-            }
-        }
-    }
-
 
     @Override
     public AnnotationMirror createEquivalentVarAnno(AnnotationMirror realQualifier) {

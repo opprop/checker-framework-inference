@@ -157,19 +157,6 @@ public interface SlotManager {
             AnnotationLocation location, AnnotatedTypeMirror lhsAtm, AnnotatedTypeMirror rhsAtm);
 
     /**
-     * Retrieves the ArithmeticVariableSlot created for the given location if it has been previously
-     * created, otherwise null is returned.
-     *
-     * This method allows faster retrieval of already created ArithmeticVariableSlots during
-     * traversals of binary trees in an InferenceVisitor subclass, which does not have direct access
-     * to the ATM containing this slot.
-     *
-     * @param location an AnnotationLocation used to locate this variable in code
-     * @return the ArithmeticVariableSlot for the given location, or null if none exists
-     */
-    ArithmeticVariableSlot getArithmeticVariableSlot(AnnotationLocation location);
-
-    /**
      * Create new ComparisonVariableSlot at the given location and return a reference to it if no
      * ComparisonVariableSlot exists for the location. Otherwise, returns the existing
      * ComparisonVariableSlot.
@@ -179,20 +166,6 @@ public interface SlotManager {
      * @return the ComparisonVariableSlot for the given location
      */
     ComparisonVariableSlot createComparisonVariableSlot(AnnotationLocation location, Slot refined, boolean thenBranch);
-
-    /**
-     * Retrieves the ComparisonVariableSlot created for the given location if it has been previously
-     * created, otherwise null is returned.
-     *
-     * This method allows faster retrieval of already created ComparisonVariableSlot during
-     * traversals of binary comparison trees in an InferenceTransfer subclass, which does not have direct access
-     * to the ATM containing this slot.
-     *
-     * @param location an AnnotationLocation used to locate this variable in code
-     * @param thenBranch true if is for the then store, false if is for the else store
-     * @return the ComparisonVariableSlot for the given location, or null if none exists
-     */
-    ComparisonVariableSlot getComparisonVariableSlot(AnnotationLocation location, boolean thenBranch);
 
     /**
      * Create a VarAnnot equivalent to the given realQualifier.

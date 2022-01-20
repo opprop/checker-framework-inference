@@ -13,6 +13,7 @@ import java.util.Set;
 import javax.lang.model.element.AnnotationMirror;
 
 import org.checkerframework.javacutil.BugInCF;
+import org.plumelib.util.Pair;
 import org.sat4j.core.VecInt;
 import org.sat4j.maxsat.SolverFactory;
 import org.sat4j.maxsat.WeightedMaxSatDecorator;
@@ -53,7 +54,7 @@ public class MaxSatSolver extends Solver<MaxSatFormatTranslator> {
     protected final SlotManager slotManager;
     protected final List<VecInt> hardClauses = new LinkedList<>();
     private List<VecInt> wellFormednessClauses = new LinkedList<>();
-    protected final HashMap<VecInt, Integer> softClauses = new HashMap<>();
+    protected final List<Pair<VecInt, Integer>> softClauses = new LinkedList<>();
     private MaxSATUnsatisfiableConstraintExplainer unsatisfiableConstraintExplainer;
     protected final File CNFData = new File(new File("").getAbsolutePath() + "/cnfData");
     protected StringBuilder CNFInput = new StringBuilder();
@@ -144,7 +145,7 @@ public class MaxSatSolver extends Solver<MaxSatFormatTranslator> {
             for (VecInt res : encoding) {
                 if (res != null && res.size() != 0) {
                     if (constraint instanceof PreferenceConstraint) {
-                        softClauses.put(res, ((PreferenceConstraint) constraint).getWeight());
+                        softClauses.add(new Pair<VecInt, Integer>(res, ((PreferenceConstraint) constraint).getWeight()));
                     } else {
                         hardClauses.add(res);
                     }
@@ -185,8 +186,8 @@ public class MaxSatSolver extends Solver<MaxSatFormatTranslator> {
             solver.addHardClause(wellFormednessClause);
         }
 
-        for (Map.Entry<VecInt, Integer> softclause : softClauses.entrySet()) {
-            solver.addSoftClause(softclause.getValue(), softclause.getKey());
+        for (Pair<VecInt, Integer> softclause : softClauses) {
+            solver.addSoftClause(softclause.b, softclause.a);
         }
     }
 
@@ -280,8 +281,8 @@ public class MaxSatSolver extends Solver<MaxSatFormatTranslator> {
         }
         System.out.println();
         System.out.println("Soft clauses: ");
-        for (Map.Entry<VecInt, Integer> softclause : softClauses.entrySet()) {
-            System.out.println(softclause.getKey() + " w: " + softclause.getValue());
+        for (Pair<VecInt, Integer> softclause : softClauses) {
+            System.out.println(softclause.a + " w: " + softclause.b);
         }
     }
 

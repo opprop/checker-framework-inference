@@ -1,12 +1,13 @@
 package sparta.checkers;
 
 import checkers.inference.BaseInferenceRealTypeFactory;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
@@ -19,6 +20,7 @@ import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 import java.lang.annotation.Annotation;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +33,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Elements;
 
 import sparta.checkers.iflow.util.IFlowUtils;
 import sparta.checkers.iflow.util.PFPermission;
@@ -285,36 +288,25 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
         }
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return org.checkerframework.framework.util.MultiGraphQualifierHierarchy
-                .createMultiGraphQualifierHierarchy(this);
+        return new FlowQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
-    @SuppressWarnings("deprecation")
-    @Override
-    public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
-            org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory factory
-    ) {
-        return new FlowQualifierHierarchy(factory);
-    }
+    protected class FlowQualifierHierarchy extends ElementQualifierHierarchy {
 
-    // TODO(Zhiping): deprecate usage of MultiGraphQualifierHierarchy
-    @SuppressWarnings("deprecation")
-    protected class FlowQualifierHierarchy extends org.checkerframework.framework.util.MultiGraphQualifierHierarchy {
-
-        public FlowQualifierHierarchy(MultiGraphFactory f) {
-            super(f);
-            polyQualifiers.clear();
-            polyQualifiers.put(NOSINK, POLYSINK);
-            polyQualifiers.put(ANYSOURCE, POLYSOURCE);
+        public FlowQualifierHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses,
+                Elements elements
+        ) {
+            super(qualifierClasses, elements);
         }
 
-        @Override public Set<? extends AnnotationMirror> getTopAnnotations() {
+        @Override
+        public Set<? extends AnnotationMirror> getTopAnnotations() {
             return Collections.singleton(checker instanceof IFlowSinkChecker ?
-                                                 NOSINK :
-                                                 ANYSOURCE);
+                    NOSINK :
+                    ANYSOURCE);
         }
 
         @Override
@@ -339,6 +331,48 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
                 return ANYSINK;
             } else {
                 return NOSOURCE;
+            }
+        }
+
+        @Override
+        public @Nullable AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+            if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
+                return null;
+            } else if (isSubtype(a1, a2)) {
+                return a2;
+            } else if (isSubtype(a2, a1)) {
+                return a1;
+            } else if (isSourceQualifier(a1) && isSourceQualifier(a2)) {
+                Set<PFPermission> lubPermissions = getSources(a1);
+                lubPermissions.addAll(getSources(a2));
+                return buildAnnotationMirrorFlowPermission(Source.class, toPermissionArray(lubPermissions));
+            } else {
+                assert isSinkQualifier(a1) && isSinkQualifier(a2);
+
+                Set<PFPermission> lubPermissions = getSinks(a1);
+                lubPermissions.retainAll(getSinks(a2));
+                return buildAnnotationMirrorFlowPermission(Sink.class, toPermissionArray(lubPermissions));
+            }
+        }
+
+        @Override
+        public @Nullable AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+            if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
+                return null;
+            } else if (isSubtype(a1, a2)) {
+                return a1;
+            } else if (isSubtype(a2, a1)) {
+                return a2;
+            } else if (isSourceQualifier(a1) && isSourceQualifier(a2)) {
+                Set<PFPermission> glbPermissions = getSources(a1);
+                glbPermissions.retainAll(getSources(a2));
+                return buildAnnotationMirrorFlowPermission(Source.class, toPermissionArray(glbPermissions));
+            } else {
+                assert isSinkQualifier(a1) && isSinkQualifier(a2);
+
+                Set<PFPermission> glbPermissions = getSinks(a1);
+                glbPermissions.addAll(getSinks(a2));
+                return buildAnnotationMirrorFlowPermission(Sink.class, toPermissionArray(glbPermissions));
             }
         }
 
@@ -374,6 +408,10 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
                 // annotations should either both be sources or sinks.
                 return false;
             }
+        }
+
+        private String[] toPermissionArray(Collection<PFPermission> permissions) {
+            return permissions.stream().map(PFPermission::toString).toArray(String[]::new);
         }
 
         private boolean isSuperSet(Set<PFPermission> superset, Set<PFPermission> subset) {

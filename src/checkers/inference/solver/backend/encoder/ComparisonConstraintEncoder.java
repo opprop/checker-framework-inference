@@ -14,7 +14,7 @@ import checkers.inference.model.VariableSlot;
  * @see AbstractConstraintEncoderFactory#createComparisonConstraintEncoder()
  */
 public interface ComparisonConstraintEncoder<ConstraintEncodingT> {
-	ConstraintEncodingT encodeVariable_Variable(ComparisonOperationKind operation,
+    ConstraintEncodingT encodeVariable_Variable(ComparisonOperationKind operation,
             VariableSlot left, VariableSlot right, ComparisonVariableSlot result);
 
     ConstraintEncodingT encodeVariable_Constant(ComparisonOperationKind operation,

@@ -120,14 +120,17 @@ public class ComparisonConstraint extends Constraint {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         ComparisonConstraint other = (ComparisonConstraint) obj;
-        return  left.equals(other.left) && right.equals(other.right)
+        return left.equals(other.left) && right.equals(other.right)
         		&& operation.equals(other.operation);
     }
 }

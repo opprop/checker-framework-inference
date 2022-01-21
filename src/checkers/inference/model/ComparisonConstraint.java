@@ -9,8 +9,12 @@ import org.checkerframework.javacutil.BugInCF;
 import com.sun.source.tree.Tree.Kind;
 
 /**
- * Represents a constraint that two slots must be comparable.
+ * Represents constraints created for:
+ *  (1) numerical comparison ("==", "!=", ">", ">=", "<", "<=")
+ *  (2) comparison between references/null ("==", "!=")
  *
+ * In contrast, a {@link ComparableConstraint} describes two types are compatible,
+ * i.e. one type can be cast to the other.
  */
 public class ComparisonConstraint extends Constraint {
 

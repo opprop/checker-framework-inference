@@ -5,7 +5,6 @@ package checkers.inference.model;
  * {@link VariableSlot}s. 
  * e.g., for a comparison constraint c := x &lt y, the comparison variable slot c is the refined value of
  * x where x < y is always when x = c.
- * Note that this slot is serialized identically to a {@link VariableSlot}.
  */
 public class ComparisonVariableSlot extends VariableSlot {
     private final Slot refined;

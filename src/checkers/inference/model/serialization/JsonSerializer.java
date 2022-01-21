@@ -122,9 +122,9 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
     protected static final String INEQUALITY_RHS = "rhs";
     protected static final String INEQUALITY_LHS = "lhs";
 
-    protected static final String COMP_CONSTRAINT_KEY = "comparable";
-    protected static final String COMP_RHS = "rhs";
-    protected static final String COMP_LHS = "lhs";
+    protected static final String COMPARABLE_CONSTRAINT_KEY = "comparable";
+    protected static final String COMPARABLE_RHS = "rhs";
+    protected static final String COMPARABLE_LHS = "lhs";
 
     protected static final String COMPARISON_CONSTRAINT_KEY = "comparison";
     protected static final String COMPARISON_RHS = "rhs";
@@ -327,9 +327,9 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
         }
 
         JSONObject obj = new JSONObject();
-        obj.put(CONSTRAINT_KEY, COMP_CONSTRAINT_KEY);
-        obj.put(COMP_LHS, constraint.getFirst().serialize(this));
-        obj.put(COMP_RHS, constraint.getSecond().serialize(this));
+        obj.put(CONSTRAINT_KEY, COMPARABLE_CONSTRAINT_KEY);
+        obj.put(COMPARABLE_LHS, constraint.getFirst().serialize(this));
+        obj.put(COMPARABLE_RHS, constraint.getSecond().serialize(this));
         return obj;
     }
 

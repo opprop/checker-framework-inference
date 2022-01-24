@@ -72,15 +72,6 @@ public class ComparisonConstraint extends Constraint {
         this.result = result;
     }
 
-    private ComparisonConstraint(ComparisonOperationKind operation, Slot left, Slot right, 
-    		ComparisonVariableSlot result) {
-        super(Arrays.asList(left, right, result));
-        this.left = left;
-        this.right = right;
-        this.operation = operation;
-        this.result = result;
-    }
-    
     protected static Constraint create(ComparisonOperationKind operation, Slot left, Slot right,
     		ComparisonVariableSlot result, AnnotationLocation location, QualifierHierarchy realQualHierarchy) {
         if (operation == null || left == null || right == null) {

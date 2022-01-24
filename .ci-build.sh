@@ -97,9 +97,7 @@ if [[ "${GROUP}" == downstream* && "${SLUGOWNER}" == "opprop" ]]; then
     if [[ "${GROUP}" == "downstream-universe" ]]; then
         UNIVERSE_GIT=universe
         UNIVERSE_BRANCH=master
-        UNIVERSE_COMMAND="./gradlew build -x test && ./test-universe.sh"
-
-        ./gradlew testLibJar
+        UNIVERSE_COMMAND="./gradlew build -x test && ./gradlew test"
 
         clone_downstream $UNIVERSE_GIT $UNIVERSE_BRANCH
         test_downstream $UNIVERSE_GIT $UNIVERSE_COMMAND

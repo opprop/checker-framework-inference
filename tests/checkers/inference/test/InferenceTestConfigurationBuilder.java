@@ -173,7 +173,7 @@ public class InferenceTestConfigurationBuilder {
     }
 
     public static InferenceTestConfiguration buildDefaultConfiguration(
-            String testSourcePath, File testFile, File testDataRoot, String checkerName, List<String> typecheckOptions,
+            String testSourcePath, File testFile, File testDataRoot, Class<?> checker, List<String> typecheckOptions,
             List<String> inferenceOptions,  String solverName, List<String> solverOptions,
             boolean shouldUseHacks, boolean shouldEmitDebugInfo, String pathToAfuScripts, String pathToInferenceScript) {
 
@@ -182,7 +182,7 @@ public class InferenceTestConfigurationBuilder {
         final File defaultAnnotatedSourceDir = new File(defaultInferenceOutDir, "annotated-source");
 
         TestConfiguration initialConfig = TestConfigurationBuilder.buildDefaultConfiguration(
-                testSourcePath, testFile, checkerName, typecheckOptions, shouldEmitDebugInfo);
+                testSourcePath, testFile, checker, typecheckOptions, shouldEmitDebugInfo);
 
         InferenceTestConfigurationBuilder configBuilder =
             new InferenceTestConfigurationBuilder()

@@ -8,6 +8,7 @@ import java.util.Map;
 import checkers.inference.model.LubVariableSlot;
 import checkers.inference.model.ImplicationConstraint;
 import checkers.inference.model.VariableSlot;
+import org.checkerframework.javacutil.BugInCF;
 import org.sat4j.core.VecInt;
 
 import checkers.inference.SlotManager;
@@ -16,6 +17,8 @@ import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.CombineConstraint;
 import checkers.inference.model.ComparableConstraint;
+import checkers.inference.model.ComparisonConstraint;
+import checkers.inference.model.ComparisonVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.EqualityConstraint;
@@ -253,6 +256,11 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
     }
 
     @Override
+    public VecInt[] serialize(ComparisonVariableSlot slot) {
+        return null;
+    }
+
+    @Override
     public VecInt[] serialize(ExistentialVariableSlot slot) {
         // See checkers.inference.ConstraintNormalizer.normalize()
         throw new UnsupportedOperationException("Existential slots should be normalized away before serialization.");
@@ -262,6 +270,12 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
     public VecInt[] serialize(ComparableConstraint comparableConstraint) {
         // not sure what this means
         return emptyClauses;
+    }
+
+    @Override
+    public VecInt[] serialize(ComparisonConstraint comparisonConstraint) {
+    	throw new UnsupportedOperationException(
+                "Serializing ComparisonConstraint is unsupported in CnfVecIntSerializer");
     }
 
     @Override
@@ -288,12 +302,37 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
                 "MaxSAT backend. Use MaxSATSolver instead!");
     }
 
+    /**
+     * Convert all the given mandatory constraints into hard clauses. A BugInCF exception is
+     * raised if the given constraints contain any {@link PreferenceConstraint}.
+     *
+     * For conversion of constraints containing {@link PreferenceConstraint}, use
+     * {@link CnfVecIntSerializer#convertAll(Iterable, List, List)}
+     *
+     * @param constraints the constraints to convert
+     * @return the output clauses for the given constraints
+     */
     public List<VecInt> convertAll(Iterable<Constraint> constraints) {
         return convertAll(constraints, new LinkedList<VecInt>());
     }
 
+    /**
+     * Convert all the given mandatory constraints into hard clauses. A BugInCF exception is
+     * raised if the given constraints contains any {@link PreferenceConstraint}.
+     *
+     * For conversion of constraints containing {@link PreferenceConstraint}, use
+     * {@link CnfVecIntSerializer#convertAll(Iterable, List, List)}
+     *
+     * @param constraints the constraints to convert
+     * @param results the output clauses for the given constraints
+     * @return same as {@code results}
+     */
     public List<VecInt> convertAll(Iterable<Constraint> constraints, List<VecInt> results) {
         for (Constraint constraint : constraints) {
+            if (constraint instanceof PreferenceConstraint) {
+                throw new BugInCF("CnfVecIntSerializer: adding PreferenceConstraint ( " + constraint +
+                        " ) to hard clauses is forbidden");
+            }
             for (VecInt res : constraint.serialize(this)) {
                 if (res.size() != 0) {
                     results.add(res);
@@ -302,6 +341,28 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
         }
 
         return results;
+    }
+
+    /**
+     * Convert all the given mandatory constraints to hard clauses, and preference constraints
+     * to soft clauses.
+     *
+     * @param constraints the constraints to convert
+     * @param hardClauses the output hard clauses for the mandatory constraints
+     * @param softClauses the output soft clauses for {@link PreferenceConstraint}
+     */
+    public void convertAll(Iterable<Constraint> constraints, List<VecInt> hardClauses, List<VecInt> softClauses) {
+        for (Constraint constraint : constraints) {
+            for (VecInt res : constraint.serialize(this)) {
+                if (res.size() != 0) {
+                    if (constraint instanceof PreferenceConstraint) {
+                        softClauses.add(res);
+                    } else {
+                        hardClauses.add(res);
+                    }
+                }
+            }
+        }
     }
 
     protected abstract boolean isTop(ConstantSlot constantSlot);

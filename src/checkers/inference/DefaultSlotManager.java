@@ -17,6 +17,7 @@ import java.util.TreeSet;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
 import checkers.inference.model.LubVariableSlot;
@@ -26,6 +27,7 @@ import com.sun.tools.javac.util.Pair;
 import checkers.inference.model.AnnotationLocation;
 import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
+import checkers.inference.model.ComparisonVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.RefinementVariableSlot;
@@ -33,6 +35,8 @@ import checkers.inference.model.Slot;
 import checkers.inference.model.SourceVariableSlot;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.qual.VarAnnot;
+import org.checkerframework.javacutil.TypeKindUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The default implementation of SlotManager.
@@ -88,6 +92,7 @@ public class DefaultSlotManager implements SlotManager {
      */
     private final Map<Pair<Slot, Slot>, Integer> combSlotPairCache;
     private final Map<Pair<Slot, Slot>, Integer> lubSlotPairCache;
+    private final Map<Pair<Slot, Slot>, Integer> glbSlotPairCache;
 
     /**
      * A map of {@link AnnotationLocation} to {@link Integer} for caching
@@ -96,6 +101,22 @@ public class DefaultSlotManager implements SlotManager {
      * {@link ArithmeticVariableSlot}.
      */
     private final Map<AnnotationLocation, Integer> arithmeticSlotCache;
+
+    /**
+     * A map of {@link AnnotationLocation} to {@link Integer} for caching
+     * {@link ComparisonVariableSlot}s. The annotation location uniquely identifies an
+     * {@link ComparisonVariableSlot}. The {@link Integer} is the Id of the corresponding
+     * {@link ComparisonVariableSlot}.
+     */
+    private final Map<AnnotationLocation, Integer> comparisonThenSlotCache;
+
+    /**
+     * A map of {@link AnnotationLocation} to {@link Integer} for caching
+     * {@link ComparisonVariableSlot}s. The annotation location uniquely identifies an
+     * {@link ComparisonVariableSlot}. The {@link Integer} is the Id of the corresponding
+     * {@link ComparisonVariableSlot}.
+     */
+    private final Map<AnnotationLocation, Integer> comparisonElseSlotCache;
 
     private final Set<Class<? extends Annotation>> realQualifiers;
     private final ProcessingEnvironment processingEnvironment;
@@ -118,7 +139,10 @@ public class DefaultSlotManager implements SlotManager {
         existentialSlotPairCache = new LinkedHashMap<>();
         combSlotPairCache = new LinkedHashMap<>();
         lubSlotPairCache = new LinkedHashMap<>();
+        glbSlotPairCache = new LinkedHashMap<>();
         arithmeticSlotCache = new LinkedHashMap<>();
+        comparisonThenSlotCache = new LinkedHashMap<>();
+        comparisonElseSlotCache = new LinkedHashMap<>();
 
         if (storeConstants) {
             for (Class<? extends Annotation> annoClass : this.realQualifiers) {
@@ -239,7 +263,7 @@ public class DefaultSlotManager implements SlotManager {
 
             } else {
                 for (Class<? extends Annotation> realAnno : realQualifiers) {
-                    if (AnnotationUtils.areSameByClass(annotationMirror, realAnno)) {
+                    if (InferenceMain.getInstance().getRealTypeFactory().areSameByClass(annotationMirror, realAnno)) {
                         return createConstantSlot(annotationMirror);
                     }
                 }
@@ -374,20 +398,31 @@ public class DefaultSlotManager implements SlotManager {
     }
 
     @Override
-    public LubVariableSlot createLubVariableSlot(Slot left, Slot right) {
+    public LubVariableSlot createLubMergeVariableSlot(Slot left, Slot right) {
+        return createMergeVariableSlot(left, right, true);
+    }
+
+    @Override
+    public LubVariableSlot createGlbMergeVariableSlot(Slot left, Slot right) {
+        return createMergeVariableSlot(left, right, false);
+    }
+
+    private LubVariableSlot createMergeVariableSlot(Slot left, Slot right, boolean isLub) {
         // Order of two ingredient slots doesn't matter, but for simplicity, we still use pair.
-        LubVariableSlot lubVariableSlot;
+        LubVariableSlot mergeVariableSlot;
+        Map<Pair<Slot, Slot>, Integer> cache = isLub ? lubSlotPairCache : glbSlotPairCache;
         Pair<Slot, Slot> pair = new Pair<>(left, right);
-        if (lubSlotPairCache.containsKey(pair)) {
-            int id = lubSlotPairCache.get(pair);
-            lubVariableSlot = (LubVariableSlot) getSlot(id);
+
+        if (cache.containsKey(pair)) {
+            int id = cache.get(pair);
+            mergeVariableSlot = (LubVariableSlot) getSlot(id);
         } else {
             // We need a non-null location in the future for better debugging outputs
-            lubVariableSlot = new LubVariableSlot(nextId(), null, left, right);
-            addToSlots(lubVariableSlot);
-            lubSlotPairCache.put(pair, lubVariableSlot.getId());
+            mergeVariableSlot = new LubVariableSlot(nextId(), null, left, right);
+            addToSlots(mergeVariableSlot);
+            cache.put(pair, mergeVariableSlot.getId());
         }
-        return lubVariableSlot;
+        return mergeVariableSlot;
     }
 
     @Override
@@ -405,35 +440,73 @@ public class DefaultSlotManager implements SlotManager {
         return existentialVariableSlot;
     }
 
+    /**
+     *  Determine the type kind of an arithmetic operation, based on Binary Numeric Promotion in JLS 5.6.2.
+     * @param lhsAtm atm of left operand
+     * @param rhsAtm atm of right operand
+     * @return type kind of the arithmetic operation
+     */
+    private TypeKind getArithmeticResultKind(AnnotatedTypeMirror lhsAtm, AnnotatedTypeMirror rhsAtm) {
+        TypeMirror lhsType = lhsAtm.getUnderlyingType();
+        TypeMirror rhsType = rhsAtm.getUnderlyingType();
+
+        assert (TypesUtils.isPrimitiveOrBoxed(lhsType) && TypesUtils.isPrimitiveOrBoxed(rhsType));
+
+        if (TypesUtils.isFloatingPoint(lhsType) || TypesUtils.isFloatingPoint(rhsType)) {
+            return TypeKind.DOUBLE;
+        }
+
+        if (TypeKindUtils.primitiveOrBoxedToTypeKind(lhsType) == TypeKind.LONG
+                || TypeKindUtils.primitiveOrBoxedToTypeKind(rhsType) == TypeKind.LONG) {
+            return TypeKind.LONG;
+        }
+
+        return TypeKind.INT;
+    }
+
     @Override
-    public ArithmeticVariableSlot createArithmeticVariableSlot(AnnotationLocation location) {
+    public ArithmeticVariableSlot createArithmeticVariableSlot(
+            AnnotationLocation location, AnnotatedTypeMirror lhsAtm, AnnotatedTypeMirror rhsAtm) {
         if (location == null || location.getKind() == AnnotationLocation.Kind.MISSING) {
             throw new BugInCF(
                     "Cannot create an ArithmeticVariableSlot with a missing annotation location.");
         }
 
-        // create the arithmetic var slot if it doesn't exist for the given location
-        if (!arithmeticSlotCache.containsKey(location)) {
-            ArithmeticVariableSlot slot = new ArithmeticVariableSlot(nextId(), location);
-            addToSlots(slot);
-            arithmeticSlotCache.put(location, slot.getId());
-            return slot;
+        if (arithmeticSlotCache.containsKey(location)) {
+            return (ArithmeticVariableSlot) getSlot(arithmeticSlotCache.get(location));
         }
 
-        return getArithmeticVariableSlot(location);
+        // create the arithmetic var slot if it doesn't exist for the given location
+        TypeKind kind = getArithmeticResultKind(lhsAtm, rhsAtm);
+        ArithmeticVariableSlot slot = new ArithmeticVariableSlot(nextId(), location, kind);
+        addToSlots(slot);
+        arithmeticSlotCache.put(location, slot.getId());
+        return slot;
     }
 
     @Override
-    public ArithmeticVariableSlot getArithmeticVariableSlot(AnnotationLocation location) {
+    public ComparisonVariableSlot createComparisonVariableSlot(AnnotationLocation location, Slot refined, boolean thenBranch) {
         if (location == null || location.getKind() == AnnotationLocation.Kind.MISSING) {
             throw new BugInCF(
-                    "ArithmeticVariableSlots are never created with a missing annotation location.");
+                    "Cannot create an ComparisonVariableSlot with a missing annotation location.");
         }
-        if (!arithmeticSlotCache.containsKey(location)) {
-            return null;
+
+        if (thenBranch && comparisonThenSlotCache.containsKey(location)) {
+            return (ComparisonVariableSlot) getSlot(comparisonThenSlotCache.get(location));
+        }
+        if (!thenBranch && comparisonElseSlotCache.containsKey(location)) {
+            return (ComparisonVariableSlot) getSlot(comparisonElseSlotCache.get(location));
+        }
+
+        // create the comparison var slot if it doesn't exist for the given location
+        ComparisonVariableSlot slot = new ComparisonVariableSlot(nextId(), location, refined);
+        addToSlots(slot);
+        if (thenBranch) {
+            comparisonThenSlotCache.put(location, slot.getId());
         } else {
-            return (ArithmeticVariableSlot) getSlot(arithmeticSlotCache.get(location));
+            comparisonElseSlotCache.put(location, slot.getId());
         }
+        return slot;
     }
 
     @Override

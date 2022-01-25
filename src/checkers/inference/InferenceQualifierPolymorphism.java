@@ -25,11 +25,15 @@ public class InferenceQualifierPolymorphism {
     private final VariableAnnotator variableAnnotator;
     private final AnnotationMirror varAnnot;
     private final SlotManager slotManager;
+    private final InferenceAnnotatedTypeFactory atypeFactory;
 
-    public InferenceQualifierPolymorphism(final SlotManager slotManager, final VariableAnnotator variableAnnotator,
+    public InferenceQualifierPolymorphism(final SlotManager slotManager,
+                                          final VariableAnnotator variableAnnotator,
+                                          final InferenceAnnotatedTypeFactory atypeFactory,
                                           final AnnotationMirror varAnnot) {
         this.slotManager = slotManager;
         this.variableAnnotator = variableAnnotator;
+        this.atypeFactory = atypeFactory;
         this.varAnnot = varAnnot;
     }
 
@@ -76,7 +80,7 @@ public class InferenceQualifierPolymorphism {
                     if (InferenceMain.isHackMode(slot == null)) {
                     } else if (slot instanceof ConstantSlot) {
                         AnnotationMirror constant = ((ConstantSlot) slot).getValue();
-                        if (InferenceQualifierHierarchy.isPolymorphic(constant)) {
+                        if (atypeFactory.getQualifierHierarchy().isPolymorphicQualifier(constant)) {
                             type.replaceAnnotation(slotManager.getAnnotation(getOrCreatePolyVar()));
                         }
                     }

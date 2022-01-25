@@ -39,21 +39,4 @@ public abstract class Z3SmtAbstractConstraintEncoder<SlotEncodingT, SlotSolution
         this.z3SmtFormatTranslator = z3SmtFormatTranslator;
     }
 
-    protected abstract void encodeSubtypeConstraint(SubtypeConstraint constraint);
-
-    protected abstract void encodeComparableConstraint(ComparableConstraint constraint);
-
-    protected abstract void encodeArithmeticConstraint(ArithmeticConstraint constraint);
-
-    protected abstract void encodeEqualityConstraint(EqualityConstraint constraint);
-
-    protected abstract void encodeInequalityConstraint(InequalityConstraint constraint);
-
-    protected abstract void encodeImplicationConstraint(ImplicationConstraint constraint);
-
-    protected abstract void encodeExistentialConstraint(ExistentialConstraint constraint);
-
-    protected abstract void encodeCombineConstraint(CombineConstraint constraint);
-
-    protected abstract void encodePreferenceConstraint(PreferenceConstraint constraint);
 }

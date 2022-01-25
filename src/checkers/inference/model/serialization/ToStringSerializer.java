@@ -16,6 +16,8 @@ import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.CombineConstraint;
 import checkers.inference.model.ComparableConstraint;
+import checkers.inference.model.ComparisonConstraint;
+import checkers.inference.model.ComparisonVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.EqualityConstraint;
@@ -196,6 +198,26 @@ public class ToStringSerializer implements Serializer<String, String> {
     }
 
     @Override
+    public String serialize(ComparisonConstraint constraint) {
+    	boolean prevShowVerboseVars = showVerboseVars;
+        showVerboseVars = false;
+        // format: result <= ( left comp right )
+        final StringBuilder sb = new StringBuilder();
+        sb.append(getCurrentIndentString())
+          .append(constraint.getResult().serialize(this))
+          .append(" <= ( ")
+          .append(constraint.getLeft().serialize(this))
+          .append(" ")
+          .append(constraint.getOperation().getSymbol())
+          .append(" ")
+          .append(constraint.getRight().serialize(this))
+          .append(" )");
+        optionallyFormatAstPath(constraint, sb);
+        showVerboseVars = prevShowVerboseVars;
+        return sb.toString();
+    }
+
+    @Override
     public String serialize(CombineConstraint constraint) {
         boolean prevShowVerboseVars = showVerboseVars;
         showVerboseVars = false;
@@ -219,11 +241,10 @@ public class ToStringSerializer implements Serializer<String, String> {
         final StringBuilder sb = new StringBuilder();
         sb.append(getCurrentIndentString())
           .append(constraint.getVariable().serialize(this))
-          .append(" ~= ")
+          .append(" == ")
           .append(constraint.getGoal().serialize(this))
-          .append(" w(")
-          .append(constraint.getWeight())
-          .append(" )");
+          .append(" weight = ")
+          .append(constraint.getWeight());
         showVerboseVars = prevShowVerboseVars;
         return sb.toString();
     }
@@ -353,6 +374,17 @@ public class ToStringSerializer implements Serializer<String, String> {
         final StringBuilder sb = new StringBuilder();
         sb.append(slot.getId());
         optionallyShowVerbose(slot, sb);
+        return sb.toString();
+    }
+
+    @Override
+    public String serialize(ComparisonVariableSlot slot) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(slot.getId());
+        if (showVerboseVars) {
+            // TODO: show more comparison-specific details
+            optionallyShowVerbose(slot, sb);
+        }
         return sb.toString();
     }
 

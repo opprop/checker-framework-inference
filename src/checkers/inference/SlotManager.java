@@ -11,6 +11,7 @@ import javax.lang.model.type.TypeMirror;
 import checkers.inference.model.AnnotationLocation;
 import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
+import checkers.inference.model.ComparisonVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.RefinementVariableSlot;
@@ -156,17 +157,15 @@ public interface SlotManager {
             AnnotationLocation location, AnnotatedTypeMirror lhsAtm, AnnotatedTypeMirror rhsAtm);
 
     /**
-     * Retrieves the ArithmeticVariableSlot created for the given location if it has been previously
-     * created, otherwise null is returned.
-     *
-     * This method allows faster retrieval of already created ArithmeticVariableSlots during
-     * traversals of binary trees in an InferenceVisitor subclass, which does not have direct access
-     * to the ATM containing this slot.
+     * Create new ComparisonVariableSlot at the given location and return a reference to it if no
+     * ComparisonVariableSlot exists for the location. Otherwise, returns the existing
+     * ComparisonVariableSlot.
      *
      * @param location an AnnotationLocation used to locate this variable in code
-     * @return the ArithmeticVariableSlot for the given location, or null if none exists
+     * @param thenBranch true if is for the then store, false if is for the else store
+     * @return the ComparisonVariableSlot for the given location
      */
-    ArithmeticVariableSlot getArithmeticVariableSlot(AnnotationLocation location);
+    ComparisonVariableSlot createComparisonVariableSlot(AnnotationLocation location, Slot refined, boolean thenBranch);
 
     /**
      * Create a VarAnnot equivalent to the given realQualifier.

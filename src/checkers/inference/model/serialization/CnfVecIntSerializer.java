@@ -17,6 +17,8 @@ import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.CombineConstraint;
 import checkers.inference.model.ComparableConstraint;
+import checkers.inference.model.ComparisonConstraint;
+import checkers.inference.model.ComparisonVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.EqualityConstraint;
@@ -254,6 +256,11 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
     }
 
     @Override
+    public VecInt[] serialize(ComparisonVariableSlot slot) {
+        return null;
+    }
+
+    @Override
     public VecInt[] serialize(ExistentialVariableSlot slot) {
         // See checkers.inference.ConstraintNormalizer.normalize()
         throw new UnsupportedOperationException("Existential slots should be normalized away before serialization.");
@@ -263,6 +270,12 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
     public VecInt[] serialize(ComparableConstraint comparableConstraint) {
         // not sure what this means
         return emptyClauses;
+    }
+
+    @Override
+    public VecInt[] serialize(ComparisonConstraint comparisonConstraint) {
+    	throw new UnsupportedOperationException(
+                "Serializing ComparisonConstraint is unsupported in CnfVecIntSerializer");
     }
 
     @Override

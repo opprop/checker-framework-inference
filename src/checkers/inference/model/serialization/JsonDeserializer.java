@@ -22,7 +22,8 @@ import checkers.inference.model.Constraint;
 import checkers.inference.model.ConstraintManager;
 import checkers.inference.model.Slot;
 import checkers.inference.model.SourceVariableSlot;
-import static checkers.inference.model.serialization.JsonSerializer.COMP_CONSTRAINT_KEY;
+import static checkers.inference.model.serialization.JsonSerializer.COMPARABLE_CONSTRAINT_KEY;
+import static checkers.inference.model.serialization.JsonSerializer.COMPARISON_CONSTRAINT_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.CONSTRAINTS_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.CONSTRAINT_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.EQUALITY_CONSTRAINT_KEY;
@@ -36,6 +37,8 @@ import static checkers.inference.model.serialization.JsonSerializer.EXISTENTIAL_
 import static checkers.inference.model.serialization.JsonSerializer.INEQUALITY_CONSTRAINT_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.INEQUALITY_LHS;
 import static checkers.inference.model.serialization.JsonSerializer.INEQUALITY_RHS;
+import static checkers.inference.model.serialization.JsonSerializer.COMPARABLE_LHS;
+import static checkers.inference.model.serialization.JsonSerializer.COMPARABLE_RHS;
 import static checkers.inference.model.serialization.JsonSerializer.SUBTYPE_CONSTRAINT_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.SUBTYPE_SUB_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.SUBTYPE_SUPER_KEY;
@@ -106,9 +109,9 @@ public class JsonDeserializer {
                     Slot lhs = parseSlot((String) constraint.get(INEQUALITY_LHS));
                     Slot rhs = parseSlot((String) constraint.get(INEQUALITY_RHS));
                     results.add(constraintManager.createInequalityConstraint(lhs, rhs));
-                } else if (COMP_CONSTRAINT_KEY.equals(constraintType)) {
-                    Slot lhs = parseSlot((String) constraint.get(INEQUALITY_LHS));
-                    Slot rhs = parseSlot((String) constraint.get(INEQUALITY_RHS));
+                } else if (COMPARABLE_CONSTRAINT_KEY.equals(constraintType)) {
+                    Slot lhs = parseSlot((String) constraint.get(COMPARABLE_LHS));
+                    Slot rhs = parseSlot((String) constraint.get(COMPARABLE_RHS));
                     results.add(constraintManager.createComparableConstraint(lhs, rhs));
                 } else if (EXISTENTIAL_CONSTRAINT_KEY.equals(constraintType)) {
                     Slot potential = parseSlot((String) constraint.get(EXISTENTIAL_ID));

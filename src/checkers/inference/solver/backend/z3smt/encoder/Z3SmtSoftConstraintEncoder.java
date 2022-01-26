@@ -17,6 +17,7 @@ import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.SubtypeConstraint;
 import checkers.inference.solver.backend.z3smt.Z3SmtFormatTranslator;
 import checkers.inference.solver.frontend.Lattice;
+import org.checkerframework.javacutil.BugInCF;
 
 public abstract class Z3SmtSoftConstraintEncoder<SlotEncodingT, SlotSolutionT>
         extends Z3SmtAbstractConstraintEncoder<SlotEncodingT, SlotSolutionT> {
@@ -34,46 +35,37 @@ public abstract class Z3SmtSoftConstraintEncoder<SlotEncodingT, SlotSolutionT>
     protected void addSoftConstraint(Expr serializedConstraint, int weight) {
         softConstraints.append("(assert-soft " + serializedConstraint + " :weight " + weight + ")\n");
     }
-    
+
+    protected abstract void encodeSoftSubtypeConstraint(SubtypeConstraint constraint);
+
+    protected abstract void encodeSoftEqualityConstraint(EqualityConstraint constraint);
+
+    protected abstract void encodeSoftInequalityConstraint(InequalityConstraint constraint);
+
+    /**
+     * Encode a set of constraints as soft constraints.
+     *
+     * @param constraints constraints to be encoded as soft constraints
+     * @return a string representation of the encoding of soft constraints
+     */
     public String encodeAndGetSoftConstraints(Collection<Constraint> constraints) {
         for (Constraint constraint : constraints) {
-            // Generate a soft constraint for subtype constraint
             if (constraint instanceof SubtypeConstraint) {
-                encodeSubtypeConstraint((SubtypeConstraint) constraint);
-            }
-            // Generate soft constraint for comparison constraint
-            if (constraint instanceof ComparableConstraint) {
-                encodeComparableConstraint((ComparableConstraint) constraint);
-            }
-            // Generate soft constraint for arithmetic constraint
-            if (constraint instanceof ArithmeticConstraint) {
-                encodeArithmeticConstraint((ArithmeticConstraint) constraint);
-            }
-            // Generate soft constraint for equality constraint
-            if (constraint instanceof EqualityConstraint) {
-                encodeEqualityConstraint((EqualityConstraint) constraint);
-            }
-            // Generate soft constraint for inequality constraint
-            if (constraint instanceof InequalityConstraint) {
-                encodeInequalityConstraint((InequalityConstraint) constraint);
-            }
-            // Generate soft constraint for implication constraint
-            if (constraint instanceof ImplicationConstraint) {
-                encodeImplicationConstraint((ImplicationConstraint) constraint);
-            }
-            // Generate soft constraint for existential constraint
-            if (constraint instanceof ExistentialConstraint) {
-                encodeExistentialConstraint((ExistentialConstraint) constraint);
-            }
-            // Generate soft constraint for combine constraint
-            if (constraint instanceof CombineConstraint) {
-                encodeCombineConstraint((CombineConstraint) constraint);
-            }
-            // Generate soft constraint for preference constraint
-            if (constraint instanceof PreferenceConstraint) {
-                encodePreferenceConstraint((PreferenceConstraint) constraint);
+                encodeSoftSubtypeConstraint((SubtypeConstraint) constraint);
+
+            } else if (constraint instanceof EqualityConstraint) {
+                encodeSoftEqualityConstraint((EqualityConstraint) constraint);
+
+            } else if (constraint instanceof InequalityConstraint) {
+                encodeSoftInequalityConstraint((InequalityConstraint) constraint);
+
+            } else {
+                throw new BugInCF("Soft constraint for " + constraint.getClass().getName() + " is not supported");
             }
         }
-        return softConstraints.toString();
+        String res = softConstraints.toString();
+        // clear field for next usage
+        softConstraints.setLength(0);
+        return res;
     }
 }

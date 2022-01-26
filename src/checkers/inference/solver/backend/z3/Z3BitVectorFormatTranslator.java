@@ -7,6 +7,7 @@ import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
+import checkers.inference.model.ComparisonVariableSlot;
 import org.checkerframework.javacutil.BugInCF;
 
 import checkers.inference.solver.backend.AbstractFormatTranslator;
@@ -150,6 +151,11 @@ public abstract class Z3BitVectorFormatTranslator extends AbstractFormatTranslat
     
     @Override
     public BitVecExpr serialize(ArithmeticVariableSlot slot) {
+        return serializeVarSlot(slot);
+    }
+
+    @Override
+    public BitVecExpr serialize(ComparisonVariableSlot slot) {
         return serializeVarSlot(slot);
     }
 

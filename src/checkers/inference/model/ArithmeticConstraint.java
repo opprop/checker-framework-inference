@@ -18,7 +18,13 @@ public class ArithmeticConstraint extends Constraint {
         MINUS("-"),
         MULTIPLY("*"),
         DIVIDE("/"),
-        REMAINDER("%");
+        REMAINDER("%"),
+        LEFT_SHIFT("<<"),
+        RIGHT_SHIFT(">>"),
+        UNSIGNED_RIGHT_SHIFT(">>>"),
+        AND("&"),
+        OR("|"),
+        XOR("^");
 
         // stores the symbol of the operation
         private final String opSymbol;
@@ -39,6 +45,18 @@ public class ArithmeticConstraint extends Constraint {
                     return DIVIDE;
                 case REMAINDER:
                     return REMAINDER;
+                case LEFT_SHIFT:
+                    return LEFT_SHIFT;
+                case RIGHT_SHIFT:
+                    return RIGHT_SHIFT;
+                case UNSIGNED_RIGHT_SHIFT:
+                    return UNSIGNED_RIGHT_SHIFT;
+                case AND:
+                    return AND;
+                case OR:
+                    return OR;
+                case XOR:
+                    return XOR;
                 default:
                     throw new BugInCF("There are no defined ArithmeticOperationKinds "
                             + "for the given com.sun.source.tree.Tree.Kind: " + kind);

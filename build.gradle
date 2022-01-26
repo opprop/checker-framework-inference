@@ -1,5 +1,5 @@
 plugins {
-    id 'com.github.johnrengelman.shadow' version '7.1.0'
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
 apply plugin: 'java'
@@ -218,15 +218,15 @@ task dependenciesJar(dependsOn: dist, type: Jar) {
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
-    archiveName 'dependencies.jar'
-    destinationDir file("${projectDir}/dist/")
+    archiveFileName = 'dependencies.jar'
+    destinationDirectory = file("${projectDir}/dist/")
 }
 
 task testLibJar(dependsOn: dist, type: Jar) {
     from sourceSets.test.output.classesDirs
     include ('checkers/inference/test/**')
-    archiveName 'inference-framework-test-lib.jar'
-    destinationDir file("${projectDir}/dist/")
+    archiveFileName = 'inference-framework-test-lib.jar'
+    destinationDirectory = file("${projectDir}/dist/")
 }
 
 tasks.clean {

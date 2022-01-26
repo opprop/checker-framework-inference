@@ -93,6 +93,16 @@ if [[ "${GROUP}" == downstream* && "${SLUGOWNER}" == "opprop" ]]; then
         test_downstream $SECURITY_GIT $SECURITY_COMMAND
     fi
 
+    # Universe test
+    if [[ "${GROUP}" == "downstream-universe" ]]; then
+        UNIVERSE_GIT=universe
+        UNIVERSE_BRANCH=master
+        UNIVERSE_COMMAND="./gradlew build -x test && ./gradlew test"
+
+        clone_downstream $UNIVERSE_GIT $UNIVERSE_BRANCH
+        test_downstream $UNIVERSE_GIT $UNIVERSE_COMMAND
+    fi
+
     # Value inference test
     if [[ "${GROUP}" == "downstream-value-inference" ]]; then
         VALUE_GIT=value-inference
@@ -104,7 +114,6 @@ if [[ "${GROUP}" == downstream* && "${SLUGOWNER}" == "opprop" ]]; then
         clone_downstream $VALUE_GIT $VALUE_BRANCH
         test_downstream $VALUE_GIT $VALUE_COMMAND
     fi
-
 fi
 
 echo Exiting "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in `pwd`

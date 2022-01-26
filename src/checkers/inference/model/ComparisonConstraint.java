@@ -1,6 +1,7 @@
 package checkers.inference.model;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.BugInCF;
@@ -8,8 +9,12 @@ import org.checkerframework.javacutil.BugInCF;
 import com.sun.source.tree.Tree.Kind;
 
 /**
- * Represents a constraint that two slots must be comparable.
+ * Represents constraints created for:
+ *  (1) numerical comparison ("==", "!=", ">", ">=", "<", "<=")
+ *  (2) comparison between references/null ("==", "!=")
  *
+ * In contrast, a {@link ComparableConstraint} describes two types are compatible,
+ * i.e. one type can be cast to the other.
  */
 public class ComparisonConstraint extends Constraint {
 
@@ -67,15 +72,6 @@ public class ComparisonConstraint extends Constraint {
         this.result = result;
     }
 
-    private ComparisonConstraint(ComparisonOperationKind operation, Slot left, Slot right, 
-    		ComparisonVariableSlot result) {
-        super(Arrays.asList(left, right, result));
-        this.left = left;
-        this.right = right;
-        this.operation = operation;
-        this.result = result;
-    }
-    
     protected static Constraint create(ComparisonOperationKind operation, Slot left, Slot right,
     		ComparisonVariableSlot result, AnnotationLocation location, QualifierHierarchy realQualHierarchy) {
         if (operation == null || left == null || right == null) {
@@ -114,27 +110,22 @@ public class ComparisonConstraint extends Constraint {
 
     @Override
     public int hashCode() {
-        int code = 1;
-        code = code + ((left == null) ? 0 : left.hashCode());
-        code = code + ((right == null) ? 0 : right.hashCode());
-        code = code + ((operation == null) ? 0 : operation.hashCode());
-        return code;
+        return Objects.hash(left, right, operation);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        ComparisonConstraint other = (ComparisonConstraint) obj;
-        if (left.equals(other.left) && right.equals(other.right) 
-        		&& operation.equals(other.operation)) {
-            return true;
-        } else {
+        }
+        if (obj == null) {
             return false;
         }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        ComparisonConstraint other = (ComparisonConstraint) obj;
+        return left.equals(other.left) && right.equals(other.right)
+        		&& operation.equals(other.operation);
     }
 }

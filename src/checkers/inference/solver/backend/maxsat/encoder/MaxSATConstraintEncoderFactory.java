@@ -53,7 +53,6 @@ public class MaxSATConstraintEncoderFactory extends AbstractConstraintEncoderFac
         return null;
     }
 
-
     @Override
     public MaxSATPreferenceConstraintEncoder createPreferenceConstraintEncoder() {
         return new MaxSATPreferenceConstraintEncoder(lattice, typeToInt);

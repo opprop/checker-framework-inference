@@ -440,7 +440,6 @@ public class DefaultSlotManager implements SlotManager {
         return existentialVariableSlot;
     }
 
-
     /**
      *  Determine the type kind of an arithmetic operation, based on Binary Numeric Promotion in JLS 5.6.2.
      * @param lhsAtm atm of left operand
@@ -473,29 +472,16 @@ public class DefaultSlotManager implements SlotManager {
                     "Cannot create an ArithmeticVariableSlot with a missing annotation location.");
         }
 
-        // create the arithmetic var slot if it doesn't exist for the given location
-        if (!arithmeticSlotCache.containsKey(location)) {
-            TypeKind kind = getArithmeticResultKind(lhsAtm, rhsAtm);
-            ArithmeticVariableSlot slot = new ArithmeticVariableSlot(nextId(), location, kind);
-            addToSlots(slot);
-            arithmeticSlotCache.put(location, slot.getId());
-            return slot;
-        }
-
-        return getArithmeticVariableSlot(location);
-    }
-
-    @Override
-    public ArithmeticVariableSlot getArithmeticVariableSlot(AnnotationLocation location) {
-        if (location == null || location.getKind() == AnnotationLocation.Kind.MISSING) {
-            throw new BugInCF(
-                    "ArithmeticVariableSlots are never created with a missing annotation location.");
-        }
-        if (!arithmeticSlotCache.containsKey(location)) {
-            return null;
-        } else {
+        if (arithmeticSlotCache.containsKey(location)) {
             return (ArithmeticVariableSlot) getSlot(arithmeticSlotCache.get(location));
         }
+
+        // create the arithmetic var slot if it doesn't exist for the given location
+        TypeKind kind = getArithmeticResultKind(lhsAtm, rhsAtm);
+        ArithmeticVariableSlot slot = new ArithmeticVariableSlot(nextId(), location, kind);
+        addToSlots(slot);
+        arithmeticSlotCache.put(location, slot.getId());
+        return slot;
     }
 
     @Override
@@ -505,23 +491,22 @@ public class DefaultSlotManager implements SlotManager {
                     "Cannot create an ComparisonVariableSlot with a missing annotation location.");
         }
 
+        if (thenBranch && comparisonThenSlotCache.containsKey(location)) {
+            return (ComparisonVariableSlot) getSlot(comparisonThenSlotCache.get(location));
+        }
+        if (!thenBranch && comparisonElseSlotCache.containsKey(location)) {
+            return (ComparisonVariableSlot) getSlot(comparisonElseSlotCache.get(location));
+        }
+
         // create the comparison var slot if it doesn't exist for the given location
-        if (thenBranch && !comparisonThenSlotCache.containsKey(location)) {
-            ComparisonVariableSlot slot = new ComparisonVariableSlot(nextId(), location, refined);
-            addToSlots(slot);
+        ComparisonVariableSlot slot = new ComparisonVariableSlot(nextId(), location, refined);
+        addToSlots(slot);
+        if (thenBranch) {
             comparisonThenSlotCache.put(location, slot.getId());
-            return slot;
-        }
-
-        // create the comparison var slot if it doesn't exist for the given location
-        if (!thenBranch && !comparisonElseSlotCache.containsKey(location)) {
-            ComparisonVariableSlot slot = new ComparisonVariableSlot(nextId(), location, refined);
-            addToSlots(slot);
+        } else {
             comparisonElseSlotCache.put(location, slot.getId());
-            return slot;
         }
-
-        return getComparisonVariableSlot(location, thenBranch);
+        return slot;
     }
 
     @Override

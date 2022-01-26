@@ -118,11 +118,11 @@ public class ConstraintManager {
     public Constraint createComparableConstraint(Slot first, Slot second) {
         return ComparableConstraint.create(first, second, getCurrentLocation(), realQualHierarchy);
     }
-    
+
     /**
      * Creates a {@link ComparisonConstraint} between the two slots.
      */
-    public Constraint createComparisonConstraint(ComparisonOperationKind operation, Slot first, 
+    public Constraint createComparisonConstraint(ComparisonOperationKind operation, Slot first,
     		Slot second, ComparisonVariableSlot result) {
         return ComparisonConstraint.create(operation, first, second, result, getCurrentLocation(), realQualHierarchy);
     }
@@ -257,9 +257,9 @@ public class ConstraintManager {
     /**
      * Creates and adds a {@link ComparisonConstraint} between the two slots to the constraint set.
      */
-    public void addComparisonConstraint(ComparisonOperationKind operation, Slot left, Slot right,
+    public void addComparisonConstraint(ComparisonOperationKind operation, Slot first, Slot second,
                                         ComparisonVariableSlot result) {
-        add(createComparisonConstraint(operation, left, right, result));
+        add(createComparisonConstraint(operation, first, second, result));
     }
 
     /**

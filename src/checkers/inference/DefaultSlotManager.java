@@ -27,6 +27,7 @@ import com.sun.tools.javac.util.Pair;
 import checkers.inference.model.AnnotationLocation;
 import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
+import checkers.inference.model.ComparisonVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.RefinementVariableSlot;
@@ -101,6 +102,22 @@ public class DefaultSlotManager implements SlotManager {
      */
     private final Map<AnnotationLocation, Integer> arithmeticSlotCache;
 
+    /**
+     * A map of {@link AnnotationLocation} to {@link Integer} for caching
+     * {@link ComparisonVariableSlot}s. The annotation location uniquely identifies an
+     * {@link ComparisonVariableSlot}. The {@link Integer} is the Id of the corresponding
+     * {@link ComparisonVariableSlot}.
+     */
+    private final Map<AnnotationLocation, Integer> comparisonThenSlotCache;
+
+    /**
+     * A map of {@link AnnotationLocation} to {@link Integer} for caching
+     * {@link ComparisonVariableSlot}s. The annotation location uniquely identifies an
+     * {@link ComparisonVariableSlot}. The {@link Integer} is the Id of the corresponding
+     * {@link ComparisonVariableSlot}.
+     */
+    private final Map<AnnotationLocation, Integer> comparisonElseSlotCache;
+
     private final Set<Class<? extends Annotation>> realQualifiers;
     private final ProcessingEnvironment processingEnvironment;
 
@@ -124,6 +141,8 @@ public class DefaultSlotManager implements SlotManager {
         lubSlotPairCache = new LinkedHashMap<>();
         glbSlotPairCache = new LinkedHashMap<>();
         arithmeticSlotCache = new LinkedHashMap<>();
+        comparisonThenSlotCache = new LinkedHashMap<>();
+        comparisonElseSlotCache = new LinkedHashMap<>();
 
         if (storeConstants) {
             for (Class<? extends Annotation> annoClass : this.realQualifiers) {
@@ -421,7 +440,6 @@ public class DefaultSlotManager implements SlotManager {
         return existentialVariableSlot;
     }
 
-
     /**
      *  Determine the type kind of an arithmetic operation, based on Binary Numeric Promotion in JLS 5.6.2.
      * @param lhsAtm atm of left operand
@@ -454,29 +472,41 @@ public class DefaultSlotManager implements SlotManager {
                     "Cannot create an ArithmeticVariableSlot with a missing annotation location.");
         }
 
-        // create the arithmetic var slot if it doesn't exist for the given location
-        if (!arithmeticSlotCache.containsKey(location)) {
-            TypeKind kind = getArithmeticResultKind(lhsAtm, rhsAtm);
-            ArithmeticVariableSlot slot = new ArithmeticVariableSlot(nextId(), location, kind);
-            addToSlots(slot);
-            arithmeticSlotCache.put(location, slot.getId());
-            return slot;
+        if (arithmeticSlotCache.containsKey(location)) {
+            return (ArithmeticVariableSlot) getSlot(arithmeticSlotCache.get(location));
         }
 
-        return getArithmeticVariableSlot(location);
+        // create the arithmetic var slot if it doesn't exist for the given location
+        TypeKind kind = getArithmeticResultKind(lhsAtm, rhsAtm);
+        ArithmeticVariableSlot slot = new ArithmeticVariableSlot(nextId(), location, kind);
+        addToSlots(slot);
+        arithmeticSlotCache.put(location, slot.getId());
+        return slot;
     }
 
     @Override
-    public ArithmeticVariableSlot getArithmeticVariableSlot(AnnotationLocation location) {
+    public ComparisonVariableSlot createComparisonVariableSlot(AnnotationLocation location, Slot refined, boolean thenBranch) {
         if (location == null || location.getKind() == AnnotationLocation.Kind.MISSING) {
             throw new BugInCF(
-                    "ArithmeticVariableSlots are never created with a missing annotation location.");
+                    "Cannot create an ComparisonVariableSlot with a missing annotation location.");
         }
-        if (!arithmeticSlotCache.containsKey(location)) {
-            return null;
+
+        if (thenBranch && comparisonThenSlotCache.containsKey(location)) {
+            return (ComparisonVariableSlot) getSlot(comparisonThenSlotCache.get(location));
+        }
+        if (!thenBranch && comparisonElseSlotCache.containsKey(location)) {
+            return (ComparisonVariableSlot) getSlot(comparisonElseSlotCache.get(location));
+        }
+
+        // create the comparison var slot if it doesn't exist for the given location
+        ComparisonVariableSlot slot = new ComparisonVariableSlot(nextId(), location, refined);
+        addToSlots(slot);
+        if (thenBranch) {
+            comparisonThenSlotCache.put(location, slot.getId());
         } else {
-            return (ArithmeticVariableSlot) getSlot(arithmeticSlotCache.get(location));
+            comparisonElseSlotCache.put(location, slot.getId());
         }
+        return slot;
     }
 
     @Override

@@ -391,7 +391,11 @@ public class DefaultSlotManager implements SlotManager {
      */
     private @Nullable AnnotationMirror getDefaultAnnotationForLocation(AnnotationLocation location, TypeMirror type) {
         if (location == AnnotationLocation.MISSING_LOCATION) {
-            return null;
+            if (InferenceMain.isHackMode()) {
+                return null;
+            } else {
+                throw new BugInCF("Getting default annotation for missing location!");
+            }
         }
 
         BaseAnnotatedTypeFactory realTypeFactory = InferenceMain.getInstance().getRealTypeFactory();

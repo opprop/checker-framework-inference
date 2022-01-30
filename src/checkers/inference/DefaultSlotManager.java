@@ -121,13 +121,10 @@ public class DefaultSlotManager implements SlotManager {
     private Integer currentRootHash;
 
     /**
-     * A map of tree hashcode to {@link AnnotationMirror} for caching
+     * A map of tree to {@link AnnotationMirror} for caching
      * a set of pre-computed default types for the current compilation unit.
-     *
-     * The reason we're storing the hashcode is to avoid holding memory
-     * occupied by trees.
      */
-    private Map<Integer, AnnotationMirror> defaultAnnotationsCache;
+    private final Map<Tree, AnnotationMirror> defaultAnnotationsCache;
 
     /**
      * A map of {@link AnnotationLocation} to {@link Integer} for caching
@@ -181,7 +178,7 @@ public class DefaultSlotManager implements SlotManager {
         arithmeticSlotCache = new LinkedHashMap<>();
         comparisonThenSlotCache = new LinkedHashMap<>();
         comparisonElseSlotCache = new LinkedHashMap<>();
-        defaultAnnotationsCache = null;
+        defaultAnnotationsCache = new LinkedHashMap<>();
 
         if (storeConstants) {
             for (Class<? extends Annotation> annoClass : this.realQualifiers) {
@@ -409,7 +406,26 @@ public class DefaultSlotManager implements SlotManager {
                     type);
         }
 
-        return null;
+        throw new BugInCF("Unable to find default annotation for location " + location);
+    }
+
+    @Override
+    public void setRoot(CompilationUnitTree compilationUnit) {
+        this.defaultAnnotationsCache.clear();
+
+        BaseAnnotatedTypeFactory realTypeFactory = InferenceMain.getInstance().getRealTypeFactory();
+        Map<Tree, AnnotatedTypeMirror> defaultTypes = SlotDefaultTypeResolver.resolve(
+                compilationUnit,
+                realTypeFactory
+        );
+
+        for (Map.Entry<Tree, AnnotatedTypeMirror> entry : defaultTypes.entrySet()) {
+            // find default types in the current hierarchy and save them to the cache
+            this.defaultAnnotationsCache.put(
+                    entry.getKey(),
+                    entry.getValue().getAnnotationInHierarchy(this.realTop)
+            );
+        }
     }
 
     /**
@@ -431,22 +447,7 @@ public class DefaultSlotManager implements SlotManager {
             return null;
         }
 
-        int rootHash = root.hashCode();
-        if (this.currentRootHash == null || this.currentRootHash != rootHash) {
-            // should update both root and cache
-            this.currentRootHash = rootHash;
-            this.defaultAnnotationsCache = new HashMap<>();
-
-            Map<Tree, AnnotatedTypeMirror> defaultTypes = SlotDefaultTypeResolver.resolve(root, realTypeFactory);
-            for (Map.Entry<Tree, AnnotatedTypeMirror> entry : defaultTypes.entrySet()) {
-                this.defaultAnnotationsCache.put(
-                        entry.getKey().hashCode(),
-                        entry.getValue().getAnnotationInHierarchy(this.realTop)
-                );
-            }
-        }
-
-        AnnotationMirror realAnnotation = this.defaultAnnotationsCache.get(tree.hashCode());
+        AnnotationMirror realAnnotation = this.defaultAnnotationsCache.get(tree);
         if (realAnnotation == null) {
             // If its default type can't be found in the cache, we can
             // fallback to the simplest method.

@@ -100,6 +100,9 @@ public class InferenceOptions {
     @Option("Additional AFU options")
     public static String afuOptions;
 
+    @Option("If ture, insert solutions that are equivalent to the default ones back to the code.")
+    public static boolean makeDefaultsExplicit;
+
     // ------------------------------------------------------
     @OptionGroup("Help")
 
@@ -121,9 +124,6 @@ public class InferenceOptions {
     // TODO: change to int
     @Option("For inference, add debug on the port indicated")
     public static String debug;
-
-    @Option("If ture, don't insert solutions that are equivalent to the default ones back to the code.")
-    public static boolean ignoreDefaultAnnotations = true;
 
     // end of command-line options
     // ------------------------------------------------------

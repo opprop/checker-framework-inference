@@ -358,7 +358,7 @@ public class DefaultSlotManager implements SlotManager {
     @Override
     public SourceVariableSlot createSourceVariableSlot(AnnotationLocation location, TypeMirror type) {
         AnnotationMirror defaultAnnotation = null;
-        if (InferenceOptions.ignoreDefaultAnnotations) {
+        if (!InferenceOptions.makeDefaultsExplicit) {
             // retrieve the default annotation when needed
             defaultAnnotation = getDefaultAnnotationForLocation(location, type);
         }

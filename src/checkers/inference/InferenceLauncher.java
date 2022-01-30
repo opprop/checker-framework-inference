@@ -190,10 +190,12 @@ public class InferenceLauncher {
         addIfTrue("--hacks", InferenceOptions.hacks, argList);
 
         Mode mode = Mode.valueOf(InferenceOptions.mode);
-        if (InferenceOptions.ignoreDefaultAnnotations
+        if (InferenceOptions.makeDefaultsExplicit
                 && (mode == Mode.ROUNDTRIP || mode == Mode.ROUNDTRIP_TYPECHECK)) {
-            // this flag is useful only if we will insert the solutions back
-            argList.add("--ignoreDefaultAnnotations");
+            // Two conditions have to be met to make defaults explicit:
+            // 1. the command-line flag `makeDefaultsExplicit` is provided
+            // 2. the inference solution will be written back to the source code (roundtrip `mode`)
+            argList.add("--makeDefaultsExplicit");
         }
 
         argList.add("--");

@@ -20,7 +20,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersec
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 /**
  * Contains utility methods and classes for copying annotaitons from one type to another.
@@ -113,6 +113,14 @@ public class CopyUtil {
             // Do nothing.
             return;
         } else if (fromKind == DECLARED && toKind == DECLARED) {
+            // Copy annotations on enclosing types recursively
+            AnnotatedDeclaredType enclosingOfFrom = ((AnnotatedDeclaredType) from).getEnclosingType();
+            AnnotatedDeclaredType enclosingOfTo = ((AnnotatedDeclaredType) to).getEnclosingType();
+            while (enclosingOfFrom != null && enclosingOfTo != null) {
+                copyAnnotationsImpl(enclosingOfFrom, enclosingOfTo, copyMethod, visited);
+                enclosingOfFrom = enclosingOfFrom.getEnclosingType();
+                enclosingOfTo = enclosingOfTo.getEnclosingType();
+            }
 
             copyAnnotationsTogether(((AnnotatedDeclaredType) from).getTypeArguments(),
                                      ((AnnotatedDeclaredType)   to).getTypeArguments(),
@@ -158,13 +166,13 @@ public class CopyUtil {
              // Primitives only take one annotation, which was already copied
 
         } else if (fromKind == NONE || fromKind == NULL || fromKind == VOID ||
-                toKind == NONE || toKind == NULL || fromKind == NULL) {
+                toKind == NONE || toKind == NULL || toKind == VOID) {
              // No annotations
         } else if (fromKind == INTERSECTION && toKind == INTERSECTION) {
             AnnotatedIntersectionType fromIntersec = (AnnotatedIntersectionType) from;
             AnnotatedIntersectionType toIntersec = (AnnotatedIntersectionType) to;
-            List<AnnotatedDeclaredType> fromSuperTypes = fromIntersec.directSuperTypes();
-            List<AnnotatedDeclaredType> toSuperTypes = toIntersec.directSuperTypes();
+            List<? extends AnnotatedTypeMirror> fromSuperTypes = fromIntersec.directSupertypes();
+            List<? extends AnnotatedTypeMirror> toSuperTypes = toIntersec.directSupertypes();
 
             copyAnnotationsOnDeclaredTypeList(fromSuperTypes, toSuperTypes, copyMethod, visited);
 
@@ -178,7 +186,7 @@ public class CopyUtil {
             copyAnnotationsOnDeclaredTypeList(fromAlternatives, toAlternatives, copyMethod, visited);
 
         } else {
-            ErrorReporter.errorAbort("InferenceUtils.copyAnnotationsImpl: unhandled getKind results: " + from +
+            throw new BugInCF("CopyUtils.copyAnnotationsImpl: unhandled getKind results: " + from +
                     " and " + to + "\n    of kinds: " + fromKind + " and " + toKind);
         }
     }
@@ -186,36 +194,36 @@ public class CopyUtil {
     /**
      * Helper method for copying annotations from a given declared type list to another declared type list.
      */
-    private static void copyAnnotationsOnDeclaredTypeList(final List<AnnotatedDeclaredType> from,
-            final List<AnnotatedDeclaredType> to,
+    private static void copyAnnotationsOnDeclaredTypeList(final List<? extends AnnotatedTypeMirror> from,
+            final List<? extends AnnotatedTypeMirror> to,
             final CopyMethod copyMethod,
             final IdentityHashMap<AnnotatedTypeMirror, AnnotatedTypeMirror> visited) {
 
         if (from.size() != to.size()) {
-            ErrorReporter.errorAbort("unequal list size! from: " + from + " to: " + to);
+            throw new BugInCF("unequal list size! from: " + from + " to: " + to);
         }
 
-        Map<DeclaredType, AnnotatedDeclaredType> fromMap = new HashMap<>();
-        Map<DeclaredType, AnnotatedDeclaredType> toMap = new HashMap<>();
+        Map<TypeMirror, AnnotatedTypeMirror> fromMap = new HashMap<>();
+        Map<TypeMirror, AnnotatedTypeMirror> toMap = new HashMap<>();
 
-        for (AnnotatedDeclaredType atm : from) {
+        for (AnnotatedTypeMirror atm : from) {
             fromMap.put(atm.getUnderlyingType(), atm);
         }
-        for (AnnotatedDeclaredType atm : to) {
+        for (AnnotatedTypeMirror atm : to) {
             toMap.put(atm.getUnderlyingType(), atm);
         }
 
         assert fromMap.size() == toMap.size() : "fromMap size should be equal to toMap size!";
 
-        for (DeclaredType underlyingType : fromMap.keySet()) {
+        for (TypeMirror underlyingType : fromMap.keySet()) {
             if (!toMap.containsKey(underlyingType)) {
-                ErrorReporter.errorAbort("Unequal types found! Copy destination doesn't have this type: " + underlyingType + "."
+                throw new BugInCF("Unequal types found! Copy destination doesn't have this type: " + underlyingType + "."
                         + " from: " + from + "to: " + to);
             }
         }
 
         //copy annotations in corresponding atms
-        for (Entry<DeclaredType, AnnotatedDeclaredType> entry : fromMap.entrySet()) {
+        for (Entry<TypeMirror, AnnotatedTypeMirror> entry : fromMap.entrySet()) {
             copyAnnotationsImpl(entry.getValue(), toMap.get(entry.getKey()), copyMethod, visited);
         }
     }

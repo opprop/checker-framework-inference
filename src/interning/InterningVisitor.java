@@ -2,8 +2,8 @@ package interning;
 
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
-import org.checkerframework.framework.source.Result;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.util.Heuristics;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.TreeUtils;
@@ -95,6 +95,12 @@ public final class InterningVisitor extends InferenceVisitor<InterningChecker, B
             mainIs(type, realChecker.INTERNED, "not.interned", node);
         }
         return super.visitIdentifier(node, p);
+    }
+
+    @Override
+    protected void checkConstructorResult(AnnotatedExecutableType constructorType,
+            ExecutableElement constructorElement) {
+        // TODO: This check causes a null slot to be created.
     }
 
     /**
@@ -200,7 +206,7 @@ public final class InterningVisitor extends InferenceVisitor<InterningChecker, B
                 this.checker.getLintOption("dotequals", true)
                 && recv.hasEffectiveAnnotation(INTERNED)
                 && comp.hasEffectiveAnnotation(INTERNED))
-                checker.report(Result.warning("unnecessary.equals"), node);
+                checker.reportWarning(node, "unnecessary.equals");
         }
 
         return super.visitMethodInvocation(node, p);
@@ -271,19 +277,19 @@ public final class InterningVisitor extends InferenceVisitor<InterningChecker, B
         if (annotation != null) {
             // Check methods to ensure no .equals
             if (overridesEquals(node)) {
-                checker.report(Result.failure("overrides.equals"), node);
+                checker.reportError(node, "overrides.equals");
             }
 
 
             if (!(superClass == null || (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null))) {
-                checker.report(Result.failure("superclass.notannotated"), node);
+                checker.reportError(node, "superclass.notannotated");
             }
         } else {
             // The class is not annotated with @UsesObjectEquals -> make sure its superclass isn't either.
             // TODO: is this impossible after the design change making @UsesObjectEquals inherited?
             // This check is left behind in case of a future design change back to non-inherited.
             if (superClass != null && (elmt != null && elmt.getAnnotation(UsesObjectEquals.class) != null)) {
-                checker.report(Result.failure("superclass.annotated"), node);
+                checker.reportError(node, "superclass.annotated");
             }
         }
 
@@ -456,8 +462,8 @@ public final class InterningVisitor extends InferenceVisitor<InterningChecker, B
         // "return 0" statement (for the Comparator.compare heuristic).
         if (overrides(enclosing, Comparator.class, "compare")) {
             final boolean returnsZero =
-                Heuristics.Matchers.withIn(
-                        Heuristics.Matchers.ofKind(Tree.Kind.IF, matcherIfReturnsZero)).match(getCurrentPath());
+                new Heuristics.Within(
+                        new Heuristics.OfKind(Tree.Kind.IF, matcherIfReturnsZero)).match(getCurrentPath());
 
             if (!returnsZero)
                 return false;
@@ -479,8 +485,8 @@ public final class InterningVisitor extends InferenceVisitor<InterningChecker, B
         } else if (overrides(enclosing, Comparable.class, "compareTo")) {
 
             final boolean returnsZero =
-                Heuristics.Matchers.withIn(
-                        Heuristics.Matchers.ofKind(Tree.Kind.IF, matcherIfReturnsZero)).match(getCurrentPath());
+                new Heuristics.Within(
+                        new Heuristics.OfKind(Tree.Kind.IF, matcherIfReturnsZero)).match(getCurrentPath());
 
             if (!returnsZero) {
                 return false;
@@ -516,7 +522,7 @@ public final class InterningVisitor extends InferenceVisitor<InterningChecker, B
      * @return true if the expressions expr1 and expr2 are identical
      */
     private static boolean sameTree(ExpressionTree expr1, ExpressionTree expr2) {
-        return TreeUtils.skipParens(expr1).toString().equals(TreeUtils.skipParens(expr2).toString());
+        return TreeUtils.withoutParens(expr1).toString().equals(TreeUtils.withoutParens(expr2).toString());
     }
 
     /**
@@ -536,15 +542,15 @@ public final class InterningVisitor extends InferenceVisitor<InterningChecker, B
             return false;
 
         // should strip parens
-        final ExpressionTree left = TreeUtils.skipParens(node.getLeftOperand());
-        final ExpressionTree right = TreeUtils.skipParens(node.getRightOperand());
+        final ExpressionTree left = TreeUtils.withoutParens(node.getLeftOperand());
+        final ExpressionTree right = TreeUtils.withoutParens(node.getRightOperand());
 
         // looking for ((a == b || a.equals(b))
         Heuristics.Matcher matcherEqOrEquals = new Heuristics.Matcher() {
 
                 // Returns true if e is either "e1 != null" or "e2 != null"
                 private boolean isNeqNull(ExpressionTree e, ExpressionTree e1, ExpressionTree e2) {
-                    e = TreeUtils.skipParens(e);
+                    e = TreeUtils.withoutParens(e);
                     if (e.getKind() != Tree.Kind.NOT_EQUAL_TO) {
                         return false;
                     }
@@ -637,8 +643,8 @@ public final class InterningVisitor extends InferenceVisitor<InterningChecker, B
                 }
             };
 
-        boolean okay = Heuristics.Matchers.withIn(
-                Heuristics.Matchers.ofKind(Tree.Kind.CONDITIONAL_OR, matcherEqOrEquals)).match(getCurrentPath());
+        boolean okay = new Heuristics.Within(
+                new Heuristics.OfKind(Tree.Kind.CONDITIONAL_OR, matcherEqOrEquals)).match(getCurrentPath());
         return okay;
     }
 
@@ -654,8 +660,8 @@ public final class InterningVisitor extends InferenceVisitor<InterningChecker, B
         if (node.getKind() != Tree.Kind.EQUAL_TO)
             return false;
 
-        Tree left = TreeUtils.skipParens(node.getLeftOperand());
-        Tree right = TreeUtils.skipParens(node.getRightOperand());
+        Tree left = TreeUtils.withoutParens(node.getLeftOperand());
+        Tree right = TreeUtils.withoutParens(node.getRightOperand());
 
         // Only valid if we're comparing identifiers.
         if (!(left.getKind() == Tree.Kind.IDENTIFIER
@@ -733,8 +739,8 @@ public final class InterningVisitor extends InferenceVisitor<InterningChecker, B
                 }
             };
 
-        boolean okay = Heuristics.Matchers.withIn(
-                Heuristics.Matchers.ofKind(Tree.Kind.CONDITIONAL_OR, matcherEqOrCompareTo)).match(getCurrentPath());
+        boolean okay = new Heuristics.Within(
+                new Heuristics.OfKind(Tree.Kind.CONDITIONAL_OR, matcherEqOrCompareTo)).match(getCurrentPath());
         return okay;
     }
 

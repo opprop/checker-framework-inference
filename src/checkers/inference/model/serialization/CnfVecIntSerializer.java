@@ -5,12 +5,20 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import checkers.inference.model.LubVariableSlot;
+import checkers.inference.model.ImplicationConstraint;
+import checkers.inference.model.VariableSlot;
+import org.checkerframework.javacutil.BugInCF;
 import org.sat4j.core.VecInt;
 
 import checkers.inference.SlotManager;
+import checkers.inference.model.ArithmeticConstraint;
+import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.CombineConstraint;
 import checkers.inference.model.ComparableConstraint;
+import checkers.inference.model.ComparisonConstraint;
+import checkers.inference.model.ComparisonVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.EqualityConstraint;
@@ -22,7 +30,7 @@ import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Serializer;
 import checkers.inference.model.Slot;
 import checkers.inference.model.SubtypeConstraint;
-import checkers.inference.model.VariableSlot;
+import checkers.inference.model.SourceVariableSlot;
 
 /**
  */
@@ -155,7 +163,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
             // thus by computing sum of total slots number in slot manager
             // and the size of existentialToPotentialVar and plus 1 to get next id of existential Id here
             existentialId = slotManager.getNumberOfSlots() + existentialToPotentialVar.size() + 1;
-            this.existentialToPotentialVar.put(new Integer(existentialId), new Integer(constraint.getPotentialVariable().getId()));
+            this.existentialToPotentialVar.put(Integer.valueOf(existentialId), Integer.valueOf(constraint.getPotentialVariable().getId()));
         }
 
         /**
@@ -213,7 +221,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
     }
 
     @Override
-    public VecInt[] serialize(VariableSlot slot) {
+    public VecInt[] serialize(SourceVariableSlot slot) {
         // doesn't really mean anything
         return null;
     }
@@ -237,6 +245,22 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
     }
 
     @Override
+    public VecInt[] serialize(LubVariableSlot slot) {
+        return null;
+    }
+    
+    @Override
+    public VecInt[] serialize(ArithmeticVariableSlot slot) {
+        // doesn't really mean anything
+        return null;
+    }
+
+    @Override
+    public VecInt[] serialize(ComparisonVariableSlot slot) {
+        return null;
+    }
+
+    @Override
     public VecInt[] serialize(ExistentialVariableSlot slot) {
         // See checkers.inference.ConstraintNormalizer.normalize()
         throw new UnsupportedOperationException("Existential slots should be normalized away before serialization.");
@@ -249,6 +273,12 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
     }
 
     @Override
+    public VecInt[] serialize(ComparisonConstraint comparisonConstraint) {
+    	throw new UnsupportedOperationException(
+                "Serializing ComparisonConstraint is unsupported in CnfVecIntSerializer");
+    }
+
+    @Override
     public VecInt[] serialize(CombineConstraint combineConstraint) {
         // does this just say that the result is a subtype of the other 2?
         // not sure what this means
@@ -256,16 +286,53 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
     }
 
     @Override
+    public VecInt[] serialize(ArithmeticConstraint arithmeticConstraint) {
+        throw new UnsupportedOperationException(
+                "Serializing ArithmeticConstraint is unsupported in CnfVecIntSerializer");
+    }
+
+    @Override
     public VecInt[] serialize(PreferenceConstraint preferenceConstraint) {
         throw new UnsupportedOperationException("APPLY WEIGHTING FOR WEIGHTED MAX-SAT");
     }
 
+    @Override
+    public VecInt[] serialize(ImplicationConstraint implicationConstraint) {
+        throw new UnsupportedOperationException("ImplicationConstraint is supported in more-advanced" +
+                "MaxSAT backend. Use MaxSATSolver instead!");
+    }
+
+    /**
+     * Convert all the given mandatory constraints into hard clauses. A BugInCF exception is
+     * raised if the given constraints contain any {@link PreferenceConstraint}.
+     *
+     * For conversion of constraints containing {@link PreferenceConstraint}, use
+     * {@link CnfVecIntSerializer#convertAll(Iterable, List, List)}
+     *
+     * @param constraints the constraints to convert
+     * @return the output clauses for the given constraints
+     */
     public List<VecInt> convertAll(Iterable<Constraint> constraints) {
         return convertAll(constraints, new LinkedList<VecInt>());
     }
 
+    /**
+     * Convert all the given mandatory constraints into hard clauses. A BugInCF exception is
+     * raised if the given constraints contains any {@link PreferenceConstraint}.
+     *
+     * For conversion of constraints containing {@link PreferenceConstraint}, use
+     * {@link CnfVecIntSerializer#convertAll(Iterable, List, List)}
+     *
+     * @param constraints the constraints to convert
+     * @param results the output clauses for the given constraints
+     * @return same as {@code results}
+     */
     public List<VecInt> convertAll(Iterable<Constraint> constraints, List<VecInt> results) {
         for (Constraint constraint : constraints) {
+            if (constraint instanceof PreferenceConstraint) {
+                throw new BugInCF("CnfVecIntSerializer: adding PreferenceConstraint ( " + constraint +
+                        " ) to hard clauses is forbidden");
+            }
             for (VecInt res : constraint.serialize(this)) {
                 if (res.size() != 0) {
                     results.add(res);
@@ -274,6 +341,28 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
         }
 
         return results;
+    }
+
+    /**
+     * Convert all the given mandatory constraints to hard clauses, and preference constraints
+     * to soft clauses.
+     *
+     * @param constraints the constraints to convert
+     * @param hardClauses the output hard clauses for the mandatory constraints
+     * @param softClauses the output soft clauses for {@link PreferenceConstraint}
+     */
+    public void convertAll(Iterable<Constraint> constraints, List<VecInt> hardClauses, List<VecInt> softClauses) {
+        for (Constraint constraint : constraints) {
+            for (VecInt res : constraint.serialize(this)) {
+                if (res.size() != 0) {
+                    if (constraint instanceof PreferenceConstraint) {
+                        softClauses.add(res);
+                    } else {
+                        hardClauses.add(res);
+                    }
+                }
+            }
+        }
     }
 
     protected abstract boolean isTop(ConstantSlot constantSlot);

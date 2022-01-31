@@ -14,8 +14,10 @@ esac
 
 if [ "$myDir" = "" ];
 then
-    myDir="."
+    myDir=$(pwd)
 fi
+
+ROOT=$(cd ${myDir}/../../ >/dev/null 2>&1 && pwd)
 
 distDir=$myDir"/../dist"
 
@@ -30,4 +32,20 @@ fi
 export DYLD_LIBRARY_PATH=${libDir}
 export LD_LIBRARY_PATH=${libDir}
 
-eval "java -classpath  "$classpath" checkers.inference.InferenceLauncher " "$@"
+runtimeBCP=""
+java -version 2>&1 | grep version | grep 1.8 > /dev/null
+if [ $? -eq 0 ]; then
+    runtimeBCP="${distDir}/javac.jar"
+fi
+
+# use default "pathToAfuScripts" unless specified
+defaultPathToAfuScripts="--pathToAfuScripts=${ROOT}/annotation-tools/annotation-file-utilities/scripts"
+for arg in "$@"
+do
+    case "$arg" in
+        --pathToAfuScripts=*) defaultPathToAfuScripts="" ;;
+    esac
+done
+
+eval "java -DInferenceLauncher.runtime.bcp="$runtimeBCP" -classpath "$classpath" checkers.inference.InferenceLauncher " \
+ "$defaultPathToAfuScripts" "$@"

@@ -1,10 +1,12 @@
 package checkers.inference.typearginference;
 
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
+import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.typeinference.DefaultTypeArgumentInference;
 import org.checkerframework.framework.util.typeinference.TypeArgInferenceUtil;
 import org.checkerframework.framework.util.typeinference.constraint.A2F;
@@ -14,9 +16,6 @@ import org.checkerframework.framework.util.typeinference.constraint.TIsU;
 import org.checkerframework.framework.util.typeinference.constraint.TSubU;
 import org.checkerframework.framework.util.typeinference.constraint.TSuperU;
 import org.checkerframework.framework.util.typeinference.constraint.TUConstraint;
-import org.checkerframework.javacutil.Pair;
-
-import static org.checkerframework.framework.util.AnnotatedTypes.findEffectiveAnnotationInHierarchy;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -42,7 +41,7 @@ import checkers.inference.VariableAnnotator;
 import checkers.inference.VariableSlotReplacer;
 import checkers.inference.model.ConstraintManager;
 import checkers.inference.model.ExistentialVariableSlot;
-import checkers.inference.model.VariableSlot;
+import checkers.inference.model.Slot;
 import checkers.inference.util.CrossFactoryAtmCopier;
 import checkers.inference.util.InferenceUtil;
 
@@ -110,7 +109,7 @@ public class InferenceTypeArgumentInference extends DefaultTypeArgumentInference
         final Set<TypeVariable> targets = TypeArgInferenceUtil.methodTypeToTargets(methodType);
 
         Map<TypeVariable, AnnotatedTypeMirror> targetToType = InferenceUtil.makeOrderedMap(targets, targetTypes);
-        Map<TypeVariable, VariableSlot> targetToPrimary = findTargetVariableSlots(targetToType);
+        Map<TypeVariable, Slot> targetToPrimary = findTargetVariableSlots(targetToType);
 
         final List<AnnotatedTypeMirror> argTypes =
                 TypeArgInferenceUtil.getArgumentTypes(expressionTree, typeFactory);
@@ -183,7 +182,7 @@ public class InferenceTypeArgumentInference extends DefaultTypeArgumentInference
 
     // TODO: Figure out if we need to make copies of the types
     private void replaceExistentialVariables(AnnotatedExecutableType methodType, AnnotatedTypeFactory typeFactory,
-                                             Map<TypeVariable, VariableSlot> targetToPrimary) {
+                                             Map<TypeVariable, Slot> targetToPrimary) {
         VariableSlotReplacer variableSlotReplacer = new VariableSlotReplacer(slotManager, variableAnnotator,
                                                                              varAnnot, true);
 
@@ -194,8 +193,8 @@ public class InferenceTypeArgumentInference extends DefaultTypeArgumentInference
             AnnotatedTypeMirror lowerBound = typeVariable.getLowerBound();
 
             AnnotationMirror upperBoundAnno =
-                findEffectiveAnnotationInHierarchy(inferenceTypeFactory.getQualifierHierarchy(), upperBound, varAnnot);
-            VariableSlot upperBoundVariable = (VariableSlot) slotManager.getSlot(upperBoundAnno);
+                    AnnotatedTypes.findEffectiveAnnotationInHierarchy(inferenceTypeFactory.getQualifierHierarchy(), upperBound, varAnnot);
+            Slot upperBoundVariable = slotManager.getSlot(upperBoundAnno);
 
             // handles the cases like <T, E extends T>, the upper bound anno on E will appear as a potential
             // annotation on T
@@ -203,9 +202,9 @@ public class InferenceTypeArgumentInference extends DefaultTypeArgumentInference
                 upperBoundVariable  = ((ExistentialVariableSlot) upperBoundVariable).getPotentialSlot();
             }
 
-            VariableSlot lowerBoundVariable = slotManager.getVariableSlot(lowerBound);
+            Slot lowerBoundVariable = slotManager.getSlot(lowerBound);
 
-            VariableSlot newSlot = targetToPrimary.get(target);
+            Slot newSlot = targetToPrimary.get(target);
             variableSlotReplacer.addReplacement(upperBoundVariable, newSlot);
             variableSlotReplacer.addReplacement(lowerBoundVariable, newSlot);
         }
@@ -221,9 +220,9 @@ public class InferenceTypeArgumentInference extends DefaultTypeArgumentInference
 
     }
 
-    private Map<TypeVariable, VariableSlot> findTargetVariableSlots(Map<TypeVariable, AnnotatedTypeMirror> targetToType) {
+    private Map<TypeVariable, Slot> findTargetVariableSlots(Map<TypeVariable, AnnotatedTypeMirror> targetToType) {
 
-        Map<TypeVariable, VariableSlot> targetToVar = new LinkedHashMap<>();
+        Map<TypeVariable, Slot> targetToVar = new LinkedHashMap<>();
 
         for (TypeVariable target : targetToType.keySet()) {
             final AnnotatedTypeMirror type = targetToType.get(target);
@@ -232,7 +231,7 @@ public class InferenceTypeArgumentInference extends DefaultTypeArgumentInference
             switch (type.getKind()) {
                 case TYPEVAR:
                 case WILDCARD:
-                    variableAnno = findEffectiveAnnotationInHierarchy(inferenceTypeFactory.getQualifierHierarchy(),
+                    variableAnno = AnnotatedTypes.findEffectiveAnnotationInHierarchy(inferenceTypeFactory.getQualifierHierarchy(),
                                                                       type, varAnnot);
                     break;
 
@@ -240,7 +239,7 @@ public class InferenceTypeArgumentInference extends DefaultTypeArgumentInference
                     variableAnno = type.getAnnotationInHierarchy(varAnnot);
             }
 
-            VariableSlot variable = (VariableSlot) slotManager.getSlot(variableAnno);
+            Slot variable = slotManager.getSlot(variableAnno);
             if (variable instanceof ExistentialVariableSlot) {
                 targetToVar.put(target, ((ExistentialVariableSlot) variable).getPotentialSlot());
 
@@ -249,7 +248,6 @@ public class InferenceTypeArgumentInference extends DefaultTypeArgumentInference
 
             }
         }
-
 
         return targetToVar;
     }
@@ -264,7 +262,7 @@ public class InferenceTypeArgumentInference extends DefaultTypeArgumentInference
      */
     private List<AnnotatedTypeMirror> getUnannotatedTypeArgs(ExpressionTree expressionTree) {
 
-        Pair<AnnotatedExecutableType, List<AnnotatedTypeMirror>> fromUseResult;
+        ParameterizedExecutableType fromUseResult;
 
         switch (expressionTree.getKind()) {
             case METHOD_INVOCATION:
@@ -280,8 +278,8 @@ public class InferenceTypeArgumentInference extends DefaultTypeArgumentInference
                                                  + "expressionTree=" + expressionTree);
         }
 
-        List<AnnotatedTypeMirror> emptyAnnotatedTypeMirrors = new ArrayList<>(fromUseResult.second.size());
-        for (AnnotatedTypeMirror realAnnotatedType : fromUseResult.second) {
+        List<AnnotatedTypeMirror> emptyAnnotatedTypeMirrors = new ArrayList<>(fromUseResult.typeArgs.size());
+        for (AnnotatedTypeMirror realAnnotatedType : fromUseResult.typeArgs) {
             AnnotatedTypeMirror inferenceType = CrossFactoryAtmCopier.copy(realAnnotatedType, inferenceTypeFactory, false);
             emptyAnnotatedTypeMirrors.add(inferenceType);
         }

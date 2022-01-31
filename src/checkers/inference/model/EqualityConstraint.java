@@ -2,6 +2,8 @@ package checkers.inference.model;
 
 import java.util.Arrays;
 
+import org.checkerframework.javacutil.BugInCF;
+
 /**
  * Represents an equality relationship between two slots.
  * E.g.
@@ -29,16 +31,46 @@ public class EqualityConstraint extends Constraint implements BinaryConstraint {
     private final Slot first;
     private final Slot second;
 
-    protected EqualityConstraint(Slot first, Slot second) {
+    private EqualityConstraint(Slot first, Slot second) {
         super(Arrays.asList(first, second));
         this.first = first;
         this.second = second;
     }
 
-    protected EqualityConstraint(Slot first, Slot second, AnnotationLocation location) {
-        super(Arrays.asList(first, second));
+    private EqualityConstraint(Slot first, Slot second, AnnotationLocation location) {
+        super(Arrays.asList(first, second), location);
         this.first = first;
         this.second = second;
+    }
+
+    protected static Constraint create(Slot first, Slot second, AnnotationLocation location) {
+        if (first == null || second == null) {
+            throw new BugInCF("Create equality constraint with null argument. Subtype: "
+                    + first + " Supertype: " + second);
+        }
+
+        // Normalization cases:
+        // C1 == C2 => TRUE/FALSE depending on annotation
+        // V == V => TRUE
+        // otherwise => CREATE_REAL_EQUALITY_CONSTRAINT
+
+        // C1 == C2 => TRUE/FALSE depending on annotation
+        if (first instanceof ConstantSlot && second instanceof ConstantSlot) {
+            ConstantSlot firstConst = (ConstantSlot) first;
+            ConstantSlot secondConst = (ConstantSlot) second;
+
+            return firstConst == secondConst
+                    ? AlwaysTrueConstraint.create()
+                    : AlwaysFalseConstraint.create();
+        }
+
+        // V == V => TRUE
+        if (first == second) {
+            return AlwaysTrueConstraint.create();
+        }
+
+        // otherwise => CREATE_REAL_EQUALITY_CONSTRAINT
+        return new EqualityConstraint(first, second, location);
     }
 
     @Override

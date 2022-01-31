@@ -1,145 +1,354 @@
 package checkers.inference.solver.util;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import java.io.PrintStream;
+import java.util.Collection;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.lang.model.element.AnnotationMirror;
 
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
+
 import checkers.inference.InferenceMain;
-import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
+import checkers.inference.model.ArithmeticConstraint;
+import checkers.inference.model.ArithmeticVariableSlot;
+import checkers.inference.model.CombVariableSlot;
+import checkers.inference.model.CombineConstraint;
+import checkers.inference.model.ComparableConstraint;
+import checkers.inference.model.ComparisonConstraint;
+import checkers.inference.model.ComparisonVariableSlot;
+import checkers.inference.model.ConstantSlot;
+import checkers.inference.model.Constraint;
+import checkers.inference.model.EqualityConstraint;
+import checkers.inference.model.ExistentialConstraint;
+import checkers.inference.model.ExistentialVariableSlot;
+import checkers.inference.model.ImplicationConstraint;
+import checkers.inference.model.InequalityConstraint;
+import checkers.inference.model.LubVariableSlot;
+import checkers.inference.model.PreferenceConstraint;
+import checkers.inference.model.RefinementVariableSlot;
+import checkers.inference.model.Serializer;
+import checkers.inference.model.Slot;
+import checkers.inference.model.SourceVariableSlot;
+import checkers.inference.model.SubtypeConstraint;
+import checkers.inference.model.VariableSlot;
+import checkers.inference.model.serialization.ToStringSerializer;
 
 /**
  * PrintUtils contains methods for printing and writing the solved results.
- * 
- * @author jianchu
- *
  */
 public class PrintUtils {
 
     /**
-     * Print the solved result out.
+     * Outputs the inference solutions to the given stream, where each row shows
+     * the id and the annotation of a slot.
      *
-     * @param result
+     * @param stream an output stream
+     * @param solutions
+     *            inference solutions: a map between slot IDs and annotation
+     *            mirrors
      */
-    public static void printResult(Map<Integer, AnnotationMirror> result) {
+    private static void outputSolutions(PrintStream stream, Map<Integer, AnnotationMirror> solutions) {
+        final AnnotatedTypeFactory atf = InferenceMain.getInstance().getRealTypeFactory();
 
+        // string length of the highest slot ID, used to pad spaces for pretty formatting
         final int maxLength = String.valueOf(InferenceMain.getInstance().getSlotManager().getNumberOfSlots()).length();
-        StringBuilder printResult = new StringBuilder();
 
-        System.out.println("/***********************Results****************************/");
-        for (Integer j : result.keySet()) {
-            printResult.append("SlotID: ");
-            printResult.append(String.valueOf(j));
-            for (int i = 0; i < maxLength + 2 - String.valueOf(j).length(); i++) {
-                printResult.append(" ");
+        stream.println("======================= Solutions =======================");
+
+        for (Integer j : solutions.keySet()) {
+            stream.print("SlotID: " + j);
+            for (int i = 0; i < maxLength + 2 - j.toString().length(); i++) {
+                stream.print(" ");
             }
-            printResult.append("Annotation: ");
-            printResult.append(result.get(j).toString());
-            printResult.append("\n");
-        }
-        System.out.println(printResult.toString());
-        System.out.flush();
-        System.out.println("/**********************************************************/");
-    }
-
-    public static void writeResult(Map<Integer, AnnotationMirror> result) {
-        
-        final int maxLength = String.valueOf(InferenceMain.getInstance().getSlotManager().getNumberOfSlots()).length();
-        StringBuilder printResult = new StringBuilder();
-
-        for (Integer j : result.keySet()) {
-            printResult.append("SlotID: ");
-            printResult.append(String.valueOf(j));
-            for (int i = 0; i < maxLength + 2 - String.valueOf(j).length(); i++) {
-                printResult.append(" ");
-            }
-            printResult.append("Annotation: ");
-            printResult.append(result.get(j).toString());
-            printResult.append("\n");
+            stream.println("Annotation: " + atf.getAnnotationFormatter()
+                    .formatAnnotationMirror(solutions.get(j)));
         }
 
-        File basePath = new File(new File("").getAbsolutePath());
-        String writePath = basePath.getAbsolutePath() + "/result" + ".txt";
-        File file = new File(writePath);
-        PrintWriter pw;
-        try {
-            pw = new PrintWriter(file);
-            pw.write(printResult.toString());
-            pw.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        }
-
-        System.out.println("Result has been written to: " + writePath);
-    }
-
-    private static StringBuilder buildStatistic(Map<StatisticKey, Long> statistic,
-            Map<String, Integer> modelRecord) {
-
-        StringBuilder statisticsText = new StringBuilder();
-        StringBuilder basicInfo = new StringBuilder();
-        StringBuilder timingInfo = new StringBuilder();
-
-        // Basic info
-        buildStatisticText(statistic, basicInfo, StatisticKey.SLOTS_SIZE);
-        buildStatisticText(statistic, basicInfo, StatisticKey.CONSTRAINT_SIZE);
-        for (Map.Entry<String, Integer> entry : modelRecord.entrySet()) {
-            buildStatisticText(entry.getKey(), entry.getValue(), basicInfo);
-        }
-
-        statisticsText.append(basicInfo);
-        statisticsText.append(timingInfo);
-        return statisticsText;
+        stream.println("=========================================================");
     }
 
     /**
-     * Print the statistics out.
-     * 
-     * @param statistic
-     * @param modelRecord
-     * @param solverType
-     * @param useGraph
-     * @param solveInParallel
+     * Print the solved solutions to screen.
      */
-    public static void printStatistic(Map<StatisticKey, Long> statistic,
-            Map<String, Integer> modelRecord) {
-        StringBuilder statisticsTest = buildStatistic(statistic, modelRecord);
-        System.out.println("\n/***********************Statistic start*************************/");
-        System.out.println(statisticsTest);
-        System.out.flush();
-        System.out.println("/**********************Statistic end****************************/");
+    public static void printSolutions(Map<Integer, AnnotationMirror> solutions) {
+        outputSolutions(System.out, solutions);
     }
 
-    public static void writeStatistic(Map<StatisticKey, Long> statistic,
-            Map<String, Integer> modelRecord) {
-        StringBuilder statisticsTest = buildStatistic(statistic, modelRecord);
-        String writePath = new File(new File("").getAbsolutePath()).toString() + "/statistic.txt";
-        try {
-            PrintWriter pw = new PrintWriter(writePath);
-            pw.write(statisticsTest.toString());
-            pw.close();
-        } catch (Exception e) {
-            e.printStackTrace();
+    /**
+     * Write the solved solutions to a file called solutions.txt.
+     *
+     * @param solutions
+     *            a map between slot IDs to its solution annotation.
+     * @param noAppend
+     *            if set to true the file will be written over, and if set to
+     *            false the file will be appended.
+     */
+    public static void writeSolutions(Map<Integer, AnnotationMirror> solutions,
+            boolean noAppend) {
+        File outFile = new File("solutions.txt");
+        try (PrintStream out = FileUtils.getFilePrintStream(outFile, !noAppend)) {
+            outputSolutions(out, solutions);
+        }
+        System.out.println("Solutions have been written to: " + outFile.getAbsolutePath() + "\n");
+    }
+
+    /**
+     * Outputs the statistics to the given stream.
+     * @param stream
+     * @param statistics
+     */
+    private static void outputStatistics(PrintStream stream, Map<String, Long> statistics) {
+        stream.println("====================== Statistics =======================");
+        for (Map.Entry<String, Long> entry : statistics.entrySet()) {
+            stream.println(entry.getKey() + ": " + entry.getValue());
+        }
+        stream.println("=========================================================");
+    }
+
+    /**
+     * Print the statistics to screen.
+     */
+    public static void printStatistics(Map<String, Long> statistics) {
+        outputStatistics(System.out, statistics);
+    }
+
+    /**
+     * Write the statistics to a file called statistics.txt.
+     *
+     * @param statistics
+     *            a map between stats keys and their long values.
+     * @param noAppend
+     *            if set to true the file will be written over, and if set to
+     *            false the file will be appended.
+     */
+    public static void writeStatistics(Map<String, Long> statistics, boolean noAppend) {
+        File outFile = new File("statistics.txt");
+        try (PrintStream out = FileUtils.getFilePrintStream(outFile, !noAppend)) {
+            outputStatistics(out, statistics);
+        }
+        System.out.println("Statistics have been written to: " + outFile.getAbsolutePath() + "\n");
+    }
+
+
+    /**
+     * Outputs unsat constraints to the given stream.
+     * @param stream
+     * @param unsatConstraints
+     */
+    private static void outputUnsatConstraints(PrintStream stream, Collection<Constraint> unsatConstraints) {
+        stream.println("=================== Unsat Constraints ===================");
+
+        ToStringSerializer toStringSerializer = new ToStringSerializer(false);
+        toStringSerializer.setIndentationLevel(1);
+
+        UniqueSlotCollector slotsCollector = new UniqueSlotCollector();
+
+        // Print constraints and related slots
+        stream.println("--- Constraints :");
+        for (Constraint constraint : unsatConstraints) {
+            stream.println(constraint.serialize(toStringSerializer));
+            stream.println("\t" + constraint.getLocation());
         }
 
-        System.out.println("Statistic has been written to: " + writePath);
+        // collect unique list of slots from all unsat constraints
+        for (Constraint constraint : unsatConstraints) {
+            constraint.serialize(slotsCollector);
+        }
+
+        stream.println("--- Related Slots :");
+        for (Slot slot : slotsCollector.getSlots()) {
+            stream.println(toStringSerializer.getCurrentIndentString()
+                    + slot.serialize(toStringSerializer) + " : "
+                    + slot.getClass().getSimpleName());
+            if (slot instanceof VariableSlot) {
+                stream.println("\t" + ((VariableSlot) slot).getLocation());
+            }
+        }
+
+        stream.println("=========================================================");
     }
 
-    private static void buildStatisticText(Map<StatisticKey, Long> statistic,
-            StringBuilder statisticsText,
-            StatisticKey key) {
-        statisticsText.append(key.toString().toLowerCase());
-        statisticsText.append(",");
-        statisticsText.append(statistic.get(key));
-        statisticsText.append("\n");
+    /**
+     * Print the unsat constraints and their related slots to screen.
+     */
+    public static void printUnsatConstraints(Collection<Constraint> unsatConstraints) {
+        if (unsatConstraints == null || unsatConstraints.isEmpty()) {
+            System.out.println("The backend you used doesn't support explanation feature!");
+            return;
+        }
+
+        outputUnsatConstraints(System.out, unsatConstraints);
     }
 
-    private static void buildStatisticText(String key, Integer value, StringBuilder statisticsText) {
-        statisticsText.append(key.toLowerCase());
-        statisticsText.append(",");
-        statisticsText.append(value);
-        statisticsText.append("\n");
+    /**
+     * Write the unsat constraints to a file called unsatConstraints.txt.
+     *
+     * @param unsatConstraints
+     *            a collection of unsat constraints.
+     * @param noAppend
+     *            if set to true the file will be written over, and if set to
+     *            false the file will be appended.
+     */
+    public static void writeUnsatConstraints(Collection<Constraint> unsatConstraints, boolean noAppend) {
+        File outFile = new File("unsatConstraints.txt");
+        try (PrintStream out = FileUtils.getFilePrintStream(outFile, !noAppend)) {
+            outputUnsatConstraints(out, unsatConstraints);
+        }
+        System.out.println("Unsat constraints have been written to: " + outFile.getAbsolutePath() + "\n");
+    }
+
+    /**
+     * This class visits a collection of constraints and collects from the
+     * constraints a list of unique non-constant slots present in the
+     * constraints.
+     */
+    public static final class UniqueSlotCollector implements Serializer<Void, Void> {
+
+        /** Stores a set of uniquely visited slots, sorted based on slot ID. */
+        private final Set<Slot> uniqueRelatedSlots;
+
+        public UniqueSlotCollector() {
+            uniqueRelatedSlots = new TreeSet<>();
+        }
+
+        public Set<Slot> getSlots() {
+            return uniqueRelatedSlots;
+        }
+
+        private void addSlotIfNotAdded(Slot slot) {
+            if (!(slot instanceof ConstantSlot)) {
+                uniqueRelatedSlots.add(slot);
+            }
+        }
+
+        @Override
+        public Void serialize(SubtypeConstraint constraint) {
+            constraint.getSubtype().serialize(this);
+            constraint.getSupertype().serialize(this);
+            return null;
+        }
+
+        @Override
+        public Void serialize(EqualityConstraint constraint) {
+            constraint.getFirst().serialize(this);
+            constraint.getSecond().serialize(this);
+            return null;
+        }
+
+        @Override
+        public Void serialize(ExistentialConstraint constraint) {
+            constraint.getPotentialVariable().serialize(this);
+            return null;
+        }
+
+        @Override
+        public Void serialize(InequalityConstraint constraint) {
+            constraint.getFirst().serialize(this);
+            constraint.getSecond().serialize(this);
+            return null;
+        }
+
+        @Override
+        public Void serialize(ComparableConstraint constraint) {
+            constraint.getFirst().serialize(this);
+            constraint.getSecond().serialize(this);
+            return null;
+        }
+
+        @Override
+        public Void serialize(ComparisonConstraint constraint) {
+            constraint.getLeft().serialize(this);
+            constraint.getRight().serialize(this);
+            constraint.getResult().serialize(this);
+            return null;
+        }
+
+        @Override
+        public Void serialize(CombineConstraint constraint) {
+            constraint.getResult().serialize(this);
+            constraint.getTarget().serialize(this);
+            constraint.getDeclared().serialize(this);
+            return null;
+        }
+
+        @Override
+        public Void serialize(PreferenceConstraint constraint) {
+            constraint.getVariable().serialize(this);
+            return null;
+        }
+
+        @Override
+        public Void serialize(ImplicationConstraint constraint) {
+            for (Constraint assumption : constraint.getAssumptions()) {
+                assumption.serialize(this);
+            }
+            constraint.getConclusion().serialize(this);
+            return null;
+        }
+
+        @Override
+        public Void serialize(ArithmeticConstraint constraint) {
+            constraint.getLeftOperand().serialize(this);
+            constraint.getRightOperand().serialize(this);
+            constraint.getResult().serialize(this);
+            return null;
+        }
+
+        @Override
+        public Void serialize(ConstantSlot slot) {
+            return null;
+        }
+
+        @Override
+        public Void serialize(SourceVariableSlot slot) {
+            addSlotIfNotAdded(slot);
+            return null;
+        }
+
+        @Override
+        public Void serialize(ExistentialVariableSlot slot) {
+            slot.getPotentialSlot().serialize(this);
+            slot.getAlternativeSlot().serialize(this);
+            addSlotIfNotAdded(slot);
+            return null;
+        }
+
+        @Override
+        public Void serialize(RefinementVariableSlot slot) {
+            slot.getRefined().serialize(this);
+            addSlotIfNotAdded(slot);
+            return null;
+        }
+
+        @Override
+        public Void serialize(CombVariableSlot slot) {
+            slot.getFirst().serialize(this);
+            slot.getSecond().serialize(this);
+            addSlotIfNotAdded(slot);
+            return null;
+        }
+
+        @Override
+        public Void serialize(LubVariableSlot slot) {
+            slot.getLeft().serialize(this);
+            slot.getRight().serialize(this);
+            addSlotIfNotAdded(slot);
+            return null;
+        }
+        
+        @Override
+        public Void serialize(ArithmeticVariableSlot slot) {
+            addSlotIfNotAdded(slot);
+            return null;
+        }
+
+        @Override
+        public Void serialize(ComparisonVariableSlot slot) {
+            addSlotIfNotAdded(slot);
+            return null;
+        }
     }
 }

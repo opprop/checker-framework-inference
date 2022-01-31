@@ -1,12 +1,12 @@
 package checkers.inference.solver.backend.maxsat.encoder;
 
 import checkers.inference.model.ConstantSlot;
+import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.solver.backend.encoder.binary.SubtypeConstraintEncoder;
 import checkers.inference.solver.backend.maxsat.MathUtils;
 import checkers.inference.solver.backend.maxsat.VectorUtils;
 import checkers.inference.solver.frontend.Lattice;
-import checkers.inference.util.ConstraintVerifier;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.sat4j.core.VecInt;
 
@@ -21,15 +21,15 @@ import java.util.Set;
 
 public class MaxSATSubtypeConstraintEncoder extends MaxSATAbstractConstraintEncoder implements SubtypeConstraintEncoder<VecInt[]> {
 
-    public MaxSATSubtypeConstraintEncoder(Lattice lattice, ConstraintVerifier verifier, Map<AnnotationMirror, Integer> typeToInt) {
-        super(lattice, verifier, typeToInt);
+    public MaxSATSubtypeConstraintEncoder(Lattice lattice, Map<AnnotationMirror, Integer> typeToInt) {
+        super(lattice, typeToInt);
     }
 
     /**
      * For subtype constraint, if supertype is constant slot, then the subtype
      * cannot be the super type of supertype, same for subtype
      */
-    protected VecInt[] getMustNotBe(Set<AnnotationMirror> mustNotBe, VariableSlot vSlot, ConstantSlot cSlot) {
+    protected VecInt[] getMustNotBe(Set<AnnotationMirror> mustNotBe, Slot vSlot, ConstantSlot cSlot) {
 
         List<Integer> resultList = new ArrayList<Integer>();
 
@@ -50,7 +50,7 @@ public class MaxSATSubtypeConstraintEncoder extends MaxSATAbstractConstraintEnco
         return emptyValue;
     }
 
-    protected int[] getMaybe(AnnotationMirror type, VariableSlot knownType, VariableSlot unknownType,
+    protected int[] getMaybe(AnnotationMirror type, Slot knownType, Slot unknownType,
                              Collection<AnnotationMirror> maybeSet) {
         int[] maybeArray = new int[maybeSet.size() + 1];
         int i = 1;
@@ -125,10 +125,5 @@ public class MaxSATSubtypeConstraintEncoder extends MaxSATAbstractConstraintEnco
             mustNotBe.addAll(lattice.incomparableType.get(subtype.getValue()));
         }
         return getMustNotBe(mustNotBe, supertype, subtype);
-    }
-
-    @Override
-    public VecInt[] encodeConstant_Constant(ConstantSlot subtype, ConstantSlot supertype) {
-        return verifier.isSubtype(subtype, supertype) ? emptyValue : contradictoryValue;
     }
 }

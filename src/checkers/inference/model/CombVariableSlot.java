@@ -3,8 +3,7 @@ package checkers.inference.model;
 /**
  * CombVariableSlots represent locations whose values depend on two other VariableSlots.
  *
- * CombVariableSlots are used to model viewpoint adaptation, the type of a ternary expression,
- * expressions involving least-upper-bounds and joins between variable and refinement variables.
+ * CombVariableSlots are used to model viewpoint adaptation result of two slots.
  *
  * TODO: Wener uses this class for Viewpoint adaptation.  All other locations are intended to be
  * TODO: used to represent LUBS.  Those uses should be replaced either with a new LubVariableSlot
@@ -17,8 +16,8 @@ public class CombVariableSlot extends VariableSlot {
     private final Slot first;
     private final Slot second;
 
-    public CombVariableSlot(AnnotationLocation location, int id, Slot first, Slot second) {
-        super(location, id);
+    public CombVariableSlot(int id, AnnotationLocation location, Slot first, Slot second) {
+        super(id, location);
         this.first = first;
         this.second = second;
     }

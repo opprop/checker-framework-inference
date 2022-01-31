@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -15,15 +16,14 @@ import checkers.inference.solver.backend.Solver;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.NameUtils;
 import checkers.inference.solver.util.SolverEnvironment;
-import checkers.inference.solver.util.StatisticRecorder;
-import checkers.inference.solver.util.StatisticRecorder.StatisticKey;
+import checkers.inference.solver.util.Statistics;
 
 /**
  * LogiQLSolver first creates LogiQL predicates text, then calls format translator
  * converts constraint into LogiQL data. With both predicate and data created,
  * it calls LogicBloxRunner that runs logicblox to solve the LogiQL, and reads
  * the output. Finally the output will be sent to DecodingTool and get decoded.
- * 
+ *
  * @author jianchu
  *
  */
@@ -57,9 +57,9 @@ public class LogiQLSolver extends Solver<LogiQLFormatTranslator> {
                 lattice, localNth);
         constraintGenerator.GenerateLogiqlEncoding();
         this.serializationStart = System.currentTimeMillis();
-        this.convertAll();
+        this.encodeAllConstraints();
         this.serializationEnd = System.currentTimeMillis();
-        StatisticRecorder.record(StatisticKey.LOGIQL_SERIALIZATION_TIME,
+        Statistics.addOrIncrementEntry("logiql_serialization_time(ms)",
                 (serializationEnd - serializationStart));
         addVariables();
         addConstants();
@@ -70,17 +70,21 @@ public class LogiQLSolver extends Solver<LogiQLFormatTranslator> {
         runLogicBlox.runLogicBlox();
         this.solvingEnd = System.currentTimeMillis();
 
-        StatisticRecorder.record(StatisticKey.LOGIQL_SOLVING_TIME, (solvingEnd - solvingStart));
+        Statistics.addOrIncrementEntry("logiql_solving_time(ms)", (solvingEnd - solvingStart));
 
         //TODO: Refactor this to let Translator take the responsiblity of decoding.
         DecodingTool DecodeTool = new DecodingTool(varSlotIds, logiqldataPath, lattice, localNth);
         result = DecodeTool.decodeResult();
-        // PrintUtils.printResult(result);
         return result;
     }
 
     @Override
-    public void convertAll() {
+    public Collection<Constraint> explainUnsatisfiable() {
+        return new HashSet<>();// Doesn't support right now
+    }
+
+    @Override
+    public void encodeAllConstraints() {
         for (Constraint constraint : constraints) {
             collectVarSlots(constraint);
             String serializedConstrant = constraint.serialize(formatTranslator);
@@ -105,7 +109,7 @@ public class LogiQLSolver extends Solver<LogiQLFormatTranslator> {
 
     private void writeLogiQLData(String path, int nth) {
         String[] lines = logiQLText.toString().split("\r\n|\r|\n");
-        StatisticRecorder.record(StatisticKey.LOGIQL_DATA_SIZE, (long) lines.length);
+        Statistics.addOrIncrementEntry("logiql_data_size", lines.length);
         try {
             String writePath = path + "/data" + nth + ".logic";
             File f = new File(writePath);

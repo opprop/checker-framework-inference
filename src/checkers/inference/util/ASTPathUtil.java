@@ -14,7 +14,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
 import java.util.IdentityHashMap;
@@ -144,7 +144,7 @@ public class ASTPathUtil {
         public Void visitIntersection(AnnotatedIntersectionType type, ASTRecord current) {
 
             int boundIndex = 0;
-            for (AnnotatedTypeMirror bound : type.directSuperTypes()) {
+            for (AnnotatedTypeMirror bound : type.directSupertypes()) {
                 ASTRecord toBound = extendParent(current, Kind.INTERSECTION_TYPE, ASTPath.BOUND, boundIndex);
                 visit(bound, toBound);
                 boundIndex++;
@@ -172,9 +172,8 @@ public class ASTPathUtil {
             ASTRecord toArrayType = extendParent(current, Kind.ARRAY_TYPE, ASTPath.TYPE, -1);
             storeCurrent(type, toArrayType);
 
-            // TODO: THERE DOESN'T SEEM TO BE A WAY TO REFERENCE THE COMPONENT TYPE, TALK TO DAN
-            ErrorReporter.errorAbort("Not implemented!");
-            return null;
+            // TODO: THERE DOESN'T SEEM TO BE A WAY TO REFERENCE THE COMPONENT TYPE
+            throw new BugInCF("Not implemented!");
         }
 
         @Override
@@ -249,16 +248,5 @@ public class ASTPathUtil {
         }
 
         return Pair.of(pkgName, className);
-    }
-
-    /**
-     * Takes a package and class name and joins them to make a fully qualified class
-     */
-    public static String combinePackageAndClass(String packageName, String className) {
-        if (packageName == null || packageName.isEmpty()) {
-            return className;
-        }
-
-        return packageName + "." + className;
     }
 }

@@ -124,7 +124,7 @@ import nninf.qual.KeyFor;
         if (anno == null)
             return false;
 
-        List<String> maps = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
+        List<String> maps = AnnotationUtils.getElementValueArray(anno, factory.keyForValueElement, String.class);
 
         return maps.contains(mapName);
     }
@@ -137,10 +137,11 @@ import nninf.qual.KeyFor;
         if (anno == null)
             return false;
 
-        List<String> maps = AnnotationUtils.getElementValueArray(anno, "value", String.class, false);
+        List<String> maps = AnnotationUtils.getElementValueArray(anno, factory.keyForValueElement, String.class);
         for (String map: maps) {
             Element elt = resolver.findVariable(map, path);
-            if (elt.equals(mapElement) &&
+            if (elt != null &&
+                    elt.equals(mapElement) &&
                     !isSiteRequired(TreeUtils.getReceiverTree((ExpressionTree)path.getLeaf()), elt)) {
                 return true;
             }
@@ -167,12 +168,12 @@ import nninf.qual.KeyFor;
     }
 
     private boolean isCheckOfGet(Element key, VariableElement map, ExpressionTree tree) {
-        tree = TreeUtils.skipParens(tree);
+        tree = TreeUtils.withoutParens(tree);
         if (tree.getKind() != Tree.Kind.NOT_EQUAL_TO
             || ((BinaryTree)tree).getRightOperand().getKind() != Tree.Kind.NULL_LITERAL)
             return false;
 
-        Tree right = TreeUtils.skipParens(((BinaryTree)tree).getLeftOperand());
+        Tree right = TreeUtils.withoutParens(((BinaryTree)tree).getLeftOperand());
         if (right instanceof MethodInvocationTree) {
             MethodInvocationTree invok = (MethodInvocationTree)right;
             if (TreeUtils.isMethodInvocation(invok, mapGet, env)) {

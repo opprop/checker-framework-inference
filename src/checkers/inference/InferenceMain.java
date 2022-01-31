@@ -26,6 +26,7 @@ import checkers.inference.model.VariableSlot;
 import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.InferenceUtil;
 import checkers.inference.util.JaifBuilder;
+import org.checkerframework.javacutil.SystemUtil;
 
 /**
  * InferenceMain is the central coordinator to the inference system.
@@ -95,7 +96,7 @@ public class InferenceMain {
     private SlotManager slotManager;
 
     // Hold the results of solving.
-    private InferenceSolution solverResult;
+    private InferenceResult solverResult;
 
     // Turn off some of the checks so that more bodies of code pass.
     // Eventually we will get rid of this.
@@ -142,6 +143,12 @@ public class InferenceMain {
         // Start up javac
         startCheckerFramework();
         solve();
+        // solverResult = null covers case when debug solver is used, but in this case
+        // shouldn't exit
+        if (solverResult != null && !solverResult.hasSolution()) {
+            logger.info("No solution, exiting...");
+            System.exit(1);
+        }
         writeJaif();
     }
 
@@ -154,7 +161,11 @@ public class InferenceMain {
                 "-Xmaxwarns", "1000",
                 "-Xmaxerrs", "1000",
                 "-XDignore.symbol.file",
-                "-AprintErrorStack"));
+                "-Awarns"));
+
+        if (SystemUtil.getJreVersion() == 8) {
+            checkerFrameworkArgs.addAll(Arrays.asList("-source", "8", "-target", "8"));
+        }
 
         if (InferenceOptions.cfArgs != null) {
             checkerFrameworkArgs.addAll(parseCfArgs());
@@ -217,15 +228,19 @@ public class InferenceMain {
                 for (Class<? extends Annotation> annotation : realTypeFactory.getSupportedTypeQualifiers()) {
                     annotationClasses.add(annotation);
                 }
+                // add any custom annotations that must be inserted to the JAIF header, such as alias annotations
+                for (Class<? extends Annotation> annotation : realChecker.additionalAnnotationsForJaifHeaderInsertion()) {
+                    annotationClasses.add(annotation);
+                }
             }
             for (VariableSlot slot : varSlots) {
                 if (slot.getLocation() != null && slot.isInsertable()
-                 && (solverResult == null || solverResult.doesVariableExist(slot.getId()))) {
+                 && (solverResult == null || solverResult.containsSolutionForVariable(slot.getId()))) {
                     // TODO: String serialization of annotations.
                     if (solverResult != null) {
                         // Not all VariableSlots will have an inferred value.
                         // This happens for VariableSlots that have no constraints.
-                        AnnotationMirror result = solverResult.getAnnotation(slot.getId());
+                        AnnotationMirror result = solverResult.getSolutionForVariable(slot.getId());
                         if (result != null) {
                             values.put(slot.getLocation(), result.toString());
                         }
@@ -286,7 +301,7 @@ public class InferenceMain {
         if (realChecker == null) {
             try {
                 realChecker = (InferrableChecker) Class.forName(
-                        InferenceOptions.checker, true, ClassLoader.getSystemClassLoader()).newInstance();
+                        InferenceOptions.checker, true, ClassLoader.getSystemClassLoader()).getDeclaredConstructor().newInstance();
                 realChecker.init(inferenceChecker.getProcessingEnvironment());
                 realChecker.initChecker();
                 logger.finer(String.format("Created real checker: %s", realChecker));
@@ -308,7 +323,6 @@ public class InferenceMain {
         return inferenceTypeFactory;
     }
 
-
     /**
      * This method is NOT deprecated but SHOULD NOT BE USED other than in getInferenceTypeFactory AND
      * InferenceAnnotatedTypeFactory.getSupportedQualifierTypes.  We have made it deprecated in order to bring
@@ -317,7 +331,7 @@ public class InferenceMain {
      */
     public BaseAnnotatedTypeFactory getRealTypeFactory() {
         if (realTypeFactory == null) {
-            realTypeFactory = getRealChecker().createRealTypeFactory();
+            realTypeFactory = getRealChecker().createRealTypeFactory(true);
             logger.finer(String.format("Created real type factory: %s", realTypeFactory));
         }
         return realTypeFactory;
@@ -335,7 +349,7 @@ public class InferenceMain {
     protected InferenceSolver getSolver() {
         try {
             InferenceSolver solver = (InferenceSolver) Class.forName(
-                    InferenceOptions.solver, true, ClassLoader.getSystemClassLoader()).newInstance();
+                    InferenceOptions.solver, true, ClassLoader.getSystemClassLoader()).getDeclaredConstructor().newInstance();
             logger.finer("Created solver: " + solver);
             return solver;
         } catch (Throwable e) {
@@ -389,11 +403,9 @@ public class InferenceMain {
     }
 
     public ConstraintManager getConstraintManager() {
-
-        if (constraintManager == null) {
+        if (this.constraintManager == null) {
             this.constraintManager = new ConstraintManager();
         }
-
         return constraintManager;
     }
 

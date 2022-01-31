@@ -1,6 +1,7 @@
 package checkers.inference;
 
-import org.checkerframework.javacutil.ErrorReporter;
+import checkers.inference.model.VariableSlot;
+import org.checkerframework.javacutil.BugInCF;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -18,7 +19,6 @@ import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.Slot;
-import checkers.inference.model.VariableSlot;
 
 /**
  * This class currently just removes ExistentialVariables from the set of constraints
@@ -135,7 +135,6 @@ public class ConstraintNormalizer {
             // we have already added their positive cases to implications
             final HashSet<Value> previouslyEncountered = new HashSet<>(initialSize);
 
-            final List<Slot> currentLeft = new ArrayList<Slot>(leftSlots.size());
             final int lastLeftIndex  = leftSlots.size() - 1;
             final int lastRightIndex = rightSlots.size() - 1;
 
@@ -143,7 +142,6 @@ public class ConstraintNormalizer {
                 final Slot left  = leftSlots.get(leftIndex);
                 final boolean lastLeft = leftIndex == lastLeftIndex;
 
-                currentLeft.add(left);
                 final TreeSet<Value> encountered = new TreeSet<>(previouslyEncountered);
                 final Value lhsValue = new Value(left, true, lastLeft);
 
@@ -255,7 +253,7 @@ public class ConstraintNormalizer {
             ret.add(InferenceMain
                     .getInstance()
                     .getConstraintManager()
-                    .createExistentialConstraint((VariableSlot) slot, ifExistsConstraints,
+                    .createExistentialConstraint(slot, ifExistsConstraints,
                             ifNotExistsConstraints));
             return ret;
         }
@@ -298,14 +296,14 @@ public class ConstraintNormalizer {
             if (alwaysExists) {
                 sb.append("[");
                 sb.append(
-                        slot.isVariable() ? ((VariableSlot) slot).getId()
+                        slot instanceof VariableSlot ? slot.getId()
                                           : ((ConstantSlot) slot).getValue());
                 sb.append("]");
             } else {
                 if (!exists) {
                     sb.append("!");
                 }
-                sb.append(((VariableSlot) slot).getId());
+                sb.append(slot.getId());
             }
             return sb.toString();
         }
@@ -333,7 +331,7 @@ public class ConstraintNormalizer {
                 }
             }
 
-            return ((VariableSlot) o1).getId() - ((VariableSlot) o2).getId();
+            return o1.getId() - o2.getId();
         }
     }
 
@@ -344,7 +342,7 @@ public class ConstraintNormalizer {
             for (Slot slot : constraint.getSlots()) {
                 if (slot == null) {
                     if (!InferenceMain.isHackMode()) {
-                        ErrorReporter.errorAbort("Null slot in constraint " + constraint.getClass().getName() + "\n"
+                        throw new BugInCF("Null slot in constraint " + constraint.getClass().getName() + "\n"
                                                + constraint);
                     }
                     return true;

@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * Develop Launcher for checker-framework-inference developers.
@@ -18,7 +18,7 @@ import org.checkerframework.javacutil.ErrorReporter;
  * locations that this class would use.
  *
  * TODO: We need to think how to enable {@code InferenceDevelLauncher} to find all necessary
- * locations by itself, so that we could remove the dependency of a shell script. After achieving 
+ * locations by itself, so that we could remove the dependency of a shell script. After achieving
  * this, we could also apply the similar solution to {@code CheckerDevelMain}.
  * @author charleszhuochen
  *
@@ -81,11 +81,11 @@ public class InferenceDevelLauncher extends InferenceLauncher {
     @Override
     // return jdkFile path
     public String getInferenceCompilationBootclassPath() {
-        return "-Xbootclasspath/p:" + System.getProperty( ANNOTATED_JDK );
+        return System.getProperty( ANNOTATED_JDK );
     }
 
     /**
-     * TODO: we need to extract the utility methods in {@code CheckerMain} and {@code CheckerDevelMain} out to an Util Class, 
+     * TODO: we need to extract the utility methods in {@code CheckerMain} and {@code CheckerDevelMain} out to an Util Class,
      * change their visibility to public, then we can reuse them in {@code InferenceLauncher}, {@code InferenceDevelLauncher}
      * and {@code InferenceMain}.
      *
@@ -99,7 +99,7 @@ public class InferenceDevelLauncher extends InferenceLauncher {
         final String cp = System.getProperty(pathProp);
 
         if (cp == null) {
-            ErrorReporter.errorAbort("Expected system property " + pathProp + " is null!");
+            throw new BugInCF("Expected system property " + pathProp + " is null!");
         }
 
         final List<String> newPathOpts = new ArrayList<String>();

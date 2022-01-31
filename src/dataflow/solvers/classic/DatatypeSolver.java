@@ -60,7 +60,6 @@ public class DatatypeSolver {
     }
 
     public DatatypeSolution solve() {
-        Map<Integer, Boolean> idToExistence = new HashMap<>();
         Map<Integer, Boolean> result = new HashMap<>();
 
         final int totalVars = slotManager.getNumberOfSlots();
@@ -94,10 +93,8 @@ public class DatatypeSolver {
                     //Need postive var
                     var = Math.abs(var);
                     Integer potential = existentialToPotentialIds.get(var);
-                    if (potential != null) {
-                        idToExistence.put(potential, varIsTrue);
-                    } else {
-                        // Logic is same as sparta.SourceSolution, but for easy
+                    if (potential == null) {
+                        // Logic is same as sparta.SourceResult, but for easy
                         // to understand, I just set True for each top, which
                         // means this top(type) should present:
                         // If the solution is false, that means top was

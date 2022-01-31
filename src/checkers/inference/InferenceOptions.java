@@ -1,6 +1,5 @@
 package checkers.inference;
 
-import org.checkerframework.framework.util.PluginUtil;
 
 import org.checkerframework.framework.util.CheckerMain;
 
@@ -13,10 +12,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.plumelib.util.StringsPlume;
 import ostrusted.OsTrustedChecker;
-import plume.Option;
-import plume.OptionGroup;
-import plume.Options;
+import org.plumelib.options.Option;
+import org.plumelib.options.OptionGroup;
+import org.plumelib.options.Options;
 import sparta.checkers.IFlowSinkChecker;
 import sparta.checkers.IFlowSourceChecker;
 import sparta.checkers.propagation.IFlowSinkSolver;
@@ -136,7 +136,7 @@ public class InferenceOptions {
     public static InitStatus init(String [] args, boolean requireMode) {
         List<String> errors = new ArrayList<>();
         Options options = new Options("inference [options]", InferenceOptions.class);
-        String [] otherArgs = options.parse_or_usage(args);
+        String [] otherArgs = options.parse(true, args);
 
         int startOfJavaFilesIndex = -1;
         for (int i = 0; i < otherArgs.length; i++) {
@@ -163,7 +163,7 @@ public class InferenceOptions {
             TypeSystemSpec spec = typesystems.get(typesystem);
             if (spec == null) {
                 errors.add("Unrecognized typesystem.  Current typesystems:\n"
-                           + PluginUtil.join("\n", typesystems.keySet()));
+                           + StringsPlume.join("\n", typesystems.keySet()));
             } else {
                 spec.apply();
             }
@@ -187,7 +187,7 @@ public class InferenceOptions {
 
             } catch (IllegalArgumentException iexc) {
                 System.out.println("Could not recognize mode: " + InferenceOptions.mode + "\n"
-                        + "valid modes: " + PluginUtil.join(", ", Mode.values()));
+                        + "valid modes: " + StringsPlume.join(", ", Mode.values()));
                 System.exit(1);
             }
 
@@ -236,7 +236,7 @@ public class InferenceOptions {
         typesystems.put("interning",
                 new TypeSystemSpec(InterningChecker.class,
                                    MaxSat2TypeSolver.class,
-                                   new File(srcDir, "interning" + File.separator + "jdk.astub")));
+                                   null));
         typesystems.put("sparta-source",
                 new TypeSystemSpec(IFlowSourceChecker.class,
                         IFlowSourceSolver.class,
@@ -337,12 +337,13 @@ public class InferenceOptions {
         }
         public void validateOrExit(String errorDelimiter) {
             if (!errors.isEmpty()) {
-                options.print_usage(PluginUtil.join(errorDelimiter, errors));
+                System.out.println(StringsPlume.join(errorDelimiter, errors));
+                options.printUsage();
                 System.exit(1);
             }
 
             if (printHelp) {
-                options.print_usage();
+                options.printUsage();
                 System.exit(0);
             }
         }

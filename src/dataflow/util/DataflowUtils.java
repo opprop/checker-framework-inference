@@ -1,17 +1,20 @@
 package dataflow.util;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeMirror;
 
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreeUtils;
 
 import com.sun.source.tree.LiteralTree;
 
@@ -25,29 +28,29 @@ import dataflow.qual.DataFlow;
  */
 public class DataflowUtils {
 
-    public static String[] getTypeNames(AnnotationMirror type) {
-        return getDataflowValue(type, "typeNames");
+    /** The DataFlow.typeNames element/field. */
+    private final ExecutableElement dataflowTypeNamesElement;
+
+    /** The DataFlow.typeNameRoots element/field. */
+    private final ExecutableElement dataflowTypeNameRootsElement;
+
+    public DataflowUtils(ProcessingEnvironment processingEnv) {
+        dataflowTypeNamesElement = TreeUtils.getMethod(DataFlow.class, "typeNames", processingEnv);
+        dataflowTypeNameRootsElement = TreeUtils.getMethod(DataFlow.class, "typeNameRoots", processingEnv);
     }
 
-    public static String[] getTypeNameRoots(AnnotationMirror type) {
-        return getDataflowValue(type, "typeNameRoots");
+    public List<String> getTypeNames(AnnotationMirror type) {
+        return AnnotationUtils.getElementValueArray(
+                type, dataflowTypeNamesElement, String.class, Collections.emptyList());
     }
 
-    private static String[] getDataflowValue(AnnotationMirror type, String valueName) {
-        List<String> allTypesList = AnnotationUtils.getElementValueArray(type, valueName, String.class,
-                true);
-        // types in this list is org.checkerframework.framework.util.AnnotationBuilder.
-        String[] allTypesInArray = new String[allTypesList.size()];
-        int i = 0;
-        for (Object o : allTypesList) {
-            allTypesInArray[i] = o.toString();
-            i++;
-        }
-        return allTypesInArray;
+    public List<String> getTypeNameRoots(AnnotationMirror type) {
+        return AnnotationUtils.getElementValueArray(
+                type, dataflowTypeNameRootsElement, String.class, Collections.emptyList());
     }
 
     public static AnnotationMirror createDataflowAnnotationForByte(String[] dataType,
-            ProcessingEnvironment processingEnv) {
+                                                                   ProcessingEnvironment processingEnv) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, DataFlow.class);
         builder.setValue("typeNameRoots", dataType);
         return builder.build();
@@ -182,8 +185,7 @@ public class DataflowUtils {
             // Null literal wouldn't be passed here.
             break;
         default:
-            ErrorReporter.errorAbort("Unknown literal tree: " + node.getKind().toString());
-            break;
+            throw new BugInCF("Unknown literal tree: " + node.getKind().toString());
         }
         AnnotationMirror dataFlowType = createDataflowAnnotation(datatypeInArray, processingEnv);
         return dataFlowType;

@@ -2,11 +2,11 @@ package checkers.inference;
 
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.DefaultRawnessComparer;
 import org.checkerframework.framework.type.DefaultTypeHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.StructuralEqualityComparer;
-import org.checkerframework.javacutil.ErrorReporter;
+import org.checkerframework.framework.type.StructuralEqualityVisitHistory;
+import org.checkerframework.javacutil.BugInCF;
 
 import javax.lang.model.element.AnnotationMirror;
 
@@ -42,62 +42,56 @@ public class InferenceTypeHierarchy extends DefaultTypeHierarchy {
         this.varAnnot = varAnnot;
     }
 
-    // this is solely to make it public, we should consider adding areEqual to the TypeHierarchy interface
-    @Override
     public boolean areEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
-        return super.areEqual(type1, type2);
-    }
-
-    @Override
-    public boolean isSubtype(AnnotatedTypeMirror subtype, AnnotatedTypeMirror supertype) {
-        return super.isSubtype(subtype, supertype, varAnnot);
+        return equalityComparer.areEqualInHierarchy(type1, type2, varAnnot);
     }
 
     @Override
     public StructuralEqualityComparer createEqualityComparer() {
-        return new InferenceEqualityComparer(rawnessComparer,
+        return new InferenceEqualityComparer(
+                this.areEqualVisitHistory,
                 InferenceQualifierHierarchy.findVarAnnot(qualifierHierarchy.getTopAnnotations()));
     }
-}
 
-class InferenceEqualityComparer extends StructuralEqualityComparer {
+    private static class InferenceEqualityComparer extends StructuralEqualityComparer {
 
-    private final AnnotationMirror varAnnot;
+        private final AnnotationMirror varAnnot;
 
-    public InferenceEqualityComparer(DefaultRawnessComparer rawnessComparer, AnnotationMirror varAnnot) {
-            super(rawnessComparer);
+        public InferenceEqualityComparer(StructuralEqualityVisitHistory typeargVisitHistory, AnnotationMirror varAnnot) {
+            super(typeargVisitHistory);
             this.varAnnot = varAnnot;
-    }
+        }
 
-    @Override
-    protected boolean arePrimeAnnosEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
-        final InferenceMain inferenceMain = InferenceMain.getInstance();
-        final AnnotationMirror varAnnot1 = type1.getAnnotationInHierarchy(varAnnot);
-        final AnnotationMirror varAnnot2 = type2.getAnnotationInHierarchy(varAnnot);
+        @Override
+        protected boolean arePrimeAnnosEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+            final InferenceMain inferenceMain = InferenceMain.getInstance();
+            final AnnotationMirror varAnnot1 = type1.getAnnotationInHierarchy(varAnnot);
+            final AnnotationMirror varAnnot2 = type2.getAnnotationInHierarchy(varAnnot);
 
-        // TODO: HackMode
-        if (InferenceMain.isHackMode((varAnnot1 == null || varAnnot2 == null))) {
-            InferenceMain.getInstance().logger.warning(
-                "Hack:InferenceTYpeHierarchy:66\n"
-              + "type1=" + type1 + "\n"
-              + "type2=" + type2 + "\n"
-            );
+            // TODO: HackMode
+            if (InferenceMain.isHackMode((varAnnot1 == null || varAnnot2 == null))) {
+                InferenceMain.getInstance().logger.warning(
+                        "Hack:InferenceTYpeHierarchy:66\n"
+                                + "type1=" + type1 + "\n"
+                                + "type2=" + type2 + "\n"
+                );
+                return true;
+            }
+
+            if (varAnnot1 == null || varAnnot2 == null) {
+                throw new BugInCF("Calling InferenceTypeHierarchy.arePrimeAnnosEqual on type with"
+                        + "no varAnnots.!\n"
+                        + "type1=" + type1 + "\n"
+                        + "type2=" + type2);
+            }
+
+            if (!inferenceMain.isPerformingFlow()) {
+                final Slot leftSlot  = inferenceMain.getSlotManager().getSlot( varAnnot1 );
+                final Slot rightSlot = inferenceMain.getSlotManager().getSlot( varAnnot2 );
+                inferenceMain.getConstraintManager().addEqualityConstraint(leftSlot, rightSlot);
+            }
+
             return true;
         }
-
-        if (varAnnot1 == null || varAnnot2 == null) {
-            ErrorReporter.errorAbort("Calling InferenceTypeHierarchy.arePrimeAnnosEqual on type with"
-                    + "no varAnnots.!\n"
-                    + "type1=" + type1 + "\n"
-                    + "type2=" + type2);
-        }
-
-        if (!inferenceMain.isPerformingFlow()) {
-            final Slot leftSlot  = inferenceMain.getSlotManager().getSlot( varAnnot1 );
-            final Slot rightSlot = inferenceMain.getSlotManager().getSlot( varAnnot2 );
-            inferenceMain.getConstraintManager().addEqualityConstraint(leftSlot, rightSlot);
-        }
-
-        return true;
     }
 }

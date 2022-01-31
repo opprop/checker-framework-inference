@@ -1,17 +1,17 @@
 package sparta.checkers;
 
+import checkers.inference.BaseInferenceRealTypeFactory;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.qual.PolyAll;
+import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.treeannotator.ImplicitsTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
@@ -48,7 +48,7 @@ import com.sun.source.tree.Tree;
 /**
  * Created by mcarthur on 4/3/14.
  */
-public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
 
     static AnnotationMirror ANYSOURCE, NOSOURCE, ANYSINK, NOSINK;
     private final AnnotationMirror POLYSOURCE;
@@ -59,6 +59,8 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     final QualifierDefaults byteCodeDefaults = new QualifierDefaults(elements, this);
     final QualifierDefaults polyFlowDefaults = new QualifierDefaults(elements, this);
     final QualifierDefaults polyFlowReceiverDefaults = new QualifierDefaults(elements, this);
+
+    public final IFlowUtils flowUtils;
 
     /**
      * Constructs a factory from the given {@link ProcessingEnvironment}
@@ -75,8 +77,8 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @throws IllegalArgumentException
      *             if either argument is {@code null}
      */
-    public SimpleFlowAnnotatedTypeFactory(BaseTypeChecker checker) {
-        super(checker);
+    public SimpleFlowAnnotatedTypeFactory(BaseTypeChecker checker, boolean isInfer) {
+        super(checker, isInfer);
 
         NOSOURCE = buildAnnotationMirrorFlowPermission(Source.class);
         ANYSOURCE = buildAnnotationMirrorFlowPermission(Source.class, FlowPermission.ANY.toString());
@@ -84,6 +86,9 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         ANYSINK = buildAnnotationMirrorFlowPermission(Sink.class, FlowPermission.ANY.toString());
         POLYSOURCE = buildAnnotationMirror(PolySource.class);
         POLYSINK = buildAnnotationMirror(PolySink.class);
+
+        flowUtils = new IFlowUtils(this.processingEnv);
+
         this.postInit();
     }
 
@@ -121,29 +126,13 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
 
-
     @Override
     protected TreeAnnotator createTreeAnnotator() {
 
-        ImplicitsTreeAnnotator implicits = new ImplicitsTreeAnnotator(this);
+        LiteralTreeAnnotator implicits = new LiteralTreeAnnotator(this);
         // All literals are bottom
-        implicits.addTreeKind(Tree.Kind.INT_LITERAL, NOSOURCE);
-        implicits.addTreeKind(Tree.Kind.LONG_LITERAL, NOSOURCE);
-        implicits.addTreeKind(Tree.Kind.FLOAT_LITERAL, NOSOURCE);
-        implicits.addTreeKind(Tree.Kind.DOUBLE_LITERAL, NOSOURCE);
-        implicits.addTreeKind(Tree.Kind.BOOLEAN_LITERAL, NOSOURCE);
-        implicits.addTreeKind(Tree.Kind.CHAR_LITERAL, NOSOURCE);
-        implicits.addTreeKind(Tree.Kind.STRING_LITERAL, NOSOURCE);
-        implicits.addTreeKind(Tree.Kind.NULL_LITERAL, NOSOURCE);
-
-        implicits.addTreeKind(Tree.Kind.INT_LITERAL, ANYSINK);
-        implicits.addTreeKind(Tree.Kind.LONG_LITERAL, ANYSINK);
-        implicits.addTreeKind(Tree.Kind.FLOAT_LITERAL, ANYSINK);
-        implicits.addTreeKind(Tree.Kind.DOUBLE_LITERAL, ANYSINK);
-        implicits.addTreeKind(Tree.Kind.BOOLEAN_LITERAL, ANYSINK);
-        implicits.addTreeKind(Tree.Kind.CHAR_LITERAL, ANYSINK);
-        implicits.addTreeKind(Tree.Kind.STRING_LITERAL, ANYSINK);
-        implicits.addTreeKind(Tree.Kind.NULL_LITERAL, ANYSINK);
+        implicits.addLiteralKind(LiteralKind.ALL, NOSOURCE);
+        implicits.addLiteralKind(LiteralKind.ALL, ANYSINK);
 
         return new ListTreeAnnotator(new PropagationTreeAnnotator(this),
                 implicits,
@@ -153,7 +142,7 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // This is a horrible hack around the bad implementation of constructor results
                 // (CF treats annotations on constructor results in stub files as if it were a
                 // default and therefore ignores it.)
-                AnnotatedTypeMirror defaulted = atypeFactory.constructorFromUse(node).first.getReturnType();
+                AnnotatedTypeMirror defaulted = atypeFactory.constructorFromUse(node).executableType.getReturnType();
                 Set<AnnotationMirror> defaultedSet = defaulted.getAnnotations();
                 // The default of OTHERWISE locations such as constructor results
                 // is {}{}, but for constructor results we really want bottom.
@@ -161,9 +150,14 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 boolean empty = true;
                 for (AnnotationMirror am: defaultedSet) {
-                   List<String> s = AnnotationUtils.getElementValueArray(am, "value",
-                            String.class, true);
-                   empty = s.isEmpty() && empty;
+                    List<String> s = Collections.emptyList();
+                    if (IFlowUtils.isSink(am)) {
+                        s = flowUtils.getRawSinks(am);
+                    } else if (IFlowUtils.isSource(am)) {
+                        s = flowUtils.getRawSources(am);
+                    }
+
+                    empty = s.isEmpty() && empty;
                 }
 
                 if (empty) {
@@ -258,7 +252,7 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         if (isFromByteCode(element)) {
             byteCodeDefaults.annotate(element, type);
-        } 
+        }
     }
 
     private void handlePolyFlow(Element element, AnnotatedTypeMirror type) {
@@ -291,19 +285,24 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-
+    @SuppressWarnings("deprecation")
     @Override
-    protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
-        return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return org.checkerframework.framework.util.MultiGraphQualifierHierarchy
+                .createMultiGraphQualifierHierarchy(this);
     }
 
+    @SuppressWarnings("deprecation")
     @Override
-    public QualifierHierarchy createQualifierHierarchy(
-            MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
+    public QualifierHierarchy createQualifierHierarchyWithMultiGraphFactory(
+            org.checkerframework.framework.util.MultiGraphQualifierHierarchy.MultiGraphFactory factory
+    ) {
         return new FlowQualifierHierarchy(factory);
     }
 
-    protected class FlowQualifierHierarchy extends MultiGraphQualifierHierarchy {
+    // TODO(Zhiping): deprecate usage of MultiGraphQualifierHierarchy
+    @SuppressWarnings("deprecation")
+    protected class FlowQualifierHierarchy extends org.checkerframework.framework.util.MultiGraphQualifierHierarchy {
 
         public FlowQualifierHierarchy(MultiGraphFactory f) {
             super(f);
@@ -349,27 +348,27 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 return true;
             } else if (isPolySourceQualifier(supertype) && isSourceQualifier(subtype)) {
                 // If super is poly, only bottom is a subtype
-                return IFlowUtils.getSources(subtype).isEmpty();
+                return getSources(subtype).isEmpty();
             } else if (isSourceQualifier(supertype) && isPolySourceQualifier(subtype)) {
                 // if sub is poly, only top is a supertype
-                return IFlowUtils.getSources(supertype).contains(PFPermission.ANY);
+                return getSources(supertype).contains(PFPermission.ANY);
             } else if (isSourceQualifier(supertype) && isSourceQualifier(subtype)) {
                 // Check the set
-                Set<PFPermission> superset = IFlowUtils.getSources(supertype);
-                Set<PFPermission> subset = IFlowUtils.getSources(subtype);
+                Set<PFPermission> superset = getSources(supertype);
+                Set<PFPermission> subset = getSources(subtype);
                 return isSuperSet(superset, subset);
             } else if (isPolySinkQualifier(supertype) && isPolySinkQualifier(subtype)) {
                 return true;
             } else if (isPolySinkQualifier(supertype) && isSinkQualifier(subtype)) {
                 // If super is poly, only bottom is a subtype
-                return IFlowUtils.getSinks(subtype).contains(PFPermission.ANY);
+                return getSinks(subtype).contains(PFPermission.ANY);
             } else if (isSinkQualifier(supertype) && isPolySinkQualifier(subtype)) {
                 // if sub is poly, only top is a supertype
-                return IFlowUtils.getSinks(supertype).isEmpty();
+                return getSinks(supertype).isEmpty();
             } else if (isSinkQualifier(supertype) && isSinkQualifier(subtype)) {
                 // Check the set (sinks are backward)
-                Set<PFPermission> subset = IFlowUtils.getSinks(supertype);
-                Set<PFPermission> superset = IFlowUtils.getSinks(subtype);
+                Set<PFPermission> subset = getSinks(supertype);
+                Set<PFPermission> superset = getSinks(subtype);
                 return isSuperSet(superset, subset);
             } else {
                 // annotations should either both be sources or sinks.
@@ -390,23 +389,34 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         private boolean isSourceQualifier(AnnotationMirror anno) {
-            return AnnotationUtils.areSameByClass(anno, Source.class)
+            return IFlowUtils.isSource(anno)
                     || isPolySourceQualifier(anno);
         }
 
         private boolean isPolySourceQualifier(AnnotationMirror anno) {
-            return AnnotationUtils.areSameByClass(anno, PolySource.class)
-                    || AnnotationUtils.areSameByClass(anno, PolyAll.class);
+            return IFlowUtils.isPolySource(anno);
         }
 
         private boolean isSinkQualifier(AnnotationMirror anno) {
-            return isPolySinkQualifier(anno) || AnnotationUtils.areSameByClass(anno, Sink.class);
+            return isPolySinkQualifier(anno) || IFlowUtils.isSink(anno);
         }
 
         private boolean isPolySinkQualifier(AnnotationMirror anno) {
-            return AnnotationUtils.areSameByClass(anno, PolySink.class)
-                    || AnnotationUtils.areSameByClass(anno, PolyAll.class);
+            return IFlowUtils.isPolySink(anno);
         }
 
+        private Set<PFPermission> getSinks(AnnotationMirror anno) {
+            if (IFlowUtils.isSink(anno)) {
+                return flowUtils.getSinks(anno);
+            }
+            return Collections.emptySet();
+        }
+
+        private Set<PFPermission> getSources(AnnotationMirror anno) {
+            if (IFlowUtils.isSource(anno)) {
+                return flowUtils.getSources(anno);
+            }
+            return Collections.emptySet();
+        }
     }
 }

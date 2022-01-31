@@ -3,6 +3,7 @@ package checkers.inference.solver.backend.encoder;
 import checkers.inference.model.BinaryConstraint;
 import checkers.inference.model.CombineConstraint;
 import checkers.inference.model.Slot;
+import checkers.inference.model.VariableSlot;
 import checkers.inference.solver.backend.encoder.binary.BinaryConstraintEncoder;
 import  checkers.inference.solver.backend.encoder.combine.CombineConstraintEncoder;
 
@@ -51,32 +52,8 @@ public enum SlotSlotCombo {
         this.isSndVariableSlot = isSndVariableSlot;
     }
 
-    /**
-     * Gets the {@code SlotSlotCombo} of a {@link BinaryConstraint}
-     *
-     * @param binaryConstraint {@code BinaryConstraint} whose {@code SlotSlotCombo} is analyzed
-     * @return {@code SlotSlotCombo} of the passed-in {@code binaryConstraint}
-     *
-     * @see BinaryConstraint
-     */
-    public static SlotSlotCombo valueOf(BinaryConstraint binaryConstraint) {
-        return valueOf(binaryConstraint.getFirst(), binaryConstraint.getSecond());
-    }
-
-    /**
-     * Gets the {@code SlotSlotCombo} of a {@link CombineConstraint}
-     *
-     * @param combineConstraint {@code CombineConstraint} whose {@code SlotSlotCombo} is analyzed
-     * @return {@code SlotSlotCombo} of the passed-in {@code combineConstraint}
-     *
-     * @see CombineConstraint
-     */
-    public static SlotSlotCombo valueOf(CombineConstraint combineConstraint) {
-        return valueOf(combineConstraint.getTarget(), combineConstraint.getDeclared());
-    }
-
-    private static SlotSlotCombo valueOf(Slot fst, Slot snd) {
-        return map[index(fst.isVariable())][index(snd.isVariable())];
+    public static SlotSlotCombo valueOf(Slot fst, Slot snd) {
+        return map[index(fst instanceof VariableSlot)][index(snd instanceof VariableSlot)];
     }
 
     private static int index(boolean value) {

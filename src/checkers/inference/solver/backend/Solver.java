@@ -10,31 +10,31 @@ import javax.lang.model.element.AnnotationMirror;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
-import checkers.inference.model.VariableSlot;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.SolverEnvironment;
 
 /**
- * SolverAdapter adapts a concrete underlying solver. This class is the super class
- * for all concrete solver adapters. For each concrete solver adapter, it adapts the
- * type constraint solving process to the underlying solver.
+ * Solver adapts a concrete underlying solver, e.g. Sat4j, LogiQL, Z3, etc.
+ * This class is the super class for all concrete Solver sub-classes.
+ * For each concrete Solver, it adapts the type constraint solving process to
+ * the underlying solver implementation.
  *
- * A solver adapter takes type constraints from {@link checkers.inference.solver.SolverEngine}},
+ * A Solver takes type constraints from {@link checkers.inference.solver.SolverEngine}},
  * then delegates solving constraints responsibility to the underlying solver, and transform
  * underlying solver solution as a map between an integer and an annotation mirror as
  * the inferred result.
  *
  * Method {@link #solve()} is responsible for coordinating
  * above steps.
- * 
+ *
  * {@link #solve()} method is the entry point of the solver adapter, and it is got
  * called in class {@link checkers.inference.solver.SolverEngine}}. See
  * {@link checkers.inference.solver.SolverEngine#solveInparall()} and
  * {@link checkers.inference.solver.SolverEngine#solveInSequential()}.
- * 
+ *
  * @author jianchu
  *
- * @param <T> type of FormatTranslator required by this SolverAdapter
+ * @param <T> type of FormatTranslator required by this Solver
  */
 public abstract class Solver<T extends FormatTranslator<?, ?, ?>> {
 
@@ -82,22 +82,29 @@ public abstract class Solver<T extends FormatTranslator<?, ?, ?>> {
     /**
      * A concrete solver adapter needs to override this method and implements its own
      * constraint-solving strategy. In general, there will be three steps in this method:
-     * 1. Calls {@link #convertAll()}, let {@link FormatTranslator} to convert constraints into
-     * the corresponding encoding form.
+     * 1. Calls {@link #encodeAllConstraints()}, let {@link FormatTranslator} to convert constraints into
+     * the corresponding encoding form. Optionally, encode well-formedness restriction if the backend has it.
      * 2. Calls the underlying solver to solve the encoding.
-     * 3. Let {@link FormatTranslator} decodes the solution from the underlying solver and create a map between an 
-     * Integer(Slot Id) and an AnnotationMirror as it's inferred annotation. 
-     * 
-     * It is the concrete solver adapter's responsibility to implemented the logic of above instructions and statistic collection. 
+     * 3. For UNSAT case, returns null. Otherwise let {@link FormatTranslator} decodes the solution from
+     * the underlying solver and create a map between an Integer(Slot Id) and an AnnotationMirror as it's
+     * inferred annotation.
+     *
+     * It is the concrete solver adapter's responsibility to implemented the logic of above instructions and
+     * statistic collection.
      * See {@link checkers.inference.solver.backend.maxsat.MaxSatSolver#solve()}} for an example.
      */
     public abstract Map<Integer, AnnotationMirror> solve();
 
     /**
-     * Calls formatTranslator to convert constraints into the corresponding encoding
-     * form. See {@link checkers.inference.solver.backend.maxsat.MaxSatSolver#convertAll()}} for an example.
+     * Returns a set of constraints that are not solvable together.
      */
-    protected abstract void convertAll();
+    public abstract Collection<Constraint> explainUnsatisfiable();
+
+    /**
+     * Calls formatTranslator to convert constraints into the corresponding encoding
+     * form. See {@link checkers.inference.solver.backend.maxsat.MaxSatSolver#encodeAllConstraints()}} for an example.
+     */
+    protected abstract void encodeAllConstraints();
 
     /**
      * Get slot id from variable slot.
@@ -107,7 +114,7 @@ public abstract class Solver<T extends FormatTranslator<?, ?, ?>> {
     protected void collectVarSlots(Constraint constraint) {
         for (Slot slot : constraint.getSlots()) {
             if (!(slot instanceof ConstantSlot)) {
-                this.varSlotIds.add(((VariableSlot) slot).getId());
+                this.varSlotIds.add(slot.getId());
             }
         }
     }

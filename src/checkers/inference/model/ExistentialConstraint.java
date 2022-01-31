@@ -1,6 +1,7 @@
 package checkers.inference.model;
 
-import org.checkerframework.framework.util.PluginUtil;
+import org.checkerframework.javacutil.BugInCF;
+import org.plumelib.util.StringsPlume;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,7 +25,7 @@ import java.util.List;
 public class ExistentialConstraint extends Constraint {
 
     // A variable whose annotation may or may not exist
-    private final VariableSlot potentialVariable;
+    private final Slot potentialVariable;
 
     // The constraints to enforce if potentialVariable exists
     private final List<Constraint> potentialConstraints;
@@ -32,13 +33,28 @@ public class ExistentialConstraint extends Constraint {
     // the constraints to enforce if potentialVariable DOES NOT exist
     private final List<Constraint> alternateConstraints;
 
-    protected ExistentialConstraint(VariableSlot potentialVariable,
+    public ExistentialConstraint(Slot potentialVariable,
                                  List<Constraint> potentialConstraints,
                                  List<Constraint> alternateConstraints, AnnotationLocation location) {
         super(combineSlots(potentialVariable, potentialConstraints, alternateConstraints), location);
         this.potentialVariable = potentialVariable;
         this.potentialConstraints = Collections.unmodifiableList(potentialConstraints);
         this.alternateConstraints = Collections.unmodifiableList(alternateConstraints);
+    }
+
+    protected static ExistentialConstraint create(Slot potentialVariable,
+            List<Constraint> potentialConstraints, List<Constraint> alternateConstraints,
+            AnnotationLocation location) {
+        if (potentialVariable == null || potentialConstraints == null
+                || alternateConstraints == null) {
+            throw new BugInCF(
+                    "Create existential constraint with null argument. potentialVariable: "
+                            + potentialVariable + " potentialConstraints: " + potentialConstraints
+                            + " alternateConstraints: " + alternateConstraints);
+        }
+
+        return new ExistentialConstraint(
+                potentialVariable, potentialConstraints, alternateConstraints, location);
     }
 
     @SafeVarargs
@@ -53,7 +69,7 @@ public class ExistentialConstraint extends Constraint {
         return Collections.unmodifiableList(slots);
     }
 
-    public VariableSlot getPotentialVariable() {
+    public Slot getPotentialVariable() {
         return potentialVariable;
     }
 
@@ -76,9 +92,9 @@ public class ExistentialConstraint extends Constraint {
         String doubleTab = tab + tab;
         return "ExistentialConstraint[\n"
                 + tab + "if( " + potentialVariable + " ) {\n"
-                + doubleTab + PluginUtil.join("\n" + doubleTab, potentialConstraints) + "\n"
+                + doubleTab + StringsPlume.join("\n" + doubleTab, potentialConstraints) + "\n"
                 + tab + "} else {\n"
-                + doubleTab + PluginUtil.join("\n" + doubleTab, alternateConstraints ) + "\n"
+                + doubleTab + StringsPlume.join("\n" + doubleTab, alternateConstraints ) + "\n"
                 + tab + "}\n"
                 + "]";
     }

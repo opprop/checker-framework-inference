@@ -12,6 +12,7 @@ import java.util.Set;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.PrimitiveType;
@@ -157,8 +158,7 @@ public class NninfVisitor extends InferenceVisitor<NninfChecker, BaseAnnotatedTy
             final AnnotatedTypeMirror typeMirror = atypeFactory.getAnnotatedType(receiverParam);
 
             if (!typeMirror.getAnnotations().isEmpty()) {
-                checker.report(Result.failure("receiver.annotations.forbidden"),
-                        node);
+                checker.reportError(node, "receiver.annotations.forbidden");
             }
         }*/
 
@@ -177,9 +177,14 @@ public class NninfVisitor extends InferenceVisitor<NninfChecker, BaseAnnotatedTy
      * Ignore constructor receiver annotations.
      */
     @Override
-    protected boolean checkConstructorInvocation(AnnotatedDeclaredType dt,
+    protected void checkConstructorInvocation(AnnotatedDeclaredType dt,
             AnnotatedExecutableType constructor, NewClassTree src) {
-        return true;
+    }
+
+    @Override
+    protected void checkConstructorResult(
+            AnnotatedExecutableType constructorType, ExecutableElement constructorElement) {
+        // Nothing to check
     }
 
     /** Check for null dereferencing */
@@ -195,11 +200,10 @@ public class NninfVisitor extends InferenceVisitor<NninfChecker, BaseAnnotatedTy
         super.visitMemberSelect(node, p);
         // TODO: How do I decide whether something is a field read or update?
         // We currently create an access and then a set constraint.
-        if (!atypeFactory.isAnyEnclosingThisDeref(node)) {
             // TODO: determining whether something is "this" doesn't seem to work correctly,
             // as I still get constraints with LiteralThis.
-            checkForNullability(node.getExpression(), "dereference.of.nullable");
-        }
+        // TODO(Zhiping): verify if we are handling this properly
+        checkForNullability(node.getExpression(), "dereference.of.nullable");
 //        logFieldAccess(node);
         return null;
     }

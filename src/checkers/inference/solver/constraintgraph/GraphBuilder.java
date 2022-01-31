@@ -1,11 +1,13 @@
 package checkers.inference.solver.constraintgraph;
 
+import dataflow.DataflowAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
@@ -19,8 +21,10 @@ import checkers.inference.model.Constraint;
 import checkers.inference.model.ExistentialConstraint;
 import checkers.inference.model.Slot;
 import checkers.inference.model.SubtypeConstraint;
+import checkers.inference.model.VariableSlot;
 import dataflow.DataflowVisitor;
 import dataflow.util.DataflowUtils;
+import org.checkerframework.javacutil.BugInCF;
 
 /**
  * GraphBuilder builds the constraint graph and runs graph traversal algorithms
@@ -32,15 +36,11 @@ import dataflow.util.DataflowUtils;
 public class GraphBuilder {
     private final Collection<Constraint> constraints;
     private final ConstraintGraph graph;
-    private AnnotationMirror top;
-
-    public GraphBuilder(Collection<Slot> slots, Collection<Constraint> constraints) {
-        this.constraints = constraints;
-        this.graph = new ConstraintGraph();
-    }
+    private final AnnotationMirror top;
 
     public GraphBuilder(Collection<Slot> slots, Collection<Constraint> constraints, AnnotationMirror top) {
-        this(slots, constraints);
+        this.constraints = constraints;
+        this.graph = new ConstraintGraph();
         this.top = top;
     }
 
@@ -132,18 +132,23 @@ public class GraphBuilder {
                     if (next.isConstant()) {
                         if (AnnotationUtils.areSame(top, next.getValue())) {
                             continue;
-                        } else {
-                            if (InferenceMain.getInstance().getVisitor() instanceof DataflowVisitor) {
-                                String[] typeNames = DataflowUtils.getTypeNames(next.getValue());
-                                if (typeNames.length == 1 && typeNames[0].length() == 0) {
-                                    continue;
-                                }
+                        } else if (InferenceMain.getInstance().getVisitor() instanceof DataflowVisitor) {
+                            // TODO: find a proper way to adapt this behavior in type-system specific subclasses.
+                            DataflowAnnotatedTypeFactory typeFactory = (DataflowAnnotatedTypeFactory)
+                                    InferenceMain.getInstance().getRealTypeFactory();
+                            List<String> typeNames = typeFactory.dataflowUtils.getTypeNames(next.getValue());
+                            if (typeNames.size() == 1 && typeNames.get(0).isEmpty()) {
+                                continue;
                             }
                         }
                     } else {
-                        if (next.getSlot().getLocation() != null) {
-                            if (next.getSlot().getLocation().getKind().equals(Kind.MISSING)) {
+                        VariableSlot slot = (VariableSlot) next.getSlot();
+                        if (slot.getLocation() != null && slot.getLocation().getKind().equals(Kind.MISSING)) {
+                            if (InferenceMain.isHackMode()) {
                                 continue;
+                            } else {
+                                throw new BugInCF("In GraphBuilder.BFSSearch: find a slot of which " +
+                                        "the location is either null or MISSING_LOCATION!");
                             }
                         }
                     }

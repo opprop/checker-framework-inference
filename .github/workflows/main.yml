@@ -11,8 +11,9 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
-        group: [ cfi-tests, downstream-ontology, downstream-security-demo ]
+        group: [ cfi-tests, downstream-ontology, downstream-security-demo, downstream-universe ]
         jdk: [ 8, 11 ]
     runs-on: ubuntu-latest
     steps:

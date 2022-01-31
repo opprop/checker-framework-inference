@@ -368,11 +368,8 @@ public class JaifBuilder {
         ASTEntry prevEntry = null;
         ASTEntry leafEntry = null;
         while (iterator.hasNext()) {
-            leafEntry = iterator.next();
-            if (!iterator.hasNext()) {
-                break;
-            }
             prevEntry = leafEntry;
+            leafEntry = iterator.next();
         }
 
         assert leafEntry != null;

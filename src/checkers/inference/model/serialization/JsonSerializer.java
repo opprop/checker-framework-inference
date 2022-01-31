@@ -12,9 +12,12 @@ import checkers.inference.model.ImplicationConstraint;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import checkers.inference.model.ArithmeticConstraint;
+import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.CombineConstraint;
 import checkers.inference.model.ComparableConstraint;
+import checkers.inference.model.ComparisonConstraint;
+import checkers.inference.model.ComparisonVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.EqualityConstraint;
@@ -25,8 +28,8 @@ import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Serializer;
 import checkers.inference.model.Slot;
+import checkers.inference.model.SourceVariableSlot;
 import checkers.inference.model.SubtypeConstraint;
-import checkers.inference.model.VariableSlot;
 
 /**
  *
@@ -119,9 +122,14 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
     protected static final String INEQUALITY_RHS = "rhs";
     protected static final String INEQUALITY_LHS = "lhs";
 
-    protected static final String COMP_CONSTRAINT_KEY = "comparable";
-    protected static final String COMP_RHS = "rhs";
-    protected static final String COMP_LHS = "lhs";
+    protected static final String COMPARABLE_CONSTRAINT_KEY = "comparable";
+    protected static final String COMPARABLE_RHS = "rhs";
+    protected static final String COMPARABLE_LHS = "lhs";
+
+    protected static final String COMPARISON_CONSTRAINT_KEY = "comparison";
+    protected static final String COMPARISON_RHS = "rhs";
+    protected static final String COMPARISON_LHS = "lhs";
+    protected static final String COMPARISON_RESULT = "result";
 
     protected static final String COMB_CONSTRAINT_KEY = "combine";
     protected static final String COMB_TARGET = "target";
@@ -212,14 +220,18 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
         return annotationSerializer.serialize(value);
     }
 
-    @Override
-    public String serialize(VariableSlot slot) {
+    private String serializeSlot(Slot slot) {
         return VAR_PREFIX + slot.getId();
     }
 
     @Override
+    public String serialize(SourceVariableSlot slot) {
+        return serializeSlot(slot);
+    }
+
+    @Override
     public String serialize(RefinementVariableSlot slot) {
-        return serialize((VariableSlot) slot);
+        return serializeSlot(slot);
     }
 
     @Override
@@ -235,12 +247,22 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
 
     @Override
     public String serialize(CombVariableSlot slot) {
-        return serialize((VariableSlot) slot);
+        return serializeSlot(slot);
     }
 
     @Override
     public String serialize(LubVariableSlot slot) {
-        return serialize((VariableSlot) slot);
+        return serializeSlot(slot);
+    }
+
+    @Override
+    public String serialize(ArithmeticVariableSlot slot) {
+        return serializeSlot(slot);
+    }
+
+    @Override
+    public String serialize(ComparisonVariableSlot slot) {
+        return serializeSlot(slot);
     }
 
     @SuppressWarnings("unchecked")
@@ -305,9 +327,24 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
         }
 
         JSONObject obj = new JSONObject();
-        obj.put(CONSTRAINT_KEY, COMP_CONSTRAINT_KEY);
-        obj.put(COMP_LHS, constraint.getFirst().serialize(this));
-        obj.put(COMP_RHS, constraint.getSecond().serialize(this));
+        obj.put(CONSTRAINT_KEY, COMPARABLE_CONSTRAINT_KEY);
+        obj.put(COMPARABLE_LHS, constraint.getFirst().serialize(this));
+        obj.put(COMPARABLE_RHS, constraint.getSecond().serialize(this));
+        return obj;
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public JSONObject serialize(ComparisonConstraint constraint) {
+        if (constraint.getLeft() == null || constraint.getRight() == null) {
+            return null;
+        }
+
+        JSONObject obj = new JSONObject();
+        obj.put(CONSTRAINT_KEY, COMPARISON_CONSTRAINT_KEY);
+        obj.put(COMPARISON_LHS, constraint.getLeft().serialize(this));
+        obj.put(COMPARISON_RHS, constraint.getRight().serialize(this));
+        obj.put(COMPARISON_RESULT, constraint.getResult().serialize(this));
         return obj;
     }
 

@@ -2,7 +2,6 @@ package checkers.inference;
 
 
 import org.checkerframework.framework.util.CheckerMain;
-import org.checkerframework.javacutil.SystemUtil;
 
 import interning.InterningChecker;
 
@@ -13,6 +12,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.plumelib.util.StringsPlume;
 import ostrusted.OsTrustedChecker;
 import org.plumelib.options.Option;
 import org.plumelib.options.OptionGroup;
@@ -163,7 +163,7 @@ public class InferenceOptions {
             TypeSystemSpec spec = typesystems.get(typesystem);
             if (spec == null) {
                 errors.add("Unrecognized typesystem.  Current typesystems:\n"
-                           + SystemUtil.join("\n", typesystems.keySet()));
+                           + StringsPlume.join("\n", typesystems.keySet()));
             } else {
                 spec.apply();
             }
@@ -187,7 +187,7 @@ public class InferenceOptions {
 
             } catch (IllegalArgumentException iexc) {
                 System.out.println("Could not recognize mode: " + InferenceOptions.mode + "\n"
-                        + "valid modes: " + SystemUtil.join(", ", Mode.values()));
+                        + "valid modes: " + StringsPlume.join(", ", Mode.values()));
                 System.exit(1);
             }
 
@@ -337,7 +337,7 @@ public class InferenceOptions {
         }
         public void validateOrExit(String errorDelimiter) {
             if (!errors.isEmpty()) {
-                System.out.println(SystemUtil.join(errorDelimiter, errors));
+                System.out.println(StringsPlume.join(errorDelimiter, errors));
                 options.printUsage();
                 System.exit(1);
             }

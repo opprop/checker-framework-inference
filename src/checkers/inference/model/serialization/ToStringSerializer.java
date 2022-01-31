@@ -12,9 +12,12 @@ import org.checkerframework.framework.util.AnnotationFormatter;
 import org.checkerframework.javacutil.SystemUtil;
 import checkers.inference.InferenceMain;
 import checkers.inference.model.ArithmeticConstraint;
+import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.CombineConstraint;
 import checkers.inference.model.ComparableConstraint;
+import checkers.inference.model.ComparisonConstraint;
+import checkers.inference.model.ComparisonVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.EqualityConstraint;
@@ -27,6 +30,7 @@ import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Serializer;
 import checkers.inference.model.Slot;
+import checkers.inference.model.SourceVariableSlot;
 import checkers.inference.model.SubtypeConstraint;
 import checkers.inference.model.VariableSlot;
 
@@ -87,28 +91,15 @@ public class ToStringSerializer implements Serializer<String, String> {
     }
 
     public String serializeSlots(Iterable<Slot> slots, String delimiter) {
-        // Split slots into two sublists, one for all VariableSlots (and subclasses), and the other
-        // for any other kinds of slots
-        Map<Integer, String> serializedVarSlots = new TreeMap<>();
-        Set<String> serializedOtherSlots = new TreeSet<>();
+        Map<Integer, String> serializedSlots = new TreeMap<>();
 
         for (Slot slot : slots) {
-            if (slot instanceof VariableSlot) {
-                // sort the varSlots by ID through insertion to TreeMap
-                VariableSlot varSlot = (VariableSlot) slot;
-                serializedVarSlots.put(varSlot.getId(),
-                        getCurrentIndentString() + varSlot.serialize(this));
-            } else {
-                // sort all other slots by serialized string content through insertion to TreeSet
-                serializedOtherSlots.add(getCurrentIndentString() + slot.serialize(this));
-            }
+            // sort the slots by ID through insertion to TreeMap
+            serializedSlots.put(slot.getId(),
+                    getCurrentIndentString() + slot.serialize(this));
         }
 
-        List<String> serializedSlots = new ArrayList<>();
-        serializedSlots.addAll(serializedVarSlots.values());
-        serializedSlots.addAll(serializedOtherSlots);
-
-        return SystemUtil.join(delimiter, serializedSlots);
+        return String.join(delimiter, serializedSlots.values());
     }
 
     public String serializeConstraints(Iterable<Constraint> constraints, String delimiter) {
@@ -124,7 +115,7 @@ public class ToStringSerializer implements Serializer<String, String> {
         // Alphabetically sort list so that the output string is always in the same order
         Collections.sort(constraintStrings);
 
-        return SystemUtil.join(delimiter, constraintStrings);
+        return String.join(delimiter, constraintStrings);
     }
 
     @Override
@@ -207,6 +198,26 @@ public class ToStringSerializer implements Serializer<String, String> {
     }
 
     @Override
+    public String serialize(ComparisonConstraint constraint) {
+    	boolean prevShowVerboseVars = showVerboseVars;
+        showVerboseVars = false;
+        // format: result <= ( left comp right )
+        final StringBuilder sb = new StringBuilder();
+        sb.append(getCurrentIndentString())
+          .append(constraint.getResult().serialize(this))
+          .append(" <= ( ")
+          .append(constraint.getLeft().serialize(this))
+          .append(" ")
+          .append(constraint.getOperation().getSymbol())
+          .append(" ")
+          .append(constraint.getRight().serialize(this))
+          .append(" )");
+        optionallyFormatAstPath(constraint, sb);
+        showVerboseVars = prevShowVerboseVars;
+        return sb.toString();
+    }
+
+    @Override
     public String serialize(CombineConstraint constraint) {
         boolean prevShowVerboseVars = showVerboseVars;
         showVerboseVars = false;
@@ -230,11 +241,10 @@ public class ToStringSerializer implements Serializer<String, String> {
         final StringBuilder sb = new StringBuilder();
         sb.append(getCurrentIndentString())
           .append(constraint.getVariable().serialize(this))
-          .append(" ~= ")
+          .append(" == ")
           .append(constraint.getGoal().serialize(this))
-          .append(" w(")
-          .append(constraint.getWeight())
-          .append(" )");
+          .append(" weight = ")
+          .append(constraint.getWeight());
         showVerboseVars = prevShowVerboseVars;
         return sb.toString();
     }
@@ -301,9 +311,8 @@ public class ToStringSerializer implements Serializer<String, String> {
         return String.join(" & ", serializedAssumptions);
     }
 
-    // variables
     @Override
-    public String serialize(VariableSlot slot) {
+    public String serialize(SourceVariableSlot slot) {
         final StringBuilder sb = new StringBuilder();
         sb.append(slot.getId());
         optionallyShowVerbose(slot, sb);
@@ -360,6 +369,25 @@ public class ToStringSerializer implements Serializer<String, String> {
         return sb.toString();
     }
 
+    @Override
+    public String serialize(ArithmeticVariableSlot slot) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(slot.getId());
+        optionallyShowVerbose(slot, sb);
+        return sb.toString();
+    }
+
+    @Override
+    public String serialize(ComparisonVariableSlot slot) {
+        final StringBuilder sb = new StringBuilder();
+        sb.append(slot.getId());
+        if (showVerboseVars) {
+            // TODO: show more comparison-specific details
+            optionallyShowVerbose(slot, sb);
+        }
+        return sb.toString();
+    }
+
     /**
      * @return the indent string for the current indentation level as stored in
      *         {@link #indentationLevel}.
@@ -368,17 +396,17 @@ public class ToStringSerializer implements Serializer<String, String> {
         return indentStrings.get(indentationLevel);
     }
 
-    private void formatMerges(final VariableSlot slot, final StringBuilder sb) {
+    private void formatMerges(final Slot slot, final StringBuilder sb) {
         if (!slot.getMergedToSlots().isEmpty()) {
             sb.append(": merged to -> ")
               .append(slot.getMergedToSlots());
         }
     }
 
-    private void optionallyShowVerbose(final VariableSlot varSlot, final StringBuilder sb) {
+    private void optionallyShowVerbose(final VariableSlot slot, final StringBuilder sb) {
         if (showVerboseVars) {
-            formatMerges(varSlot, sb);
-            optionallyFormatAstPath(varSlot, sb);
+            formatMerges(slot, sb);
+            optionallyFormatAstPath(slot, sb);
         }
     }
 

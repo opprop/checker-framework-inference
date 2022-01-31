@@ -48,8 +48,8 @@ public final class InterningChecker extends BaseInferrableChecker {
     }
 
     @Override
-    public InterningAnnotatedTypeFactory createRealTypeFactory() {
-        return new InterningAnnotatedTypeFactory(this);
+    public InterningAnnotatedTypeFactory createRealTypeFactory(boolean infer) {
+        return new InterningAnnotatedTypeFactory(this, infer);
     }
 
 }

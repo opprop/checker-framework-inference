@@ -1,5 +1,6 @@
 package trusted;
 
+import checkers.inference.BaseInferenceRealTypeFactory;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.type.*;
@@ -9,10 +10,10 @@ import org.checkerframework.javacutil.TreeUtils;
 
 import com.sun.source.tree.BinaryTree;
 
-public class TrustedAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class TrustedAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
 
-    public TrustedAnnotatedTypeFactory(BaseTypeChecker checker) {
-        super(checker);
+    public TrustedAnnotatedTypeFactory(BaseTypeChecker checker, boolean isInfer) {
+        super(checker, isInfer);
         postInit();
     }
 

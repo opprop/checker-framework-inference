@@ -144,7 +144,7 @@ public class ASTPathUtil {
         public Void visitIntersection(AnnotatedIntersectionType type, ASTRecord current) {
 
             int boundIndex = 0;
-            for (AnnotatedTypeMirror bound : type.directSuperTypes()) {
+            for (AnnotatedTypeMirror bound : type.directSupertypes()) {
                 ASTRecord toBound = extendParent(current, Kind.INTERSECTION_TYPE, ASTPath.BOUND, boundIndex);
                 visit(bound, toBound);
                 boundIndex++;

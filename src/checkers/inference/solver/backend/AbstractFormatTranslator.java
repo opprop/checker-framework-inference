@@ -1,9 +1,12 @@
 package checkers.inference.solver.backend;
 
 import checkers.inference.model.ArithmeticConstraint;
+import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.CombineConstraint;
 import checkers.inference.model.ComparableConstraint;
+import checkers.inference.model.ComparisonConstraint;
+import checkers.inference.model.ComparisonVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.EqualityConstraint;
 import checkers.inference.model.ExistentialConstraint;
@@ -14,8 +17,9 @@ import checkers.inference.model.LubVariableSlot;
 import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.SubtypeConstraint;
-import checkers.inference.model.VariableSlot;
+import checkers.inference.model.SourceVariableSlot;
 import checkers.inference.solver.backend.encoder.ArithmeticConstraintEncoder;
+import checkers.inference.solver.backend.encoder.ComparisonConstraintEncoder;
 import checkers.inference.solver.backend.encoder.ConstraintEncoderCoordinator;
 import checkers.inference.solver.backend.encoder.ConstraintEncoderFactory;
 import checkers.inference.solver.backend.encoder.binary.ComparableConstraintEncoder;
@@ -52,9 +56,9 @@ import checkers.inference.solver.frontend.Lattice;
  * For example, {@link checkers.inference.solver.backend.maxsat.encoder.MaxSATConstraintEncoderFactory}
  * depends on {@link checkers.inference.solver.backend.maxsat.MaxSatFormatTranslator#typeToInt typeToInt}
  * filed in {@link checkers.inference.solver.backend.maxsat.MaxSatFormatTranslator}. So only after those
- * dependant fields are initialized in subclasses constructors, encoders can be then initialized.
+ * dependent fields are initialized in subclasses constructors, encoders can be then initialized.
  * Calling {@link #finishInitializingEncoders()} at the last step of initialization makes sure all the
- * dependant fields are already initialized.
+ * dependent fields are already initialized.
  * <p>
  * In terms of "last step of initialization", different {@code FormatTranslator}s have different definitions.
  * For {@link checkers.inference.solver.backend.maxsat.MaxSatFormatTranslator} and
@@ -100,6 +104,11 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
     protected ComparableConstraintEncoder<ConstraintEncodingT> comparableConstraintEncoder;
 
     /**
+     * {@code ComparisonConstraintEncoder} to which encoding of {@link ComparableConstraint} is delegated.
+     */
+    protected ComparisonConstraintEncoder<ConstraintEncodingT> comparisonConstraintEncoder;
+
+    /**
      * {@code PreferenceConstraintEncoder} to which encoding of {@link PreferenceConstraint} is delegated.
      */
     protected PreferenceConstraintEncoder<ConstraintEncodingT> preferenceConstraintEncoder;
@@ -138,6 +147,7 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
         equalityConstraintEncoder = encoderFactory.createEqualityConstraintEncoder();
         inequalityConstraintEncoder = encoderFactory.createInequalityConstraintEncoder();
         comparableConstraintEncoder = encoderFactory.createComparableConstraintEncoder();
+        comparisonConstraintEncoder = encoderFactory.createComparisonConstraintEncoder();
         preferenceConstraintEncoder = encoderFactory.createPreferenceConstraintEncoder();
         combineConstraintEncoder = encoderFactory.createCombineConstraintEncoder();
         existentialConstraintEncoder = encoderFactory.createExistentialConstraintEncoder();
@@ -178,6 +188,12 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
     }
 
     @Override
+    public ConstraintEncodingT serialize(ComparisonConstraint constraint) {
+        return comparisonConstraintEncoder == null ? null :
+                ConstraintEncoderCoordinator.dispatch(constraint, comparisonConstraintEncoder);
+    }
+
+    @Override
     public ConstraintEncodingT serialize(PreferenceConstraint constraint) {
         return constraint == null ? null :
                 ConstraintEncoderCoordinator.redirect(constraint, preferenceConstraintEncoder);
@@ -185,7 +201,7 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
 
     @Override
     public ConstraintEncodingT serialize(CombineConstraint combineConstraint) {
-        return comparableConstraintEncoder == null ? null :
+        return combineConstraintEncoder == null ? null :
                 ConstraintEncoderCoordinator.dispatch(combineConstraint, combineConstraintEncoder);
     }
 
@@ -208,7 +224,7 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
     }
 
     @Override
-    public SlotEncodingT serialize(VariableSlot slot) {
+    public SlotEncodingT serialize(SourceVariableSlot slot) {
         return null;
     }
 
@@ -234,6 +250,16 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
 
     @Override
     public SlotEncodingT serialize(LubVariableSlot slot) {
+        return null;
+    }
+
+    @Override
+    public SlotEncodingT serialize(ArithmeticVariableSlot slot) {
+        return null;
+    }
+
+    @Override
+    public SlotEncodingT serialize(ComparisonVariableSlot slot) {
         return null;
     }
 }

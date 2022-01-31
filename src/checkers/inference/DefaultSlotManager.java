@@ -17,6 +17,8 @@ import java.util.TreeSet;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 import checkers.inference.model.LubVariableSlot;
 
@@ -25,12 +27,16 @@ import com.sun.tools.javac.util.Pair;
 import checkers.inference.model.AnnotationLocation;
 import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
+import checkers.inference.model.ComparisonVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Slot;
+import checkers.inference.model.SourceVariableSlot;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.qual.VarAnnot;
+import org.checkerframework.javacutil.TypeKindUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 /**
  * The default implementation of SlotManager.
@@ -49,11 +55,11 @@ public class DefaultSlotManager implements SlotManager {
     /**
      * A map for storing all the slots encountered by this slot manager. Key is
      * an {@link Integer}, representing a slot id. Value is a
-     * {@link VariableSlot} that corresponds to this slot id. Note that
+     * {@link Slot} that corresponds to this slot id. Note that
      * ConstantSlots are also stored in this map, since ConstantSlot is subclass
-     * of VariableSlot.
+     * of Slot.
      */
-    private final Map<Integer, VariableSlot> variables;
+    private final Map<Integer, Slot> slots;
 
     /**
      * A map of {@link AnnotationMirror} to {@link Integer} for caching
@@ -71,12 +77,12 @@ public class DefaultSlotManager implements SlotManager {
     private final Map<AnnotationLocation, Integer> locationCache;
 
     /**
-     * A map of {@link Pair} of {@link VariableSlot} to {@link Integer} for
+     * A map of {@link Pair} of {@link Slot} to {@link Integer} for
      * caching ExistentialVariableSlot. Each ExistentialVariableSlot can be
      * uniquely identified by its potential and alternative VariablesSlots.
      * {@link Integer} is the id of the corresponding ExistentialVariableSlot
      */
-    private final Map<Pair<VariableSlot, VariableSlot>, Integer> existentialSlotPairCache;
+    private final Map<Pair<Slot, Slot>, Integer> existentialSlotPairCache;
 
     /**
      * A map of {@link Pair} of {@link Slot} to {@link Integer} for caching
@@ -86,6 +92,7 @@ public class DefaultSlotManager implements SlotManager {
      */
     private final Map<Pair<Slot, Slot>, Integer> combSlotPairCache;
     private final Map<Pair<Slot, Slot>, Integer> lubSlotPairCache;
+    private final Map<Pair<Slot, Slot>, Integer> glbSlotPairCache;
 
     /**
      * A map of {@link AnnotationLocation} to {@link Integer} for caching
@@ -94,6 +101,22 @@ public class DefaultSlotManager implements SlotManager {
      * {@link ArithmeticVariableSlot}.
      */
     private final Map<AnnotationLocation, Integer> arithmeticSlotCache;
+
+    /**
+     * A map of {@link AnnotationLocation} to {@link Integer} for caching
+     * {@link ComparisonVariableSlot}s. The annotation location uniquely identifies an
+     * {@link ComparisonVariableSlot}. The {@link Integer} is the Id of the corresponding
+     * {@link ComparisonVariableSlot}.
+     */
+    private final Map<AnnotationLocation, Integer> comparisonThenSlotCache;
+
+    /**
+     * A map of {@link AnnotationLocation} to {@link Integer} for caching
+     * {@link ComparisonVariableSlot}s. The annotation location uniquely identifies an
+     * {@link ComparisonVariableSlot}. The {@link Integer} is the Id of the corresponding
+     * {@link ComparisonVariableSlot}.
+     */
+    private final Map<AnnotationLocation, Integer> comparisonElseSlotCache;
 
     private final Set<Class<? extends Annotation>> realQualifiers;
     private final ProcessingEnvironment processingEnvironment;
@@ -104,7 +127,7 @@ public class DefaultSlotManager implements SlotManager {
         this.processingEnvironment = processingEnvironment;
         // sort the qualifiers so that they are always assigned the same varId
         this.realQualifiers = sortAnnotationClasses(realQualifiers);
-        variables = new LinkedHashMap<>();
+        slots = new LinkedHashMap<>();
 
         AnnotationBuilder builder = new AnnotationBuilder(processingEnvironment, VarAnnot.class);
         builder.setValue("value", -1 );
@@ -116,13 +139,16 @@ public class DefaultSlotManager implements SlotManager {
         existentialSlotPairCache = new LinkedHashMap<>();
         combSlotPairCache = new LinkedHashMap<>();
         lubSlotPairCache = new LinkedHashMap<>();
+        glbSlotPairCache = new LinkedHashMap<>();
         arithmeticSlotCache = new LinkedHashMap<>();
+        comparisonThenSlotCache = new LinkedHashMap<>();
+        comparisonElseSlotCache = new LinkedHashMap<>();
 
         if (storeConstants) {
             for (Class<? extends Annotation> annoClass : this.realQualifiers) {
                 AnnotationMirror am = new AnnotationBuilder(processingEnvironment, annoClass).build();
-                ConstantSlot constantSlot = new ConstantSlot(am, nextId());
-                addToVariables(constantSlot);
+                ConstantSlot constantSlot = new ConstantSlot(nextId(), am);
+                addToSlots(constantSlot);
                 constantCache.put(am, constantSlot.getId());
             }
         }
@@ -156,16 +182,16 @@ public class DefaultSlotManager implements SlotManager {
         return nextId++;
     }
 
-    private void addToVariables(final VariableSlot slot) {
-        variables.put(slot.getId(), slot);
+    private void addToSlots(final Slot slot) {
+        slots.put(slot.getId(), slot);
     }
 
     /**
      * @inheritDoc
      */
     @Override
-    public VariableSlot getVariable( int id ) {
-        return variables.get(id);
+    public Slot getSlot( int id ) {
+        return slots.get(id);
     }
 
     /**
@@ -173,16 +199,10 @@ public class DefaultSlotManager implements SlotManager {
      */
     @Override
     public AnnotationMirror getAnnotation(final Slot slot) {
-        // if slot is a VariableSlot or one of its subclasses
-        if (slot instanceof VariableSlot) {
-            // We need to build the AnnotationBuilder each time because AnnotationBuilders are only
-            // allowed to build their annotations once
-            return convertVariable((VariableSlot) slot,
-                    new AnnotationBuilder(processingEnvironment, VarAnnot.class));
-        }
-
-        throw new IllegalArgumentException(
-                "Slot type unrecognized( " + slot.getClass() + ") Slot=" + slot.toString());
+        // We need to build the AnnotationBuilder each time because AnnotationBuilders are only
+        // allowed to build their annotations once
+        return convertVariable(slot,
+                new AnnotationBuilder(processingEnvironment, VarAnnot.class));
     }
 
     /**
@@ -193,7 +213,7 @@ public class DefaultSlotManager implements SlotManager {
      *                          build @CombVarAnnots
      * @return An annotation representing variable
      */
-    private AnnotationMirror convertVariable( final VariableSlot variable, final AnnotationBuilder annotationBuilder) {
+    private AnnotationMirror convertVariable( final Slot variable, final AnnotationBuilder annotationBuilder) {
         annotationBuilder.setValue("value", variable.getId() );
         return annotationBuilder.build();
     }
@@ -203,7 +223,7 @@ public class DefaultSlotManager implements SlotManager {
      * @inheritDoc
      */
     @Override
-    public VariableSlot getVariableSlot( final AnnotatedTypeMirror atm ) {
+    public Slot getSlot( final AnnotatedTypeMirror atm ) {
 
         AnnotationMirror annot = atm.getAnnotationInHierarchy(this.varAnnot);
         if (annot == null) {
@@ -214,7 +234,7 @@ public class DefaultSlotManager implements SlotManager {
             throw new BugInCF("Missing VarAnnot annotation: " + atm);
         }
 
-        return (VariableSlot) getSlot(annot);
+        return getSlot(annot);
     }
 
     /**
@@ -232,18 +252,18 @@ public class DefaultSlotManager implements SlotManager {
                 id = Integer.valueOf( annoValue.toString() );
             }
 
-            return getVariable( id );
+            return getSlot( id );
 
         } else {
 
             if (constantCache.containsKey(annotationMirror)) {
-                ConstantSlot constantSlot = (ConstantSlot) getVariable(
+                ConstantSlot constantSlot = (ConstantSlot) getSlot(
                         constantCache.get(annotationMirror));
                 return constantSlot;
 
             } else {
                 for (Class<? extends Annotation> realAnno : realQualifiers) {
-                    if (AnnotationUtils.areSameByClass(annotationMirror, realAnno)) {
+                    if (InferenceMain.getInstance().getRealTypeFactory().areSameByClass(annotationMirror, realAnno)) {
                         return createConstantSlot(annotationMirror);
                     }
                 }
@@ -262,7 +282,7 @@ public class DefaultSlotManager implements SlotManager {
      */
     @Override
     public List<Slot> getSlots() {
-        return new ArrayList<Slot>(this.variables.values());
+        return new ArrayList<Slot>(this.slots.values());
     }
 
     // Sometimes, I miss scala.
@@ -272,8 +292,8 @@ public class DefaultSlotManager implements SlotManager {
     @Override
     public List<VariableSlot> getVariableSlots() {
         List<VariableSlot> varSlots = new ArrayList<>();
-        for (Slot slot : variables.values()) {
-            if (slot.isVariable()) {
+        for (Slot slot : slots.values()) {
+            if (slot instanceof VariableSlot) {
                 varSlots.add((VariableSlot) slot);
             }
         }
@@ -286,8 +306,8 @@ public class DefaultSlotManager implements SlotManager {
     @Override
     public List<ConstantSlot> getConstantSlots() {
         List<ConstantSlot> constants = new ArrayList<>();
-        for (Slot slot : variables.values()) {
-            if (slot.isConstant()) {
+        for (Slot slot : slots.values()) {
+            if (slot instanceof ConstantSlot) {
                 constants.add((ConstantSlot) slot);
             }
         }
@@ -300,36 +320,49 @@ public class DefaultSlotManager implements SlotManager {
     }
 
     @Override
-    public VariableSlot createVariableSlot(AnnotationLocation location) {
-        VariableSlot variableSlot;
+    public SourceVariableSlot createSourceVariableSlot(AnnotationLocation location, TypeMirror type) {
+        SourceVariableSlot sourceVarSlot;
         if (location.getKind() == AnnotationLocation.Kind.MISSING) {
-            //Don't cache slot for MISSING LOCATION. Just create a new one and return.
-            variableSlot = new VariableSlot(location, nextId());
-            addToVariables(variableSlot);
+            if (InferenceMain.isHackMode()) {
+                //Don't cache slot for MISSING LOCATION. Just create a new one and return.
+                sourceVarSlot = new SourceVariableSlot(nextId(), location, type, true);
+                addToSlots(sourceVarSlot);
+            } else {
+                throw new BugInCF("Creating SourceVariableSlot on MISSING_LOCATION!");
+            }
+
         } else if (locationCache.containsKey(location)) {
             int id = locationCache.get(location);
-            variableSlot = getVariable(id);
+            sourceVarSlot = (SourceVariableSlot) getSlot(id);
         } else {
-            variableSlot = new VariableSlot(location, nextId());
-            addToVariables(variableSlot);
-            locationCache.put(location, variableSlot.getId());
+            sourceVarSlot = new SourceVariableSlot(nextId(), location, type, true);
+            addToSlots(sourceVarSlot);
+            locationCache.put(location, sourceVarSlot.getId());
         }
-        return variableSlot;
+        return sourceVarSlot;
     }
 
     @Override
-    public RefinementVariableSlot createRefinementVariableSlot(AnnotationLocation location, Slot refined) {
-        RefinementVariableSlot refinementVariableSlot;
-        if (location.getKind() == AnnotationLocation.Kind.MISSING) {
-            //Don't cache slot for MISSING LOCATION. Just create a new one and return.
-            refinementVariableSlot = new RefinementVariableSlot(location, nextId(), refined);
-            addToVariables(refinementVariableSlot);
-        } else if (locationCache.containsKey(location)) {
+    public RefinementVariableSlot createRefinementVariableSlot(AnnotationLocation location, Slot declarationSlot, Slot valueSlot) {
+        // If the location is already cached, return the corresponding refinement slot in the cache
+        if (locationCache.containsKey(location)) {
             int id = locationCache.get(location);
-            refinementVariableSlot = (RefinementVariableSlot) getVariable(id);
-        } else {
-            refinementVariableSlot = new RefinementVariableSlot(location, nextId(), refined);
-            addToVariables(refinementVariableSlot);
+            return (RefinementVariableSlot) getSlot(id);
+        }
+
+        // Create new refinement variable slot, as well as the equality constraint to the value slot
+        RefinementVariableSlot refinementVariableSlot;
+        refinementVariableSlot = new RefinementVariableSlot(nextId(), location, declarationSlot);
+        addToSlots(refinementVariableSlot);
+        if (valueSlot != null) {
+            // If the rhs value slot passed in is non-null, create the equality constraint on it
+            InferenceMain.getInstance().getConstraintManager().addEqualityConstraint(refinementVariableSlot, valueSlot);
+        }
+
+        // Only cache slot for non-MISSING LOCATION
+        // TODO: We should always create refinement variable on a non-missing location,
+        //  and remove this if-condition
+        if (location.getKind() != AnnotationLocation.Kind.MISSING) {
             locationCache.put(location, refinementVariableSlot.getId());
         }
         return refinementVariableSlot;
@@ -340,10 +373,10 @@ public class DefaultSlotManager implements SlotManager {
         ConstantSlot constantSlot;
         if (constantCache.containsKey(value)) {
             int id = constantCache.get(value);
-            constantSlot = (ConstantSlot) getVariable(id);
+            constantSlot = (ConstantSlot) getSlot(id);
         } else {
-            constantSlot = new ConstantSlot(value, nextId());
-            addToVariables(constantSlot);
+            constantSlot = new ConstantSlot(nextId(), value);
+            addToSlots(constantSlot);
             constantCache.put(value, constantSlot.getId());
         }
         return constantSlot;
@@ -355,76 +388,125 @@ public class DefaultSlotManager implements SlotManager {
         Pair<Slot, Slot> pair = new Pair<>(receiver, declared);
         if (combSlotPairCache.containsKey(pair)) {
             int id = combSlotPairCache.get(pair);
-            combVariableSlot = (CombVariableSlot) getVariable(id);
+            combVariableSlot = (CombVariableSlot) getSlot(id);
         } else {
-            combVariableSlot = new CombVariableSlot(null, nextId(), receiver, declared);
-            addToVariables(combVariableSlot);
+            combVariableSlot = new CombVariableSlot(nextId(), null, receiver, declared);
+            addToSlots(combVariableSlot);
             combSlotPairCache.put(pair, combVariableSlot.getId());
         }
         return combVariableSlot;
     }
 
     @Override
-    public LubVariableSlot createLubVariableSlot(Slot left, Slot right) {
-        // Order of two ingredient slots doesn't matter, but for simplicity, we still use pair.
-        LubVariableSlot lubVariableSlot;
-        Pair<Slot, Slot> pair = new Pair<>(left, right);
-        if (lubSlotPairCache.containsKey(pair)) {
-            int id = lubSlotPairCache.get(pair);
-            lubVariableSlot = (LubVariableSlot) getVariable(id);
-        } else {
-            // We need a non-null location in the future for better debugging outputs
-            lubVariableSlot = new LubVariableSlot(null, nextId(), left, right);
-            addToVariables(lubVariableSlot);
-            lubSlotPairCache.put(pair, lubVariableSlot.getId());
-        }
-        return lubVariableSlot;
+    public LubVariableSlot createLubMergeVariableSlot(Slot left, Slot right) {
+        return createMergeVariableSlot(left, right, true);
     }
 
     @Override
-    public ExistentialVariableSlot createExistentialVariableSlot(VariableSlot potentialSlot, VariableSlot alternativeSlot) {
+    public LubVariableSlot createGlbMergeVariableSlot(Slot left, Slot right) {
+        return createMergeVariableSlot(left, right, false);
+    }
+
+    private LubVariableSlot createMergeVariableSlot(Slot left, Slot right, boolean isLub) {
+        // Order of two ingredient slots doesn't matter, but for simplicity, we still use pair.
+        LubVariableSlot mergeVariableSlot;
+        Map<Pair<Slot, Slot>, Integer> cache = isLub ? lubSlotPairCache : glbSlotPairCache;
+        Pair<Slot, Slot> pair = new Pair<>(left, right);
+
+        if (cache.containsKey(pair)) {
+            int id = cache.get(pair);
+            mergeVariableSlot = (LubVariableSlot) getSlot(id);
+        } else {
+            // We need a non-null location in the future for better debugging outputs
+            mergeVariableSlot = new LubVariableSlot(nextId(), null, left, right);
+            addToSlots(mergeVariableSlot);
+            cache.put(pair, mergeVariableSlot.getId());
+        }
+        return mergeVariableSlot;
+    }
+
+    @Override
+    public ExistentialVariableSlot createExistentialVariableSlot(Slot potentialSlot, Slot alternativeSlot) {
         ExistentialVariableSlot existentialVariableSlot;
-        Pair<VariableSlot, VariableSlot> pair = new Pair<>(potentialSlot, alternativeSlot);
+        Pair<Slot, Slot> pair = new Pair<>(potentialSlot, alternativeSlot);
         if (existentialSlotPairCache.containsKey(pair)) {
             int id = existentialSlotPairCache.get(pair);
-            existentialVariableSlot = (ExistentialVariableSlot) getVariable(id);
+            existentialVariableSlot = (ExistentialVariableSlot) getSlot(id);
         } else {
             existentialVariableSlot = new ExistentialVariableSlot(nextId(), potentialSlot, alternativeSlot);
-            addToVariables(existentialVariableSlot);
+            addToSlots(existentialVariableSlot);
             existentialSlotPairCache.put(pair, existentialVariableSlot.getId());
         }
         return existentialVariableSlot;
     }
 
+    /**
+     *  Determine the type kind of an arithmetic operation, based on Binary Numeric Promotion in JLS 5.6.2.
+     * @param lhsAtm atm of left operand
+     * @param rhsAtm atm of right operand
+     * @return type kind of the arithmetic operation
+     */
+    private TypeKind getArithmeticResultKind(AnnotatedTypeMirror lhsAtm, AnnotatedTypeMirror rhsAtm) {
+        TypeMirror lhsType = lhsAtm.getUnderlyingType();
+        TypeMirror rhsType = rhsAtm.getUnderlyingType();
+
+        assert (TypesUtils.isPrimitiveOrBoxed(lhsType) && TypesUtils.isPrimitiveOrBoxed(rhsType));
+
+        if (TypesUtils.isFloatingPoint(lhsType) || TypesUtils.isFloatingPoint(rhsType)) {
+            return TypeKind.DOUBLE;
+        }
+
+        if (TypeKindUtils.primitiveOrBoxedToTypeKind(lhsType) == TypeKind.LONG
+                || TypeKindUtils.primitiveOrBoxedToTypeKind(rhsType) == TypeKind.LONG) {
+            return TypeKind.LONG;
+        }
+
+        return TypeKind.INT;
+    }
+
     @Override
-    public ArithmeticVariableSlot createArithmeticVariableSlot(AnnotationLocation location) {
+    public ArithmeticVariableSlot createArithmeticVariableSlot(
+            AnnotationLocation location, AnnotatedTypeMirror lhsAtm, AnnotatedTypeMirror rhsAtm) {
         if (location == null || location.getKind() == AnnotationLocation.Kind.MISSING) {
             throw new BugInCF(
                     "Cannot create an ArithmeticVariableSlot with a missing annotation location.");
         }
 
-        // create the arithmetic var slot if it doesn't exist for the given location
-        if (!arithmeticSlotCache.containsKey(location)) {
-            ArithmeticVariableSlot slot = new ArithmeticVariableSlot(location, nextId());
-            addToVariables(slot);
-            arithmeticSlotCache.put(location, slot.getId());
-            return slot;
+        if (arithmeticSlotCache.containsKey(location)) {
+            return (ArithmeticVariableSlot) getSlot(arithmeticSlotCache.get(location));
         }
 
-        return getArithmeticVariableSlot(location);
+        // create the arithmetic var slot if it doesn't exist for the given location
+        TypeKind kind = getArithmeticResultKind(lhsAtm, rhsAtm);
+        ArithmeticVariableSlot slot = new ArithmeticVariableSlot(nextId(), location, kind);
+        addToSlots(slot);
+        arithmeticSlotCache.put(location, slot.getId());
+        return slot;
     }
 
     @Override
-    public ArithmeticVariableSlot getArithmeticVariableSlot(AnnotationLocation location) {
+    public ComparisonVariableSlot createComparisonVariableSlot(AnnotationLocation location, Slot refined, boolean thenBranch) {
         if (location == null || location.getKind() == AnnotationLocation.Kind.MISSING) {
             throw new BugInCF(
-                    "ArithmeticVariableSlots are never created with a missing annotation location.");
+                    "Cannot create an ComparisonVariableSlot with a missing annotation location.");
         }
-        if (!arithmeticSlotCache.containsKey(location)) {
-            return null;
+
+        if (thenBranch && comparisonThenSlotCache.containsKey(location)) {
+            return (ComparisonVariableSlot) getSlot(comparisonThenSlotCache.get(location));
+        }
+        if (!thenBranch && comparisonElseSlotCache.containsKey(location)) {
+            return (ComparisonVariableSlot) getSlot(comparisonElseSlotCache.get(location));
+        }
+
+        // create the comparison var slot if it doesn't exist for the given location
+        ComparisonVariableSlot slot = new ComparisonVariableSlot(nextId(), location, refined);
+        addToSlots(slot);
+        if (thenBranch) {
+            comparisonThenSlotCache.put(location, slot.getId());
         } else {
-            return (ArithmeticVariableSlot) getVariable(arithmeticSlotCache.get(location));
+            comparisonElseSlotCache.put(location, slot.getId());
         }
+        return slot;
     }
 
     @Override

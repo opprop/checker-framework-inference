@@ -2,9 +2,9 @@ package checkers.inference.util;
 
 import checkers.inference.InferenceMain;
 import checkers.inference.SlotManager;
+import checkers.inference.model.CombVariableSlot;
 import checkers.inference.model.ConstraintManager;
 import checkers.inference.model.Slot;
-import checkers.inference.model.VariableSlot;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AbstractViewpointAdapter;
@@ -23,12 +23,12 @@ public class InferenceViewpointAdapter extends AbstractViewpointAdapter {
 
     @Override
     protected AnnotationMirror extractAnnotationMirror(AnnotatedTypeMirror atm) {
-        final VariableSlot varSlot = slotManager.getVariableSlot(atm);
-        if (varSlot == null && !InferenceMain.isHackMode()) {
+        final Slot slot = slotManager.getSlot(atm);
+        if (slot == null && !InferenceMain.isHackMode()) {
             throw new BugInCF(atm + " doesn't contain a slot");
         }
 
-        return varSlot == null ? null : slotManager.getAnnotation(varSlot);
+        return slot == null ? null : slotManager.getAnnotation(slot);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class InferenceViewpointAdapter extends AbstractViewpointAdapter {
         assert receiverAnnotation != null && declaredAnnotation != null;
         final Slot recvSlot = slotManager.getSlot(receiverAnnotation);
         final Slot declSlot = slotManager.getSlot(declaredAnnotation);
-        final Slot combVariableSlot = slotManager.createCombVariableSlot(recvSlot, declSlot);
+        final CombVariableSlot combVariableSlot = slotManager.createCombVariableSlot(recvSlot, declSlot);
         constraintManager.addCombineConstraint(recvSlot, declSlot, combVariableSlot);
         return slotManager.getAnnotation(combVariableSlot);
     }

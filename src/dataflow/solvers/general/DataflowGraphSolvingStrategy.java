@@ -40,7 +40,11 @@ import dataflow.util.DataflowUtils;
 
 public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
 
+    private static final String DATAFLOW_NAME = DataFlow.class.getCanonicalName();
+
     protected ProcessingEnvironment processingEnvironment;
+
+    protected DataflowUtils dataflowUtils;
 
     public DataflowGraphSolvingStrategy(SolverFactory solverFactory) {
         super(solverFactory);
@@ -50,6 +54,7 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
     public InferenceResult solve(SolverEnvironment solverEnvironment, Collection<Slot> slots,
                                  Collection<Constraint> constraints, Lattice lattice) {
         this.processingEnvironment = solverEnvironment.processingEnvironment;
+        this.dataflowUtils = new DataflowUtils(this.processingEnvironment);
         return super.solve(solverEnvironment, slots, constraints, lattice);
     }
 
@@ -66,16 +71,16 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
         for (Map.Entry<Vertex, Set<Constraint>> entry : constraintGraph.getConstantPath().entrySet()) {
             AnnotationMirror anno = entry.getKey().getValue();
             if (AnnotationUtils.areSameByName(anno, DATAFLOW)) {
-                String[] dataflowValues = DataflowUtils.getTypeNames(anno);
-                String[] dataflowRoots = DataflowUtils.getTypeNameRoots(anno);
-                if (dataflowValues.length == 1) {
+                List<String> dataflowValues = dataflowUtils.getTypeNames(anno);
+                List<String> dataflowRoots = dataflowUtils.getTypeNameRoots(anno);
+                if (dataflowValues.size() == 1) {
                     AnnotationMirror DATAFLOWTOP = DataflowUtils.createDataflowAnnotation(
-                            DataflowUtils.convert(dataflowValues), processingEnvironment);
+                            dataflowValues.toArray(new String[0]), processingEnvironment);
                     TwoQualifiersLattice latticeFor2 = new LatticeBuilder().buildTwoTypeLattice(DATAFLOWTOP, DATAFLOWBOTTOM);
                     solvers.add(solverFactory.createSolver(solverEnvironment, slots, entry.getValue(), latticeFor2));
-                } else if (dataflowRoots.length == 1) {
+                } else if (dataflowRoots.size() == 1) {
                     AnnotationMirror DATAFLOWTOP = DataflowUtils.createDataflowAnnotationForByte(
-                            DataflowUtils.convert(dataflowRoots), processingEnvironment);
+                            dataflowRoots.toArray(new String[0]), processingEnvironment);
                     TwoQualifiersLattice latticeFor2 = new LatticeBuilder().buildTwoTypeLattice(DATAFLOWTOP, DATAFLOWBOTTOM);
                     solvers.add(solverFactory.createSolver(solverEnvironment, slots, entry.getValue(), latticeFor2));
                 }
@@ -83,16 +88,6 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
         }
 
         return solvers;
-    }
-
-    @Override
-    protected ConstraintGraph generateGraph(Collection<Slot> slots, Collection<Constraint> constraints,
-            ProcessingEnvironment processingEnvironment) {
-        AnnotationMirror DATAFLOWTOP = AnnotationBuilder.fromClass(
-                processingEnvironment.getElementUtils(), DataFlowTop.class);
-        GraphBuilder graphBuilder = new GraphBuilder(slots, constraints, DATAFLOWTOP);
-        ConstraintGraph constraintGraph = graphBuilder.buildGraph();
-        return constraintGraph;
     }
 
     @Override
@@ -106,7 +101,7 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
                 for (Map.Entry<Integer, AnnotationMirror> entry : inferenceSolutionMap.entrySet()) {
                     Integer id = entry.getKey();
                     AnnotationMirror dataflowAnno = entry.getValue();
-                    if (AnnotationUtils.areSameByClass(dataflowAnno, DataFlow.class)) {
+                    if (AnnotationUtils.areSameByName(dataflowAnno, DATAFLOW_NAME)) {
                         Set<AnnotationMirror> datas = dataflowResults.get(id);
                         if (datas == null) {
                             datas = AnnotationUtils.createAnnotationSet();
@@ -125,13 +120,13 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
             Set<String> dataTypes = new HashSet<String>();
             Set<String> dataRoots = new HashSet<String>();
             for (AnnotationMirror anno : entry.getValue()) {
-                String[] dataTypesArr = DataflowUtils.getTypeNames(anno);
-                String[] dataRootsArr = DataflowUtils.getTypeNameRoots(anno);
-                if (dataTypesArr.length == 1) {
-                    dataTypes.add(dataTypesArr[0]);
+                List<String> dataTypesArr = dataflowUtils.getTypeNames(anno);
+                List<String> dataRootsArr = dataflowUtils.getTypeNameRoots(anno);
+                if (dataTypesArr.size() == 1) {
+                    dataTypes.add(dataTypesArr.get(0));
                 }
-                if (dataRootsArr.length == 1) {
-                    dataRoots.add(dataRootsArr[0]);
+                if (dataRootsArr.size() == 1) {
+                    dataRoots.add(dataRootsArr.get(0));
                 }
             }
             AnnotationMirror dataflowAnno = DataflowUtils.createDataflowAnnotationWithRoots(dataTypes,

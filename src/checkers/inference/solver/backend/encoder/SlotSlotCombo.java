@@ -3,6 +3,7 @@ package checkers.inference.solver.backend.encoder;
 import checkers.inference.model.BinaryConstraint;
 import checkers.inference.model.CombineConstraint;
 import checkers.inference.model.Slot;
+import checkers.inference.model.VariableSlot;
 import checkers.inference.solver.backend.encoder.binary.BinaryConstraintEncoder;
 import  checkers.inference.solver.backend.encoder.combine.CombineConstraintEncoder;
 
@@ -52,7 +53,7 @@ public enum SlotSlotCombo {
     }
 
     public static SlotSlotCombo valueOf(Slot fst, Slot snd) {
-        return map[index(fst.isVariable())][index(snd.isVariable())];
+        return map[index(fst instanceof VariableSlot)][index(snd instanceof VariableSlot)];
     }
 
     private static int index(boolean value) {

@@ -10,7 +10,7 @@ public class NninfTransfer extends InferenceTransfer {
     }
 }
 
-
+// TODO(Zhiping): try adding x != null refinement in inference
 //package nninf
 //
 //import checkers.flow._

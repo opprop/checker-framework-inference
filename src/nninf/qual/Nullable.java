@@ -1,5 +1,6 @@
 package nninf.qual;
 
+import org.checkerframework.framework.qual.DefaultFor;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.QualifierForLiterals;
 import org.checkerframework.framework.qual.SubtypeOf;
@@ -12,11 +13,12 @@ import java.lang.annotation.Target;
 
 /**
  * @see NonNull
- * @see checkers.nullness.quals.Nullable
+ * @see org.checkerframework.checker.nullness.qual.Nullable
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({})
 @QualifierForLiterals(LiteralKind.NULL)
+@DefaultFor(types = Void.class)
 public @interface Nullable {}

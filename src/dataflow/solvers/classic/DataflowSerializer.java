@@ -19,15 +19,20 @@ import dataflow.qual.DataFlowTop;
 import dataflow.util.DataflowUtils;
 
 public class DataflowSerializer extends CnfVecIntSerializer {
+
+    private static final String DATAFLOWTOP_NAME = DataFlowTop.class.getCanonicalName();
+
     protected final String datatype;
     private final Set<Integer> touchedSlots = new HashSet<Integer>();
     private boolean isRoot = false;
 
-    public DataflowSerializer(String datatype, boolean isRoot) {
+    protected final DataflowUtils dataflowUtils;
+
+    public DataflowSerializer(String datatype, boolean isRoot, DataflowUtils dataflowUtils) {
         super(InferenceMain.getInstance().getSlotManager());
         this.datatype = datatype;
         this.isRoot = isRoot;
-        // System.out.println(datatype);
+        this.dataflowUtils = dataflowUtils;
     }
 
     @Override
@@ -37,17 +42,17 @@ public class DataflowSerializer extends CnfVecIntSerializer {
     }
 
     private boolean annoIsPresented(AnnotationMirror anno) {
-        if (AnnotationUtils.areSameByClass(anno, DataFlowTop.class)) {
+        if (AnnotationUtils.areSameByName(anno, DATAFLOWTOP_NAME)) {
             return true;
         }
-        String[] datatypes;
+        List<String> datatypes;
         if (this.isRoot) {
-            datatypes = DataflowUtils.getTypeNameRoots(anno);
+            datatypes = dataflowUtils.getTypeNameRoots(anno);
         } else {
-            datatypes = DataflowUtils.getTypeNames(anno);
+            datatypes = dataflowUtils.getTypeNames(anno);
         }
 
-        return Arrays.asList(datatypes).contains(datatype);
+        return datatypes.contains(datatype);
     }
 
     @Override

@@ -1,5 +1,5 @@
 Continuous integration status of master:
-[![Build Status](https://travis-ci.com/opprop/checker-framework-inference.png?branch=master)](https://travis-ci.com/opprop/checker-framework-inference)
+![CFI status](https://github.com/opprop/checker-framework-inference/workflows/CI/badge.svg)
 
 Checker Framework Inference
 ===========================
@@ -143,7 +143,7 @@ Which solver to use on the constraints.
 * `--targetclasspath`
 The classpath that is required by target program.
 
-`checkers.inference.solver.PropagationSolver` and `checkers.inference.solver.GeneralSolver` are real solvers
+`checkers.inference.solver.PropagationSolver` and `checkers.inference.solver.SolverEngine` are real solvers
 at the moment.
 
 Omiting the solver will create an output that numbers all of the
@@ -155,14 +155,14 @@ constraints generated.
 
 Other options can be found by `./scripts/inference --help`.
 
-## Use of General solver
+## Use of SolverEngine
 
 Generic solver is designed for solving type constraints from arbitrary type system.
 
 You can invoke generic solver through:
 
 ````
---solver checkers.inference.solver.GeneralSolver
+--solver checkers.inference.solver.SolverEngine
 ````
 
 There are a couple of arguments that generic solver can accept:
@@ -172,7 +172,7 @@ Specifies what concrete solver is going to use.
 
   At this moment, we have below available back ends:
 
-  * `MaxSAT`: Encodes constraints as Max-SAT problem and use Sat4j library to solve.
+  * `MaxSat`: Encodes constraints as Max-SAT problem and use Sat4j library to solve.
 
   * `Lingeling`: Encodes constraints as SAT problem and use Lingeling solver to solve.
 
@@ -181,7 +181,7 @@ Specifies what concrete solver is going to use.
   * `Z3` with bit vector theory: Encodes constraints as Max-SMT problem with bit vectory theory, and use Z3 library to solve.
 
 
-  `MaxSAT` solver is used by default.
+  `MaxSat` solver is used by default.
 
 * `useGraph`
 Specifies whether to separate constraints into multiple components through constraint graph and solve them respectively. The default value is true.
@@ -195,6 +195,6 @@ Specifies whether to collect statistic with respect to timing, size of constrain
 For example, generic solver can be invoked through following command:
 
 ````
-./scripts/inference --mode INFER --checker ostrusted.OsTrustedChecker --solver checkers.inference.solver.GeneralSolver --solverArgs solver=MaxSAT,useGraph=true,collectStatistics=true,solveInParallel=false [List of files]
+./scripts/inference --mode INFER --checker ostrusted.OsTrustedChecker --solver checkers.inference.solver.SolverEngine --solverArgs solver=MaxSat,useGraph=true,collectStatistics=true,solveInParallel=false [List of files]
 ````
 

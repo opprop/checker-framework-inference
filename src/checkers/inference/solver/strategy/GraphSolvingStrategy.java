@@ -18,6 +18,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.inference.DefaultInferenceResult;
+import checkers.inference.InferenceMain;
 import checkers.inference.InferenceResult;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
@@ -31,6 +32,7 @@ import checkers.inference.solver.util.SolverArg;
 import checkers.inference.solver.util.SolverEnvironment;
 import checkers.inference.solver.util.Statistics;
 import com.sun.tools.javac.util.Pair;
+import org.checkerframework.framework.type.QualifierHierarchy;
 
 /**
  * GraphSolvingStrategy solves a given set of constraints by a divide-and-conquer way:
@@ -94,9 +96,23 @@ public class GraphSolvingStrategy extends AbstractSolvingStrategy {
         return result;
     }
 
+    /**
+     * Get the top qualifier in the underlying type hierarchy, which is used in simplifying the
+     * constraint graph. By default, the first (and usually the only) annotation in the top
+     * annotation list is returned.
+     *
+     * <p>This method should be overridden in special cases, e.g, type systems with multiple
+     * type hierarchies.
+     * @return the top annotation of the constraint graph
+     */
+    protected AnnotationMirror getGraphTopAnnotation() {
+        QualifierHierarchy qualHierarchy = InferenceMain.getInstance().getRealTypeFactory().getQualifierHierarchy();
+        return qualHierarchy.getTopAnnotations().iterator().next();
+    }
+
     protected ConstraintGraph generateGraph(Collection<Slot> slots, Collection<Constraint> constraints,
             ProcessingEnvironment processingEnvironment) {
-        GraphBuilder graphBuilder = new GraphBuilder(slots, constraints);
+        GraphBuilder graphBuilder = new GraphBuilder(slots, constraints, getGraphTopAnnotation());
         ConstraintGraph constraintGraph = graphBuilder.buildGraph();
         return constraintGraph;
     }

@@ -100,7 +100,7 @@ public class InferenceOptions {
     @Option("Additional AFU options")
     public static String afuOptions;
 
-    @Option("If ture, insert solutions that are equivalent to the default ones back to the code.")
+    @Option("If true, insert solutions that are equivalent to the default ones back to the code.")
     public static boolean makeDefaultsExplicit;
 
     // ------------------------------------------------------

@@ -801,16 +801,16 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             }
         }
 
-//        // TODO: NOT SURE THIS HANDLES MEMBER SELECT CORRECTLY
-//        int interfaceIndex = 1;
-//        for(Tree implementsTree : classTree.getImplementsClause()) {
-//            final AnnotatedTypeMirror implementsType = inferenceTypeFactory.getAnnotatedTypeFromTypeTree(implementsTree);
-//            AnnotatedTypeMirror supertype = classType.directSuperTypes().get(interfaceIndex);
-//            assert supertype.getUnderlyingType() == implementsType.getUnderlyingType();
-//            visit(supertype, implementsTree);
-//            interfaceIndex++;
-//        }
-//
+        // TODO: NOT SURE THIS HANDLES MEMBER SELECT CORRECTLY
+        int interfaceIndex = 1;
+        for(Tree implementsTree : classTree.getImplementsClause()) {
+            final AnnotatedTypeMirror implementsType = inferenceTypeFactory.getAnnotatedTypeFromTypeTree(implementsTree);
+            AnnotatedTypeMirror supertype = classType.directSupertypes().get(interfaceIndex);
+            assert supertype.getUnderlyingType() == implementsType.getUnderlyingType();
+            visit(supertype, implementsTree);
+            interfaceIndex++;
+        }
+
         if (InferenceMain.isHackMode(
                 (classType.getTypeArguments().size() != classTree.getTypeParameters().size()))) {
             return;

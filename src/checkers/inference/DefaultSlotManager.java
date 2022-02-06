@@ -446,10 +446,7 @@ public class DefaultSlotManager implements SlotManager {
      * @param rhsAtm atm of right operand
      * @return type kind of the arithmetic operation
      */
-    private TypeKind getArithmeticResultKind(AnnotatedTypeMirror lhsAtm, AnnotatedTypeMirror rhsAtm) {
-        TypeMirror lhsType = lhsAtm.getUnderlyingType();
-        TypeMirror rhsType = rhsAtm.getUnderlyingType();
-
+    private TypeKind getArithmeticResultKind(TypeMirror lhsType, TypeMirror rhsType) {
         assert (TypesUtils.isPrimitiveOrBoxed(lhsType) && TypesUtils.isPrimitiveOrBoxed(rhsType));
 
         if (TypesUtils.isFloatingPoint(lhsType) || TypesUtils.isFloatingPoint(rhsType)) {
@@ -466,7 +463,7 @@ public class DefaultSlotManager implements SlotManager {
 
     @Override
     public ArithmeticVariableSlot createArithmeticVariableSlot(
-            AnnotationLocation location, AnnotatedTypeMirror lhsAtm, AnnotatedTypeMirror rhsAtm) {
+            AnnotationLocation location, TypeMirror lhs, TypeMirror rhs) {
         if (location == null || location.getKind() == AnnotationLocation.Kind.MISSING) {
             throw new BugInCF(
                     "Cannot create an ArithmeticVariableSlot with a missing annotation location.");
@@ -477,7 +474,7 @@ public class DefaultSlotManager implements SlotManager {
         }
 
         // create the arithmetic var slot if it doesn't exist for the given location
-        TypeKind kind = getArithmeticResultKind(lhsAtm, rhsAtm);
+        TypeKind kind = getArithmeticResultKind(lhs, rhs);
         ArithmeticVariableSlot slot = new ArithmeticVariableSlot(nextId(), location, kind);
         addToSlots(slot);
         arithmeticSlotCache.put(location, slot.getId());

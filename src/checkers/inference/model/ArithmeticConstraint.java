@@ -46,17 +46,27 @@ public class ArithmeticConstraint extends Constraint {
                 case REMAINDER:
                     return REMAINDER;
                 case LEFT_SHIFT:
-                	return LEFT_SHIFT;
+                    return LEFT_SHIFT;
                 case RIGHT_SHIFT:
-                	return RIGHT_SHIFT;
+                    return RIGHT_SHIFT;
                 case UNSIGNED_RIGHT_SHIFT:
-                	return UNSIGNED_RIGHT_SHIFT;
+                    return UNSIGNED_RIGHT_SHIFT;
                 case AND:
-                	return AND;
+                    return AND;
                 case OR:
-                	return OR;
+                    return OR;
                 case XOR:
-                	return XOR;
+                    return XOR;
+                case PLUS_ASSIGNMENT:
+                    return PLUS;
+                case MINUS_ASSIGNMENT:
+                    return MINUS;
+                case MULTIPLY_ASSIGNMENT:
+                    return MULTIPLY;
+                case DIVIDE_ASSIGNMENT:
+                    return DIVIDE;
+                case REMAINDER_ASSIGNMENT:
+                    return REMAINDER;
                 default:
                     throw new BugInCF("There are no defined ArithmeticOperationKinds "
                             + "for the given com.sun.source.tree.Tree.Kind: " + kind);

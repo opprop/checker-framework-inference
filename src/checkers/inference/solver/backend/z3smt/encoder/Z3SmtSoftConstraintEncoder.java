@@ -1,7 +1,9 @@
 package checkers.inference.solver.backend.z3smt.encoder;
 
 import java.util.Collection;
+import java.util.logging.Logger;
 
+import checkers.inference.InferenceMain;
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 
@@ -15,6 +17,8 @@ import org.checkerframework.javacutil.BugInCF;
 
 public abstract class Z3SmtSoftConstraintEncoder<SlotEncodingT, SlotSolutionT>
         extends Z3SmtAbstractConstraintEncoder<SlotEncodingT, SlotSolutionT> {
+
+    private static final Logger logger = Logger.getLogger(Z3SmtSoftConstraintEncoder.class.getName());
 
     protected final StringBuilder softConstraints;
 
@@ -54,7 +58,11 @@ public abstract class Z3SmtSoftConstraintEncoder<SlotEncodingT, SlotSolutionT>
                 encodeSoftInequalityConstraint((InequalityConstraint) constraint);
 
             } else {
-                throw new BugInCF("Soft constraint for " + constraint.getClass().getName() + " is not supported");
+                if (InferenceMain.isHackMode()) {
+                    logger.warning("Soft constraint for " + constraint.getClass().getName() + " is not supported");
+                } else {
+                    throw new BugInCF("Soft constraint for " + constraint.getClass().getName() + " is not supported");
+                }
             }
         }
         String res = softConstraints.toString();

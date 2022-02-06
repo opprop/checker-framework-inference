@@ -44,7 +44,7 @@ public class LogiQLConstraintEncoderFactory extends AbstractConstraintEncoderFac
     public ComparableConstraintEncoder<String> createComparableConstraintEncoder() {
         return new LogiQLComparableConstraintEncoder(lattice);
     }
-    
+
     @Override
     public ComparisonConstraintEncoder<String> createComparisonConstraintEncoder() {
         return null;

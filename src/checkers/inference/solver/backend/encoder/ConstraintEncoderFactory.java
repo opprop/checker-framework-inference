@@ -41,7 +41,7 @@ public interface ConstraintEncoderFactory<ConstraintEncodingT> {
     InequalityConstraintEncoder<ConstraintEncodingT> createInequalityConstraintEncoder();
 
     ComparableConstraintEncoder<ConstraintEncodingT> createComparableConstraintEncoder();
-    
+
     ComparisonConstraintEncoder<ConstraintEncodingT> createComparisonConstraintEncoder();
 
     PreferenceConstraintEncoder<ConstraintEncodingT> createPreferenceConstraintEncoder();

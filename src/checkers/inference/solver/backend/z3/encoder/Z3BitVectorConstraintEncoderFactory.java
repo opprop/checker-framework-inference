@@ -50,7 +50,7 @@ public class Z3BitVectorConstraintEncoderFactory extends AbstractConstraintEncod
     public ComparableConstraintEncoder<BoolExpr> createComparableConstraintEncoder() {
         return null;
     }
-    
+
     @Override
     public ComparisonConstraintEncoder<BoolExpr> createComparisonConstraintEncoder() {
         return null;

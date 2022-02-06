@@ -257,7 +257,7 @@ public class PrintUtils {
             constraint.getSecond().serialize(this);
             return null;
         }
-        
+
         @Override
         public Void serialize(ComparisonConstraint constraint) {
             constraint.getLeft().serialize(this);

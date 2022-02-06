@@ -43,7 +43,7 @@ public interface Serializer<S, T> {
     S serialize(ArithmeticVariableSlot slot);
 
     T serialize(ComparableConstraint comparableConstraint);
-    
+
     T serialize(ComparisonConstraint comparisonConstraint);
 
     T serialize(CombineConstraint combineConstraint);

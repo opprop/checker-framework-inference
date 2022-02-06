@@ -507,28 +507,6 @@ public class DefaultSlotManager implements SlotManager {
     }
 
     @Override
-    public ComparisonVariableSlot getComparisonVariableSlot(AnnotationLocation location, boolean thenBranch) {
-        if (location == null || location.getKind() == AnnotationLocation.Kind.MISSING) {
-            throw new BugInCF(
-                    "ComparisonVariableSlot are never created with a missing annotation location.");
-        }
-        if (thenBranch) {
-            if (!comparisonThenSlotCache.containsKey(location)) {
-                return null;
-            } else {
-                return (ComparisonVariableSlot) getSlot(comparisonThenSlotCache.get(location));
-            }
-        } else {
-            if (!comparisonElseSlotCache.containsKey(location)) {
-                return null;
-            } else {
-                return (ComparisonVariableSlot) getSlot(comparisonElseSlotCache.get(location));
-            }
-        }
-    }
-
-
-    @Override
     public AnnotationMirror createEquivalentVarAnno(AnnotationMirror realQualifier) {
         ConstantSlot varSlot = createConstantSlot(realQualifier);
         return getAnnotation(varSlot);

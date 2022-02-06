@@ -271,7 +271,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
         // not sure what this means
         return emptyClauses;
     }
-    
+
     @Override
     public VecInt[] serialize(ComparisonConstraint comparisonConstraint) {
     	throw new UnsupportedOperationException(

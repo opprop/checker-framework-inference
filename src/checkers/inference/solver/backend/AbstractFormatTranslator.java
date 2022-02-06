@@ -102,7 +102,7 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
      * {@code ComparableConstraintEncoder} to which encoding of {@link ComparableConstraint} is delegated.
      */
     protected ComparableConstraintEncoder<ConstraintEncodingT> comparableConstraintEncoder;
-    
+
     /**
      * {@code ComparisonConstraintEncoder} to which encoding of {@link ComparableConstraint} is delegated.
      */
@@ -186,7 +186,7 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
         return comparableConstraintEncoder == null ? null :
                 ConstraintEncoderCoordinator.dispatch(constraint, comparableConstraintEncoder);
     }
-    
+
     @Override
     public ConstraintEncodingT serialize(ComparisonConstraint constraint) {
         return comparisonConstraintEncoder == null ? null :

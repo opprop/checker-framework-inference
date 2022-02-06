@@ -168,20 +168,6 @@ public interface SlotManager {
     ComparisonVariableSlot createComparisonVariableSlot(AnnotationLocation location, Slot refined, boolean thenBranch);
 
     /**
-     * Retrieves the ComparisonVariableSlot created for the given location if it has been previously
-     * created, otherwise null is returned.
-     *
-     * This method allows faster retrieval of already created ComparisonVariableSlot during
-     * traversals of binary comparison trees in an InferenceTransfer subclass, which does not have direct access
-     * to the ATM containing this slot.
-     *
-     * @param location an AnnotationLocation used to locate this variable in code
-     * @param thenBranch true if is for the then store, false if is for the else store
-     * @return the ComparisonVariableSlot for the given location, or null if none exists
-     */
-    ComparisonVariableSlot getComparisonVariableSlot(AnnotationLocation location, boolean thenBranch);
-
-    /**
      * Create a VarAnnot equivalent to the given realQualifier.
      *
      * @return a VarAnnot equivalent to the given realQualifier.

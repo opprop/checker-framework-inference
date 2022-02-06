@@ -1,5 +1,14 @@
 package checkers.inference.solver.backend.z3smt.encoder;
 
+import checkers.inference.model.ArithmeticConstraint;
+import checkers.inference.model.CombineConstraint;
+import checkers.inference.model.ComparableConstraint;
+import checkers.inference.model.EqualityConstraint;
+import checkers.inference.model.ExistentialConstraint;
+import checkers.inference.model.ImplicationConstraint;
+import checkers.inference.model.InequalityConstraint;
+import checkers.inference.model.PreferenceConstraint;
+import checkers.inference.model.SubtypeConstraint;
 import checkers.inference.solver.backend.encoder.AbstractConstraintEncoder;
 import checkers.inference.solver.backend.z3smt.Z3SmtFormatTranslator;
 import checkers.inference.solver.frontend.Lattice;

@@ -86,7 +86,7 @@ public class ConstraintEncoderCoordinator {
                 throw new BugInCF("Unsupported SlotSlotCombo enum.");
         }
     }
-    
+
     public static <ConstraintEncodingT> ConstraintEncodingT dispatch(
             ComparisonConstraint constraint,
             ComparisonConstraintEncoder<ConstraintEncodingT> encoder) {

@@ -196,7 +196,7 @@ public class ToStringSerializer implements Serializer<String, String> {
         showVerboseVars = prevShowVerboseVars;
         return sb.toString();
     }
-    
+
     @Override
     public String serialize(ComparisonConstraint constraint) {
     	boolean prevShowVerboseVars = showVerboseVars;

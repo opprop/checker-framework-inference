@@ -47,7 +47,7 @@ public class MaxSATConstraintEncoderFactory extends AbstractConstraintEncoderFac
     public MaxSATComparableConstraintEncoder createComparableConstraintEncoder() {
         return new MaxSATComparableConstraintEncoder(lattice, typeToInt);
     }
-    
+
     @Override
     public ComparisonConstraintEncoder<VecInt[]> createComparisonConstraintEncoder() {
         return null;

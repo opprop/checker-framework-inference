@@ -134,7 +134,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * methodCall -> variable created to represent Poly qualifiers
      * See InferenceQualifierPolymorphism.
      */
-    private final Map<Tree, SourceVariableSlot> treeToPolyVar;
+    private final Map<Tree, VariableSlot> treeToPolyVar;
 
     // An instance of @VarAnnot
     private final AnnotationMirror varAnnot;
@@ -206,10 +206,10 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * one and return it, if we haven't created one for the given tree. see InferenceQualifierPolymorphism
      * @return The Variable representing PolymorphicQualifier for the given tree
      */
-    public SourceVariableSlot getOrCreatePolyVar(Tree tree) {
-        SourceVariableSlot polyVar = treeToPolyVar.get(tree);
+    public VariableSlot getOrCreatePolyVar(Tree tree) {
+        VariableSlot polyVar = treeToPolyVar.get(tree);
         if (polyVar == null) {
-            polyVar = slotManager.createSourceVariableSlot(treeToLocation(tree), TreeUtils.typeOf(tree));
+            polyVar = slotManager.createPolymorphicInstanceSlot(treeToLocation(tree), TreeUtils.typeOf(tree));
             treeToPolyVar.put(tree, polyVar);
         }
 

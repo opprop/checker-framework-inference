@@ -343,6 +343,15 @@ public class DefaultSlotManager implements SlotManager {
     }
 
     @Override
+    public VariableSlot createPolymorphicInstanceSlot(AnnotationLocation location, TypeMirror type) {
+        // TODO: For now, a polymorphic instance slot is just equivalent to a non-insertable
+        //  source variable slot. We may consider changing this implementation later.
+        SourceVariableSlot slot = createSourceVariableSlot(location, type);
+        slot.setInsertable(false);
+        return slot;
+    }
+
+    @Override
     public RefinementVariableSlot createRefinementVariableSlot(AnnotationLocation location, Slot declarationSlot, Slot valueSlot) {
         // If the location is already cached, return the corresponding refinement slot in the cache
         if (locationCache.containsKey(location)) {

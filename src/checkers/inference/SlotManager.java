@@ -45,6 +45,19 @@ public interface SlotManager {
     SourceVariableSlot createSourceVariableSlot(AnnotationLocation location, TypeMirror type);
 
     /**
+     * Create new VariableSlot and return the reference to it if no VariableSlot
+     * on this location exists. Otherwise return the reference to existing VariableSlot
+     * on this location. Each location uniquely identifies a polymorphic instance.
+     * For now, there's no dedicated slot for polymorphic instance, but we may add one
+     * in the future.
+     *
+     * @param location
+     *            used to locate this variable in code
+     * @return VariableSlot that corresponds to this location
+     */
+    VariableSlot createPolymorphicInstanceSlot(AnnotationLocation location, TypeMirror type);
+
+    /**
      * Create new RefinementVariableSlot (as well as the refinement constraint if
      * possible) and return the reference to it if no RefinementVariableSlot on this
      * location exists. Otherwise return the reference to existing RefinementVariableSlot

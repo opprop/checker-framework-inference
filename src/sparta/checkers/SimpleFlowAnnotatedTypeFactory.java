@@ -311,7 +311,7 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
 
         @Override
         public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
-            if (start.toString().contains("Sink")) {
+            if (IFlowUtils.isSink(start)) {
                 return NOSINK;
             } else {
                 return ANYSOURCE;
@@ -327,7 +327,7 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
 
         @Override
         public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
-            if (start.toString().contains("Sink")) {
+            if (IFlowUtils.isSink(start)) {
                 return ANYSINK;
             } else {
                 return NOSOURCE;

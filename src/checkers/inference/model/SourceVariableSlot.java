@@ -29,11 +29,11 @@ public class SourceVariableSlot extends VariableSlot {
     private boolean insertable;
 
     /**
-     * @param location Used to locate this variable in code, see @AnnotationLocation
-     * @param id Unique identifier for this variable
+     * @param location used to locate this variable in code, see @AnnotationLocation
+     * @param id unique identifier for this variable
      * @param type the underlying type
      * @param defaultAnnotation the default annotation (solution) for this slot, which can be null when
-     *                          {@link InferenceOptions#makeDefaultsExplicit} returns false
+     *                          {@link InferenceOptions#makeDefaultsExplicit} returns true
      * @param insertable indicates whether this slot should be inserted back into the source code
      */
     public SourceVariableSlot(

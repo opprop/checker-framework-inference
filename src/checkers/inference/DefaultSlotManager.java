@@ -409,61 +409,56 @@ public class DefaultSlotManager implements SlotManager {
             }
         }
 
+        Tree tree = null; // the tree associated with the location
         BaseAnnotatedTypeFactory realTypeFactory = InferenceMain.getInstance().getRealTypeFactory();
+
         if (location instanceof AnnotationLocation.AstPathLocation) {
-            return getRealAnnotationForLocation(
-                    realTypeFactory,
-                    (AnnotationLocation.AstPathLocation) location);
+            tree = getTreeForLocation((AnnotationLocation.AstPathLocation) location);
         } else if (location instanceof AnnotationLocation.ClassDeclLocation) {
-            return getRealAnnotationForLocation(
-                    realTypeFactory,
+            tree = getTreeForLocation(
                     (AnnotationLocation.ClassDeclLocation) location,
-                    type);
+                    type,
+                    realTypeFactory
+            );
+        }
+
+        if (tree != null) {
+            AnnotationMirror realAnnotation = this.defaultAnnotationsCache.get(tree);
+            if (realAnnotation == null) {
+                // If its default type can't be found in the cache, we can
+                // fallback to the simplest method.
+                realAnnotation = realTypeFactory.getAnnotatedType(tree).getAnnotationInHierarchy(this.realTop);
+            }
+
+            return realAnnotation;
         }
 
         throw new BugInCF("Unable to find default annotation for location " + location);
     }
 
     /**
-     * Find the default annotation for {@link AnnotationLocation.AstPathLocation} by
-     * checking the real type factory.
-     * @param realTypeFactory the current real {@link BaseAnnotatedTypeFactory}
-     * @param location location to create a new {@link SourceVariableSlot}
-     * @return the default annotation for the given location
+     * Find the tree associated with the given {@link AnnotationLocation.AstPathLocation}.
+     * @param location location to find the tree
+     * @return the tree associated with the given location, which can be null if the location
+     *      is not under the current compilation unit
      */
-    private @Nullable AnnotationMirror getRealAnnotationForLocation(
-            BaseAnnotatedTypeFactory realTypeFactory,
-            AnnotationLocation.AstPathLocation location
-    ) {
+    private @Nullable Tree getTreeForLocation(AnnotationLocation.AstPathLocation location) {
         ASTRecord astRecord = location.getAstRecord();
         CompilationUnitTree root = astRecord.ast;
-        Tree tree = ASTIndex.getNode(root, astRecord);
-
-        if (tree == null) {
-            return null;
-        }
-
-        AnnotationMirror realAnnotation = this.defaultAnnotationsCache.get(tree);
-        if (realAnnotation == null) {
-            // If its default type can't be found in the cache, we can
-            // fallback to the simplest method.
-            realAnnotation = realTypeFactory.getAnnotatedType(tree).getAnnotationInHierarchy(this.realTop);
-        }
-
-        return realAnnotation;
+        return ASTIndex.getNode(root, astRecord);
     }
 
     /**
-     * Find the default annotation for ClassDeclLocation by checking the real type factory.
+     * Find the class tree associated with the given {@link AnnotationLocation.ClassDeclLocation}.
      * @param realTypeFactory the current real {@link BaseAnnotatedTypeFactory}
-     * @param location location to create a new {@link SourceVariableSlot}
+     * @param location location to find the tree
      * @param type type of the associated class
-     * @return the default annotation for the given location
+     * @return the class tree associated with the given location
      */
-    private AnnotationMirror getRealAnnotationForLocation(
-            BaseAnnotatedTypeFactory realTypeFactory,
+    private Tree getTreeForLocation(
             AnnotationLocation.ClassDeclLocation location,
-            TypeMirror type
+            TypeMirror type,
+            BaseAnnotatedTypeFactory realTypeFactory
     ) {
         Element element = processingEnvironment.getTypeUtils().asElement(type);
         if (!(element instanceof TypeElement)) {
@@ -479,7 +474,7 @@ public class DefaultSlotManager implements SlotManager {
                     type, fullyQualifiedName, location);
         }
 
-        return realTypeFactory.getAnnotatedType(typeElement).getAnnotationInHierarchy(this.realTop);
+        return realTypeFactory.declarationFromElement(typeElement);
     }
 
     @Override

@@ -208,6 +208,8 @@ public class JsonDeserializer {
     private Slot parseSlot(String slot) {
         if (slot.startsWith(VAR_PREFIX)) {
             int id = Integer.valueOf(slot.split(":")[1]);
+            // TODO: Here we are creating a SourceVariableSlot without any detailed information.
+            //  We should consider refactor this implementation.
             return new SourceVariableSlot(id, AnnotationLocation.MISSING_LOCATION, null, null, true);
         } else {
             // TODO: THIS NEEDS FIXING

@@ -409,7 +409,7 @@ public class DefaultSlotManager implements SlotManager {
             }
         }
 
-        Tree tree = null; // the tree associated with the location
+        final Tree tree; // the tree associated with the location
         BaseAnnotatedTypeFactory realTypeFactory = InferenceMain.getInstance().getRealTypeFactory();
 
         if (location instanceof AnnotationLocation.AstPathLocation) {
@@ -420,20 +420,20 @@ public class DefaultSlotManager implements SlotManager {
                     type,
                     realTypeFactory
             );
+        } else {
+            throw new BugInCF("Unable to find default annotation for location " + location);
         }
 
+        AnnotationMirror realAnnotation = null;
         if (tree != null) {
-            AnnotationMirror realAnnotation = this.defaultAnnotationsCache.get(tree);
+            realAnnotation = this.defaultAnnotationsCache.get(tree);
             if (realAnnotation == null) {
                 // If its default type can't be found in the cache, we can
                 // fallback to the simplest method.
                 realAnnotation = realTypeFactory.getAnnotatedType(tree).getAnnotationInHierarchy(this.realTop);
             }
-
-            return realAnnotation;
         }
-
-        throw new BugInCF("Unable to find default annotation for location " + location);
+        return realAnnotation;
     }
 
     /**

@@ -114,13 +114,6 @@ public class DefaultSlotManager implements SlotManager {
     private final Map<Pair<Slot, Slot>, Integer> glbSlotPairCache;
 
     /**
-     * The hashcode of the latest compilation unit. This is currently used to
-     * determine whether we should reset the defaultAnnotationsCache.
-     */
-    // TODO: we may use this to clear other caches
-    private Integer currentRootHash;
-
-    /**
      * A map of tree to {@link AnnotationMirror} for caching
      * a set of pre-computed default types for the current compilation unit.
      */
@@ -159,7 +152,6 @@ public class DefaultSlotManager implements SlotManager {
                                boolean storeConstants) {
         this.processingEnvironment = processingEnvironment;
         this.realTop = realTop;
-        this.currentRootHash = null;
         // sort the qualifiers so that they are always assigned the same varId
         this.realQualifiers = sortAnnotationClasses(realQualifiers);
         slots = new LinkedHashMap<>();
@@ -356,6 +348,25 @@ public class DefaultSlotManager implements SlotManager {
     }
 
     @Override
+    public void setRoot(CompilationUnitTree compilationUnit) {
+        this.defaultAnnotationsCache.clear();
+
+        BaseAnnotatedTypeFactory realTypeFactory = InferenceMain.getInstance().getRealTypeFactory();
+        Map<Tree, AnnotatedTypeMirror> defaultTypes = SlotDefaultTypeResolver.resolve(
+                compilationUnit,
+                realTypeFactory
+        );
+
+        for (Map.Entry<Tree, AnnotatedTypeMirror> entry : defaultTypes.entrySet()) {
+            // find default types in the current hierarchy and save them to the cache
+            this.defaultAnnotationsCache.put(
+                    entry.getKey(),
+                    entry.getValue().getAnnotationInHierarchy(this.realTop)
+            );
+        }
+    }
+
+    @Override
     public SourceVariableSlot createSourceVariableSlot(AnnotationLocation location, TypeMirror type) {
         AnnotationMirror defaultAnnotation = null;
         if (!InferenceOptions.makeDefaultsExplicit) {
@@ -386,8 +397,8 @@ public class DefaultSlotManager implements SlotManager {
 
     /**
      * Find the default annotation for this location by checking the real type factory.
-     * @param location Location to create a new {@link SourceVariableSlot}.
-     * @return The default annotation for the given location.
+     * @param location location to create a new {@link SourceVariableSlot}
+     * @return the default annotation for the given location
      */
     private @Nullable AnnotationMirror getDefaultAnnotationForLocation(AnnotationLocation location, TypeMirror type) {
         if (location == AnnotationLocation.MISSING_LOCATION) {
@@ -413,31 +424,12 @@ public class DefaultSlotManager implements SlotManager {
         throw new BugInCF("Unable to find default annotation for location " + location);
     }
 
-    @Override
-    public void setRoot(CompilationUnitTree compilationUnit) {
-        this.defaultAnnotationsCache.clear();
-
-        BaseAnnotatedTypeFactory realTypeFactory = InferenceMain.getInstance().getRealTypeFactory();
-        Map<Tree, AnnotatedTypeMirror> defaultTypes = SlotDefaultTypeResolver.resolve(
-                compilationUnit,
-                realTypeFactory
-        );
-
-        for (Map.Entry<Tree, AnnotatedTypeMirror> entry : defaultTypes.entrySet()) {
-            // find default types in the current hierarchy and save them to the cache
-            this.defaultAnnotationsCache.put(
-                    entry.getKey(),
-                    entry.getValue().getAnnotationInHierarchy(this.realTop)
-            );
-        }
-    }
-
     /**
      * Find the default annotation for {@link AnnotationLocation.AstPathLocation} by
      * checking the real type factory.
-     * @param realTypeFactory The current real {@link BaseAnnotatedTypeFactory}.
-     * @param location Location to create a new {@link SourceVariableSlot}.
-     * @return The default annotation for the given location.
+     * @param realTypeFactory the current real {@link BaseAnnotatedTypeFactory}
+     * @param location location to create a new {@link SourceVariableSlot}
+     * @return the default annotation for the given location
      */
     private @Nullable AnnotationMirror getRealAnnotationForLocation(
             BaseAnnotatedTypeFactory realTypeFactory,
@@ -463,17 +455,17 @@ public class DefaultSlotManager implements SlotManager {
 
     /**
      * Find the default annotation for ClassDeclLocation by checking the real type factory.
-     * @param realTypeFactory The current real {@link BaseAnnotatedTypeFactory}.
-     * @param location Location to create a new {@link SourceVariableSlot}.
-     * @param type Type of the associated class.
-     * @return The default annotation for the given location.
+     * @param realTypeFactory the current real {@link BaseAnnotatedTypeFactory}
+     * @param location location to create a new {@link SourceVariableSlot}
+     * @param type type of the associated class
+     * @return the default annotation for the given location
      */
     private AnnotationMirror getRealAnnotationForLocation(
             BaseAnnotatedTypeFactory realTypeFactory,
             AnnotationLocation.ClassDeclLocation location,
             TypeMirror type
     ) {
-        Element element = realTypeFactory.getProcessingEnv().getTypeUtils().asElement(type);
+        Element element = processingEnvironment.getTypeUtils().asElement(type);
         if (!(element instanceof TypeElement)) {
             throw new BugInCF(
                     "Expected to get a TypeElement for %s at %s, but received %s.", type, location, element);

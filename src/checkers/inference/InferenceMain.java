@@ -295,8 +295,7 @@ public class InferenceMain {
         if (result != null && slot instanceof SourceVariableSlot) {
             AnnotationMirror defaultAnnotation = ((SourceVariableSlot) slot).getDefaultAnnotation();
 
-            if (defaultAnnotation != null
-                    && AnnotationUtils.compareAnnotationMirrors(defaultAnnotation, result) == 0) {
+            if (defaultAnnotation != null && AnnotationUtils.areSame(defaultAnnotation, result)) {
                 // Don't need to write a solution that's equivalent to the default annotation.
                 result = null;
             }

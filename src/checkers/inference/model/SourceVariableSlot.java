@@ -1,5 +1,6 @@
 package checkers.inference.model;
 
+import checkers.inference.InferenceOptions;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -13,7 +14,11 @@ public class SourceVariableSlot extends VariableSlot {
     /** The actual type of the type use */
     protected final TypeMirror actualType;
 
-    /** The default annotation for this slot from the real type factory. */
+    /**
+     * The default annotation for this slot from the real type factory.
+     * This field is nullable because we find the default annotation only
+     * if {@link InferenceOptions#makeDefaultsExplicit} is true.
+     */
     protected final @Nullable AnnotationMirror defaultAnnotation;
 
     /**
@@ -25,8 +30,10 @@ public class SourceVariableSlot extends VariableSlot {
 
     /**
      * @param location Used to locate this variable in code, see @AnnotationLocation
-     * @param id      Unique identifier for this variable
+     * @param id Unique identifier for this variable
      * @param type the underlying type
+     * @param defaultAnnotation the default annotation (solution) for this slot, which can be null when
+     *                          {@link InferenceOptions#makeDefaultsExplicit} returns false
      * @param insertable indicates whether this slot should be inserted back into the source code
      */
     public SourceVariableSlot(

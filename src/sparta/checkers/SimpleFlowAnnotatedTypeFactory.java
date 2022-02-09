@@ -342,12 +342,14 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
                 return a2;
             } else if (isSubtype(a2, a1)) {
                 return a1;
-            } else if (isSourceQualifier(a1) && isSourceQualifier(a2)) {
+            } else if (isSourceQualifier(a1)) {
+                // Since the two annotations are same by name, they are both source qualifier.
                 Set<PFPermission> lubPermissions = getSources(a1);
                 lubPermissions.addAll(getSources(a2));
                 return buildAnnotationMirrorFlowPermission(Source.class, toPermissionArray(lubPermissions));
             } else {
-                assert isSinkQualifier(a1) && isSinkQualifier(a2);
+                // Since the two annotations are same by name, they are both sink qualifier.
+                assert isSinkQualifier(a1);
 
                 Set<PFPermission> lubPermissions = getSinks(a1);
                 lubPermissions.retainAll(getSinks(a2));
@@ -363,12 +365,14 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
                 return a1;
             } else if (isSubtype(a2, a1)) {
                 return a2;
-            } else if (isSourceQualifier(a1) && isSourceQualifier(a2)) {
+            } else if (isSourceQualifier(a1)) {
+                // Since the two annotations are same by name, they are both source qualifier.
                 Set<PFPermission> glbPermissions = getSources(a1);
                 glbPermissions.retainAll(getSources(a2));
                 return buildAnnotationMirrorFlowPermission(Source.class, toPermissionArray(glbPermissions));
             } else {
-                assert isSinkQualifier(a1) && isSinkQualifier(a2);
+                // Since the two annotations are same by name, they are both sink qualifier.
+                assert isSinkQualifier(a1);
 
                 Set<PFPermission> glbPermissions = getSinks(a1);
                 glbPermissions.addAll(getSinks(a2));

@@ -530,7 +530,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             if (declaration != null) {
-                ClassTree currentTopClass = inferenceChecker.getCurrentTopLevelClass();
+                ClassTree topLevelClass = inferenceChecker.getCurrentTopLevelClass();
                 TreePath path = getPath(declaration);
 
                 // We need to check whether the declaration is within the current
@@ -539,7 +539,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 // processed or should be processed in the future (when compiler
                 // sends out an event).
                 while (path != null) {
-                    if (path.getLeaf() == currentTopClass) {
+                    if (path.getLeaf() == topLevelClass) {
                         treeAnnotator.visit(declaration, type);
                     }
                     path = path.getParentPath();

@@ -219,12 +219,4 @@ public interface SlotManager {
     List<VariableSlot> getVariableSlots();
 
     List<ConstantSlot> getConstantSlots();
-
-    /**
-     * Informs this manager that we are working on a new file, so
-     * it can preprocess and cache useful information.
-     *
-     * @param compilationUnit the current compilation tree
-     */
-    void setRoot(CompilationUnitTree compilationUnit);
 }

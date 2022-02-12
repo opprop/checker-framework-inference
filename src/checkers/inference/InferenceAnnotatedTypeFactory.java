@@ -2,6 +2,7 @@ package checkers.inference;
 
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Slot;
+import com.sun.source.util.TreePath;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAnalysis;
@@ -26,11 +27,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
-import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.*;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -533,10 +530,22 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             if (declaration != null) {
-                treeAnnotator.visit(declaration, type);
+                ClassTree currentTopClass = inferenceChecker.getCurrentTopLevelClass();
+                TreePath path = getPath(declaration);
+
+                // We need to check whether the declaration is within the current
+                // top class that is being processed. If yes, we should annotate
+                // the declaration right now. Otherwise, the declaration is already
+                // processed or should be processed in the future (when compiler
+                // sends out an event).
+                while (path != null) {
+                    if (path.getLeaf() == currentTopClass) {
+                        treeAnnotator.visit(declaration, type);
+                    }
+                    path = path.getParentPath();
+                }
             } else {
                 bytecodeTypeAnnotator.annotate(element, type);
-
             }
         }
     }
@@ -550,7 +559,6 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         compilationUnitsHandled += 1;
         this.realTypeFactory.setRoot( root );
         this.variableAnnotator.clearTreeInfo();
-        this.slotManager.setRoot(root);
         super.setRoot(root);
     }
 

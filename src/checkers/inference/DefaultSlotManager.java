@@ -1,18 +1,16 @@
 package checkers.inference;
 
 import checkers.inference.util.SlotDefaultTypeResolver;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
 import com.sun.tools.javac.code.Symbol;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.TypeKindUtils;
-import org.checkerframework.javacutil.TypesUtils;
+import org.checkerframework.javacutil.*;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -348,25 +346,6 @@ public class DefaultSlotManager implements SlotManager {
     }
 
     @Override
-    public void setRoot(CompilationUnitTree compilationUnit) {
-        this.defaultAnnotationsCache.clear();
-
-        BaseAnnotatedTypeFactory realTypeFactory = InferenceMain.getInstance().getRealTypeFactory();
-        Map<Tree, AnnotatedTypeMirror> defaultTypes = SlotDefaultTypeResolver.resolve(
-                compilationUnit,
-                realTypeFactory
-        );
-
-        for (Map.Entry<Tree, AnnotatedTypeMirror> entry : defaultTypes.entrySet()) {
-            // find default types in the current hierarchy and save them to the cache
-            this.defaultAnnotationsCache.put(
-                    entry.getKey(),
-                    entry.getValue().getAnnotationInHierarchy(this.realTop)
-            );
-        }
-    }
-
-    @Override
     public SourceVariableSlot createSourceVariableSlot(AnnotationLocation location, TypeMirror type) {
         AnnotationMirror defaultAnnotation = null;
         if (!InferenceOptions.makeDefaultsExplicit) {
@@ -424,14 +403,34 @@ public class DefaultSlotManager implements SlotManager {
             throw new BugInCF("Unable to find default annotation for location " + location);
         }
 
-        AnnotationMirror realAnnotation = null;
-        if (tree != null) {
-            realAnnotation = this.defaultAnnotationsCache.get(tree);
-            if (realAnnotation == null) {
-                // If its default type can't be found in the cache, we can
-                // fallback to the simplest method.
-                realAnnotation = realTypeFactory.getAnnotatedType(tree).getAnnotationInHierarchy(this.realTop);
+        if (!defaultAnnotationsCache.containsKey(tree)) {
+            // If cache misses, we check if the top level class has changed.
+            ClassTree topLevelClass = InferenceMain.getInstance().getVisitor().getCurrentTopLevelClass();
+
+            if (!defaultAnnotationsCache.containsKey(topLevelClass)) {
+                // If the top level has changed, we refresh our cache with the new scope.
+                defaultAnnotationsCache.clear();
+
+                Map<Tree, AnnotatedTypeMirror> defaultTypes = SlotDefaultTypeResolver.resolve(
+                        topLevelClass,
+                        realTypeFactory
+                );
+
+                // find default types in the current hierarchy and save them to the cache
+                for (Map.Entry<Tree, AnnotatedTypeMirror> entry : defaultTypes.entrySet()) {
+                    defaultAnnotationsCache.put(
+                            entry.getKey(),
+                            entry.getValue().getAnnotationInHierarchy(this.realTop)
+                    );
+                }
             }
+        }
+
+        AnnotationMirror realAnnotation = defaultAnnotationsCache.get(tree);
+        if (tree != null && realAnnotation == null) {
+            // If its default type can't be found in the cache, we can
+            // fallback to the simplest method.
+            realAnnotation = realTypeFactory.getAnnotatedType(tree).getAnnotationInHierarchy(this.realTop);
         }
         return realAnnotation;
     }

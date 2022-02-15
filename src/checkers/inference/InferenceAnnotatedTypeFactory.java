@@ -530,20 +530,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             }
 
             if (declaration != null) {
-                ClassTree topLevelClass = inferenceChecker.getCurrentTopLevelClass();
-                TreePath path = getPath(declaration);
-
-                // We need to check whether the declaration is within the current
-                // top class that is being processed. If yes, we should annotate
-                // the declaration right now. Otherwise, the declaration is already
-                // processed or should be processed in the future (when compiler
-                // sends out an event).
-                while (path != null) {
-                    if (path.getLeaf() == topLevelClass) {
-                        treeAnnotator.visit(declaration, type);
-                    }
-                    path = path.getParentPath();
-                }
+                treeAnnotator.visit(declaration, type);
             } else {
                 bytecodeTypeAnnotator.annotate(element, type);
             }

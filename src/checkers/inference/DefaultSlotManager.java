@@ -430,6 +430,10 @@ public class DefaultSlotManager implements SlotManager {
         if (tree != null && realAnnotation == null) {
             // If its default type can't be found in the cache, we can
             // fallback to the simplest method.
+            // TODO: If the tree is not under the current top-level tree
+            //  that's being processed, the type factory may crash due
+            //  to lack of information. We may want to investigate if
+            //  this issue ever happens.
             if (TreeUtils.isTypeTree(tree)) {
                 realAnnotation = realTypeFactory.getAnnotatedTypeFromTypeTree(tree)
                         .getAnnotationInHierarchy(this.realTop);

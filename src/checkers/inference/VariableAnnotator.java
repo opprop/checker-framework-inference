@@ -765,8 +765,8 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
     }
 
     /**
-     * Visit the extends, implements, and type parameters of the given class type and tree.
-     * Explicit extends and implements clause is handled by {@link checkers.inference.InferenceAnnotatedTypeFactory#getTypeOfExtendsImplements}
+     * Handle implicit extends clauses and type parameters of the given class type and tree.
+     * Explicit extends and implements clauses are handled by {@link checkers.inference.InferenceAnnotatedTypeFactory#getTypeOfExtendsImplements}
      */
     private void handleClassDeclaration(AnnotatedDeclaredType classType, ClassTree classTree) {
         final Tree extendsTree = classTree.getExtendsClause();

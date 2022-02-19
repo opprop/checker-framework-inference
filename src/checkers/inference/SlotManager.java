@@ -1,6 +1,7 @@
 package checkers.inference;
 
 import checkers.inference.model.LubVariableSlot;
+import com.sun.source.tree.CompilationUnitTree;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 import java.util.List;
@@ -218,4 +219,12 @@ public interface SlotManager {
     List<VariableSlot> getVariableSlots();
 
     List<ConstantSlot> getConstantSlots();
+
+    /**
+     * Informs this manager that we are working on a new file, so
+     * it can preprocess and cache useful information.
+     *
+     * @param compilationUnit the current compilation tree
+     */
+    void setRoot(CompilationUnitTree compilationUnit);
 }

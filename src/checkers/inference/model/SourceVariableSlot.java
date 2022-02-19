@@ -1,5 +1,9 @@
 package checkers.inference.model;
 
+import checkers.inference.InferenceOptions;
+import org.checkerframework.checker.nullness.qual.Nullable;
+
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 
 /**
@@ -11,6 +15,13 @@ public class SourceVariableSlot extends VariableSlot {
     protected final TypeMirror actualType;
 
     /**
+     * The default annotation for this slot from the real type factory.
+     * This field is nullable because we find the default annotation only
+     * if {@link InferenceOptions#makeDefaultsExplicit} is true.
+     */
+    protected final @Nullable AnnotationMirror defaultAnnotation;
+
+    /**
      * Should this slot be inserted back into the source code.
      * This should be false for types that have an implicit annotation
      * and slots for pre-annotated code.
@@ -18,14 +29,23 @@ public class SourceVariableSlot extends VariableSlot {
     private boolean insertable;
 
     /**
-     * @param location Used to locate this variable in code, see @AnnotationLocation
-     * @param id      Unique identifier for this variable
+     * @param location used to locate this variable in code, see @AnnotationLocation
+     * @param id unique identifier for this variable
      * @param type the underlying type
+     * @param defaultAnnotation the default annotation (solution) for this slot, which can be null when
+     *                          {@link InferenceOptions#makeDefaultsExplicit} returns true
      * @param insertable indicates whether this slot should be inserted back into the source code
      */
-    public SourceVariableSlot(int id, AnnotationLocation location, TypeMirror type, boolean insertable) {
+    public SourceVariableSlot(
+            int id,
+            AnnotationLocation location,
+            TypeMirror type,
+            @Nullable AnnotationMirror defaultAnnotation,
+            boolean insertable
+    ) {
         super(id, location);
         this.actualType = type;
+        this.defaultAnnotation = defaultAnnotation;
         this.insertable = insertable;
     }
 
@@ -66,5 +86,9 @@ public class SourceVariableSlot extends VariableSlot {
      */
     public void setInsertable(boolean insertable) {
         this.insertable = insertable;
+    }
+
+    public @Nullable AnnotationMirror getDefaultAnnotation() {
+        return defaultAnnotation;
     }
 }

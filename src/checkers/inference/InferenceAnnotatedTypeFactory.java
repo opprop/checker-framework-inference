@@ -550,6 +550,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         compilationUnitsHandled += 1;
         this.realTypeFactory.setRoot( root );
         this.variableAnnotator.clearTreeInfo();
+        this.slotManager.setRoot(root);
         super.setRoot(root);
     }
 

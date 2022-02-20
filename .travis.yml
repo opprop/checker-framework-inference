@@ -27,6 +27,8 @@ env:
     - GROUP=downstream-units JDKVER=jdk11
     - GROUP=downstream-security-demo JDKVER=jdk8
     - GROUP=downstream-security-demo JDKVER=jdk11
+    - GROUP=downstream-universe JDKVER=jdk8
+    - GROUP=downstream-universe JDKVER=jdk11
 
 # This is essential lest the script is ignored and Travis just runs gradle.
 install: true

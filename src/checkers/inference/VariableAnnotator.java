@@ -766,7 +766,8 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
     }
 
     /**
-     * Visit the extends, implements, and type parameters of the given class type and tree.
+     * Handle implicit extends clauses and type parameters of the given class type and tree.
+     * Explicit extends and implements clauses are handled by {@link checkers.inference.InferenceAnnotatedTypeFactory#getTypeOfExtendsImplements}
      */
     private void handleClassDeclaration(AnnotatedDeclaredType classType, ClassTree classTree) {
         final Tree extendsTree = classTree.getExtendsClause();
@@ -789,29 +790,8 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             List<AnnotatedDeclaredType> superTypes = classType.directSupertypes();
             superTypes.get(0).replaceAnnotation(slotManager.getAnnotation(extendsSlot));
 
-        } else {
-            // Since only extends trees with a non-null tree path are handled (see
-            // checkers.inference.InferenceTreeAnnotator#visitIdentifier for more details),
-            // here don't dig deeper onto the extends tree when the classTree path is null.
-            // Note: the classTree path is null when the variableAnnotater is visiting it from
-            // a different compilation unit. The extends tree should be annotated when the
-            // compiler moves forward to the compilation unit containing the class definition.
-            if (inferenceTypeFactory.getPath(classTree) != null) {
-                final AnnotatedTypeMirror extendsType = inferenceTypeFactory.getAnnotatedTypeFromTypeTree(extendsTree);
-                visit(extendsType, extendsTree);
-            }
         }
 
-//        // TODO: NOT SURE THIS HANDLES MEMBER SELECT CORRECTLY
-//        int interfaceIndex = 1;
-//        for(Tree implementsTree : classTree.getImplementsClause()) {
-//            final AnnotatedTypeMirror implementsType = inferenceTypeFactory.getAnnotatedTypeFromTypeTree(implementsTree);
-//            AnnotatedTypeMirror supertype = classType.directSuperTypes().get(interfaceIndex);
-//            assert supertype.getUnderlyingType() == implementsType.getUnderlyingType();
-//            visit(supertype, implementsTree);
-//            interfaceIndex++;
-//        }
-//
         if (InferenceMain.isHackMode(
                 (classType.getTypeArguments().size() != classTree.getTypeParameters().size()))) {
             return;

@@ -63,7 +63,7 @@ dependencies {
     // Serialize constraints
     implementation 'com.googlecode.json-simple:json-simple:1.1.1'
     // Pretty print serialized constraints
-    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'com.google.code.gson:gson:2.9.0'
 
     implementation 'org.ow2.sat4j:org.ow2.sat4j.core:2.3.6'
     implementation 'org.ow2.sat4j:org.ow2.sat4j.maxsat:2.3.6'
@@ -218,15 +218,15 @@ task dependenciesJar(dependsOn: dist, type: Jar) {
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
-    archiveName 'dependencies.jar'
-    destinationDir file("${projectDir}/dist/")
+    archiveFileName = 'dependencies.jar'
+    destinationDirectory = file("${projectDir}/dist/")
 }
 
 task testLibJar(dependsOn: dist, type: Jar) {
     from sourceSets.test.output.classesDirs
     include ('checkers/inference/test/**')
-    archiveName 'inference-framework-test-lib.jar'
-    destinationDir file("${projectDir}/dist/")
+    archiveFileName = 'inference-framework-test-lib.jar'
+    destinationDirectory = file("${projectDir}/dist/")
 }
 
 tasks.clean {

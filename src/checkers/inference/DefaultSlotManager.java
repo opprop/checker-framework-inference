@@ -143,12 +143,14 @@ public class DefaultSlotManager implements SlotManager {
 
     private final Set<Class<? extends Annotation>> realQualifiers;
     private final ProcessingEnvironment processingEnvironment;
+    private final InferenceChecker inferenceChecker;
 
-    public DefaultSlotManager( final ProcessingEnvironment processingEnvironment,
+    public DefaultSlotManager( final InferenceChecker inferenceChecker,
                                final AnnotationMirror realTop,
                                final Set<Class<? extends Annotation>> realQualifiers,
                                boolean storeConstants) {
-        this.processingEnvironment = processingEnvironment;
+        this.inferenceChecker = inferenceChecker;
+        this.processingEnvironment = inferenceChecker.getProcessingEnvironment();
         this.realTop = realTop;
         // sort the qualifiers so that they are always assigned the same varId
         this.realQualifiers = sortAnnotationClasses(realQualifiers);
@@ -405,7 +407,7 @@ public class DefaultSlotManager implements SlotManager {
 
         if (!defaultAnnotationsCache.containsKey(tree)) {
             // If cache misses, we check if the top level class has changed.
-            ClassTree topLevelClass = InferenceMain.getInstance().getVisitor().getCurrentTopLevelClass();
+            ClassTree topLevelClass = inferenceChecker.getCurrentTopLevelClass();
 
             if (!defaultAnnotationsCache.containsKey(topLevelClass)) {
                 // If the top level has changed, we refresh our cache with the new scope.

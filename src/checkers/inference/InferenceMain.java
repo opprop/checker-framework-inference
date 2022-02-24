@@ -363,7 +363,7 @@ public class InferenceMain {
             }
 
             slotManager = new DefaultSlotManager(
-                    inferenceChecker.getProcessingEnvironment(),
+                    inferenceChecker,
                     tops.iterator().next(),
                     realTypeFactory.getSupportedTypeQualifiers(),
                     true

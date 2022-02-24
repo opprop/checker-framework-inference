@@ -43,7 +43,6 @@ import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
-import com.sun.source.tree.ClassTree;
 
 import org.plumelib.util.ArraysPlume;
 
@@ -89,10 +88,6 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     @Override
     protected Factory createTypeFactory() {
         return (Factory)((BaseInferrableChecker)checker).getTypeFactory();
-    }
-
-    public ClassTree getCurrentTopLevelClass() {
-        return ((InferenceChecker) checker).getCurrentTopLevelClass();
     }
 
     public void doesNotContain(AnnotatedTypeMirror ty, AnnotationMirror mod, String msgkey, Tree node) {

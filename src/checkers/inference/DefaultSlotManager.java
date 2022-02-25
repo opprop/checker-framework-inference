@@ -200,6 +200,25 @@ public class DefaultSlotManager implements SlotManager {
         return set;
     }
 
+    @Override
+    public void setTopLevelClass(ClassTree classTree) {
+        // If the top level has changed, we refresh our cache with the new scope.
+        defaultAnnotationsCache.clear();
+
+        Map<Tree, AnnotatedTypeMirror> defaultTypes = SlotDefaultTypeResolver.resolve(
+                classTree,
+                InferenceMain.getInstance().getRealTypeFactory()
+        );
+
+        // find default types in the current hierarchy and save them to the cache
+        for (Map.Entry<Tree, AnnotatedTypeMirror> entry : defaultTypes.entrySet()) {
+            defaultAnnotationsCache.put(
+                    entry.getKey(),
+                    entry.getValue().getAnnotationInHierarchy(this.realTop)
+            );
+        }
+    }
+
     /**
      * Returns the next unique variable id.  These id's are monotonically increasing.
      * @return the next variable id to be used in VariableCreation
@@ -401,29 +420,6 @@ public class DefaultSlotManager implements SlotManager {
             );
         } else {
             throw new BugInCF("Unable to find default annotation for location " + location);
-        }
-
-        if (!defaultAnnotationsCache.containsKey(tree)) {
-            // If cache misses, we check if the top level class has changed.
-            ClassTree topLevelClass = InferenceMain.getInstance().getVisitor().getCurrentTopLevelClass();
-
-            if (!defaultAnnotationsCache.containsKey(topLevelClass)) {
-                // If the top level has changed, we refresh our cache with the new scope.
-                defaultAnnotationsCache.clear();
-
-                Map<Tree, AnnotatedTypeMirror> defaultTypes = SlotDefaultTypeResolver.resolve(
-                        topLevelClass,
-                        realTypeFactory
-                );
-
-                // find default types in the current hierarchy and save them to the cache
-                for (Map.Entry<Tree, AnnotatedTypeMirror> entry : defaultTypes.entrySet()) {
-                    defaultAnnotationsCache.put(
-                            entry.getKey(),
-                            entry.getValue().getAnnotationInHierarchy(this.realTop)
-                    );
-                }
-            }
         }
 
         AnnotationMirror realAnnotation = defaultAnnotationsCache.get(tree);

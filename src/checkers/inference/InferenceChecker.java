@@ -39,6 +39,15 @@ public class InferenceChecker extends BaseTypeChecker {
     }
 
     @Override
+    public Properties getMessagesProperties() {
+        // Add the messages.properties file defined in the same location as
+        // InferenceChecker
+        Properties messages = super.getMessagesProperties();
+        messages.putAll(getProperties(this.getClass(), MSGS_FILE, true));
+        return messages;
+    }
+
+    @Override
     public void typeProcess(TypeElement element, TreePath treePath) {
         // As the entry point for type processing, each time we will receive
         // one fully-analyzed class directly under a compilation unit tree.

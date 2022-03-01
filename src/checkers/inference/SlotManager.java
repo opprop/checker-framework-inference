@@ -1,6 +1,7 @@
 package checkers.inference;
 
 import checkers.inference.model.LubVariableSlot;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
@@ -234,10 +235,13 @@ public interface SlotManager {
     List<ConstantSlot> getConstantSlots();
 
     /**
-     * Informs this manager that we are working on a new file, so
-     * it can preprocess and cache useful information.
+     * This method informs slot manager of the current top level class tree that's being type processed.
+     * Slot manager can then preprocess this information by clearing caches, resolving slot default
+     * types, etc.
      *
-     * @param compilationUnit the current compilation tree
+     * Note that trees that are not within this tree may be missing some information
+     * (in the JCTree implementation), and this is because they are either not fully
+     * initialized or being garbage-recycled.
      */
-    void setRoot(CompilationUnitTree compilationUnit);
+    void setTopLevelClass(ClassTree classTree);
 }

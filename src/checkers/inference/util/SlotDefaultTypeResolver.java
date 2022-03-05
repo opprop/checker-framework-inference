@@ -3,7 +3,6 @@ package checkers.inference.util;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
@@ -38,11 +37,11 @@ import java.util.Map;
 public class SlotDefaultTypeResolver {
 
     public static Map<Tree, AnnotatedTypeMirror> resolve(
-            CompilationUnitTree root,
+            ClassTree classTree,
             BaseAnnotatedTypeFactory realTypeFactory
     ) {
         DefaultTypeFinder finder = new DefaultTypeFinder(realTypeFactory);
-        finder.scan(root, null);
+        finder.scan(classTree, null);
 
         return finder.defaultTypes;
     }
@@ -89,6 +88,9 @@ public class SlotDefaultTypeResolver {
 
         @Override
         public Void visitClass(ClassTree tree, Void unused) {
+            // stores the default type of the class tree
+            getDefaultTypeFor(tree);
+
             Tree ext = tree.getExtendsClause();
             if (ext != null) {
                 defaultTypes.put(ext, realTypeFactory.getTypeOfExtendsImplements(ext));

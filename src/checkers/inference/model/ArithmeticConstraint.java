@@ -33,40 +33,47 @@ public class ArithmeticConstraint extends Constraint {
             this.opSymbol = opSymbol;
         }
 
+        /**
+         * Get the {@link ArithmeticOperationKind} corresponding to a {@link Tree.Kind}. For a compound
+         * assignment tree, get the {@link ArithmeticOperationKind} for the arithmetic operation of the RHS.
+         * @param kind a {@link Tree.Kind} for an arithmetic operation
+         * @return the corresponding {@link ArithmeticOperationKind} for the given arithmetic operation
+         */
         public static ArithmeticOperationKind fromTreeKind(Kind kind) {
             switch (kind) {
                 case PLUS:
-                    return PLUS;
-                case MINUS:
-                    return MINUS;
-                case MULTIPLY:
-                    return MULTIPLY;
-                case DIVIDE:
-                    return DIVIDE;
-                case REMAINDER:
-                    return REMAINDER;
-                case LEFT_SHIFT:
-                    return LEFT_SHIFT;
-                case RIGHT_SHIFT:
-                    return RIGHT_SHIFT;
-                case UNSIGNED_RIGHT_SHIFT:
-                    return UNSIGNED_RIGHT_SHIFT;
-                case AND:
-                    return AND;
-                case OR:
-                    return OR;
-                case XOR:
-                    return XOR;
                 case PLUS_ASSIGNMENT:
                     return PLUS;
+                case MINUS:
                 case MINUS_ASSIGNMENT:
                     return MINUS;
+                case MULTIPLY:
                 case MULTIPLY_ASSIGNMENT:
                     return MULTIPLY;
+                case DIVIDE:
                 case DIVIDE_ASSIGNMENT:
                     return DIVIDE;
+                case REMAINDER:
                 case REMAINDER_ASSIGNMENT:
                     return REMAINDER;
+                case LEFT_SHIFT:
+                case LEFT_SHIFT_ASSIGNMENT:
+                    return LEFT_SHIFT;
+                case RIGHT_SHIFT:
+                case RIGHT_SHIFT_ASSIGNMENT:
+                    return RIGHT_SHIFT;
+                case UNSIGNED_RIGHT_SHIFT:
+                case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
+                    return UNSIGNED_RIGHT_SHIFT;
+                case AND:
+                case AND_ASSIGNMENT:
+                    return AND;
+                case OR:
+                case OR_ASSIGNMENT:
+                    return OR;
+                case XOR:
+                case XOR_ASSIGNMENT:
+                    return XOR;
                 default:
                     throw new BugInCF("There are no defined ArithmeticOperationKinds "
                             + "for the given com.sun.source.tree.Tree.Kind: " + kind);

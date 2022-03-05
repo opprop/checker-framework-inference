@@ -577,11 +577,14 @@ public class DefaultSlotManager implements SlotManager {
 
     /**
      *  Determine the type kind of an arithmetic operation, based on Binary Numeric Promotion in JLS 5.6.2.
-     * @param lhsType type of left operand
-     * @param rhsType type of right operand
+     * @param lhsAtm atm of left operand
+     * @param rhsAtm atm of right operand
      * @return type kind of the arithmetic operation
      */
-    private TypeKind getArithmeticResultKind(TypeMirror lhsType, TypeMirror rhsType) {
+    private TypeKind getArithmeticResultKind(AnnotatedTypeMirror lhsAtm, AnnotatedTypeMirror rhsAtm) {
+        TypeMirror lhsType = lhsAtm.getUnderlyingType();
+        TypeMirror rhsType = rhsAtm.getUnderlyingType();
+
         assert (TypesUtils.isPrimitiveOrBoxed(lhsType) && TypesUtils.isPrimitiveOrBoxed(rhsType));
 
         if (TypesUtils.isFloatingPoint(lhsType) || TypesUtils.isFloatingPoint(rhsType)) {
@@ -598,7 +601,7 @@ public class DefaultSlotManager implements SlotManager {
 
     @Override
     public ArithmeticVariableSlot createArithmeticVariableSlot(
-            AnnotationLocation location, TypeMirror lhsType, TypeMirror rhsType) {
+            AnnotationLocation location, AnnotatedTypeMirror lhsAtm, AnnotatedTypeMirror rhsAtm) {
         if (location == null || location.getKind() == AnnotationLocation.Kind.MISSING) {
             throw new BugInCF(
                     "Cannot create an ArithmeticVariableSlot with a missing annotation location.");
@@ -609,7 +612,7 @@ public class DefaultSlotManager implements SlotManager {
         }
 
         // create the arithmetic var slot if it doesn't exist for the given location
-        TypeKind kind = getArithmeticResultKind(lhsType, rhsType);
+        TypeKind kind = getArithmeticResultKind(lhsAtm, rhsAtm);
         ArithmeticVariableSlot slot = new ArithmeticVariableSlot(nextId(), location, kind);
         addToSlots(slot);
         arithmeticSlotCache.put(location, slot.getId());

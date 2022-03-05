@@ -155,7 +155,7 @@ public interface SlotManager {
      * @return the ArithmeticVariableSlot for the given location
      */
     ArithmeticVariableSlot createArithmeticVariableSlot(
-            AnnotationLocation location, TypeMirror lhsType, TypeMirror rhsType);
+            AnnotationLocation location, AnnotatedTypeMirror lhsAtm, AnnotatedTypeMirror rhsAtm);
 
     /**
      * Create new ComparisonVariableSlot at the given location and return a reference to it if no

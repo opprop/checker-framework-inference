@@ -598,7 +598,7 @@ public class DefaultSlotManager implements SlotManager {
 
     @Override
     public ArithmeticVariableSlot createArithmeticVariableSlot(
-            AnnotationLocation location, TypeMirror lhs, TypeMirror rhs) {
+            AnnotationLocation location, TypeMirror lhsType, TypeMirror rhsType) {
         if (location == null || location.getKind() == AnnotationLocation.Kind.MISSING) {
             throw new BugInCF(
                     "Cannot create an ArithmeticVariableSlot with a missing annotation location.");
@@ -609,7 +609,7 @@ public class DefaultSlotManager implements SlotManager {
         }
 
         // create the arithmetic var slot if it doesn't exist for the given location
-        TypeKind kind = getArithmeticResultKind(lhs, rhs);
+        TypeKind kind = getArithmeticResultKind(lhsType, rhsType);
         ArithmeticVariableSlot slot = new ArithmeticVariableSlot(nextId(), location, kind);
         addToSlots(slot);
         arithmeticSlotCache.put(location, slot.getId());

@@ -2,6 +2,7 @@ package checkers.inference;
 
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Slot;
+import com.sun.source.util.TreePath;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAnalysis;
@@ -149,7 +150,12 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         existentialInserter = new ExistentialVariableInserter(slotManager, constraintManager,
                                                               realTop, varAnnot, variableAnnotator);
 
-        inferencePoly = new InferenceQualifierPolymorphism(slotManager, variableAnnotator, this, varAnnot);
+        inferencePoly = new InferenceQualifierPolymorphism(
+                slotManager,
+                variableAnnotator,
+                this,
+                realTypeFactory,
+                varAnnot);
 
         constantToVariableAnnotator = new ConstantToVariableAnnotator(realTop, varAnnot);
         // Every subclass must call postInit!
@@ -536,7 +542,6 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 treeAnnotator.visit(declaration, type);
             } else {
                 bytecodeTypeAnnotator.annotate(element, type);
-
             }
         }
     }
@@ -550,7 +555,6 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         compilationUnitsHandled += 1;
         this.realTypeFactory.setRoot( root );
         this.variableAnnotator.clearTreeInfo();
-        this.slotManager.setRoot(root);
         super.setRoot(root);
     }
 

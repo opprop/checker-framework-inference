@@ -409,18 +409,25 @@ public class InferenceTransfer extends CFTransfer {
         return (assignmentNode.getTree().getKind() == Tree.Kind.VARIABLE);
     }
 
+    /**
+     * Create one {@link ComparisonVariableSlot} for one operand of a comparison for each of the then store
+     * and else store separately.
+     * @param node a CFG node representing one operand of a comparison
+     * @param thenStore the then store in which the value of the given node is updated
+     * @param elseStore the else store in which the value of the given node is updated
+     */
     private void createComparisonVariableSlot(Node node, CFStore thenStore, CFStore elseStore) {
         // Only create refinement comparison slot for variables
         // TODO: deal with comparison between more complex expressions
-        Node var = node;
+        Node targetNode = node;
         if (node instanceof AssignmentNode) {
             AssignmentNode a = (AssignmentNode) node;
-            var = a.getTarget();
+            targetNode = a.getTarget();
         }
-        if (!(var instanceof LocalVariableNode) && !(var instanceof FieldAccessNode)) {
+        if (!(targetNode instanceof LocalVariableNode) && !(targetNode instanceof FieldAccessNode)) {
             return;
         }
-        Tree tree = var.getTree();
+        Tree tree = targetNode.getTree();
         ConstraintManager constraintManager = InferenceMain.getInstance().getConstraintManager();
         SlotManager slotManager = getInferenceAnalysis().getSlotManager();
 
@@ -460,12 +467,12 @@ public class InferenceTransfer extends CFTransfer {
         AnnotationMirror elseAm = slotManager.getAnnotation(elseSlot);
 
         // If node is assignment, iterate over lhs; otherwise, just node.
-        JavaExpression rec;
-        rec = JavaExpression.fromNode(var);
-        thenStore.clearValue(rec);
-        thenStore.insertValue(rec, thenAm);
-        elseStore.clearValue(rec);
-        elseStore.insertValue(rec, elseAm);
+        JavaExpression receiver;
+        receiver = JavaExpression.fromNode(targetNode);
+        thenStore.clearValue(receiver);
+        thenStore.insertValue(receiver, thenAm);
+        elseStore.clearValue(receiver);
+        elseStore.insertValue(receiver, elseAm);
     }
 
     @Override

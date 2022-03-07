@@ -201,8 +201,9 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
                         // @HERE is on the modifier of the anonymous class body, instead of on the type identifier.
                         List<? extends AnnotationTree> annos =
                                 newClassTree.getClassBody().getModifiers().getAnnotations();
-
                         identifierType.addAnnotations(TreeUtils.annotationsFromTypeAnnotationTrees(annos));
+                        ((InferenceAnnotatedTypeFactory) atypeFactory).getConstantToVariableAnnotator().visit(identifierType);
+
                     }
                     variableAnnotator.visit(identifierType, node);
                 }

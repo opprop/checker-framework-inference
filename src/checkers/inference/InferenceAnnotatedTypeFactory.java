@@ -576,6 +576,11 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return Collections.singleton(vAnno);
         }
 
+        // This is to handle the special case of anonymous classes when the super class (or interface)
+        // identifier is explicit annotated, e.g.
+        //      A a1 = new @OsUntrusted A() {};
+        // In such cases, the declaration bound of the anonymous class is the explicit annotation on
+        // the super class (or interface) identifier.
         final List<? extends AnnotationMirror> annos = type.getAnnotationMirrors();
         AnnotationMirror realAnno = qualHierarchy.findAnnotationInHierarchy(annos, realTop);
         if (realAnno != null) {
@@ -601,17 +606,5 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return getAnnotatedTypeFromTypeTree(clause);
     }
 
-    @Override
-    public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
-        AnnotatedDeclaredType type = super.fromNewClass(newClassTree);
-        AnnotationMirror explicitAnno = type.getAnnotationInHierarchy(realTop);
-        if (explicitAnno!= null) {
-            Slot slot = slotManager.getSlot(explicitAnno);
-            AnnotationMirror varAnno = slotManager.getAnnotation(slot);
-            type.removeAnnotation(explicitAnno);
-            type.addAnnotation(varAnno);
-        }
-        return type;
-    }
 }
 

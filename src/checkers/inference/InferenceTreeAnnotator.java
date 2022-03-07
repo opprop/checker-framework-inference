@@ -3,7 +3,7 @@ package checkers.inference;
 import checkers.inference.model.ConstraintManager;
 import checkers.inference.model.SourceVariableSlot;
 import checkers.inference.model.Slot;
-import com.sun.source.tree.AnnotationTree;
+
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -24,6 +24,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 
 import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;

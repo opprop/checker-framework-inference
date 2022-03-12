@@ -1,5 +1,7 @@
 package checkers.inference;
 
+import checkers.inference.model.VariableSlot;
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
@@ -9,7 +11,8 @@ import javax.lang.model.element.AnnotationMirror;
 import com.sun.source.tree.Tree;
 
 import checkers.inference.model.ConstantSlot;
-import checkers.inference.model.VariableSlot;
+import checkers.inference.model.Slot;
+import checkers.inference.model.SourceVariableSlot;
 
 /**
  * InferenceQualifierPolymorphism handle PolymorphicQualifiers for the Inference Framework.
@@ -24,11 +27,18 @@ public class InferenceQualifierPolymorphism {
     private final VariableAnnotator variableAnnotator;
     private final AnnotationMirror varAnnot;
     private final SlotManager slotManager;
+    private final InferenceAnnotatedTypeFactory atypeFactory;
+    private final BaseAnnotatedTypeFactory realTypeFactory;
 
-    public InferenceQualifierPolymorphism(final SlotManager slotManager, final VariableAnnotator variableAnnotator,
+    public InferenceQualifierPolymorphism(final SlotManager slotManager,
+                                          final VariableAnnotator variableAnnotator,
+                                          final InferenceAnnotatedTypeFactory atypeFactory,
+                                          final BaseAnnotatedTypeFactory realTypeFactory,
                                           final AnnotationMirror varAnnot) {
         this.slotManager = slotManager;
         this.variableAnnotator = variableAnnotator;
+        this.atypeFactory = atypeFactory;
+        this.realTypeFactory = realTypeFactory;
         this.varAnnot = varAnnot;
     }
 
@@ -69,13 +79,13 @@ public class InferenceQualifierPolymorphism {
         @Override
         public Void scan(AnnotatedTypeMirror type, Void v) {
             if (type != null) {
-                AnnotationMirror varSlot = type.getAnnotationInHierarchy(varAnnot);
-                if (varSlot != null) {
-                    VariableSlot var = (VariableSlot) slotManager.getSlot(varSlot);
-                    if (InferenceMain.isHackMode(var == null)) {
-                    } else if (var.isConstant()) {
-                        AnnotationMirror constant = ((ConstantSlot)var).getValue();
-                        if (InferenceQualifierHierarchy.isPolymorphic(constant)) {
+                AnnotationMirror anno = type.getAnnotationInHierarchy(varAnnot);
+                if (anno != null) {
+                    Slot slot = slotManager.getSlot(anno);
+                    if (InferenceMain.isHackMode(slot == null)) {
+                    } else if (slot instanceof ConstantSlot) {
+                        AnnotationMirror constant = ((ConstantSlot) slot).getValue();
+                        if (realTypeFactory.getQualifierHierarchy().isPolymorphicQualifier(constant)) {
                             type.replaceAnnotation(slotManager.getAnnotation(getOrCreatePolyVar()));
                         }
                     }

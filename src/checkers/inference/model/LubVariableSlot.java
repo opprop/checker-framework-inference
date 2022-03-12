@@ -2,14 +2,16 @@ package checkers.inference.model;
 
 /**
  * LubVariableSlot models the least-upper-bounds of two other slots.
+ * TODO(Zhiping): Rename this to MergeVariableSlot, also consider the difference
+ * TODO(Zhiping): between this class and CombVariableSlot
  */
 public class LubVariableSlot extends VariableSlot {
 
     private final Slot left;
     private final Slot right;
 
-    public LubVariableSlot(AnnotationLocation location, int id, Slot left, Slot right) {
-        super(location, id);
+    public LubVariableSlot(int id, AnnotationLocation location, Slot left, Slot right) {
+        super(id, location);
         this.left = left;
         this.right = right;
     }

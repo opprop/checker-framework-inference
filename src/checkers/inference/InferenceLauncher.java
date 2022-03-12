@@ -3,7 +3,6 @@ package checkers.inference;
 
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.ExecUtil;
-import org.checkerframework.javacutil.SystemUtil;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -20,6 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import checkers.inference.InferenceOptions.InitStatus;
+import org.plumelib.util.StringsPlume;
 
 
 /**
@@ -61,7 +61,7 @@ public class InferenceLauncher {
 
         } catch (IllegalArgumentException iexc) {
             outStream.println("Could not recognize mode: " + InferenceOptions.mode + "\n"
-                    + "valid modes: " + SystemUtil.join(", ", Mode.values()));
+                    + "valid modes: " + StringsPlume.join(", ", Mode.values()));
             System.exit(1);
         }
 
@@ -138,7 +138,7 @@ public class InferenceLauncher {
 
         if (InferenceOptions.printCommands) {
             outStream.println("Running typecheck command:");
-            outStream.println(SystemUtil.join(" ", checkerMain.getExecArguments()));
+            outStream.println(String.join(" ", checkerMain.getExecArguments()));
         }
 
         int result = checkerMain.invokeCompiler();
@@ -189,6 +189,15 @@ public class InferenceLauncher {
 
         addIfTrue("--hacks", InferenceOptions.hacks, argList);
 
+        Mode mode = Mode.valueOf(InferenceOptions.mode);
+        if (InferenceOptions.makeDefaultsExplicit
+                && (mode == Mode.ROUNDTRIP || mode == Mode.ROUNDTRIP_TYPECHECK)) {
+            // Two conditions have to be met to make defaults explicit:
+            // 1. the command-line flag `makeDefaultsExplicit` is provided
+            // 2. the inference solution will be written back to the source code (roundtrip `mode`)
+            argList.add("--makeDefaultsExplicit");
+        }
+
         argList.add("--");
 
         String compilationBcp = getInferenceCompilationBootclassPath();
@@ -205,7 +214,7 @@ public class InferenceLauncher {
 
         if (InferenceOptions.printCommands) {
             outStream.println("Running infer command:");
-            outStream.println(SystemUtil.join(" ", argList));
+            outStream.println(String.join(" ", argList));
         }
 
         int result = ExecUtil.execute(argList.toArray(new String[argList.size()]), outStream, System.err);
@@ -280,7 +289,7 @@ public class InferenceLauncher {
 
             if (InferenceOptions.printCommands) {
                 outStream.println("Running Insert Annotations Command:");
-                outStream.println(SystemUtil.join(" ", options));
+                outStream.println(String.join(" ", options));
             }
 
             // this can get quite large for large projects and it is not advisable to run
@@ -308,7 +317,7 @@ public class InferenceLauncher {
 
             if (InferenceOptions.printCommands) {
                 outStream.println("Running Insert Annotations Command:");
-                outStream.println(SystemUtil.join(" ", options));
+                outStream.println(StringsPlume.join(" ", options));
             }
 
             result = ExecUtil.execute(options, outStream, errStream);
@@ -423,7 +432,7 @@ public class InferenceLauncher {
             filePaths.add(systemClasspath);
         }
 
-        return SystemUtil.join(File.pathSeparator, filePaths);
+        return String.join(File.pathSeparator, filePaths);
     }
 
     // what the compiler compiles against

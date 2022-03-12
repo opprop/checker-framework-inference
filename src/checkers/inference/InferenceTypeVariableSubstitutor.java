@@ -2,7 +2,6 @@ package checkers.inference;
 
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.Slot;
-import checkers.inference.model.VariableSlot;
 import checkers.inference.util.InferenceUtil;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
@@ -60,20 +59,19 @@ public class InferenceTypeVariableSubstitutor extends TypeVariableSubstitutor {
         final AnnotatedTypeMirror useUpperBound = InferenceUtil.findUpperBoundType(use, true);
 
         if ( !useUpperBound.getAnnotations().isEmpty()) {
-            final Slot upperBoundSlot = slotManager.getVariableSlot(useUpperBound);
+            final Slot upperBoundSlot = slotManager.getSlot(useUpperBound);
             if (upperBoundSlot instanceof ExistentialVariableSlot) {
                 // the type of the use may already have an existential variable inserted for its declaration
                 // we remove it (because it's between the potential variable and the bounds) and replace it
                 // with one that is between the SAME potential variable but the argumenht instead
 
-                final VariableSlot potentialSlot = ((ExistentialVariableSlot) upperBoundSlot).getPotentialSlot();
+                final Slot potentialSlot = ((ExistentialVariableSlot) upperBoundSlot).getPotentialSlot();
 
                 if (argument.getKind() != TypeKind.TYPEVAR) {
-                    final Slot altSlot = slotManager.getVariableSlot(argument);
+                    final Slot altSlot = slotManager.getSlot(argument);
 
-                    final VariableSlot alternative = (VariableSlot) altSlot;
-                    if (alternative != null) {
-                        final ExistentialVariableSlot slot = slotManager.createExistentialVariableSlot(potentialSlot, alternative);
+                    if (altSlot != null) {
+                        final ExistentialVariableSlot slot = slotManager.createExistentialVariableSlot(potentialSlot, altSlot);
                         argument.replaceAnnotation(slotManager.getAnnotation(slot));
                     } else {
                         if (!InferenceMain.isHackMode()) {

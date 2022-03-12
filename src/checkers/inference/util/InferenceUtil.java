@@ -193,7 +193,7 @@ public class InferenceUtil {
             case INTERSECTION:
                 // TODO: We need clear semantics for INTERSECTIONS, using first
                 // alternative for now
-                upperBoundType = ((AnnotatedIntersectionType) upperBoundType).directSuperTypes().get(0);
+                upperBoundType = upperBoundType.directSupertypes().get(0);
                 break;
 
             default:
@@ -228,7 +228,7 @@ public class InferenceUtil {
 
                 case INTERSECTION:
                     // TODO: We need clear semantics for INTERSECTIONS, using first alternative for now
-                    lowerBoundType = ((AnnotatedIntersectionType) lowerBoundType).directSuperTypes().get(0);
+                    lowerBoundType = lowerBoundType.directSupertypes().get(0);
                     break;
 
 

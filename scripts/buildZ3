@@ -34,7 +34,8 @@ case `uname -s` in
     ;;
 esac
 
-ROOT=$(cd ${myDir}/../../ && pwd)
+CFI=$(cd ${myDir}/../ && pwd)
+ROOT=$(cd ${CFI}/../ && pwd)
 
 # z3 jar file and dylib files should either exist together or not exist at all,
 # so just check if the jar file exists.
@@ -48,19 +49,19 @@ else
     echo "Downloaded z3 into directory $ROOT/z3"
 fi
 
-if [ ! -d $ROOT/checker-framework-inference/lib ] ; then
-    mkdir $ROOT/checker-framework-inference/lib
+if [ ! -d $CFI/lib ] ; then
+    mkdir $CFI/lib
 fi
 
 # Copy build result into CFI lib dir
-echo "Copying $ROOT/z3/bin/com.microsoft.z3.jar into $ROOT/checker-framework-inference/lib"
-(cp $ROOT/z3/bin/com.microsoft.z3.jar $ROOT/checker-framework-inference/lib)
+echo "Copying $ROOT/z3/bin/com.microsoft.z3.jar into $CFI/lib"
+(cp $ROOT/z3/bin/com.microsoft.z3.jar $CFI/lib)
 echo "Copy done."
 
-echo "Copying $ROOT/z3/bin/libz3.$DY_LIB_SUFFIX into $ROOT/checker-framework-inference/lib"
-(cp $ROOT/z3/bin/libz3.$DY_LIB_SUFFIX $ROOT/checker-framework-inference/lib)
+echo "Copying $ROOT/z3/bin/libz3.$DY_LIB_SUFFIX into $CFI/lib"
+(cp $ROOT/z3/bin/libz3.$DY_LIB_SUFFIX $CFI/lib)
 echo "Copy done."
 
-echo "Copying $ROOT/z3/bin/libz3java.$DY_LIB_SUFFIX into $ROOT/checker-framework-inference/lib"
-(cp $ROOT/z3/bin/libz3java.$DY_LIB_SUFFIX $ROOT/checker-framework-inference/lib)
+echo "Copying $ROOT/z3/bin/libz3java.$DY_LIB_SUFFIX into $CFI/lib"
+(cp $ROOT/z3/bin/libz3java.$DY_LIB_SUFFIX $CFI/lib)
 echo "Copy done."

@@ -197,18 +197,16 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
                     if (newClassTree.getClassBody() != null) {
                         // For case 2, get the explicit annotation if any exists so that no variable slot
                         // is created. Note the annotation cannot be retrieved from the identifier, but
-                        // from the the modifier of the anonymous class body. e.g. for the following case
+                        // from the modifier of the anonymous class body. e.g. for the following case
                         //      new @HERE Class() {}
                         // @HERE is on the modifier of the anonymous class body, instead of on the type identifier.
                         List<? extends AnnotationTree> annos =
                                 newClassTree.getClassBody().getModifiers().getAnnotations();
                         identifierType.addAnnotations(TreeUtils.annotationsFromTypeAnnotationTrees(annos));
                         ((InferenceAnnotatedTypeFactory) atypeFactory).getConstantToVariableAnnotator().visit(identifierType);
-
                     }
                     variableAnnotator.visit(identifierType, node);
                 }
-
             }
         }
 

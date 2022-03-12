@@ -1,6 +1,8 @@
 package checkers.inference;
 
 import checkers.inference.model.LubVariableSlot;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 import java.util.List;
@@ -43,6 +45,19 @@ public interface SlotManager {
      * @return SourceVariableSlot that corresponds to this location
      */
     SourceVariableSlot createSourceVariableSlot(AnnotationLocation location, TypeMirror type);
+
+    /**
+     * Create new VariableSlot and return the reference to it if no VariableSlot
+     * on this location exists. Otherwise return the reference to existing VariableSlot
+     * on this location. Each location uniquely identifies a polymorphic instance.
+     * For now, there's no dedicated slot for polymorphic instance, but we may add one
+     * in the future.
+     *
+     * @param location
+     *            used to locate this variable in code
+     * @return VariableSlot that corresponds to this location
+     */
+    VariableSlot createPolymorphicInstanceSlot(AnnotationLocation location, TypeMirror type);
 
     /**
      * Create new RefinementVariableSlot (as well as the refinement constraint if
@@ -218,4 +233,15 @@ public interface SlotManager {
     List<VariableSlot> getVariableSlots();
 
     List<ConstantSlot> getConstantSlots();
+
+    /**
+     * This method informs slot manager of the current top level class tree that's being type processed.
+     * Slot manager can then preprocess this information by clearing caches, resolving slot default
+     * types, etc.
+     *
+     * Note that trees that are not within this tree may be missing some information
+     * (in the JCTree implementation), and this is because they are either not fully
+     * initialized or being garbage-recycled.
+     */
+    void setTopLevelClass(ClassTree classTree);
 }

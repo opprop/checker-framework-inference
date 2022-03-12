@@ -1,13 +1,26 @@
 package checkers.inference;
 
+import checkers.inference.util.SlotDefaultTypeResolver;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
+import com.sun.source.tree.Tree;
+import com.sun.source.util.TreePath;
+import com.sun.tools.javac.code.Symbol;
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeKindUtils;
+import org.checkerframework.javacutil.TypesUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +30,9 @@ import java.util.TreeSet;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -35,8 +51,8 @@ import checkers.inference.model.Slot;
 import checkers.inference.model.SourceVariableSlot;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.qual.VarAnnot;
-import org.checkerframework.javacutil.TypeKindUtils;
-import org.checkerframework.javacutil.TypesUtils;
+import scenelib.annotations.io.ASTIndex;
+import scenelib.annotations.io.ASTRecord;
 
 /**
  * The default implementation of SlotManager.
@@ -45,6 +61,12 @@ import org.checkerframework.javacutil.TypesUtils;
 public class DefaultSlotManager implements SlotManager {
 
     private final AnnotationMirror varAnnot;
+
+    /**
+     * The top annotation in the real qualifier hierarchy.
+     * Currently, we assume there's only one top.
+     */
+    private final AnnotationMirror realTop;
 
     // This id starts at 1 because in some serializer's
     // (CnfSerializer) 0 is used as line delimiters.
@@ -95,6 +117,12 @@ public class DefaultSlotManager implements SlotManager {
     private final Map<Pair<Slot, Slot>, Integer> glbSlotPairCache;
 
     /**
+     * A map of tree to {@link AnnotationMirror} for caching
+     * a set of pre-computed default types for the current compilation unit.
+     */
+    private final Map<Tree, AnnotationMirror> defaultAnnotationsCache;
+
+    /**
      * A map of {@link AnnotationLocation} to {@link Integer} for caching
      * {@link ArithmeticVariableSlot}s. The annotation location uniquely identifies an
      * {@link ArithmeticVariableSlot}. The {@link Integer} is the Id of the corresponding
@@ -122,9 +150,11 @@ public class DefaultSlotManager implements SlotManager {
     private final ProcessingEnvironment processingEnvironment;
 
     public DefaultSlotManager( final ProcessingEnvironment processingEnvironment,
+                               final AnnotationMirror realTop,
                                final Set<Class<? extends Annotation>> realQualifiers,
                                boolean storeConstants) {
         this.processingEnvironment = processingEnvironment;
+        this.realTop = realTop;
         // sort the qualifiers so that they are always assigned the same varId
         this.realQualifiers = sortAnnotationClasses(realQualifiers);
         slots = new LinkedHashMap<>();
@@ -143,6 +173,7 @@ public class DefaultSlotManager implements SlotManager {
         arithmeticSlotCache = new LinkedHashMap<>();
         comparisonThenSlotCache = new LinkedHashMap<>();
         comparisonElseSlotCache = new LinkedHashMap<>();
+        defaultAnnotationsCache = new LinkedHashMap<>();
 
         if (storeConstants) {
             for (Class<? extends Annotation> annoClass : this.realQualifiers) {
@@ -172,6 +203,25 @@ public class DefaultSlotManager implements SlotManager {
         });
         set.addAll(annotations);
         return set;
+    }
+
+    @Override
+    public void setTopLevelClass(ClassTree classTree) {
+        // If the top level has changed, we refresh our cache with the new scope.
+        defaultAnnotationsCache.clear();
+
+        Map<Tree, AnnotatedTypeMirror> defaultTypes = SlotDefaultTypeResolver.resolve(
+                classTree,
+                InferenceMain.getInstance().getRealTypeFactory()
+        );
+
+        // find default types in the current hierarchy and save them to the cache
+        for (Map.Entry<Tree, AnnotatedTypeMirror> entry : defaultTypes.entrySet()) {
+            defaultAnnotationsCache.put(
+                    entry.getKey(),
+                    entry.getValue().getAnnotationInHierarchy(this.realTop)
+            );
+        }
     }
 
     /**
@@ -319,13 +369,22 @@ public class DefaultSlotManager implements SlotManager {
         return nextId - 1;
     }
 
-    @Override
-    public SourceVariableSlot createSourceVariableSlot(AnnotationLocation location, TypeMirror type) {
+    private SourceVariableSlot createSourceVariableSlot(
+            AnnotationLocation location,
+            TypeMirror type,
+            boolean insertable
+    ) {
+        AnnotationMirror defaultAnnotation = null;
+        if (!InferenceOptions.makeDefaultsExplicit) {
+            // retrieve the default annotation when needed
+            defaultAnnotation = getDefaultAnnotationForLocation(location, type);
+        }
+
         SourceVariableSlot sourceVarSlot;
         if (location.getKind() == AnnotationLocation.Kind.MISSING) {
             if (InferenceMain.isHackMode()) {
                 //Don't cache slot for MISSING LOCATION. Just create a new one and return.
-                sourceVarSlot = new SourceVariableSlot(nextId(), location, type, true);
+                sourceVarSlot = new SourceVariableSlot(nextId(), location, type, defaultAnnotation, insertable);
                 addToSlots(sourceVarSlot);
             } else {
                 throw new BugInCF("Creating SourceVariableSlot on MISSING_LOCATION!");
@@ -335,11 +394,112 @@ public class DefaultSlotManager implements SlotManager {
             int id = locationCache.get(location);
             sourceVarSlot = (SourceVariableSlot) getSlot(id);
         } else {
-            sourceVarSlot = new SourceVariableSlot(nextId(), location, type, true);
+            sourceVarSlot = new SourceVariableSlot(nextId(), location, type, defaultAnnotation, insertable);
             addToSlots(sourceVarSlot);
             locationCache.put(location, sourceVarSlot.getId());
         }
         return sourceVarSlot;
+    }
+
+    @Override
+    public SourceVariableSlot createSourceVariableSlot(AnnotationLocation location, TypeMirror type) {
+        return createSourceVariableSlot(location, type, true);
+    }
+
+    @Override
+    public VariableSlot createPolymorphicInstanceSlot(AnnotationLocation location, TypeMirror type) {
+        // TODO: For now, a polymorphic instance slot is just equivalent to a non-insertable
+        //  source variable slot. We may consider changing this implementation later.
+        return createSourceVariableSlot(location, type, false);
+    }
+
+    /**
+     * Find the default annotation for this location by checking the real type factory.
+     * @param location location to create a new {@link SourceVariableSlot}
+     * @return the default annotation for the given location
+     */
+    private @Nullable AnnotationMirror getDefaultAnnotationForLocation(AnnotationLocation location, TypeMirror type) {
+        if (location == AnnotationLocation.MISSING_LOCATION) {
+            if (InferenceMain.isHackMode()) {
+                return null;
+            } else {
+                throw new BugInCF("Getting default annotation for missing location!");
+            }
+        }
+
+        final Tree tree; // the tree associated with the location
+        BaseAnnotatedTypeFactory realTypeFactory = InferenceMain.getInstance().getRealTypeFactory();
+
+        if (location instanceof AnnotationLocation.AstPathLocation) {
+            tree = getTreeForLocation((AnnotationLocation.AstPathLocation) location);
+        } else if (location instanceof AnnotationLocation.ClassDeclLocation) {
+            tree = getTreeForLocation(
+                    (AnnotationLocation.ClassDeclLocation) location,
+                    type,
+                    realTypeFactory
+            );
+        } else {
+            throw new BugInCF("Unable to find default annotation for location " + location);
+        }
+
+        AnnotationMirror realAnnotation = defaultAnnotationsCache.get(tree);
+        if (tree != null && realAnnotation == null) {
+            // If its default type can't be found in the cache, we can
+            // fallback to the simplest method.
+            // TODO: If the tree is not under the current top-level tree
+            //  that's being processed, the type factory may crash due
+            //  to lack of information. We may want to investigate if
+            //  this issue ever happens.
+            if (TreeUtils.isTypeTree(tree)) {
+                realAnnotation = realTypeFactory.getAnnotatedTypeFromTypeTree(tree)
+                        .getAnnotationInHierarchy(this.realTop);
+            } else {
+                realAnnotation = realTypeFactory.getAnnotatedType(tree)
+                        .getAnnotationInHierarchy(this.realTop);
+            }
+        }
+        return realAnnotation;
+    }
+
+    /**
+     * Find the tree associated with the given {@link AnnotationLocation.AstPathLocation}.
+     * @param location location to find the tree
+     * @return the tree associated with the given location, which can be null if the location
+     *      is not under the current compilation unit
+     */
+    private @Nullable Tree getTreeForLocation(AnnotationLocation.AstPathLocation location) {
+        ASTRecord astRecord = location.getAstRecord();
+        CompilationUnitTree root = astRecord.ast;
+        return ASTIndex.getNode(root, astRecord);
+    }
+
+    /**
+     * Find the class tree associated with the given {@link AnnotationLocation.ClassDeclLocation}.
+     * @param realTypeFactory the current real {@link BaseAnnotatedTypeFactory}
+     * @param location location to find the tree
+     * @param type type of the associated class
+     * @return the class tree associated with the given location
+     */
+    private Tree getTreeForLocation(
+            AnnotationLocation.ClassDeclLocation location,
+            TypeMirror type,
+            BaseAnnotatedTypeFactory realTypeFactory
+    ) {
+        Element element = processingEnvironment.getTypeUtils().asElement(type);
+        if (!(element instanceof TypeElement)) {
+            throw new BugInCF(
+                    "Expected to get a TypeElement for %s at %s, but received %s.", type, location, element);
+        }
+
+        TypeElement typeElement = (TypeElement) element;
+        Name fullyQualifiedName = ((Symbol.ClassSymbol)typeElement).flatName();
+        if (!fullyQualifiedName.contentEquals(location.getFullyQualifiedClassName())) {
+            throw new BugInCF(
+                    "TypeElement for %s has qualified name %s, and it doesn't match with the location %s",
+                    type, fullyQualifiedName, location);
+        }
+
+        return realTypeFactory.declarationFromElement(typeElement);
     }
 
     @Override

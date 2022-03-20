@@ -52,7 +52,7 @@ dependencies {
     implementation 'org.plumelib:options:1.0.5'
     implementation 'org.plumelib:plume-util:1.5.8'
 
-    implementation 'com.google.guava:guava:31.0.1-jre'
+    implementation 'com.google.guava:guava:31.1-jre'
 
     // AFU is an "includedBuild" imported in settings.gradle, so the version number doesn't matter.
     // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite

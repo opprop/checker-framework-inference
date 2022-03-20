@@ -1,14 +1,18 @@
 package checkers.inference.dataflow;
 
+import org.checkerframework.dataflow.analysis.ConditionalTransferResult;
 import org.checkerframework.dataflow.analysis.RegularTransferResult;
 import org.checkerframework.dataflow.analysis.TransferInput;
 import org.checkerframework.dataflow.analysis.TransferResult;
 import org.checkerframework.dataflow.cfg.node.AssignmentNode;
+import org.checkerframework.dataflow.cfg.node.EqualToNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
+import org.checkerframework.dataflow.cfg.node.NotEqualNode;
 import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
+import org.checkerframework.dataflow.expression.JavaExpression;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
@@ -21,6 +25,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeKind;
 
 import com.sun.source.tree.Tree;
@@ -31,6 +36,8 @@ import checkers.inference.InferenceMain;
 import checkers.inference.SlotManager;
 import checkers.inference.VariableAnnotator;
 import checkers.inference.model.AnnotationLocation;
+import checkers.inference.model.ComparisonVariableSlot;
+import checkers.inference.model.ConstraintManager;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Slot;
@@ -400,5 +407,102 @@ public class InferenceTransfer extends CFTransfer {
 
     private boolean isDeclarationWithInitializer(AssignmentNode assignmentNode) {
         return (assignmentNode.getTree().getKind() == Tree.Kind.VARIABLE);
+    }
+
+    /**
+     * Create one {@link ComparisonVariableSlot} for one operand of a comparison for each of the then store
+     * and else store separately.
+     * @param node a CFG node representing one operand of a comparison
+     * @param thenStore the then store in which the value of the given node is updated
+     * @param elseStore the else store in which the value of the given node is updated
+     */
+    private void createComparisonVariableSlot(Node node, CFStore thenStore, CFStore elseStore) {
+        // Only create refinement comparison slot for variables
+        // TODO: deal with comparison between more complex expressions
+        Node targetNode = node;
+        if (node instanceof AssignmentNode) {
+            AssignmentNode a = (AssignmentNode) node;
+            targetNode = a.getTarget();
+        }
+        if (!(targetNode instanceof LocalVariableNode) && !(targetNode instanceof FieldAccessNode)) {
+            return;
+        }
+        Tree tree = targetNode.getTree();
+        ConstraintManager constraintManager = InferenceMain.getInstance().getConstraintManager();
+        SlotManager slotManager = getInferenceAnalysis().getSlotManager();
+
+        AnnotatedTypeMirror atm = typeFactory.getAnnotatedType(tree);
+        Slot slotToRefine = slotManager.getSlot(atm);
+
+        // TODO: Understand why there are null slots
+        if (InferenceMain.isHackMode(slotToRefine == null)) {
+            logger.fine("HackMode: slotToRefine is null !");
+            return;
+        }
+
+        if (slotToRefine instanceof RefinementVariableSlot) {
+            slotToRefine = ((RefinementVariableSlot) slotToRefine).getRefined();
+            assert !(slotToRefine instanceof RefinementVariableSlot);
+        }
+
+        AnnotationLocation location =
+                VariableAnnotator.treeToLocation(analysis.getTypeFactory(), tree);
+        // TODO: find out why there are missing location
+        if (InferenceMain.isHackMode(location == AnnotationLocation.MISSING_LOCATION)) {
+            logger.fine("HackMode: create ComparisonVariableSlot on MISSING_LOCATION !");
+            return;
+        }
+        ComparisonVariableSlot thenSlot = slotManager.createComparisonVariableSlot(location, slotToRefine, true);
+        constraintManager.addSubtypeConstraint(thenSlot, slotToRefine);
+        ComparisonVariableSlot elseSlot = slotManager.createComparisonVariableSlot(location, slotToRefine, false);
+        constraintManager.addSubtypeConstraint(elseSlot, slotToRefine);
+
+        if (slotToRefine instanceof VariableSlot) {
+            // ComparisonVariableSlots stores the refined value after comparison, so add it to the "refinedTo" list
+            ((VariableSlot) slotToRefine).getRefinedToSlots().add(thenSlot);
+            ((VariableSlot) slotToRefine).getRefinedToSlots().add(elseSlot);
+        }
+
+        AnnotationMirror thenAm = slotManager.getAnnotation(thenSlot);
+        AnnotationMirror elseAm = slotManager.getAnnotation(elseSlot);
+
+        // If node is assignment, iterate over lhs; otherwise, just node.
+        JavaExpression receiver;
+        receiver = JavaExpression.fromNode(targetNode);
+        thenStore.clearValue(receiver);
+        thenStore.insertValue(receiver, thenAm);
+        elseStore.clearValue(receiver);
+        elseStore.insertValue(receiver, elseAm);
+    }
+
+    @Override
+    public TransferResult<CFValue, CFStore> visitEqualTo(
+            EqualToNode n, TransferInput<CFValue, CFStore> in) {
+        TransferResult<CFValue, CFStore> result = super.visitEqualTo(n, in);
+        CFStore thenStore = result.getThenStore();
+        CFStore elseStore = result.getElseStore();
+
+        createComparisonVariableSlot(n.getLeftOperand(), thenStore, elseStore);
+        createComparisonVariableSlot(n.getRightOperand(), thenStore, elseStore);
+
+        CFValue newResultValue =
+                getInferenceAnalysis()
+                        .createAbstractValue(typeFactory.getAnnotatedType(n.getTree()));
+        return new ConditionalTransferResult<>(newResultValue, thenStore, elseStore);
+    }
+
+    @Override
+    public TransferResult<CFValue, CFStore> visitNotEqual(
+            NotEqualNode n, TransferInput<CFValue, CFStore> in) {
+        TransferResult<CFValue, CFStore> result = super.visitNotEqual(n, in);
+        CFStore thenStore = result.getThenStore();
+        CFStore elseStore = result.getElseStore();
+
+        createComparisonVariableSlot(n.getLeftOperand(), thenStore, elseStore);
+        createComparisonVariableSlot(n.getRightOperand(), thenStore, elseStore);
+
+        CFValue newResultValue =
+                analysis.createAbstractValue(typeFactory.getAnnotatedType(n.getTree()));
+        return new ConditionalTransferResult<>(newResultValue, thenStore, elseStore);
     }
 }

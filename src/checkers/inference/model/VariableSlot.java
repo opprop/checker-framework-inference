@@ -30,8 +30,9 @@ public abstract class VariableSlot extends Slot {
      */
     private AnnotationLocation location;
 
-    /** Refinement variables that refine this slot. */
-    private final Set<RefinementVariableSlot> refinedToSlots = new HashSet<>();
+    /** Variable slots that refine this slot, which can be {@link RefinementVariableSlot} in an assignment
+     * and {@link ComparisonVariableSlot} in a comparison. */
+    private final Set<VariableSlot> refinedToSlots = new HashSet<>();
 
     /**
      * Create a Slot with the given annotation location.
@@ -53,7 +54,7 @@ public abstract class VariableSlot extends Slot {
         this.location = location;
     }
 
-    public Set<RefinementVariableSlot> getRefinedToSlots() {
+    public Set<VariableSlot> getRefinedToSlots() {
         return refinedToSlots;
     }
 

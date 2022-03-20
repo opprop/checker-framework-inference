@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import org.checkerframework.javacutil.BugInCF;
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 
 /**
  * Represents a constraint between the result of an arithmetic operation and its two operands.
@@ -39,7 +39,7 @@ public class ArithmeticConstraint extends Constraint {
          * @param kind a {@link Tree.Kind} for an arithmetic operation
          * @return the corresponding {@link ArithmeticOperationKind} for the given arithmetic operation
          */
-        public static ArithmeticOperationKind fromTreeKind(Kind kind) {
+        public static ArithmeticOperationKind fromTreeKind(Tree.Kind kind) {
             switch (kind) {
                 case PLUS:
                 case PLUS_ASSIGNMENT:

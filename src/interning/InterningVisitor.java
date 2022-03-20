@@ -428,7 +428,7 @@ public final class InterningVisitor extends InferenceVisitor<InterningChecker, B
             return false; // The if statement is not the first statement in the method.
         }
 
-        ExecutableElement enclosing = TreeUtils.elementFromDeclaration(visitorState.getMethodTree());
+        ExecutableElement enclosing = TreeUtils.elementFromDeclaration(methodTree);
         assert enclosing != null;
 
         final Element lhs = TreeUtils.elementFromUse((IdentifierTree)left);

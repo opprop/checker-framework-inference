@@ -3,9 +3,10 @@ package checkers.inference.model;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.sun.source.util.TreePath;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.VisitorState;
 import org.checkerframework.javacutil.BugInCF;
 import checkers.inference.InferenceAnnotatedTypeFactory;
 import checkers.inference.VariableAnnotator;
@@ -30,12 +31,9 @@ public class ConstraintManager {
 
     private QualifierHierarchy realQualHierarchy;
 
-    private VisitorState visitorState;
-
     public void init(InferenceAnnotatedTypeFactory inferenceTypeFactory) {
         this.inferenceTypeFactory = inferenceTypeFactory;
         this.realQualHierarchy = inferenceTypeFactory.getRealQualifierHierarchy();
-        this.visitorState = inferenceTypeFactory.getVisitorState();
         this.checker = inferenceTypeFactory.getChecker();
     }
 
@@ -166,9 +164,9 @@ public class ConstraintManager {
 
     // TODO: give location directly in Constraint.create() methods
     private AnnotationLocation getCurrentLocation() {
-        if (visitorState.getPath() != null) {
-            return VariableAnnotator.treeToLocation(inferenceTypeFactory,
-                    visitorState.getPath().getLeaf());
+        TreePath path = inferenceTypeFactory.getVisitorTreePath();
+        if (path != null) {
+            return VariableAnnotator.treeToLocation(inferenceTypeFactory, path.getLeaf());
         } else {
             return AnnotationLocation.MISSING_LOCATION;
         }
@@ -190,7 +188,11 @@ public class ConstraintManager {
             // relevant error message (eg assignment.type.incompatible) at the precise code AST node
             // this subtype constraint originates from.
             // Same for constraints below.
-            checker.reportError(visitorState.getPath().getLeaf(), "subtype.constraint.unsatisfiable", subtype, supertype);
+            checker.reportError(
+                    inferenceTypeFactory.getVisitorTreePath().getLeaf(),
+                    "subtype.constraint.unsatisfiable",
+                    subtype,
+                    supertype);
         } else {
             add(constraint);
         }
@@ -220,7 +222,11 @@ public class ConstraintManager {
     public void addEqualityConstraint(Slot first, Slot second) {
         Constraint constraint = createEqualityConstraint(first, second);
         if (constraint instanceof AlwaysFalseConstraint) {
-            checker.reportError(visitorState.getPath().getLeaf(), "equality.constraint.unsatisfiable", first, second);
+            checker.reportError(
+                    inferenceTypeFactory.getVisitorTreePath().getLeaf(),
+                    "equality.constraint.unsatisfiable",
+                    first,
+                    second);
         } else {
             add(constraint);
         }
@@ -234,7 +240,11 @@ public class ConstraintManager {
     public void addInequalityConstraint(Slot first, Slot second) {
         Constraint constraint = createInequalityConstraint(first, second);
         if (constraint instanceof AlwaysFalseConstraint) {
-            checker.reportError(visitorState.getPath().getLeaf(), "inequality.constraint.unsatisfiable", first, second);
+            checker.reportError(
+                    inferenceTypeFactory.getVisitorTreePath().getLeaf(),
+                    "inequality.constraint.unsatisfiable",
+                    first,
+                    second);
         } else {
             add(constraint);
         }
@@ -248,7 +258,11 @@ public class ConstraintManager {
     public void addComparableConstraint(Slot first, Slot second) {
         Constraint constraint = createComparableConstraint(first, second);
         if (constraint instanceof AlwaysFalseConstraint) {
-            checker.reportError(visitorState.getPath().getLeaf(), "comparable.constraint.unsatisfiable", first, second);
+            checker.reportError(
+                    inferenceTypeFactory.getVisitorTreePath().getLeaf(),
+                    "comparable.constraint.unsatisfiable",
+                    first,
+                    second);
         } else {
             add(constraint);
         }

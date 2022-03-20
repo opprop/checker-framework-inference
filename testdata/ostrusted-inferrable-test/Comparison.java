@@ -5,6 +5,7 @@ public class Comparison {
 
     void foo(@OsUntrusted Object o) {
         if (o == null) {
+            // Literal null is @OsTrusted. `o` is refined to @OsTrusted through ComparisonConstraint.
             bar(o);
         } 
     }

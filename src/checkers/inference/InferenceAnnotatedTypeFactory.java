@@ -28,6 +28,7 @@ import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
@@ -570,10 +571,14 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     @Override
     public Set<AnnotationMirror> getTypeDeclarationBounds(TypeMirror type) {
-        final TypeElement elt = (TypeElement) getProcessingEnv().getTypeUtils().asElement(type);
-        AnnotationMirror vAnno = variableAnnotator.getClassDeclVarAnnot(elt);
-        if (vAnno != null) {
-            return Collections.singleton(vAnno);
+        final Element elt = getProcessingEnv().getTypeUtils().asElement(type);
+        AnnotationMirror vAnno;
+
+        if (elt instanceof TypeElement) {
+            vAnno = variableAnnotator.getClassDeclVarAnnot((TypeElement) elt);
+            if (vAnno != null) {
+                return Collections.singleton(vAnno);
+            }
         }
 
         // This is to handle the special case of anonymous classes when the super class (or interface)
@@ -590,7 +595,13 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         // If the declaration bound of the underlying type is not cached, use default
-        return (Set<AnnotationMirror>) getDefaultTypeDeclarationBounds();
+        Set<AnnotationMirror> realBounds = realTypeFactory.getTypeDeclarationBounds(type);
+        Set<AnnotationMirror> boundsVarAnnos = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror realBound : realBounds) {
+            Slot slot = slotManager.getSlot(realBound);
+            boundsVarAnnos.add(slotManager.getAnnotation(slot));
+        }
+        return boundsVarAnnos;
     }
 
     /**

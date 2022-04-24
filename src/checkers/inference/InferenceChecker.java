@@ -1,7 +1,5 @@
 package checkers.inference;
 
-import java.util.Properties;
-
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
 
@@ -22,14 +20,5 @@ public class InferenceChecker extends BaseTypeChecker {
     @Override
     protected BaseTypeVisitor<?> createSourceVisitor() {
         return null;
-    }
-
-    @Override
-    public Properties getMessagesProperties() {
-        // Add the messages.properties file defined in the same location as
-        // InferenceChecker
-        Properties messages = super.getMessagesProperties();
-        messages.putAll(getProperties(this.getClass(), MSGS_FILE, true));
-        return messages;
     }
 }

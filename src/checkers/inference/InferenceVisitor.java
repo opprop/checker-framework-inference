@@ -1,5 +1,7 @@
 package checkers.inference;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.util.TreePath;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -61,7 +63,7 @@ import org.plumelib.util.ArraysPlume;
  *  That is, the methods from BaseTypeVisiotr should be migrated here and InferenceVisitor
  *  should replace it in the Visitor hierarchy.
  */
-// TODO(Zhiping): new logics from BaseTypeVisiotr should be migrated here
+// TODO(Zhiping): new logics from BaseTypeVisitor should be migrated here
 public class InferenceVisitor<Checker extends InferenceChecker,
         Factory extends BaseAnnotatedTypeFactory>
         extends BaseTypeVisitor<Factory> {
@@ -88,6 +90,15 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     @Override
     protected Factory createTypeFactory() {
         return (Factory)((BaseInferrableChecker)checker).getTypeFactory();
+    }
+
+    @Override
+    public void visit(TreePath path) {
+        if (infer) {
+            final SlotManager slotManager = InferenceMain.getInstance().getSlotManager();
+            slotManager.setTopLevelClass((ClassTree) path.getLeaf());
+        }
+        super.visit(path);
     }
 
     public void doesNotContain(AnnotatedTypeMirror ty, AnnotationMirror mod, String msgkey, Tree node) {
@@ -165,6 +176,15 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                 InferenceMain.isHackMode());
     }
 
+    private AnnotationMirror findMainAnnotation(AnnotatedTypeMirror type, AnnotationMirror target) {
+        if (infer) {
+            AnnotationMirror varAnnot = ((InferenceAnnotatedTypeFactory) atypeFactory).getVarAnnot();
+            return type.getAnnotationInHierarchy(varAnnot);
+        }
+
+        return type.getAnnotationInHierarchy(target);
+    }
+
     public void effectiveIs(AnnotatedTypeMirror ty, AnnotationMirror mod, String msgkey, Tree node) {
         AnnotationMirror effective = findEffectiveAnnotation(ty, mod);
         if (InferenceMain.isHackMode(effective == null)) {
@@ -180,7 +200,12 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     }
 
     public void mainIs(AnnotatedTypeMirror ty, AnnotationMirror mod, String msgkey, Tree node) {
-        annoIs(ty, ty.getAnnotationInHierarchy(mod), mod, msgkey, node);
+        AnnotationMirror main = findMainAnnotation(ty, mod);
+        if (InferenceMain.isHackMode(main == null)) {
+            return;
+        }
+
+        annoIs(ty, main, mod, msgkey, node);
     }
 
     public void mainIsSubtype(AnnotatedTypeMirror ty, AnnotationMirror mod, String msgkey, Tree node) {

@@ -1,6 +1,8 @@
 package checkers.inference;
 
 import checkers.inference.model.LubVariableSlot;
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.CompilationUnitTree;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 import java.util.List;
@@ -11,6 +13,7 @@ import javax.lang.model.type.TypeMirror;
 import checkers.inference.model.AnnotationLocation;
 import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
+import checkers.inference.model.ComparisonVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.RefinementVariableSlot;
@@ -42,6 +45,19 @@ public interface SlotManager {
      * @return SourceVariableSlot that corresponds to this location
      */
     SourceVariableSlot createSourceVariableSlot(AnnotationLocation location, TypeMirror type);
+
+    /**
+     * Create new VariableSlot and return the reference to it if no VariableSlot
+     * on this location exists. Otherwise return the reference to existing VariableSlot
+     * on this location. Each location uniquely identifies a polymorphic instance.
+     * For now, there's no dedicated slot for polymorphic instance, but we may add one
+     * in the future.
+     *
+     * @param location
+     *            used to locate this variable in code
+     * @return VariableSlot that corresponds to this location
+     */
+    VariableSlot createPolymorphicInstanceSlot(AnnotationLocation location, TypeMirror type);
 
     /**
      * Create new RefinementVariableSlot (as well as the refinement constraint if
@@ -148,22 +164,23 @@ public interface SlotManager {
      * ArithmeticVariableSlot.
      *
      * @param location an AnnotationLocation used to locate this variable in code
+     * @param lhsAtm atm of the left operand
+     * @param rhsAtm atm of the right operand
      * @return the ArithmeticVariableSlot for the given location
      */
-    ArithmeticVariableSlot createArithmeticVariableSlot(AnnotationLocation location);
+    ArithmeticVariableSlot createArithmeticVariableSlot(
+            AnnotationLocation location, AnnotatedTypeMirror lhsAtm, AnnotatedTypeMirror rhsAtm);
 
     /**
-     * Retrieves the ArithmeticVariableSlot created for the given location if it has been previously
-     * created, otherwise null is returned.
-     *
-     * This method allows faster retrieval of already created ArithmeticVariableSlots during
-     * traversals of binary trees in an InferenceVisitor subclass, which does not have direct access
-     * to the ATM containing this slot.
+     * Create new ComparisonVariableSlot at the given location and return a reference to it if no
+     * ComparisonVariableSlot exists for the location. Otherwise, returns the existing
+     * ComparisonVariableSlot.
      *
      * @param location an AnnotationLocation used to locate this variable in code
-     * @return the ArithmeticVariableSlot for the given location, or null if none exists
+     * @param thenBranch true if is for the then store, false if is for the else store
+     * @return the ComparisonVariableSlot for the given location
      */
-    ArithmeticVariableSlot getArithmeticVariableSlot(AnnotationLocation location);
+    ComparisonVariableSlot createComparisonVariableSlot(AnnotationLocation location, Slot refined, boolean thenBranch);
 
     /**
      * Create a VarAnnot equivalent to the given realQualifier.
@@ -216,4 +233,15 @@ public interface SlotManager {
     List<VariableSlot> getVariableSlots();
 
     List<ConstantSlot> getConstantSlots();
+
+    /**
+     * This method informs slot manager of the current top level class tree that's being type processed.
+     * Slot manager can then preprocess this information by clearing caches, resolving slot default
+     * types, etc.
+     *
+     * Note that trees that are not within this tree may be missing some information
+     * (in the JCTree implementation), and this is because they are either not fully
+     * initialized or being garbage-recycled.
+     */
+    void setTopLevelClass(ClassTree classTree);
 }

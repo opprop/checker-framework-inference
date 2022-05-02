@@ -1205,10 +1205,6 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             final TypeParameterElement typeParamElement = (TypeParameterElement) typeVar.getUnderlyingType().asElement();
             final TypeParameterTree typeParameterTree   = (TypeParameterTree) tree;
 
-            if (!elementToAtm.containsKey(typeParamElement)) {
-                storeElementType(typeParamElement, typeVar);
-            }
-
             // add lower bound annotation
             addPrimaryVariable(typeVar.getLowerBound(), tree);
 
@@ -1251,6 +1247,11 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
 
                 final AnnotatedTypeMirror upperBound = typeVar.getUpperBound();
                 upperBound.addAnnotation(slotManager.getAnnotation(extendsSlot));
+            }
+
+            if (!elementToAtm.containsKey(typeParamElement)) {
+                // cache the element ATM when it's fully annotated
+                storeElementType(typeParamElement, typeVar);
             }
 
         } else  {

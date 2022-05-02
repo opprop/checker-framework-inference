@@ -453,7 +453,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             // TODO: THIS CRASHES ON RECURSIVE TYPES
             typeVarDecl = inferenceTypeFactory.getAnnotatedType(typeVarDeclElem);
         } else {
-            typeVarDecl = elementToAtm.get(typeVarDeclElem);
+            typeVarDecl = elementToAtm.get(typeVarDeclElem).deepCopy();
             // TODO: I THINK THIS IS UNNECESSARY DUE TO InferenceVisitor.visitVariable
 //            if(tree instanceof VariableTree && !treeToVariable.containsKey(tree)) { // if it's a declaration of a variable, store it
 //                final Element varElement = TreeUtils.elementFromDeclaration((VariableTree) tree);
@@ -599,7 +599,8 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * @see checkers.inference.VariableAnnotator#annotateElementFromStore
      */
     public void storeElementType(final Element element, final AnnotatedTypeMirror atm) {
-        elementToAtm.put(element, atm);
+        final AnnotatedTypeMirror copy = atm.deepCopy();
+        elementToAtm.put(element, copy);
     }
 
     /**
@@ -1204,10 +1205,6 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             final TypeParameterElement typeParamElement = (TypeParameterElement) typeVar.getUnderlyingType().asElement();
             final TypeParameterTree typeParameterTree   = (TypeParameterTree) tree;
 
-            if (!elementToAtm.containsKey(typeParamElement)) {
-                storeElementType(typeParamElement, typeVar);
-            }
-
             // add lower bound annotation
             addPrimaryVariable(typeVar.getLowerBound(), tree);
 
@@ -1250,6 +1247,11 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
 
                 final AnnotatedTypeMirror upperBound = typeVar.getUpperBound();
                 upperBound.addAnnotation(slotManager.getAnnotation(extendsSlot));
+            }
+
+            if (!elementToAtm.containsKey(typeParamElement)) {
+                // cache the element ATM when it's fully annotated
+                storeElementType(typeParamElement, typeVar);
             }
 
         } else  {

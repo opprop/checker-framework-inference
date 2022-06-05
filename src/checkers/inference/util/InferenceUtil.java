@@ -44,6 +44,14 @@ public class InferenceUtil {
         return oldAnnos;
     }
 
+    public static void removePrimaryTypeVariableAnnotation(AnnotatedTypeVariable atv, AnnotationMirror potentialVarAnno)  {
+        AnnotationMirror ub = atv.getUpperBound().getAnnotationInHierarchy(potentialVarAnno);
+        AnnotationMirror lb = atv.getLowerBound().getAnnotationInHierarchy(potentialVarAnno);
+        atv.removeAnnotation(potentialVarAnno);
+        atv.getUpperBound().addAnnotation(ub);
+        atv.getLowerBound().addAnnotation(lb);
+    }
+
     /**
      * TODO: This method is similar to the code in https://github.com/eisop/checker-framework
      * /blob/6f12277290642f8fb89a5c614b31fe419eb0a7b1/framework/src/main/java/

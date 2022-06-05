@@ -44,6 +44,14 @@ public class InferenceUtil {
         return oldAnnos;
     }
 
+    public static void removePrimaryTypeVariableAnnotation(AnnotatedTypeVariable atv, AnnotationMirror potentialVarAnno)  {
+        AnnotationMirror ub = atv.getUpperBound().getAnnotationInHierarchy(potentialVarAnno);
+        AnnotationMirror lb = atv.getLowerBound().getAnnotationInHierarchy(potentialVarAnno);
+        atv.removeAnnotation(potentialVarAnno);
+        atv.getUpperBound().addAnnotation(ub);
+        atv.getLowerBound().addAnnotation(lb);
+    }
+
     /**
      * If the given condition isn't true throw an illegal argument exception with the given message
      */

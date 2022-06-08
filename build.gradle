@@ -28,7 +28,8 @@ val isJava8 by extra(JavaVersion.current() == JavaVersion.VERSION_1_8)
 val errorproneJavacVersion by extra("9+181-r4173-1")
 // End of extra project properties
 
-println("""
+println(
+"""
 ====================================
     Checker Framework Inference     
 ====================================
@@ -37,30 +38,29 @@ println("""
 Important Environment Variables
 -------------------------------
 CHECKERFRAMEWORK: $checkerFrameworkPath
-""".trimIndent())
+""".trimIndent()
+)
 
 repositories {
     mavenCentral()
 }
 
-configurations {
-    create("javacJar")
-}
+val javacJar by configurations.creating
 
 dependencies {
     if (isJava8) {
-        "javacJar"(group = "com.google.errorprone", name = "javac", version = errorproneJavacVersion)
+        javacJar("com.google.errorprone:javac:$errorproneJavacVersion")
     }
 
     implementation(files(checkerJar))
-    implementation(group = "com.google.errorprone", name = "javac", version = errorproneJavacVersion)
+    implementation("com.google.errorprone:javac:$errorproneJavacVersion")
 
     implementation("org.plumelib:options:1.0.5")
     implementation("org.plumelib:plume-util:1.5.8")
 
     implementation("com.google.guava:guava:31.1-jre")
 
-    // AFU is an "includedBuild" imported in settings.gradle, so the version number doesn"t matter.
+    // AFU is an "includedBuild" imported in settings.gradle, so the version number doesn't matter.
     // https://docs.gradle.org/current/userguide/composite_builds.html#settings_defined_composite
     implementation("org.checkerframework:annotation-file-utilities:*") {
         exclude(group = "com.google.errorprone", module = "javac")
@@ -75,7 +75,12 @@ dependencies {
     implementation("org.ow2.sat4j:org.ow2.sat4j.maxsat:2.3.6")
     implementation(files(z3Jar))
 
-    testImplementation(fileTree("dir" to "${checkerFrameworkPath}/framework-test/build/libs", "include" to "framework-test-*.jar"))
+    testImplementation(
+        fileTree(
+            "dir" to "${checkerFrameworkPath}/framework-test/build/libs",
+            "include" to "framework-test-*.jar"
+        )
+    )
     // Mocking library. Used in a couple tests
     testImplementation("org.mockito:mockito-all:2.0.2-beta")
     testImplementation("junit:junit:4.13.2")
@@ -121,6 +126,29 @@ val buildDLJC by tasks.registering(Exec::class) {
     commandLine("./buildDLJC")
 }
 
+// After each test, this listener will be notified to print a summary.
+// See https://github.com/gradle/gradle/issues/5431
+val testSummaryPrinter = object : TestListener {
+    override fun beforeSuite(suite: TestDescriptor) {}
+    override fun beforeTest(testDescriptor: TestDescriptor) {}
+    override fun afterTest(testDescriptor: TestDescriptor, result: TestResult) {}
+
+    override fun afterSuite(desc: TestDescriptor, result: TestResult) {
+        if (desc.className != null) {
+            val mils = result.endTime - result.startTime
+            val seconds = mils / 1000.0
+
+            println(
+                "Testsuite: ${desc.className}\n" +
+                "Tests run: ${result.testCount}, " +
+                "Failures: ${result.failedTestCount}, " +
+                "Skipped: ${result.skippedTestCount}, " +
+                "Time elapsed: $seconds sec\n"
+            )
+        }
+    }
+}
+
 tasks.test {
     dependsOn(tasks.shadowJar)
     dependsOn(dist)
@@ -136,7 +164,7 @@ tasks.test {
     }
 
     if (isJava8) {
-        jvmArgs("-Xbootclasspath/p:${configurations["javacJar"].asPath}")
+        jvmArgs("-Xbootclasspath/p:${javacJar.asPath}")
     } else {
         // Without this, the test throw "java.lang.OutOfMemoryError: Java heap space"
         // Corresponding pull request: https://github.com/opprop/checker-framework-inference/pull/263
@@ -159,28 +187,7 @@ tasks.test {
         exceptionFormat = TestExceptionFormat.FULL
     }
 
-    // After each test, print a summary.
-    // See https://github.com/gradle/kotlin-dsl/issues/836
-    addTestListener(object : TestListener {
-        override fun beforeSuite(suite: TestDescriptor) {}
-        override fun beforeTest(testDescriptor: TestDescriptor) {}
-        override fun afterTest(testDescriptor: TestDescriptor, result: TestResult) {}
-
-        override fun afterSuite(desc: TestDescriptor, result: TestResult) {
-            if (desc.className != null) {
-                val mils = result.endTime - result.startTime
-                val seconds = mils / 1000.0
-
-                logger.info(
-                    "Testsuite: ${desc.className}\n" +
-                    "Tests run: ${result.testCount}, " +
-                    "Failures: ${result.failedTestCount}, " +
-                    "Skipped: ${result.skippedTestCount}, " +
-                    "Time elapsed: $seconds sec\n"
-                )
-            }
-        }
-    })
+    addTestListener(testSummaryPrinter)
 }
 
 tasks.compileJava {
@@ -225,13 +232,15 @@ val dist by tasks.registering(Copy::class) {
     description = "If your Checker Framework project is fully built, this task " +
             "will build checker-framework-inference.jar, copy all the relevant runtime jars into " +
             "the dist directory."
-    from(files(
-        "${checkerFrameworkPath}/checker/dist/jdk8.jar",
-        "${checkerFrameworkPath}/checker/dist/checker.jar",
-        "${checkerFrameworkPath}/checker/dist/checker-qual.jar",
-        "${checkerFrameworkPath}/checker/dist/checker-util.jar",
-        "${checkerFrameworkPath}/checker/dist/javac.jar",
-    ))
+    from(
+        files(
+            "${checkerFrameworkPath}/checker/dist/jdk8.jar",
+            "${checkerFrameworkPath}/checker/dist/checker.jar",
+            "${checkerFrameworkPath}/checker/dist/checker-qual.jar",
+            "${checkerFrameworkPath}/checker/dist/checker-util.jar",
+            "${checkerFrameworkPath}/checker/dist/javac.jar",
+        )
+    )
     into(file("dist"))
 }
 
@@ -281,7 +290,7 @@ val release by tasks.registering(Zip::class) {
 }
 
 val cloneAndBuildDependencies by tasks.registering(Exec::class) {
-    description ="Clones (or updates) and builds all dependencies"
+    description = "Clones (or updates) and builds all dependencies"
     executable = "./.ci-build-without-test.sh"
 }
 
@@ -290,12 +299,14 @@ val testCheckerInferenceScript by tasks.registering(Exec::class) {
 
     description = "Basic sanity check of scripts/inference"
     executable = "./scripts/inference"
-    setArgs(listOf(
-        "--mode", "TYPECHECK",
-        "--checker", "ostrusted.OsTrustedChecker",
-        "--solver", "checkers.inference.solver.PropagationSolver",
-        "testdata/ostrusted/Test.java"
-    ))
+    setArgs(
+        listOf(
+            "--mode", "TYPECHECK",
+            "--checker", "ostrusted.OsTrustedChecker",
+            "--solver", "checkers.inference.solver.PropagationSolver",
+            "testdata/ostrusted/Test.java"
+        )
+    )
 }
 
 val testCheckerInferenceDevScript by tasks.registering(Exec::class) {
@@ -303,13 +314,15 @@ val testCheckerInferenceDevScript by tasks.registering(Exec::class) {
 
     description = "Basic sanity check of scripts/inference-dev"
     executable = "./scripts/inference-dev"
-    setArgs(listOf(
-        "--mode", "INFER",
-        "--checker", "interning.InterningChecker",
-        "--solver", "checkers.inference.solver.MaxSat2TypeSolver",
-        "--hacks=true",
-        "testdata/interning/MapAssignment.java"
-    ))
+    setArgs(
+        listOf(
+            "--mode", "INFER",
+            "--checker", "interning.InterningChecker",
+            "--solver", "checkers.inference.solver.MaxSat2TypeSolver",
+            "--hacks=true",
+            "testdata/interning/MapAssignment.java"
+        )
+    )
 }
 
 val testDataflowExternalSolvers by tasks.registering(Exec::class) {
@@ -350,20 +363,20 @@ afterEvaluate {
         }
 
         if (isJava8) {
-            jvmArgs("-Xbootclasspath/p:${configurations["javacJar"].asPath}")
+            jvmArgs("-Xbootclasspath/p:${javacJar.asPath}")
         }
 
         testLogging {
             // Always run the tests
             outputs.upToDateWhen { false }
             // The following prints out each time a test is passed.
-             events = mutableSetOf(
-            //     TestLogEvent.PASSED,
-            //     TestLogEvent.SKIPPED,
-                 TestLogEvent.FAILED,
-            //     TestLogEvent.STANDARD_OUT,
-            //     TestLogEvent.STANDARD_ERROR
-             )
+            events = mutableSetOf(
+                //     TestLogEvent.PASSED,
+                //     TestLogEvent.SKIPPED,
+                TestLogEvent.FAILED,
+                //     TestLogEvent.STANDARD_OUT,
+                //     TestLogEvent.STANDARD_ERROR
+            )
 
             // Show the found unexpected diagnostics and expected diagnostics not found.
             exceptionFormat = TestExceptionFormat.FULL
@@ -371,26 +384,7 @@ afterEvaluate {
 
         // After each test, print a summary.
         // See https://github.com/gradle/kotlin-dsl/issues/836
-        addTestListener(object : TestListener {
-            override fun beforeSuite(suite: TestDescriptor) {}
-            override fun beforeTest(testDescriptor: TestDescriptor) {}
-            override fun afterTest(testDescriptor: TestDescriptor, result: TestResult) {}
-
-            override fun afterSuite(desc: TestDescriptor, result: TestResult) {
-                if (desc.className != null) {
-                    val mils = result.endTime - result.startTime
-                    val seconds = mils / 1000.0
-
-                    logger.info(
-                        "Testsuite: ${desc.className}\n" +
-                        "Tests run: ${result.testCount}, " +
-                        "Failures: ${result.failedTestCount}, " +
-                        "Skipped: ${result.skippedTestCount}, " +
-                        "Time elapsed: $seconds sec\n"
-                    )
-                }
-            }
-        })
+        addTestListener(testSummaryPrinter)
     }
 }
 

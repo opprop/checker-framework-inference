@@ -1,5 +1,6 @@
 package checkers.inference.dataflow;
 
+import checkers.inference.model.ComparisonVariableSlot;
 import checkers.inference.util.InferenceUtil;
 import javax.lang.model.type.TypeVariable;
 import org.checkerframework.framework.flow.CFValue;
@@ -153,9 +154,18 @@ public class InferenceValue extends CFValue {
             return other;
         }
 
+        if (thisSlot instanceof ComparisonVariableSlot
+                && ((ComparisonVariableSlot) thisSlot).getRefined().equals(otherSlot)) {
+            return this;
+        }
+        if (otherSlot instanceof ComparisonVariableSlot
+                && ((ComparisonVariableSlot) otherSlot).getRefined().equals(thisSlot)) {
+            return other;
+        }
+
         if (thisSlot instanceof VariableSlot) {
             // Check if one of these has refinement variables that were merged to the other.
-            for (RefinementVariableSlot slot : ((VariableSlot) thisSlot).getRefinedToSlots()) {
+            for (VariableSlot slot : ((VariableSlot) thisSlot).getRefinedToSlots()) {
                 if (slot.isMergedTo(otherSlot)) {
                     return other;
                 }
@@ -164,7 +174,7 @@ public class InferenceValue extends CFValue {
 
         if (otherSlot instanceof VariableSlot) {
             // Same as above
-            for (RefinementVariableSlot slot : ((VariableSlot) otherSlot).getRefinedToSlots()) {
+            for (VariableSlot slot : ((VariableSlot) otherSlot).getRefinedToSlots()) {
                 if (slot.isMergedTo(thisSlot)) {
                     return this;
                 }

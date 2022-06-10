@@ -74,6 +74,16 @@ public class ArithmeticConstraint extends Constraint {
                 case XOR:
                 case XOR_ASSIGNMENT:
                     return XOR;
+                case PLUS_ASSIGNMENT:
+                    return PLUS;
+                case MINUS_ASSIGNMENT:
+                    return MINUS;
+                case MULTIPLY_ASSIGNMENT:
+                    return MULTIPLY;
+                case DIVIDE_ASSIGNMENT:
+                    return DIVIDE;
+                case REMAINDER_ASSIGNMENT:
+                    return REMAINDER;
                 default:
                     throw new BugInCF("There are no defined ArithmeticOperationKinds "
                             + "for the given com.sun.source.tree.Tree.Kind: " + kind);

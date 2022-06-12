@@ -54,8 +54,12 @@ public class InferenceUtil {
         AnnotationMirror ub = atv.getUpperBound().getAnnotationInHierarchy(potentialVarAnno);
         AnnotationMirror lb = atv.getLowerBound().getAnnotationInHierarchy(potentialVarAnno);
         atv.removeAnnotation(potentialVarAnno);
-        atv.getUpperBound().addAnnotation(ub);
-        atv.getLowerBound().addAnnotation(lb);
+        if (ub != null) {
+            atv.getUpperBound().addAnnotation(ub);
+        }
+        if (lb != null) {
+            atv.getLowerBound().addAnnotation(lb);
+        }
     }
 
     /**

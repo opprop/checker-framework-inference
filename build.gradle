@@ -13,7 +13,6 @@ ext {
     checkerFrameworkPath = System.getenv('CHECKERFRAMEWORK') ?: "${jsr308}/checker-framework"
     checkerJar = "${checkerFrameworkPath}/checker/dist/checker.jar"
     afu = "${jsr308}/annotation-tools/annotation-file-utilities"
-    z3Jar = "${projectDir}/lib/com.microsoft.z3.jar"
     lingelingTar = "${projectDir}/lib/lingeling.tar.gz"
     dljcScript = "${jsr308}/do-like-javac/dljc"
 
@@ -67,7 +66,8 @@ dependencies {
 
     implementation 'org.ow2.sat4j:org.ow2.sat4j.core:2.3.6'
     implementation 'org.ow2.sat4j:org.ow2.sat4j.maxsat:2.3.6'
-    implementation files(z3Jar)
+
+    implementation 'tools.aqua:z3-turnkey:4.8.17'
 
     testImplementation fileTree(dir: "${checkerFrameworkPath}/framework-test/build/libs", include: "framework-test-*.jar")
     // Mocking library. Used in a couple tests
@@ -92,13 +92,6 @@ sourceSets {
             srcDirs = ["tests"]
         }
     }
-}
-
-task buildZ3(type: Exec) {
-    description 'Build Z3 solver'
-    onlyIf { !(new File(z3Jar).exists()) }
-    workingDir './scripts'
-    commandLine './buildZ3'
 }
 
 task buildLingeling(type: Exec) {
@@ -163,7 +156,6 @@ test {
 }
 
 compileJava {
-    dependsOn(buildZ3)
     dependsOn(buildLingeling)
     dependsOn(buildDLJC)
     options.compilerArgs = [

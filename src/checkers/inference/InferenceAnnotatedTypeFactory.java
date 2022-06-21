@@ -363,6 +363,9 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     };
 
+    /**
+     * Override this method to re-add EnclosingType type into AnnotatedDeclaredType of a class.
+     */
     @Override
     @SuppressWarnings("deprecation")
     public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {

@@ -363,6 +363,17 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     };
 
+    @Override
+    @SuppressWarnings("deprecation")
+    public AnnotatedDeclaredType fromNewClass(NewClassTree newClassTree) {
+        AnnotatedDeclaredType type = super.fromNewClass(newClassTree);
+        AnnotatedDeclaredType enclosingType = (AnnotatedDeclaredType) getReceiverType(newClassTree);
+        if (enclosingType != null) {
+            type.setEnclosingType(enclosingType);
+        }
+        return type;
+    }
+
     /**
      * TODO: Similar but not the same as AnnotatedTypeFactory.constructorFromUse with space set aside from
      * TODO: comb constraints, track down the differences with constructorFromUse

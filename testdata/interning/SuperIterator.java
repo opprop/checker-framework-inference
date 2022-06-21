@@ -18,8 +18,6 @@
  * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-package no.uib.cipr.matrix.sparse;
-
 import java.util.Iterator;
 import java.util.List;
 

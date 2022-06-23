@@ -27,11 +27,7 @@ import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
-import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.Pair;
-import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.*;
 
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
@@ -392,10 +388,16 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                       "Current path:\n" + getVisitorTreePath();
 
         final ExecutableElement constructorElem = TreeUtils.constructor(newClassTree);;
-        @SuppressWarnings("deprecation") // TODO
-        final AnnotatedTypeMirror constructorReturnType = fromNewClass(newClassTree);
-        addComputedTypeAnnotations(newClassTree, constructorReturnType);
+        // Get the annotations written on the new class tree.
+        AnnotatedDeclaredType constructorReturnType =
+                (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
+        // Get the enclosing type of the constructor, if one exists.
+        // this.new InnerClass()
+        AnnotatedDeclaredType enclosingType = (AnnotatedDeclaredType) getReceiverType(newClassTree);
+        constructorReturnType.setEnclosingType(enclosingType);
 
+        // Add computed annotations to the type.
+        addComputedTypeAnnotations(newClassTree, constructorReturnType);
         final AnnotatedExecutableType constructorType = AnnotatedTypes.asMemberOf(types, this, constructorReturnType, constructorElem);
 
         if (viewpointAdapter != null) {

@@ -19,6 +19,7 @@ import javax.lang.model.element.AnnotationMirror;
 import checkers.inference.model.ConstraintManager;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.Slot;
+import checkers.inference.util.InferenceUtil;
 
 /**
  *
@@ -113,7 +114,7 @@ public class ExistentialVariableInserter {
         typeUse.addAnnotation(slotManager.getAnnotation(potentialVariable));
 
         // now remove only the primary (which has already been propagated to the bounds by fixUpBoundAnnotations)
-        typeUse.removeAnnotation(potentialVarAnno);
+        InferenceUtil.removePrimaryTypeVariableAnnotation((AnnotatedTypeVariable) typeUse, potentialVarAnno);
 
 
         final InsertionVisitor insertionVisitor = new InsertionVisitor(potentialVariable, potentialVarAnno, mustExist);
@@ -254,7 +255,7 @@ public class ExistentialVariableInserter {
         @Override
         public Void visitTypevar_Typevar(AnnotatedTypeVariable type1, AnnotatedTypeVariable type2, Void aVoid) {
             if (matchesSlot(type1)) {
-                type1.removeAnnotation(potentialVarAnno);
+                InferenceUtil.removePrimaryTypeVariableAnnotation(type1, potentialVarAnno);
             }
 
             return super.visitTypevar_Typevar(type1, type2, aVoid);

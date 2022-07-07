@@ -14,7 +14,7 @@ jobs:
       fail-fast: false
       matrix:
         group: [ cfi-tests, downstream-ontology, downstream-security-demo, downstream-universe ]
-        jdk: [ 8, 11 ]
+        jdk: [ 8, 11, 17 ]
     runs-on: ubuntu-latest
     steps:
       - name: Install dependencies

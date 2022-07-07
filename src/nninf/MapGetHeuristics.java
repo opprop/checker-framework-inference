@@ -5,6 +5,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.Resolver;
 import org.checkerframework.javacutil.TreeUtils;
 
 import java.util.List;
@@ -65,7 +66,6 @@ import nninf.qual.KeyFor;
     private final ProcessingEnvironment env;
     private final NninfAnnotatedTypeFactory factory;
     private final AnnotatedTypeFactory keyForFactory;
-    private final Resolver2 resolver;
 
     private final ExecutableElement mapGet;
 
@@ -75,7 +75,6 @@ import nninf.qual.KeyFor;
         this.env = env;
         this.factory = factory;
         this.keyForFactory = keyForFactory;
-        this.resolver = new Resolver2(env);
 
         mapGet = TreeUtils.getMethod("java.util.Map", "get", 1, env);
     }
@@ -139,7 +138,8 @@ import nninf.qual.KeyFor;
 
         List<String> maps = AnnotationUtils.getElementValueArray(anno, factory.keyForValueElement, String.class);
         for (String map: maps) {
-            Element elt = resolver.findVariable(map, path);
+            // TODO: this whole class should be re-implemented
+            Element elt = null; // resolver.findVariable(map, path);
             if (elt != null &&
                     elt.equals(mapElement) &&
                     !isSiteRequired(TreeUtils.getReceiverTree((ExpressionTree)path.getLeaf()), elt)) {

@@ -7,7 +7,6 @@ import org.checkerframework.dataflow.cfg.node.AssignmentNode;
 import org.checkerframework.dataflow.cfg.node.FieldAccessNode;
 import org.checkerframework.dataflow.cfg.node.LocalVariableNode;
 import org.checkerframework.dataflow.cfg.node.Node;
-import org.checkerframework.dataflow.cfg.node.StringConcatenateAssignmentNode;
 import org.checkerframework.dataflow.cfg.node.TernaryExpressionNode;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
@@ -174,30 +173,6 @@ public class InferenceTransfer extends CFTransfer {
         } else {
             throw new BugInCF("Unexpected tree kind in visit assignment:" + assignmentNode.getTree());
         }
-    }
-
-    @Override
-    public TransferResult<CFValue, CFStore> visitStringConcatenateAssignment(StringConcatenateAssignmentNode assignmentNode, TransferInput<CFValue, CFStore> transferInput) {
-        // TODO: CompoundAssigment trees are not refined, see Issue 9
-        CFStore store = transferInput.getRegularStore();
-
-        Tree targetTree = assignmentNode.getLeftOperand().getTree();
-
-        // Code for geting the ATM is copied from visitCompoundAssigment.
-        AnnotatedTypeMirror atm;
-        if (targetTree != null) {
-            // Try to use the target tree if possible.
-            // Getting the Type of a tree for a desugared compound assignment returns a comb variable
-            // which is not what we want to make a refinement variable of.
-            atm = typeFactory.getAnnotatedType(targetTree);
-        } else {
-            // Target trees can be null for refining library fields.
-            atm = typeFactory.getAnnotatedType(assignmentNode.getTree());
-        }
-
-        CFValue result = analysis.createAbstractValue(atm);
-        return new RegularTransferResult<CFValue, CFStore>(finishValue(result, store), store);
-
     }
 
     /**

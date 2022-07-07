@@ -572,14 +572,10 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      */
     @Override
     public Set<AnnotationMirror> getTypeDeclarationBounds(TypeMirror type) {
-        final Element elt = getProcessingEnv().getTypeUtils().asElement(type);
-        AnnotationMirror vAnno;
-
-        if (elt instanceof TypeElement) {
-            vAnno = variableAnnotator.getClassDeclVarAnnot((TypeElement) elt);
-            if (vAnno != null) {
-                return Collections.singleton(vAnno);
-            }
+        final TypeElement elt = (TypeElement) getProcessingEnv().getTypeUtils().asElement(type);
+        AnnotationMirror vAnno = variableAnnotator.getClassDeclVarAnnot(elt);
+        if (vAnno != null) {
+            return Collections.singleton(vAnno);
         }
 
         // This is to handle the special case of anonymous classes when the super class (or interface)

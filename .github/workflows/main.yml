@@ -20,7 +20,11 @@ jobs:
       - name: Install dependencies
         run: |
           sudo apt update
-          sudo apt install ant cpp gradle jq libcurl3-gnutls make maven mercurial python3-requests unzip wget binutils build-essential
+          sudo apt install ant cpp gradle jq libcurl3-gnutls make mercurial python3-requests unzip wget binutils build-essential
+      - name: Set up Maven
+        uses: stCarolas/setup-maven@v4.4
+        with:
+          maven-version: 3.8.6
       - name: Pull Request Checkout
         uses: actions/checkout@v2
         with:

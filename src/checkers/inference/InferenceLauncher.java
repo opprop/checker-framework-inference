@@ -3,6 +3,7 @@ package checkers.inference;
 
 import org.checkerframework.framework.util.CheckerMain;
 import org.checkerframework.framework.util.ExecUtil;
+import org.checkerframework.javacutil.SystemUtil;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -163,6 +164,19 @@ public class InferenceLauncher {
         String bcp = getInferenceRuntimeBootclassPath();
         if (bcp != null && !bcp.isEmpty()) {
             argList.add("-Xbootclasspath/p:" + bcp);
+        }
+
+        if (SystemUtil.getJreVersion() > 8) {
+            // Keep in sync with build.gradle
+            argList.addAll(Arrays.asList("--add-exports", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+                    "--add-exports", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+                    "--add-exports", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+                    "--add-exports", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+                    "--add-exports", "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+                    "--add-exports", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+                    "--add-exports", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+                    "--add-exports", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+                    "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED"));
         }
 
         argList.add("-classpath");

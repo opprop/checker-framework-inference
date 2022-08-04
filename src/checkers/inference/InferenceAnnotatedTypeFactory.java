@@ -2,6 +2,7 @@ package checkers.inference;
 
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Slot;
+import com.sun.source.util.TreePath;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAnalysis;
@@ -149,7 +150,12 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         existentialInserter = new ExistentialVariableInserter(slotManager, constraintManager,
                                                               realTop, varAnnot, variableAnnotator);
 
-        inferencePoly = new InferenceQualifierPolymorphism(slotManager, variableAnnotator, this, varAnnot);
+        inferencePoly = new InferenceQualifierPolymorphism(
+                slotManager,
+                variableAnnotator,
+                this,
+                realTypeFactory,
+                varAnnot);
 
         constantToVariableAnnotator = new ConstantToVariableAnnotator(realTop, varAnnot);
         // Every subclass must call postInit!
@@ -308,7 +314,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public ParameterizedExecutableType methodFromUse(final MethodInvocationTree methodInvocationTree) {
         assert methodInvocationTree != null : "MethodInvocationTree in methodFromUse was null.  " +
-                                              "Current path:\n" + this.visitorState.getPath();
+                                              "Current path:\n" + getVisitorTreePath();
         final ExecutableElement methodElem = TreeUtils.elementFromUse(methodInvocationTree);
 
         // TODO: Used in comb constraints, going to leave it in to ensure the element has been visited
@@ -369,9 +375,10 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     @Override
     public ParameterizedExecutableType constructorFromUse(final NewClassTree newClassTree) {
         assert newClassTree != null : "NewClassTree was null when attempting to get constructorFromUse. " +
-                                      "Current path:\n" + this.visitorState.getPath();
+                                      "Current path:\n" + getVisitorTreePath();
 
         final ExecutableElement constructorElem = TreeUtils.constructor(newClassTree);;
+        @SuppressWarnings("deprecation") // TODO
         final AnnotatedTypeMirror constructorReturnType = fromNewClass(newClassTree);
         addComputedTypeAnnotations(newClassTree, constructorReturnType);
 
@@ -536,7 +543,6 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                 treeAnnotator.visit(declaration, type);
             } else {
                 bytecodeTypeAnnotator.annotate(element, type);
-
             }
         }
     }
@@ -550,7 +556,6 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         compilationUnitsHandled += 1;
         this.realTypeFactory.setRoot( root );
         this.variableAnnotator.clearTreeInfo();
-        this.slotManager.setRoot(root);
         super.setRoot(root);
     }
 
@@ -572,6 +577,19 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             return Collections.singleton(vAnno);
         }
 
+        // This is to handle the special case of anonymous classes when the super class (or interface)
+        // identifier is explicit annotated, e.g.
+        //      A a1 = new @OsUntrusted A() {};
+        // In such cases, the declaration bound of the anonymous class is the explicit annotation on
+        // the super class (or interface) identifier.
+        final List<? extends AnnotationMirror> annos = type.getAnnotationMirrors();
+        AnnotationMirror realAnno = qualHierarchy.findAnnotationInHierarchy(annos, realTop);
+        if (realAnno != null) {
+            Slot slot = slotManager.getSlot(realAnno);
+            vAnno = slotManager.getAnnotation(slot);
+            return Collections.singleton(vAnno);
+        }
+
         // If the declaration bound of the underlying type is not cached, use default
         return (Set<AnnotationMirror>) getDefaultTypeDeclarationBounds();
     }
@@ -588,5 +606,6 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     public AnnotatedTypeMirror getTypeOfExtendsImplements(Tree clause) {
         return getAnnotatedTypeFromTypeTree(clause);
     }
+
 }
 

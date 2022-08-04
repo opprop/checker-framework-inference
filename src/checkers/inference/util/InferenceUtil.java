@@ -45,6 +45,24 @@ public class InferenceUtil {
     }
 
     /**
+     * TODO: This method is similar to the code in https://github.com/eisop/checker-framework
+     * /blob/6f12277290642f8fb89a5c614b31fe419eb0a7b1/framework/src/main/java/
+     * org/checkerframework/framework/type/DefaultInferredTypesApplier.java#L134,
+     * it should be cleaned up when the code of this link is improved.
+     */
+    public static void removePrimaryTypeVariableAnnotation(AnnotatedTypeVariable atv, AnnotationMirror potentialVarAnno)  {
+        AnnotationMirror ub = atv.getUpperBound().getAnnotationInHierarchy(potentialVarAnno);
+        AnnotationMirror lb = atv.getLowerBound().getAnnotationInHierarchy(potentialVarAnno);
+        atv.removeAnnotation(potentialVarAnno);
+        if (ub != null) {
+            atv.getUpperBound().addAnnotation(ub);
+        }
+        if (lb != null) {
+            atv.getLowerBound().addAnnotation(lb);
+        }
+    }
+
+    /**
      * If the given condition isn't true throw an illegal argument exception with the given message
      */
     public static void testArgument(boolean condition, final String message) {

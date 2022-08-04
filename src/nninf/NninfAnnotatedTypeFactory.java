@@ -20,6 +20,7 @@ import nninf.qual.NonNull;
 import nninf.qual.Nullable;
 import nninf.qual.PolyNull;
 import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 import javax.lang.model.element.Element;
@@ -96,7 +97,7 @@ public class NninfAnnotatedTypeFactory extends GameAnnotatedTypeFactory {
         Element element = TreeUtils.elementFromUse(tree);
         TypeElement typeElt = ElementUtils.enclosingTypeElement(element);
 
-        ClassTree enclosingClass = getCurrentClassTree(tree);
+        ClassTree enclosingClass = TreePathUtil.enclosingClass(getPath(tree));
         if (enclosingClass != null
                 && isSubtype(TreeUtils.elementFromDeclaration(enclosingClass), typeElt)) {
             return true;

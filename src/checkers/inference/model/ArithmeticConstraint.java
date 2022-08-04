@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 import org.checkerframework.javacutil.BugInCF;
-import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.Tree;
 
 /**
  * Represents a constraint between the result of an arithmetic operation and its two operands.
@@ -33,29 +33,46 @@ public class ArithmeticConstraint extends Constraint {
             this.opSymbol = opSymbol;
         }
 
-        public static ArithmeticOperationKind fromTreeKind(Kind kind) {
+        /**
+         * Get the {@link ArithmeticOperationKind} corresponding to a {@link Tree.Kind}. For a compound
+         * assignment tree, get the {@link ArithmeticOperationKind} for the arithmetic operation of the RHS.
+         * @param kind a {@link Tree.Kind} for an arithmetic operation
+         * @return the corresponding {@link ArithmeticOperationKind} for the given arithmetic operation
+         */
+        public static ArithmeticOperationKind fromTreeKind(Tree.Kind kind) {
             switch (kind) {
                 case PLUS:
+                case PLUS_ASSIGNMENT:
                     return PLUS;
                 case MINUS:
+                case MINUS_ASSIGNMENT:
                     return MINUS;
                 case MULTIPLY:
+                case MULTIPLY_ASSIGNMENT:
                     return MULTIPLY;
                 case DIVIDE:
+                case DIVIDE_ASSIGNMENT:
                     return DIVIDE;
                 case REMAINDER:
+                case REMAINDER_ASSIGNMENT:
                     return REMAINDER;
                 case LEFT_SHIFT:
+                case LEFT_SHIFT_ASSIGNMENT:
                     return LEFT_SHIFT;
                 case RIGHT_SHIFT:
+                case RIGHT_SHIFT_ASSIGNMENT:
                     return RIGHT_SHIFT;
                 case UNSIGNED_RIGHT_SHIFT:
+                case UNSIGNED_RIGHT_SHIFT_ASSIGNMENT:
                     return UNSIGNED_RIGHT_SHIFT;
                 case AND:
+                case AND_ASSIGNMENT:
                     return AND;
                 case OR:
+                case OR_ASSIGNMENT:
                     return OR;
                 case XOR:
+                case XOR_ASSIGNMENT:
                     return XOR;
                 default:
                     throw new BugInCF("There are no defined ArithmeticOperationKinds "

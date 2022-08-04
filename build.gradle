@@ -63,7 +63,7 @@ dependencies {
     implementation group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
 
     implementation 'org.plumelib:options:1.0.5'
-    implementation 'org.plumelib:plume-util:1.5.8'
+    implementation 'org.plumelib:plume-util:1.5.9'
 
     implementation 'com.google.guava:guava:31.1-jre'
 

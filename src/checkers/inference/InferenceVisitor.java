@@ -209,6 +209,19 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     }
 
     public void mainIsSubtype(AnnotatedTypeMirror ty, AnnotationMirror mod, String msgkey, Tree node) {
+        if (!mainIsSubtype(ty, mod)) {
+            checker.reportError(node, msgkey, ty.getAnnotations().toString(), ty.toString(), node.toString());
+        }
+    }
+
+    /**
+     * Non-reporting version of mainIsSubtype, leaving the freedom for invoker to determine how to report errors.
+     * <p>Use with caution: constraints are always generated during inference as side-effect!</p>
+     * @param ty type
+     * @param mod qualifier
+     * @return true during inference or is subtype in type checking; false if not subtype in type checking
+     */
+    public boolean mainIsSubtype(AnnotatedTypeMirror ty, AnnotationMirror mod) {
         if (infer) {
 
             final SlotManager slotManager = InferenceMain.getInstance().getSlotManager();
@@ -224,10 +237,12 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                 }
             }
         } else {
-            if (!ty.hasEffectiveAnnotation(mod)) {
-                checker.reportError(node, msgkey, ty.getAnnotations().toString(), ty.toString(), node.toString());
+            if (!ty.hasEffectiveAnnotation(mod)) { // FIXME hiarachy
+                return false;
             }
         }
+        // always return true when infer
+        return true;
     }
 
     public void mainIsNot(AnnotatedTypeMirror ty, AnnotationMirror mod, String msgkey, Tree node) {

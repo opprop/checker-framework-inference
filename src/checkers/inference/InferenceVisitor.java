@@ -22,6 +22,7 @@ import org.checkerframework.javacutil.BugInCF;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -259,6 +260,48 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                 }
             }
         }
+    }
+
+    private void addDeepPreferenceImpl(AnnotatedTypeMirror ty, AnnotationMirror goal, int weight,
+                                       java.util.List<AnnotatedTypeMirror> visited, Tree node) {
+        if (infer) {
+            if (visited.contains(ty)) {
+                return;
+            }
+            visited.add(ty);
+
+            final SlotManager slotManager = InferenceMain.getInstance().getSlotManager();
+            Slot el = slotManager.getSlot(ty);
+
+            if (el == null) {
+                logger.warning("InferenceVisitor::addDeepPreferenceImpl: no annotation in type: " + ty);
+            } else {
+                addPreference(ty, goal, weight);
+            }
+
+            if (ty.getKind() == TypeKind.DECLARED) {
+                AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) ty;
+                for (AnnotatedTypeMirror typearg : declaredType.getTypeArguments()) {
+                    addDeepPreferenceImpl(typearg, goal, weight, visited, node);
+                }
+            } else if (ty.getKind() == TypeKind.ARRAY) {
+                AnnotatedArrayType arrayType = (AnnotatedArrayType) ty;
+                addDeepPreferenceImpl(arrayType.getComponentType(), goal, weight, visited, node);
+            } else if (ty.getKind() == TypeKind.TYPEVAR) {
+                AnnotatedTypeVariable atv = (AnnotatedTypeVariable) ty;
+                if (atv.getUpperBound()!=null) {
+                    addDeepPreferenceImpl(atv.getUpperBound(), goal, weight, visited, node);
+                }
+                if (atv.getLowerBound()!=null) {
+                    addDeepPreferenceImpl(atv.getLowerBound(), goal, weight, visited, node);
+                }
+            }
+        }
+        // Else, do nothing
+    }
+
+    public void addDeepPreference(AnnotatedTypeMirror ty, AnnotationMirror goal, int weight, Tree node) {
+        addDeepPreferenceImpl(ty, goal, weight, new LinkedList<>(), node);
     }
 
     public void addPreference(AnnotatedTypeMirror type, AnnotationMirror anno, int weight) {

@@ -74,7 +74,11 @@ public class ASTPathUtil {
      * this class.
      */
     public static ASTRecord getConstructorRecord(ASTRecord classRecord) {
-        return new ASTRecord(classRecord.ast, classRecord.className, AFU_CONSTRUCTOR_ID, null, ASTPath.empty());
+        return new ASTRecord(classRecord.ast, classRecord.className, AFU_CONSTRUCTOR_ID, null, getMethodTypeASTPath());
+    }
+
+    public static ASTPath getMethodTypeASTPath() {
+        return ASTPath.empty().extend(new ASTPath.ASTEntry(Tree.Kind.METHOD, ASTPath.TYPE, null));
     }
 
     /**

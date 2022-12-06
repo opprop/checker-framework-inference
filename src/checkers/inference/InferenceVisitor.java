@@ -289,12 +289,8 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                 addDeepPreferenceImpl(arrayType.getComponentType(), goal, weight, visited, node);
             } else if (ty.getKind() == TypeKind.TYPEVAR) {
                 AnnotatedTypeVariable atv = (AnnotatedTypeVariable) ty;
-                if (atv.getUpperBound()!=null) {
-                    addDeepPreferenceImpl(atv.getUpperBound(), goal, weight, visited, node);
-                }
-                if (atv.getLowerBound()!=null) {
-                    addDeepPreferenceImpl(atv.getLowerBound(), goal, weight, visited, node);
-                }
+                addDeepPreferenceImpl(atv.getUpperBound(), goal, weight, visited, node);
+                addDeepPreferenceImpl(atv.getLowerBound(), goal, weight, visited, node);
             }
         }
         // Else, do nothing

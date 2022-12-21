@@ -1,9 +1,16 @@
 package checkers.inference;
 
 
+import com.sun.source.tree.Tree;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.common.basetype.BaseTypeValidator;
+import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.javacutil.AnnotationUtils;
+
+import javax.lang.model.element.AnnotationMirror;
+import java.util.List;
 
 /**
  * A visitor to validate the types in a tree.
@@ -28,5 +35,25 @@ public class InferenceValidator extends BaseTypeValidator {
 
     public void setInfer(boolean infer) {
         this.infer = infer;
+    }
+
+    @Override
+    protected void validateWildCardTargetLocation(AnnotatedTypeMirror.AnnotatedWildcardType type, Tree tree) {
+
+        InferenceVisitor<?,?> inferVisitor = (InferenceVisitor<?,?>) visitor;
+        if (inferVisitor.getIgnoreTargetLocation()) return;
+
+        AnnotationMirror[] mirrors = new AnnotationMirror[0];
+        for (AnnotationMirror am : type.getSuperBound().getAnnotations()) {
+            inferVisitor.annoIsNoneOf(type, am,
+                    inferVisitor.targetLocationToAnno.get(TypeUseLocation.LOWER_BOUND).toArray(mirrors),
+                    "type.invalid.annotations.on.location", tree);
+        }
+
+        for (AnnotationMirror am : type.getExtendsBound().getAnnotations()) {
+            inferVisitor.annoIsNoneOf(type, am,
+                    inferVisitor.targetLocationToAnno.get(TypeUseLocation.UPPER_BOUND).toArray(mirrors),
+                    "type.invalid.annotations.on.location", tree);
+        }
     }
 }

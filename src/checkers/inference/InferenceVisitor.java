@@ -866,8 +866,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         Set<Class<? extends Annotation>> supportQualifiers = atypeFactory.getSupportedTypeQualifiers();
         Set<AnnotationMirror> supportedAnnos = AnnotationUtils.createAnnotationSet();
         for (Class<? extends Annotation> ac: supportQualifiers) {
-            supportedAnnos.add(new AnnotationBuilder(
-                    InferenceMain.getInstance().getRealTypeFactory().getProcessingEnv(), ac).build());
+            supportedAnnos.add(new AnnotationBuilder(atypeFactory.getProcessingEnv(), ac).build());
         }
         for (TypeUseLocation location : TypeUseLocation.values()) {
             targetLocationToAnno.put(location, supportedAnnos);

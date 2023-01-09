@@ -89,13 +89,14 @@ public class InferenceVisitor<Checker extends InferenceChecker,
      * Map from type-use location to a list of annotations which cannot be used on that location.
      * This is used to create inequality constraint during inference.
      */
-    protected final HashMap<TypeUseLocation, Set<AnnotationMirror>> targetLocationToAnno = new HashMap<>();
+    protected HashMap<TypeUseLocation, Set<AnnotationMirror>> targetLocationToAnno = new HashMap<>();
 
     public InferenceVisitor(Checker checker, InferenceChecker ichecker, Factory factory, boolean infer) {
         super((infer) ? ichecker : checker, factory);
         this.realChecker = checker;
         this.infer = infer;
         ((InferenceValidator)typeValidator).setInfer(infer);
+        initTargetLocationToAnno();
     }
 
     @SuppressWarnings("unchecked")
@@ -861,8 +862,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         }
     }
 
-    @Override
-    protected void initAnnoToTargetLocations() {
+    protected void initTargetLocationToAnno() {
         // first, init each type-use location contains all type qualifiers
         Set<Class<? extends Annotation>> supportQualifiers = atypeFactory.getSupportedTypeQualifiers();
         Set<AnnotationMirror> supportedAnnos = AnnotationUtils.createAnnotationSet();
@@ -870,7 +870,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
             supportedAnnos.add(new AnnotationBuilder(atypeFactory.getProcessingEnv(), ac).build());
         }
         for (TypeUseLocation location : TypeUseLocation.values()) {
-            targetLocationToAnno.put(location, supportedAnnos);
+            targetLocationToAnno.put(location, new HashSet<>(supportedAnnos));
         }
         // then, delete some qualifiers which can be applied on that type-use location
         // this leaves only qualifiers not allowed on the location.
@@ -895,6 +895,11 @@ public class InferenceVisitor<Checker extends InferenceChecker,
 
     @Override
     protected void validateVariablesTargetLocation(Tree tree, AnnotatedTypeMirror type) {
+        if (!infer) {
+            super.initAnnoToTargetLocations();
+            return;
+        }
+
         if (ignoreTargetLocation) return;
         Element element = TreeUtils.elementFromTree(tree);
 
@@ -936,11 +941,14 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     @Override
     protected void validateTargetLocation(
             Tree tree, AnnotatedTypeMirror type, TypeUseLocation required) {
-        if (ignoreTargetLocation) {
-            return;
+        if (!this.infer) {
+            super.validateTargetLocation(tree, type, required);
+        } else {
+            if (ignoreTargetLocation) {
+                return;
+            }
+            mainIsNoneOf(type, targetLocationToAnno.get(required).toArray(new AnnotationMirror[0]),
+                    "type.invalid.annotations.on.location", tree);
         }
-
-        mainIsNoneOf(type, targetLocationToAnno.get(required).toArray(new AnnotationMirror[0]),
-                "type.invalid.annotations.on.location", tree);
     }
 }

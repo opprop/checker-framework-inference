@@ -887,6 +887,13 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                 continue;
             }
             for (TypeUseLocation location : tls.value()) {
+                if (location == TypeUseLocation.ALL) {
+                    for (TypeUseLocation val : TypeUseLocation.values()) {
+                        Set<AnnotationMirror> amSet = targetLocationToAnno.get(val);
+                        amSet.remove(AnnotationUtils.getAnnotationByName(supportedAnnos, qual.getCanonicalName()));
+                    }
+                    break;
+                }
                 Set<AnnotationMirror> amSet = targetLocationToAnno.get(location);
                 amSet.remove(AnnotationUtils.getAnnotationByName(supportedAnnos, qual.getCanonicalName()));
             }

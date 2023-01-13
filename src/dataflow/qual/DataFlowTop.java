@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 @InvisibleQualifier
 @SubtypeOf({})
 @Target({ ElementType.TYPE_USE })
-@TargetLocations({ TypeUseLocation.EXPLICIT_UPPER_BOUND })
+@TargetLocations({ TypeUseLocation.ALL })
 public @interface DataFlowTop {
 
 }

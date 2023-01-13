@@ -16,7 +16,7 @@ import java.lang.annotation.Target;
 @InvisibleQualifier
 @SubtypeOf({ DataFlow.class })
 @Target({ ElementType.TYPE_USE })
-@TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUND })
+@TargetLocations({ TypeUseLocation.ALL})
 public @interface DataFlowInferenceBottom {
 
 }

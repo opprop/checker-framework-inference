@@ -903,7 +903,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     @Override
     protected void validateVariablesTargetLocation(Tree tree, AnnotatedTypeMirror type) {
         if (!infer) {
-            super.initAnnoToTargetLocations();
+            super.validateVariablesTargetLocation(tree, type);
             return;
         }
 

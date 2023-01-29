@@ -28,6 +28,7 @@ import org.checkerframework.framework.util.AnnotationMirrorSet;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
@@ -591,7 +592,13 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         // If the declaration bound of the underlying type is not cached, use default
-        return (Set<AnnotationMirror>) getDefaultTypeDeclarationBounds();
+        Set<AnnotationMirror> realBounds = realTypeFactory.getTypeDeclarationBounds(type);
+        Set<AnnotationMirror> boundsVarAnnos = AnnotationUtils.createAnnotationSet();
+        for (AnnotationMirror realBound : realBounds) {
+            Slot slot = slotManager.getSlot(realBound);
+            boundsVarAnnos.add(slotManager.getAnnotation(slot));
+        }
+        return boundsVarAnnos;
     }
 
     /**

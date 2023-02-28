@@ -3,6 +3,7 @@ package checkers.inference.util;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.Tree;
@@ -184,6 +185,13 @@ public class SlotDefaultTypeResolver {
             defaultTypes.put(tree.getUnderlyingType(), defaultType);
 
             return super.visitAnnotatedType(tree, unused);
+        }
+
+        @Override
+        public Void visitNewClass(NewClassTree tree, Void unused) {
+            AnnotatedTypeMirror defaultType = getDefaultTypeFor(tree);
+            defaultTypes.put(tree.getIdentifier(), defaultType);
+            return super.visitNewClass(tree, unused);
         }
     }
 }

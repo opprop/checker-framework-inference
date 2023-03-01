@@ -190,7 +190,7 @@ Specifies whether to separate constraints into multiple components through const
 If constraints are separated by constraint graph, this arguments indicates whether to solve the components in parallel (multithreading). The default value is true.
 
 * `collectStatistics`
-Specifies whether to collect statistic with respect to timing, size of constraints, size of encoding, etc. The default value is false.
+Specifies whether to collect statistic with respect to timing, size of constraints, size of encoding, etc. The default value is false.hhh.
 
 For example, generic solver can be invoked through following command:
 

@@ -191,11 +191,12 @@ public class SlotDefaultTypeResolver {
         @Override
         public Void visitNewClass(NewClassTree tree, Void unused) {
             AnnotatedTypeMirror defaultType = getDefaultTypeFor(tree);
-            ExpressionTree type = tree.getIdentifier();
-            if ((type instanceof ParameterizedTypeTree) && !((ParameterizedTypeTree) type).getTypeArguments().isEmpty())
+            if (InferenceUtil.isAnonymousClass(tree)) {
+                // don't associate the identifier with the defaulttype if it's an anonymousclass
+                // should associate the identifier with the underlying type of the defaulttype and annotation to it.
                 return super.visitNewClass(tree, unused);
-            
-            defaultTypes.put(type, defaultType);
+            }
+            defaultTypes.put(tree.getIdentifier(), defaultType);
             return super.visitNewClass(tree, unused);
         }
     }

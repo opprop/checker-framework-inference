@@ -192,11 +192,12 @@ public class SlotDefaultTypeResolver {
         public Void visitNewClass(NewClassTree tree, Void unused) {
             AnnotatedTypeMirror defaultType = getDefaultTypeFor(tree);
             if (InferenceUtil.isAnonymousClass(tree)) {
-                // don't associate the identifier with the defaulttype if it's an anonymousclass
-                // should associate the identifier with the underlying type of the defaulttype and annotation to it.
-                return super.visitNewClass(tree, unused);
+                // don't associate the identifier with the defaultType if it's an anonymousclass
+                // should associate the identifier with the direct super type of the defaultType.
+                defaultTypes.put(tree.getIdentifier(), defaultType.directSupertypes().get(0));
+            } else {
+                defaultTypes.put(tree.getIdentifier(), defaultType);
             }
-            defaultTypes.put(tree.getIdentifier(), defaultType);
             return super.visitNewClass(tree, unused);
         }
     }

@@ -194,7 +194,10 @@ public class SlotDefaultTypeResolver {
             if (InferenceUtil.isAnonymousClass(tree)) {
                 // don't associate the identifier with the defaultType if it's an anonymousclass
                 // should associate the identifier with the direct super type of the defaultType.
-                defaultTypes.put(tree.getIdentifier(), defaultType.directSupertypes().get(0));
+                // choose the last one of the directSupertypes, which is either the direct super class
+                // or implemented interface
+                List<? extends AnnotatedTypeMirror> superTypes = defaultType.directSupertypes();
+                defaultTypes.put(tree.getIdentifier(), superTypes.get(superTypes.size()-1));
             } else {
                 defaultTypes.put(tree.getIdentifier(), defaultType);
             }

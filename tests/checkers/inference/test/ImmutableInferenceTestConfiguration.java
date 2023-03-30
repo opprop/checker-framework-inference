@@ -16,13 +16,15 @@ public class ImmutableInferenceTestConfiguration implements InferenceTestConfigu
     private final String solver;
     private final Map<String, String> solverArgs;
     private final boolean shouldUseHacks;
+    private final boolean makeDefaultsExplicit;
     private final String pathToAfuScripts;
     private final String pathToInferenceScript;
     private final TestConfiguration initialConfig;
 
     public ImmutableInferenceTestConfiguration(File outputJaif, File testDataDir, File annotatedSourceDir,
                                                Map<String, String> inferenceJavacArgs, String solver,
-                                               Map<String, String> solverArgs, boolean shouldUseHacks, String pathToAfuScripts,
+                                               Map<String, String> solverArgs, boolean shouldUseHacks,
+                                               boolean makeDefaultsExplicit, String pathToAfuScripts,
                                                String pathToInferenceScript, TestConfiguration initialConfig) {
         this.outputJaif = outputJaif;
         this.testDataDir = testDataDir;
@@ -31,6 +33,7 @@ public class ImmutableInferenceTestConfiguration implements InferenceTestConfigu
         this.solver = solver;
         this.solverArgs = solverArgs;
         this.shouldUseHacks = shouldUseHacks;
+        this.makeDefaultsExplicit = makeDefaultsExplicit;
         this.pathToAfuScripts = pathToAfuScripts;
         this.initialConfig = initialConfig;
         this.pathToInferenceScript = pathToInferenceScript;
@@ -67,6 +70,10 @@ public class ImmutableInferenceTestConfiguration implements InferenceTestConfigu
 
     public boolean shouldUseHacks() {
         return shouldUseHacks;
+    }
+
+    public boolean makeDefaultsExplicit() {
+        return makeDefaultsExplicit;
     }
 
     public String getPathToAfuScripts() {

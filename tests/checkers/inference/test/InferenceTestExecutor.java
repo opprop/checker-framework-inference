@@ -80,6 +80,9 @@ public class InferenceTestExecutor {
         if (configuration.shouldUseHacks()) {
             options.add("--hacks");
         }
+        if (configuration.makeDefaultsExplicit()) {
+            options.add("--makeDefaultsExplicit=true");
+        }
 
         options.add("--jaifFile=" + configuration.getOutputJaif().getAbsolutePath());
 

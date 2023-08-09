@@ -5,7 +5,7 @@ Checker Framework Inference
 ===========================
 
 This project is a general type inference framework,
-built upon the [Checker Framework](https://checkerframework.org/).
+built upon the [EISOP Checker Framework](https://eisop.github.io/).
 
 Given a program with no type annotations, Checker Framework Inference produces a program with type annotations.
 
@@ -31,7 +31,7 @@ Configure Eclipse to edit Checker Framework Inference
 
 The instructions here assumes you have cloned this project into a folder called `checker-framework-inference`.
 
-1) Follow the instructions in the [Checker Framework Manual](https://checkerframework.org/manual/#building-eclipse)
+1) Follow the instructions in the [EISOP Checker Framework Manual](https://eisop.github.io/cf/manual/manual.html#eclipse)
 to download, build, and configure Eclipse to edit the Checker Framework. The Checker Framework Inference Eclipse
 project depends on the eclipse projects from Checker Framework.
 

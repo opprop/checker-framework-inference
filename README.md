@@ -95,7 +95,7 @@ To test the build:
 Execution
 ---------
 
-Verify you have all of the requirements.
+Verify you have all the requirements.
 
 ````
 ./scripts/inference
@@ -119,7 +119,7 @@ Available options are [INFER, TYPECHECK, ROUNDTRIP, ROUNDTRIP_TYPECHECK]
     Generates and solves the constraints and writes the results to default.jaif file
 
   * `TYPECHECK`:
-    Typechecks the existin code
+    Typechecks the existing code
 
   * `ROUNDTRIP`:
     Generates and solves the constraints and then inserts the results
@@ -146,10 +146,10 @@ The classpath that is required by target program.
 `checkers.inference.solver.PropagationSolver` and `checkers.inference.solver.SolverEngine` are real solvers
 at the moment.
 
-Omiting the solver will create an output that numbers all of the
+Omitting the solver will create an output that numbers all the
 annotation positions in the program.
 
-`checkers.inference.solver.DebugSolver` will output all of the
+`checkers.inference.solver.DebugSolver` will output all the
 constraints generated.
 
 
@@ -178,7 +178,7 @@ Specifies what concrete solver is going to use.
 
   * `LogiQL`: Encodes constraints as statements of LogiQL language and use LogicBlox to solve.
 
-  * `Z3` with bit vector theory: Encodes constraints as Max-SMT problem with bit vectory theory, and use Z3 library to solve.
+  * `Z3` with bit vector theory: Encodes constraints as Max-SMT problem with bit vector theory, and use Z3 library to solve.
 
 
   `MaxSat` solver is used by default.
@@ -187,7 +187,7 @@ Specifies what concrete solver is going to use.
 Specifies whether to separate constraints into multiple components through constraint graph and solve them respectively. The default value is true.
 
 * `solveInParallel`
-If constraints are separated by constraint graph, this arguments indicates whether to solve the components in parallel (multithreading). The default value is true.
+If constraints are separated by constraint graph, these arguments indicates whether to solve the components in parallel (multithreading). The default value is true.
 
 * `collectStatistics`
 Specifies whether to collect statistic with respect to timing, size of constraints, size of encoding, etc. The default value is false.

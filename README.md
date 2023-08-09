@@ -1,5 +1,5 @@
 Continuous integration status of master:
-![CFI status](https://github.com/opprop/checker-framework-inference/workflows/CI/badge.svg)
+[![Build Status](https://github.com/opprop/checker-framework-inference/workflows/CI/badge.svg)(https://github.com/opprop/checker-framework-inference/actions/workflows/main.yml)]
 
 Checker Framework Inference
 ===========================

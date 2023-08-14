@@ -7,6 +7,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.AnnotationFormatter;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.TypesUtils;
 
 import java.util.Collections;
@@ -37,7 +38,7 @@ import checkers.inference.model.ConstantSlot;
 public class InferenceValue extends CFValue {
 
 
-    public InferenceValue(InferenceAnalysis analysis, Set<AnnotationMirror> annotations, TypeMirror underlyingType) {
+    public InferenceValue(InferenceAnalysis analysis, AnnotationMirrorSet annotations, TypeMirror underlyingType) {
         super(analysis, annotations, underlyingType);
     }
 
@@ -69,7 +70,7 @@ public class InferenceValue extends CFValue {
         // the two VarAnnos getting from slotManager.
         final AnnotationMirror lub = qualifierHierarchy.leastUpperBound(anno1, anno2);
 
-        return analysis.createAbstractValue(Collections.singleton(lub), getLubType(other, null));
+        return analysis.createAbstractValue(new AnnotationMirrorSet(Collections.singleton(lub)), getLubType(other, null));
     }
 
     public Slot getEffectiveSlot(final CFValue value) {

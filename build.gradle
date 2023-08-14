@@ -210,7 +210,6 @@ task dist(dependsOn: shadowJar, type: Copy) {
             "will build checker-framework-inference.jar, copy all the relevant runtime jars into " +
             "the dist directory."
     from files(
-            "${checkerFrameworkPath}/checker/dist/jdk8.jar",
             "${checkerFrameworkPath}/checker/dist/checker.jar",
             "${checkerFrameworkPath}/checker/dist/checker-qual.jar",
             "${checkerFrameworkPath}/checker/dist/checker-util.jar",

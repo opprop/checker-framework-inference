@@ -187,7 +187,7 @@ Specifies what concrete solver is going to use.
 Specifies whether to separate constraints into multiple components through constraint graph and solve them respectively. The default value is true.
 
 * `solveInParallel`
-If constraints are separated by constraint graph, these arguments indicates whether to solve the components in parallel (multithreading). The default value is true.
+If constraints are separated by constraint graph, this argument indicates whether to solve the components in parallel (multithreading). The default value is true.
 
 * `collectStatistics`
 Specifies whether to collect statistic with respect to timing, size of constraints, size of encoding, etc. The default value is false.

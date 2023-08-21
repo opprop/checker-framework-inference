@@ -1,7 +1,4 @@
-Continuous integration status of master:
-![CFI status](https://github.com/opprop/checker-framework-inference/workflows/CI/badge.svg)
-
-Checker Framework Inference
+Checker Framework Inference [![Build Status](https://github.com/opprop/checker-framework-inference/workflows/CI/badge.svg)](https://github.com/opprop/checker-framework-inference/actions/workflows/main.yml)
 ===========================
 
 This project is a general type inference framework,

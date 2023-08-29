@@ -12,6 +12,7 @@ import java.util.List;
 import javax.annotation.processing.AbstractProcessor;
 
 import org.junit.Test;
+import org.plumelib.util.SystemPlume;
 
 public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
 
@@ -27,7 +28,7 @@ public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
     }
 
     public boolean useHacks() {
-        return SystemUtil.getBooleanSystemProperty("use.hacks");
+        return SystemPlume.getBooleanSystemProperty("use.hacks");
     }
 
     public abstract Pair<String, List<String>> getSolverNameAndOptions();

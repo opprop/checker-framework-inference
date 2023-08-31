@@ -24,10 +24,11 @@ import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.framework.util.AnnotationMirrorSet;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.framework.util.dependenttypes.DependentTypesHelper;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.Pair;
@@ -570,11 +571,11 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @return the singleton set with the {@link VarAnnot} on the class bound
      */
     @Override
-    public Set<AnnotationMirror> getTypeDeclarationBounds(TypeMirror type) {
+    public AnnotationMirrorSet getTypeDeclarationBounds(TypeMirror type) {
         final TypeElement elt = (TypeElement) getProcessingEnv().getTypeUtils().asElement(type);
         AnnotationMirror vAnno = variableAnnotator.getClassDeclVarAnnot(elt);
         if (vAnno != null) {
-            return Collections.singleton(vAnno);
+            return new AnnotationMirrorSet(Collections.singleton(vAnno));
         }
 
         // This is to handle the special case of anonymous classes when the super class (or interface)
@@ -587,11 +588,11 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         if (realAnno != null) {
             Slot slot = slotManager.getSlot(realAnno);
             vAnno = slotManager.getAnnotation(slot);
-            return Collections.singleton(vAnno);
+            return new AnnotationMirrorSet(Collections.singleton(vAnno));
         }
 
         // If the declaration bound of the underlying type is not cached, use default
-        return (Set<AnnotationMirror>) getDefaultTypeDeclarationBounds();
+        return (AnnotationMirrorSet) getDefaultTypeDeclarationBounds();
     }
 
     /**

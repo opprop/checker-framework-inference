@@ -4,6 +4,8 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.javacutil.AnnotationMirrorMap;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -37,7 +39,7 @@ public class InferenceUtil {
      */
     public static Set<AnnotationMirror> clearAnnos(final AnnotatedTypeMirror atm) {
 
-        final Set<AnnotationMirror> oldAnnos = AnnotationUtils.createAnnotationSet();
+        final Set<AnnotationMirror> oldAnnos = new AnnotationMirrorSet();
         oldAnnos.addAll(atm.getAnnotations());
 
         atm.clearAnnotations();

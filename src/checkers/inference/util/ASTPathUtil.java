@@ -207,10 +207,10 @@ public class ASTPathUtil {
                 return null;
             }
 
-            if (!AnnotatedTypes.isExplicitlySuperBounded(type)) {
+            if (!AnnotatedTypes.hasExplicitSuperBound(type)) {
                 mapping.put(type.getSuperBound(), current);
 
-                if (AnnotatedTypes.isExplicitlyExtendsBounded(type)) {
+                if (AnnotatedTypes.hasExplicitSuperBound(type)) {
                     final ASTRecord toBound = extendParent(current, Kind.EXTENDS_WILDCARD, ASTPath.BOUND, 0);
                     visit(type.getExtendsBound(), toBound);
                 } else {

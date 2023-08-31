@@ -10,7 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.util.AnnotationMirrorSet;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.framework.util.DefaultQualifierKindHierarchy;
 import org.checkerframework.framework.util.QualifierKind;
 import org.checkerframework.framework.util.QualifierKindHierarchy;
@@ -196,7 +196,7 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
             Collection<? extends AnnotationMirror> annos1,
             Collection<? extends AnnotationMirror> annos2) {
         if (InferenceMain.isHackMode(annos1.size() != annos2.size())) {
-            Set<AnnotationMirror> result = AnnotationUtils.createAnnotationSet();
+            Set<AnnotationMirror> result = new AnnotationMirrorSet();
             for (AnnotationMirror a1 : annos1) {
                 for (AnnotationMirror a2 : annos2) {
                     AnnotationMirror lub = leastUpperBound(a1, a2);

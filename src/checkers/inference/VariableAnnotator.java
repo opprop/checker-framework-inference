@@ -13,6 +13,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.BugInCF;
@@ -239,7 +240,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
 
         final Pair<Slot, Set<? extends AnnotationMirror>> varATMPair = Pair
                 .<Slot, Set<? extends AnnotationMirror>> of(varSlot,
-                AnnotationUtils.createAnnotationSet());
+                new AnnotationMirrorSet());
         treeToVarAnnoPair.put(tree, varATMPair);
         logger.fine("Created variable for tree:\n" + varSlot.getId() + " => " + tree);
         return varSlot;
@@ -270,7 +271,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
 //
 //            }
 //        }
-        Set<AnnotationMirror> annotations = AnnotationUtils.createAnnotationSet();
+        Set<AnnotationMirror> annotations = new AnnotationMirrorSet();
         annotations.add(constantSlot.getValue());
         final Pair<Slot, Set<? extends AnnotationMirror>> varATMPair = Pair
                 .<Slot, Set<? extends AnnotationMirror>> of(constantSlot,
@@ -518,7 +519,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
 
             final Pair<Slot, Set<? extends AnnotationMirror>> varATMPair = Pair
                     .of(variable,
-                    AnnotationUtils.createAnnotationSet());
+                    new AnnotationMirrorSet());
 
             treeToVarAnnoPair.put(tree, varATMPair);
         }

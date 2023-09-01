@@ -1,5 +1,5 @@
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
 class Wildcards2 {
     private List<? extends List<String>> other;
@@ -11,5 +11,4 @@ class Wildcards2 {
 
         test = other;
     }
-
 }

@@ -1,4 +1,5 @@
 import checkers.inference.quals.VarAnnot;
+
 class SimpleConstructor {
     private @VarAnnot(1) String y;
 

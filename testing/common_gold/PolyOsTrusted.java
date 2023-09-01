@@ -1,14 +1,13 @@
 import checkers.inference.quals.VarAnnot;
 import ostrusted.qual.*;
 
-
 class TestPolyNull {
 
-    @PolyOsTrusted TestPolyNull(@PolyOsTrusted String astring) {
+    @PolyOsTrusted
+    TestPolyNull(@PolyOsTrusted String astring) {}
 
-    }
-
-    @OsTrusted TestPolyNull testConstructor1(@VarAnnot(3) String in) {
+    @OsTrusted
+    TestPolyNull testConstructor1(@VarAnnot(3) String in) {
         return new TestPolyNull(in);
     }
 
@@ -17,11 +16,13 @@ class TestPolyNull {
         return new TestPolyNull(in);
     }
 
-    @PolyOsTrusted String id(@PolyOsTrusted String in) {
+    @PolyOsTrusted
+    String id(@PolyOsTrusted String in) {
         return in;
     }
 
-    @OsTrusted String test(@VarAnnot(10) String s) {
+    @OsTrusted
+    String test(@VarAnnot(10) String s) {
         return id(s);
     }
 
@@ -29,5 +30,4 @@ class TestPolyNull {
     String test2(@OsUntrusted String s) {
         return id(s);
     }
-
 }

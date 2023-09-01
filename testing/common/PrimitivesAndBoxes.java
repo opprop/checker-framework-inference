@@ -4,10 +4,10 @@ class PrimitivesAndBoxes {
         int primitive = 1;
         Integer boxed = primitive;
 
-        boxed = forceNarrow( boxed );
+        boxed = forceNarrow(boxed);
     }
 
-    public int forceNarrow( int i ) {
+    public int forceNarrow(int i) {
         return i;
     }
 }

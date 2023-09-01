@@ -6,7 +6,8 @@ abstract class BasicFunctionality {
 
     @Encrypted String encrypt(String s) {
         byte[] b = s.getBytes();
-        for (int i = 0; i < b.length; b[i++]++);
+        for (int i = 0; i < b.length; b[i++]++)
+            ;
         return new String(b);
     }
 
@@ -26,7 +27,6 @@ abstract class BasicFunctionality {
         String u = lst.get(0);
         sendOverTheInternet(u);
 
-        for (String str : lst)
-            sendOverTheInternet(str);
+        for (String str : lst) sendOverTheInternet(str);
     }
 }

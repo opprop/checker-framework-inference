@@ -1,6 +1,6 @@
+import java.util.Map;
 
 import interning.qual.Interned;
-import java.util.Map;
 
 public class MapAssignment {
 

@@ -3,6 +3,7 @@ package sparta.checkers.iflow.util;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.TreeUtils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,9 +16,7 @@ import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.ExecutableElement;
 
-import org.checkerframework.javacutil.TreeUtils;
 import sparta.checkers.qual.FlowPermission;
-import sparta.checkers.qual.PolyFlow;
 import sparta.checkers.qual.PolySink;
 import sparta.checkers.qual.PolySource;
 import sparta.checkers.qual.Sink;
@@ -75,7 +74,8 @@ public class IFlowUtils {
     }
 
     public List<String> getRawSinks(final AnnotationMirror am) {
-        return AnnotationUtils.getElementValueArray(am, sinkValueElement, String.class, Collections.emptyList());
+        return AnnotationUtils.getElementValueArray(
+                am, sinkValueElement, String.class, Collections.emptyList());
     }
 
     public Set<PFPermission> getSources(final AnnotationMirror am) {
@@ -93,17 +93,19 @@ public class IFlowUtils {
     }
 
     public List<String> getRawSources(final AnnotationMirror am) {
-        return AnnotationUtils.getElementValueArray(am, sourceValueElement, String.class, Collections.emptyList());
+        return AnnotationUtils.getElementValueArray(
+                am, sourceValueElement, String.class, Collections.emptyList());
     }
 
     /**
      * Replace ANY with the list of all possible sinks
+     *
      * @param sinks
      * @param inPlace
      * @return
      */
-    private static Set<PFPermission> convertAnyToAllSinks(final Set<PFPermission> sinks,
-            boolean inPlace) {
+    private static Set<PFPermission> convertAnyToAllSinks(
+            final Set<PFPermission> sinks, boolean inPlace) {
         final Set<PFPermission> retSet = (inPlace) ? sinks : new TreeSet<PFPermission>(sinks);
         if (sinks.contains(ANY)) {
             retSet.addAll(getSetOfAllSinks());
@@ -114,14 +116,14 @@ public class IFlowUtils {
 
     /**
      * Replace ANY with the list of all possible sources
+     *
      * @param sources
      * @param inPlace
      * @return
      */
-    private static Set<PFPermission> convertAnytoAllSources(final Set<PFPermission> sources,
-            boolean inPlace) {
-        final Set<PFPermission> retSet = (inPlace) ? sources : new TreeSet<PFPermission>(
-                sources);
+    private static Set<PFPermission> convertAnytoAllSources(
+            final Set<PFPermission> sources, boolean inPlace) {
+        final Set<PFPermission> retSet = (inPlace) ? sources : new TreeSet<PFPermission>(sources);
         if (sources.contains(ANY)) {
             retSet.addAll(getSetOfAllSinks());
             retSet.remove(ANY);
@@ -130,8 +132,9 @@ public class IFlowUtils {
     }
 
     /**
-     * All possible sources, excluding ANY
-     * TODO: This returns all sources and sinks, not just sources...fix this
+     * All possible sources, excluding ANY TODO: This returns all sources and sinks, not just
+     * sources...fix this
+     *
      * @return
      */
     public static Set<PFPermission> getSetOfAllSources() {
@@ -145,17 +148,18 @@ public class IFlowUtils {
         }
         return setOfAllSources;
     }
+
     static Set<PFPermission> setOfAllSources = new TreeSet<>();
 
     /**
-     * All possible sinks, excluding ANY
-     * TODO: This returns all sources and sinks, not just sinks...fix this
+     * All possible sinks, excluding ANY TODO: This returns all sources and sinks, not just
+     * sinks...fix this
+     *
      * @return
      */
     public static Set<PFPermission> getSetOfAllSinks() {
         if (setOfAllSinks.isEmpty()) {
-            List<FlowPermission> coarseFlowList = Arrays.asList(FlowPermission
-                    .values());
+            List<FlowPermission> coarseFlowList = Arrays.asList(FlowPermission.values());
             for (FlowPermission permission : coarseFlowList) {
                 if (permission != FlowPermission.ANY) {
                     setOfAllSinks.add(new PFPermission(permission));
@@ -167,16 +171,16 @@ public class IFlowUtils {
 
     static Set<PFPermission> setOfAllSinks = new TreeSet<>();
 
-
     /**
-     * If sources contains all possible sources, then return ANY.
-     * If sources contains ANY and some other sources, then return ANY
+     * If sources contains all possible sources, then return ANY. If sources contains ANY and some
+     * other sources, then return ANY
+     *
      * @param sources
      * @param inPlace
      * @return
      */
-    public static Set<PFPermission> convertToAnySource(final Set<PFPermission> sources,
-            boolean inPlace) {
+    public static Set<PFPermission> convertToAnySource(
+            final Set<PFPermission> sources, boolean inPlace) {
         final Set<PFPermission> retSet = (inPlace) ? sources : new TreeSet<PFPermission>(sources);
         if (retSet.equals(getSetOfAllSources())) {
             retSet.clear();
@@ -189,15 +193,17 @@ public class IFlowUtils {
     }
 
     /**
-     * If sinks contains all possible sinks, then return ANY.
-     * If sinks contains ANY and some other sinks, then return ANY
+     * If sinks contains all possible sinks, then return ANY. If sinks contains ANY and some other
+     * sinks, then return ANY
+     *
      * @param sinks
      * @param inPlace
      * @return either {ANY} or sinks
      */
-    public static Set<PFPermission> convertToAnySink(final Set<PFPermission> sinks, boolean inPlace) {
+    public static Set<PFPermission> convertToAnySink(
+            final Set<PFPermission> sinks, boolean inPlace) {
         final Set<PFPermission> retSet = (inPlace) ? sinks : new TreeSet<PFPermission>(sinks);
-        if(sinks.equals(getSetOfAllSinks())) {
+        if (sinks.equals(getSetOfAllSinks())) {
             retSet.clear();
             retSet.add(ANY);
         } else if (retSet.contains(ANY)) {
@@ -218,9 +224,11 @@ public class IFlowUtils {
         Set<PFPermission> sinks = getSinks(atm);
         return sinks.contains(ANY) && sources.isEmpty();
     }
+
     /**
-     * Return the set of sources that both annotations have.
-     * If the intersection is all possible sources, {ANY} is returned
+     * Return the set of sources that both annotations have. If the intersection is all possible
+     * sources, {ANY} is returned
+     *
      * @param a1 AnnotationMirror, could be {ANY}
      * @param a2 AnnotationMirror, could be {ANY}
      * @return intersection of a1 and a2
@@ -229,51 +237,53 @@ public class IFlowUtils {
         final Set<PFPermission> a1Set = getSources(a1);
         final Set<PFPermission> a2Set = getSources(a2);
         return intersectSources(a1Set, a2Set);
-
-    }
-    public static Set<PFPermission> intersectSources(Set<PFPermission> a1Set,
-            Set<PFPermission> a2Set) {
-        if(a1Set == null || a2Set == null) return new TreeSet<>();
-       Set<PFPermission> retSet = new TreeSet<PFPermission>();
-       Set<PFPermission> a1All =  convertAnytoAllSources(a1Set, false);
-       Set<PFPermission> a2All =   convertAnytoAllSources(a2Set, false);
-       for (PFPermission a1permission : a1All) {
-           for (PFPermission a2permission : a2All) {
-               // Match permission and match all parameters such that a2 is subsumed in a1
-               if (a1permission.getPermission() == a2permission.getPermission() &&
-                  allParametersMatch(a1permission.getParameters(), a2permission.getParameters())) {
-                   retSet.add(a2permission);
-               }
-           }
-       }
-        return  convertToAnySource(retSet, false);
     }
 
-
+    public static Set<PFPermission> intersectSources(
+            Set<PFPermission> a1Set, Set<PFPermission> a2Set) {
+        if (a1Set == null || a2Set == null) return new TreeSet<>();
+        Set<PFPermission> retSet = new TreeSet<PFPermission>();
+        Set<PFPermission> a1All = convertAnytoAllSources(a1Set, false);
+        Set<PFPermission> a2All = convertAnytoAllSources(a2Set, false);
+        for (PFPermission a1permission : a1All) {
+            for (PFPermission a2permission : a2All) {
+                // Match permission and match all parameters such that a2 is subsumed in a1
+                if (a1permission.getPermission() == a2permission.getPermission()
+                        && allParametersMatch(
+                                a1permission.getParameters(), a2permission.getParameters())) {
+                    retSet.add(a2permission);
+                }
+            }
+        }
+        return convertToAnySource(retSet, false);
+    }
 
     /**
-     * Return the set of sinks that both annotations have.
-     * If the intersection is all possible sinks, {ANY} is returned
+     * Return the set of sinks that both annotations have. If the intersection is all possible
+     * sinks, {ANY} is returned
+     *
      * @param a1 AnnotationMirror, could be {ANY}
      * @param a2 AnnotationMirror, could be {ANY}
      * @return intersection of a1 and a2
      */
-    public Set<PFPermission> intersectSinks(AnnotationMirror a1, AnnotationMirror a2){
+    public Set<PFPermission> intersectSinks(AnnotationMirror a1, AnnotationMirror a2) {
         final Set<PFPermission> a1Set = getSinks(a1);
         final Set<PFPermission> a2Set = getSinks(a2);
         return intersectSinks(a1Set, a2Set);
     }
-    public static Set<PFPermission> intersectSinks(Set<PFPermission> a1Set,
-            Set<PFPermission> a2Set) {
-        if(a1Set == null || a2Set == null) return new TreeSet<>();
+
+    public static Set<PFPermission> intersectSinks(
+            Set<PFPermission> a1Set, Set<PFPermission> a2Set) {
+        if (a1Set == null || a2Set == null) return new TreeSet<>();
         Set<PFPermission> retSet = new TreeSet<PFPermission>();
         a1Set = convertAnyToAllSinks(a1Set, false);
         a2Set = convertAnyToAllSinks(a2Set, false);
         for (PFPermission a1permission : a1Set) {
             for (PFPermission a2permission : a2Set) {
                 // Match permission and match all parameters such that a2 is subsumed in a1
-                if (a1permission.getPermission() == a2permission.getPermission() &&
-                    allParametersMatch(a2permission.getParameters(), a1permission.getParameters())) {
+                if (a1permission.getPermission() == a2permission.getPermission()
+                        && allParametersMatch(
+                                a2permission.getParameters(), a1permission.getParameters())) {
                     retSet.add(a2permission);
                 }
             }
@@ -282,46 +292,48 @@ public class IFlowUtils {
     }
 
     /**
-     * Returns the union of a1 and a2.
-     * If the union is {ANY, ...} then just {ANY} is returned
+     * Returns the union of a1 and a2. If the union is {ANY, ...} then just {ANY} is returned
+     *
      * @param a1
      * @param a2
      * @return
      */
-    public Set<PFPermission> unionSources(AnnotationMirror a1, AnnotationMirror a2){
+    public Set<PFPermission> unionSources(AnnotationMirror a1, AnnotationMirror a2) {
         return unionSources(getSources(a1), getSources(a2));
     }
-    public static Set<PFPermission> unionSources(Set<PFPermission> a1, Set<PFPermission> a2){
+
+    public static Set<PFPermission> unionSources(Set<PFPermission> a1, Set<PFPermission> a2) {
         a1.addAll(a2);
         convertToAnySource(a1, true);
         return a1;
     }
 
-
     /**
-     * Returns the union of a1 and a2.
-     * If the union is {ANY, ...} then just {ANY} is returned
+     * Returns the union of a1 and a2. If the union is {ANY, ...} then just {ANY} is returned
+     *
      * @param a1
      * @param a2
      * @return
      */
-    public Set<PFPermission> unionSinks(AnnotationMirror a1, AnnotationMirror a2){
+    public Set<PFPermission> unionSinks(AnnotationMirror a1, AnnotationMirror a2) {
         return unionSinks(getSinks(a1), getSinks(a2));
     }
+
     /**
-     * Returns the union of a1 and a2.
-     * If the union is {ANY, ...} then just {ANY} is returned
+     * Returns the union of a1 and a2. If the union is {ANY, ...} then just {ANY} is returned
+     *
      * @param a1
      * @param a2
      * @return
      */
-    public static Set<PFPermission> unionSinks(Set<PFPermission> a1, Set<PFPermission> a2){
+    public static Set<PFPermission> unionSinks(Set<PFPermission> a1, Set<PFPermission> a2) {
         a1.addAll(a2);
         convertToAnySink(a1, true);
         return a1;
     }
 
-    public static Set<PFPermission> convertToParameterizedFlowPermission(Set<FlowPermission> permissions) {
+    public static Set<PFPermission> convertToParameterizedFlowPermission(
+            Set<FlowPermission> permissions) {
         Set<PFPermission> flowPermissions = new TreeSet<PFPermission>();
         for (FlowPermission p : permissions) {
             flowPermissions.add(new PFPermission(p));
@@ -329,7 +341,8 @@ public class IFlowUtils {
         return flowPermissions;
     }
 
-    public static Set<FlowPermission> convertFromParameterizedFlowPermission(Set<PFPermission> permissions) {
+    public static Set<FlowPermission> convertFromParameterizedFlowPermission(
+            Set<PFPermission> permissions) {
         Set<FlowPermission> coarsePermissions = new TreeSet<FlowPermission>();
         for (PFPermission p : permissions) {
             coarsePermissions.add(p.getPermission());
@@ -371,17 +384,15 @@ public class IFlowUtils {
         return child.matches(regex);
     }
 
-    public static AnnotationMirror createAnnoFromSink(final Set<PFPermission> sinks,
-            ProcessingEnvironment processingEnv) {
-        final AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
-                Sink.class);
+    public static AnnotationMirror createAnnoFromSink(
+            final Set<PFPermission> sinks, ProcessingEnvironment processingEnv) {
+        final AnnotationBuilder builder = new AnnotationBuilder(processingEnv, Sink.class);
         return createIFlowAnnotation(sinks, builder);
     }
 
-    public static AnnotationMirror createAnnoFromSource(Set<PFPermission> sources,
-            ProcessingEnvironment processingEnv) {
-        final AnnotationBuilder builder = new AnnotationBuilder(processingEnv,
-                Source.class);
+    public static AnnotationMirror createAnnoFromSource(
+            Set<PFPermission> sources, ProcessingEnvironment processingEnv) {
+        final AnnotationBuilder builder = new AnnotationBuilder(processingEnv, Source.class);
         return createIFlowAnnotation(sources, builder);
     }
 

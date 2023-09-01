@@ -10,23 +10,18 @@ import java.lang.annotation.Target;
 import interning.InterningChecker;
 
 /**
- * Class declaration to indicate the class does not override
- * <tt>equals(Object)</tt>, and therefore <tt>a.equals(b)</tt> and <tt>a ==
- * b</tt> behave identically.
- * <p>
+ * Class declaration to indicate the class does not override <tt>equals(Object)</tt>, and therefore
+ * <tt>a.equals(b)</tt> and <tt>a == b</tt> behave identically.
  *
- * A class may be annotated @UsesObjectEquals if neither it, nor any of its
- * supertypes or subtypes, overrides <tt>equals</tt>.  Therefore, it cannot
- * be written on <tt>Object</tt> itself.  It is
- * most commonly written on a direct subclass of <tt>Object</tt>.
- * <p>
+ * <p>A class may be annotated @UsesObjectEquals if neither it, nor any of its supertypes or
+ * subtypes, overrides <tt>equals</tt>. Therefore, it cannot be written on <tt>Object</tt> itself.
+ * It is most commonly written on a direct subclass of <tt>Object</tt>.
  *
- * This annotation is associated with the {@link InterningChecker}.
+ * <p>This annotation is associated with the {@link InterningChecker}.
  *
  * @see InterningChecker
  * @checker_framework.manual #interning-checker Interning Checker
  */
-
 @Documented
 @Inherited
 @Target(ElementType.TYPE)

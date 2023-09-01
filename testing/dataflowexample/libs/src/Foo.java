@@ -3,14 +3,14 @@ package libs;
 import java.util.*;
 
 public class Foo {
-    
+
     private int fieldOfFoo;
 
-    public Foo(int fieldOfFoo){
+    public Foo(int fieldOfFoo) {
         this.fieldOfFoo = fieldOfFoo;
     }
 
-    public int getField(){
+    public int getField() {
         return fieldOfFoo;
     }
 
@@ -21,5 +21,4 @@ public class Foo {
     public static Number[] foo2() {
         return null;
     }
-
 }

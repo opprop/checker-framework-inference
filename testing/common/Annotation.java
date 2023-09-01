@@ -1,20 +1,24 @@
 @interface KeyFor {
     /**
      * Java expression(s) that evaluate to a map for which the annotated type is a key.
+     *
      * @checker_framework.manual #java-expressions-as-arguments Syntax of Java expressions
      */
     public String[] value();
 }
 
-
 @interface Metric {
 
     public enum Type {
-        DEFAULT, COUNTER, GAUGE, TAG
+        DEFAULT,
+        COUNTER,
+        GAUGE,
+        TAG
     }
 
     /**
      * Shorthand for optional name and description
+     *
      * @return {description} or {name, description}
      */
     String[] value() default {};
@@ -45,8 +49,7 @@
     Type type() default Type.DEFAULT;
 }
 
-
 class Annotation {
 
-   @KeyFor({"a","b","c"}) String test = "";
+    @KeyFor({"a", "b", "c"}) String test = "";
 }

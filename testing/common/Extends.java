@@ -1,3 +1,1 @@
-
-class TestExtends extends Object {
-}
+class TestExtends extends Object {}

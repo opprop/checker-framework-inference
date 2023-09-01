@@ -5,12 +5,13 @@ class TryCatch {
 
         String a = null;
         try {
-            if (true) { throw e;}
+            if (true) {
+                throw e;
+            }
             a = "";
         } catch (Exception e2) {
             a = "";
         }
         a.toString();
-
     }
 }

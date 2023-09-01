@@ -1,12 +1,12 @@
-
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
 import ostrusted.qual.*;
 
 class TestVarArgs<E> {
 
-    TestVarArgs(String ... args) {
-    }
+    TestVarArgs(String... args) {}
+
     void cTest() {
         new TestVarArgs<String>();
         new TestVarArgs<String>("");
@@ -41,7 +41,7 @@ class TestVarArgs<E> {
         test5(new ArrayList<String>());
         test5(new ArrayList(), new ArrayList());
         test5(new ArrayList<String>(), new ArrayList<String>());
-   }
+    }
 
     <T> void test3(T... args) {
         test3();
@@ -51,10 +51,9 @@ class TestVarArgs<E> {
         test3(new ArrayList(), new ArrayList<String>());
     }
 
-    void test4 (E ee, E... args) {
+    void test4(E ee, E... args) {
         test4(ee);
         test4(ee, ee);
         test4(ee, ee, ee);
     }
 }
-

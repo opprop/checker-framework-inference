@@ -1,6 +1,5 @@
 class SuperMethod {
-    public void m() {
-    }
+    public void m() {}
 }
 
 class SubMethod extends SuperMethod {

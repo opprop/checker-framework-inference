@@ -1,8 +1,7 @@
 import java.util.*;
 
 public class GenericFieldAccess<A, B> {
-    public void access() {
-    }
+    public void access() {}
 }
 
 class OtherAccess {

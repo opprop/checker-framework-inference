@@ -1,9 +1,9 @@
 class Literals {
-  String m(String p) {
-    return "ha"; 
-  }
+    String m(String p) {
+        return "ha";
+    }
 
-  void call() {
-    String s = m("dude");
-  }
+    void call() {
+        String s = m("dude");
+    }
 }

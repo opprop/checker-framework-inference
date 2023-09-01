@@ -7,7 +7,6 @@ class NBGeneric<T extends List<?>> {
     public T get() {
         return t;
     }
-
 }
 
 class NoBoundsTest {

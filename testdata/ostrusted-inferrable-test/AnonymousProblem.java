@@ -1,6 +1,7 @@
+import java.nio.file.SimpleFileVisitor;
+
 import ostrusted.qual.OsTrusted;
 import ostrusted.qual.OsUntrusted;
-import java.nio.file.SimpleFileVisitor;
 
 public class AnonymousProblem {
 
@@ -9,18 +10,18 @@ public class AnonymousProblem {
     // TODO: consider using preference constraints to express type rules that issue
     // warnings if violated.
     @SuppressWarnings("cast.unsafe.constructor.invocation")
-    SimpleFileVisitor s = new SimpleFileVisitor<String>(){};
+    SimpleFileVisitor s = new SimpleFileVisitor<String>() {};
 
     OutterI.InnerI<Object> f = new OutterI.InnerI<Object>() {};
 
     A a = new @OsUntrusted A() {};
 
     void foo() {
-        A a = new A() {
-            B b = new B() {};
-        };
+        A a =
+                new A() {
+                    B b = new B() {};
+                };
     }
-
 }
 
 interface OutterI<T> {
@@ -29,5 +30,5 @@ interface OutterI<T> {
 }
 
 class A {}
-class B {}
 
+class B {}

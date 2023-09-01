@@ -1,6 +1,5 @@
 package checkers.inference.test;
 
-
 import org.checkerframework.framework.test.CompilationResult;
 import org.checkerframework.framework.test.TestConfiguration;
 import org.checkerframework.framework.test.TypecheckExecutor;
@@ -15,25 +14,23 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- *
- */
+/** */
 public class InferenceTestExecutor {
 
-    public InferenceTestExecutor() {
-    }
+    public InferenceTestExecutor() {}
 
     public InferenceTestResult runTest(InferenceTestConfiguration config) {
 
         InferenceTestPhase lastPhaseRun;
         boolean failed;
 
-        //first run the checker on the source files and ensure that the typechecker returns the expected errors
+        // first run the checker on the source files and ensure that the typechecker returns the
+        // expected errors
         TypecheckResult initialTypecheckResult = initialTypecheck(config);
         failed = initialTypecheckResult.didTestFail();
         lastPhaseRun = InferenceTestPhase.INITIAL_TYPECHECK;
 
-        //run inference over the java files
+        // run inference over the java files
         InferenceResult inferenceResult = null;
         if (!failed) {
             inferenceResult = infer(config);
@@ -55,8 +52,13 @@ public class InferenceTestExecutor {
             lastPhaseRun = InferenceTestPhase.FINAL_TYPECHECK;
         }
 
-        return new InferenceTestResult(config, initialTypecheckResult, inferenceResult,
-                                       insertionResult, finalTypecheckResult, lastPhaseRun);
+        return new InferenceTestResult(
+                config,
+                initialTypecheckResult,
+                inferenceResult,
+                insertionResult,
+                finalTypecheckResult,
+                lastPhaseRun);
     }
 
     public static InferenceResult infer(InferenceTestConfiguration configuration) {
@@ -87,9 +89,11 @@ public class InferenceTestExecutor {
 
         List<String> solverArgs = configuration.getFlatSolverArgs();
         if (!solverArgs.isEmpty()) {
-            options.add("--solverArgs=\"" + String.join(" ", configuration.getFlatSolverArgs()) + "\"");
+            options.add(
+                    "--solverArgs=\"" + String.join(" ", configuration.getFlatSolverArgs()) + "\"");
         }
-        if (configuration.getPathToAfuScripts() != null && !configuration.getPathToAfuScripts().equals("")) {
+        if (configuration.getPathToAfuScripts() != null
+                && !configuration.getPathToAfuScripts().equals("")) {
             options.add("--pathToAfuScripts=" + configuration.getPathToAfuScripts());
         }
 
@@ -105,7 +109,7 @@ public class InferenceTestExecutor {
             options.add(sourceFile.getAbsolutePath());
         }
 
-        String [] args = options.toArray(new String[options.size()]);
+        String[] args = options.toArray(new String[options.size()]);
 
         if (configuration.getInitialTypecheckConfig().shouldEmitDebugInfo()) {
             System.out.println("Running command: \n" + String.join(" ", args));
@@ -120,11 +124,14 @@ public class InferenceTestExecutor {
     }
 
     public static InsertionResult insertAnnotations(InferenceTestConfiguration configuration) {
-        String pathToAfuScripts = configuration.getPathToAfuScripts().equals("") ? "":configuration.getPathToAfuScripts()+File.separator;
-        String insertAnnotationsScript = pathToAfuScripts+"insert-annotations-to-source";
+        String pathToAfuScripts =
+                configuration.getPathToAfuScripts().equals("")
+                        ? ""
+                        : configuration.getPathToAfuScripts() + File.separator;
+        String insertAnnotationsScript = pathToAfuScripts + "insert-annotations-to-source";
 
         List<File> sourceFiles = configuration.getInitialTypecheckConfig().getTestSourceFiles();
-        String [] options = new String [5 + sourceFiles.size()];
+        String[] options = new String[5 + sourceFiles.size()];
         options[0] = insertAnnotationsScript;
         options[1] = "-v";
         options[2] = "-d";
@@ -157,7 +164,8 @@ public class InferenceTestExecutor {
         }
     }
 
-    private static List<TestDiagnostic> filterOutFixables(List<TestDiagnostic> expectedDiagnostics) {
+    private static List<TestDiagnostic> filterOutFixables(
+            List<TestDiagnostic> expectedDiagnostics) {
         List<TestDiagnostic> filteredDiagnostics = new ArrayList<>(expectedDiagnostics.size());
         for (TestDiagnostic diagnostic : expectedDiagnostics) {
             if (!diagnostic.isFixable()) {
@@ -171,11 +179,13 @@ public class InferenceTestExecutor {
     private static TypecheckResult initialTypecheck(InferenceTestConfiguration configuration) {
         TestConfiguration typecheckConfig = configuration.getInitialTypecheckConfig();
 
-        List<TestDiagnostic> expectedDiagnostics = JavaDiagnosticReader.readJavaSourceFiles(typecheckConfig.getTestSourceFiles());
+        List<TestDiagnostic> expectedDiagnostics =
+                JavaDiagnosticReader.readJavaSourceFiles(typecheckConfig.getTestSourceFiles());
         TypecheckExecutor typecheckExecutor = new TypecheckExecutor();
         CompilationResult compilationResult = typecheckExecutor.compile(typecheckConfig);
 
-        return TypecheckResult.fromCompilationResults(typecheckConfig, compilationResult, expectedDiagnostics);
+        return TypecheckResult.fromCompilationResults(
+                typecheckConfig, compilationResult, expectedDiagnostics);
     }
 
     private static TypecheckResult finalTypecheck(InferenceTestConfiguration configuration) {
@@ -186,11 +196,14 @@ public class InferenceTestExecutor {
         }
 
         List<TestDiagnostic> expectedDiagnostics =
-            filterOutFixables(JavaDiagnosticReader.readJavaSourceFiles(typecheckConfig.getTestSourceFiles()));
+                filterOutFixables(
+                        JavaDiagnosticReader.readJavaSourceFiles(
+                                typecheckConfig.getTestSourceFiles()));
 
         TypecheckExecutor typecheckExecutor = new TypecheckExecutor();
         CompilationResult compilationResult = typecheckExecutor.compile(typecheckConfig);
 
-        return TypecheckResult.fromCompilationResults(typecheckConfig, compilationResult, expectedDiagnostics);
+        return TypecheckResult.fromCompilationResults(
+                typecheckConfig, compilationResult, expectedDiagnostics);
     }
 }

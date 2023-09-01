@@ -1,5 +1,3 @@
-
-
 class Test {
 
     void compoundAssignment(int i, int j) {

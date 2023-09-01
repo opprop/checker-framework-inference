@@ -1,5 +1,4 @@
-class SuperConstructor {
-}
+class SuperConstructor {}
 
 class SubConstructor extends SuperConstructor {
     public SubConstructor() {

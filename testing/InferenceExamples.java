@@ -1,19 +1,17 @@
+import java.util.ArrayList;
+import java.util.List;
 
 import checkers.tainting.quals.*;
-import java.util.List;
-import java.util.ArrayList;
 
 /**
  * General examples for inference.
  *
- * Qualifiers we expect to be inferred are in the
- * the qualifiers in comments, e.g., {@code /*@Untainted*\/}.
+ * <p>Qualifiers we expect to be inferred are in the the qualifiers in comments, e.g., {@code
+ * /*@Untainted*\/}.
  */
 class InferenceCheck {
 
-    /**
-     * Basic subtype relationship checks.
-     */
+    /** Basic subtype relationship checks. */
 
     // Parameters
     void testParam(/*@Untainted*/ String in) {
@@ -27,7 +25,8 @@ class InferenceCheck {
     }
 
     // Method call
-    void encryptedMethod(@Untainted String in) { }
+    void encryptedMethod(@Untainted String in) {}
+
     void testParamMethodCall(/*@Untainted*/ String in) {
         encryptedMethod(in);
     }
@@ -81,7 +80,7 @@ class InferenceCheck {
 
 // Test that return types are inferred for overridden methods
 class TestOverrides {
-    @Untainted String testReturn () {
+    @Untainted String testReturn() {
         return null;
     }
 
@@ -95,7 +94,7 @@ class TestOverrides {
 
 // Test annotations on a receiver
 class TestReceiver {
-    void test (/*@Untainted*/ TestReceiver this) {
+    void test(/*@Untainted*/ TestReceiver this) {
         @Untainted TestReceiver local = this;
     }
 }

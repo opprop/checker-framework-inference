@@ -1,7 +1,6 @@
-
 class If {
     void test() {
-        String a = null;  // 1
+        String a = null; // 1
         if (true) {
             a = ""; // 2
         }

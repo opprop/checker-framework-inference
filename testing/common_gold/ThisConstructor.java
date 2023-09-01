@@ -1,7 +1,9 @@
 import checkers.inference.quals.VarAnnot;
+
 class CallThis {
     @VarAnnot(1)
     String s;
+
     @VarAnnot(2)
     Object o;
 

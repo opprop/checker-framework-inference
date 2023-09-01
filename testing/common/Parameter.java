@@ -1,5 +1,5 @@
 class Parameter {
-  void m(Object o) {
-    o.toString();
-  }
+    void m(Object o) {
+        o.toString();
+    }
 }

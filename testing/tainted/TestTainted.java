@@ -1,6 +1,4 @@
-
 import checkers.tainting.quals.*;
-import java.util.List;
 
 class GenericClass<@Untainted T, @Tainted E> {
 

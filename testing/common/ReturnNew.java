@@ -1,9 +1,9 @@
 class ReturnNew {
-  void foo() {
-    Object c = m();
-  }
+    void foo() {
+        Object c = m();
+    }
 
-  Object m() {
-    return new Object();
-  }
+    Object m() {
+        return new Object();
+    }
 }

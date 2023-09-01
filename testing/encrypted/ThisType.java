@@ -1,4 +1,3 @@
-
 import encrypted.quals.*;
 
 class ThisType {

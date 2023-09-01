@@ -3,10 +3,10 @@ import java.util.*;
 import encrypted.quals.*;
 
 class InvariantArrays {
-    Object [] oa;
+    Object[] oa;
     @Encrypted Object[] eoa;
 
-    String [] sa;
+    String[] sa;
     @Encrypted String[] esa;
 
     void tests() {
@@ -14,7 +14,7 @@ class InvariantArrays {
         oa = eoa;
         // TODO: Support failure based tests
         // :: error: (assignment.type.incompatible)
-        //eoa = oa;
+        // eoa = oa;
 
         // TODOINVARR:: error: (assignment.type.incompatible)
         oa = esa;
@@ -47,7 +47,7 @@ class InvariantArrays {
         loa = ellra;
         // TODO: Support failure based tests
         // :: error: (assignment.type.incompatible)
-        //eleoa = eloa;
+        // eleoa = eloa;
         // TODOINVARR:: error: (assignment.type.incompatible)
         leoa = eleoa;
     }

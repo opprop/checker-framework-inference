@@ -47,4 +47,7 @@ export PATH=$AFU/scripts:$JAVA_HOME/bin:$PATH
 # Finally build checker-framework-inference
 ./gradlew dist && ./gradlew testLibJar
 
+# Format check
+./gradlew check
+
 echo Exiting "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")" in `pwd`

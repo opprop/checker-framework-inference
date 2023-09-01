@@ -1,34 +1,30 @@
 package checkers.inference.model;
 
-import checkers.inference.InferenceMain;
-import checkers.inference.InferenceQualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
-import checkers.inference.qual.VarAnnot;
-
 import javax.lang.model.element.AnnotationMirror;
+
+import checkers.inference.InferenceQualifierHierarchy;
 
 /**
  * Represents a real qualifier of the type system.
  *
- * Constant slots are used for elements with fixed types, e.g. literals.
+ * <p>Constant slots are used for elements with fixed types, e.g. literals.
  */
 public class ConstantSlot extends Slot {
 
-    /**
-     * The annotation in the real type system that this slot is equivalent to
-     */
+    /** The annotation in the real type system that this slot is equivalent to */
     private final AnnotationMirror value;
 
     /**
-     *
-     * @param value   The actual AnnotationMirror that this ConstantSlot represents.  This AnnotationMirror should
-     *                be valid within the type system for which we are inferring values.
-     * @param id      Exactly like a variable id, this will uniquely identify this constant in the entirey of the
-     *                program
-     *
-     * The location for slots constructed using this constructor will be AnnotationLocation.MISSING_LOCATION
+     * @param value The actual AnnotationMirror that this ConstantSlot represents. This
+     *     AnnotationMirror should be valid within the type system for which we are inferring
+     *     values.
+     * @param id Exactly like a variable id, this will uniquely identify this constant in the
+     *     entirey of the program
+     *     <p>The location for slots constructed using this constructor will be
+     *     AnnotationLocation.MISSING_LOCATION
      */
     public ConstantSlot(int id, AnnotationMirror value) {
         super(id);
@@ -38,7 +34,8 @@ public class ConstantSlot extends Slot {
 
     private void checkValue(AnnotationMirror value) {
         if (InferenceQualifierHierarchy.isVarAnnot(value)) {
-            throw new BugInCF("Invalid attempt to create a ConstantSlot with VarAnnot as value: " + value);
+            throw new BugInCF(
+                    "Invalid attempt to create a ConstantSlot with VarAnnot as value: " + value);
         }
     }
 
@@ -79,18 +76,13 @@ public class ConstantSlot extends Slot {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         ConstantSlot other = (ConstantSlot) obj;
         if (value == null) {
-            if (other.value != null)
-                return false;
-        } else if (!AnnotationUtils.areSame(value,other.value))
-            return false;
+            if (other.value != null) return false;
+        } else if (!AnnotationUtils.areSame(value, other.value)) return false;
         return true;
     }
 }

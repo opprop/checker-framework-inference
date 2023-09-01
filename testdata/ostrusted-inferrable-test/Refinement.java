@@ -1,5 +1,5 @@
-import ostrusted.qual.OsUntrusted;
 import ostrusted.qual.OsTrusted;
+import ostrusted.qual.OsUntrusted;
 
 public class Refinement {
 
@@ -9,18 +9,17 @@ public class Refinement {
         bar(o);
 
         o = in2;
-        // :: fixable-error: (argument.type.incompatible) 
+        // :: fixable-error: (argument.type.incompatible)
         bar(o);
     }
 
     void bar(@OsTrusted Object in) {}
 
-
-    @OsTrusted Object m(@OsUntrusted Object untrusted, Object trusted) {
+    @OsTrusted
+    Object m(@OsUntrusted Object untrusted, Object trusted) {
         Object obj = untrusted;
         obj = trusted;
         // :: fixable-error: (return.type.incompatible)
         return obj;
     }
 }
-

@@ -1,4 +1,3 @@
-
 import trusted.qual.*;
 
 class SimplestField {

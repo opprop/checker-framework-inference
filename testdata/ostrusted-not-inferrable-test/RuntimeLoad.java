@@ -1,10 +1,6 @@
 import ostrusted.qual.*;
 import ostrusted.qual.OsUntrusted;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.Runtime;
-
 class RuntimeLoad {
 
     @OsTrusted String trustedField = "";
@@ -28,7 +24,7 @@ class RuntimeLoad {
         // :: fixable-error: (argument.type.incompatible)
         Runtime.getRuntime().loadLibrary(unknownField);
 
-        Runtime.getRuntime().loadLibrary("some" + "Lib" + "name" );
+        Runtime.getRuntime().loadLibrary("some" + "Lib" + "name");
 
         // :: fixable-error: (argument.type.incompatible)
         Runtime.getRuntime().loadLibrary(unknownParam + "name");
@@ -40,5 +36,4 @@ class RuntimeLoad {
         String someLocal2 = "";
         Runtime.getRuntime().loadLibrary(someLocal1 + someLocal2);
     }
-
 }

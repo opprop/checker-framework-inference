@@ -4,9 +4,8 @@ public class LUBProblem {
 
         int a = 1;
 
-        for (;;) {
+        for (; ; ) {
             a = true ? 1 + 1 : 1;
         }
-
     }
 }

@@ -5,6 +5,7 @@ import checkers.inference.quals.VarAnnot;
 class ArrayLength {
     @VarAnnot(3)
     String @VarAnnot(2) [] ar;
+
     @VarAnnot(4)
     int i = ar.length;
 }

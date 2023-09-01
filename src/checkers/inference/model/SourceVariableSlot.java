@@ -1,13 +1,15 @@
 package checkers.inference.model;
 
-import checkers.inference.InferenceOptions;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.type.TypeMirror;
 
+import checkers.inference.InferenceOptions;
+
 /**
- * SourceVariableSlot is a VariableSlot representing a type use in the source code with undetermined value.
+ * SourceVariableSlot is a VariableSlot representing a type use in the source code with undetermined
+ * value.
  */
 public class SourceVariableSlot extends VariableSlot {
 
@@ -15,16 +17,15 @@ public class SourceVariableSlot extends VariableSlot {
     protected final TypeMirror actualType;
 
     /**
-     * The default annotation for this slot from the real type factory.
-     * This field is nullable because we find the default annotation only
-     * if {@link InferenceOptions#makeDefaultsExplicit} is true.
+     * The default annotation for this slot from the real type factory. This field is nullable
+     * because we find the default annotation only if {@link InferenceOptions#makeDefaultsExplicit}
+     * is true.
      */
     protected final @Nullable AnnotationMirror defaultAnnotation;
 
     /**
-     * Should this slot be inserted back into the source code.
-     * This should be false for types that have an implicit annotation
-     * and slots for pre-annotated code.
+     * Should this slot be inserted back into the source code. This should be false for types that
+     * have an implicit annotation and slots for pre-annotated code.
      */
     private boolean insertable;
 
@@ -32,8 +33,8 @@ public class SourceVariableSlot extends VariableSlot {
      * @param location used to locate this variable in code, see @AnnotationLocation
      * @param id unique identifier for this variable
      * @param type the underlying type
-     * @param defaultAnnotation the default annotation (solution) for this slot, which can be null when
-     *                          {@link InferenceOptions#makeDefaultsExplicit} returns true
+     * @param defaultAnnotation the default annotation (solution) for this slot, which can be null
+     *     when {@link InferenceOptions#makeDefaultsExplicit} returns true
      * @param insertable indicates whether this slot should be inserted back into the source code
      */
     public SourceVariableSlot(
@@ -41,8 +42,7 @@ public class SourceVariableSlot extends VariableSlot {
             AnnotationLocation location,
             TypeMirror type,
             @Nullable AnnotationMirror defaultAnnotation,
-            boolean insertable
-    ) {
+            boolean insertable) {
         super(id, location);
         this.actualType = type;
         this.defaultAnnotation = defaultAnnotation;
@@ -68,20 +68,18 @@ public class SourceVariableSlot extends VariableSlot {
         return actualType;
     }
 
-    /**
-     * Should this VariableSlot be inserted back into the source code.
-     */
+    /** Should this VariableSlot be inserted back into the source code. */
     @Override
     public boolean isInsertable() {
         return insertable;
     }
 
     /**
-     * This method is not encouraged to use, since whether a specific {@code SourceVariableSlot}
-     * is insertable should be determined at creation depending on the type use location, while
-     * sometime it's more convenient to set this flag of a {@code SourceVariableSlot} when it's
-     * use.
+     * This method is not encouraged to use, since whether a specific {@code SourceVariableSlot} is
+     * insertable should be determined at creation depending on the type use location, while
+     * sometime it's more convenient to set this flag of a {@code SourceVariableSlot} when it's use.
      * TODO: determine whether the slot is insertable at creation and remove this method
+     *
      * @param insertable whether this slot should be inserted back into the source code
      */
     public void setInsertable(boolean insertable) {

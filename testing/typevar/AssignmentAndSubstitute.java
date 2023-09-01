@@ -1,10 +1,9 @@
-//Simple generic class to test type parameters
+// Simple generic class to test type parameters
 class AssignmentAndSubstitute<X extends String> {
     X x;
     X x2;
 
-    static void strMethod(String str) {
-    }
+    static void strMethod(String str) {}
 
     void context() {
         strMethod(x);

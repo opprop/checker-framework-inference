@@ -14,14 +14,12 @@ import checkers.inference.model.Slot;
 import checkers.inference.model.SubtypeConstraint;
 
 /**
- * ConstraintGraph represents constraints in a graph form. Each constraint is an
- * edge, and each slot is a vertex. ConstraintGraph is used for separating
- * constraint into different components by running graph traversal algorithm on
- * it. Normal edges in this graph are bi-directional edges, except SubtypeEdge
- * is single-directed from subtype vertex to supertype vertex.
- * 
- * @author jianchu
+ * ConstraintGraph represents constraints in a graph form. Each constraint is an edge, and each slot
+ * is a vertex. ConstraintGraph is used for separating constraint into different components by
+ * running graph traversal algorithm on it. Normal edges in this graph are bi-directional edges,
+ * except SubtypeEdge is single-directed from subtype vertex to supertype vertex.
  *
+ * @author jianchu
  */
 public class ConstraintGraph {
 

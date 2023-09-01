@@ -6,4 +6,3 @@ import ostrusted.qual.OsTrusted;
 @SuppressWarnings("inconsistent.constructor.type")
 // :: fixable-error: (declaration.inconsistent.with.extends.clause)
 class A extends @OsTrusted Object {}
-

@@ -1,23 +1,18 @@
 package checkers.inference.solver.backend.z3smt.encoder;
 
-import java.util.Collection;
-
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Expr;
 
-import checkers.inference.model.ArithmeticConstraint;
-import checkers.inference.model.CombineConstraint;
-import checkers.inference.model.ComparableConstraint;
+import org.checkerframework.javacutil.BugInCF;
+
+import java.util.Collection;
+
 import checkers.inference.model.Constraint;
 import checkers.inference.model.EqualityConstraint;
-import checkers.inference.model.ExistentialConstraint;
-import checkers.inference.model.ImplicationConstraint;
 import checkers.inference.model.InequalityConstraint;
-import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.SubtypeConstraint;
 import checkers.inference.solver.backend.z3smt.Z3SmtFormatTranslator;
 import checkers.inference.solver.frontend.Lattice;
-import org.checkerframework.javacutil.BugInCF;
 
 public abstract class Z3SmtSoftConstraintEncoder<SlotEncodingT, SlotSolutionT>
         extends Z3SmtAbstractConstraintEncoder<SlotEncodingT, SlotSolutionT> {
@@ -33,7 +28,8 @@ public abstract class Z3SmtSoftConstraintEncoder<SlotEncodingT, SlotSolutionT>
     }
 
     protected void addSoftConstraint(Expr serializedConstraint, int weight) {
-        softConstraints.append("(assert-soft " + serializedConstraint + " :weight " + weight + ")\n");
+        softConstraints.append(
+                "(assert-soft " + serializedConstraint + " :weight " + weight + ")\n");
     }
 
     protected abstract void encodeSoftSubtypeConstraint(SubtypeConstraint constraint);
@@ -60,7 +56,10 @@ public abstract class Z3SmtSoftConstraintEncoder<SlotEncodingT, SlotSolutionT>
                 encodeSoftInequalityConstraint((InequalityConstraint) constraint);
 
             } else {
-                throw new BugInCF("Soft constraint for " + constraint.getClass().getName() + " is not supported");
+                throw new BugInCF(
+                        "Soft constraint for "
+                                + constraint.getClass().getName()
+                                + " is not supported");
             }
         }
         String res = softConstraints.toString();

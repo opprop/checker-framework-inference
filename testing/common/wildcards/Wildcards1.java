@@ -4,6 +4,7 @@ interface List<L> {
 
 interface Interf<T> {
     void set(T t);
+
     T get();
 }
 
@@ -26,7 +27,7 @@ class ConcreteWCInterf implements Interf<List<?>> {
         return lq;
     }
 
-    public void set(List<?> lq ) {
+    public void set(List<?> lq) {
         this.lq = lq;
     }
 }
@@ -38,7 +39,7 @@ abstract class ComplexWcInterf implements Interf<List<? extends List<?>>> {
         return lq;
     }
 
-    public void set(List<List<?>> lq ) {
+    public void set(List<List<?>> lq) {
         this.lq = lq;
     }
 }

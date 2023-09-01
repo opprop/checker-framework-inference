@@ -1,5 +1,7 @@
 package checkers.inference.solver.backend.lingeling;
 
+import org.sat4j.core.VecInt;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,11 +11,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.nio.file.Paths;
 
 import javax.lang.model.element.AnnotationMirror;
-
-import org.sat4j.core.VecInt;
 
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
@@ -29,7 +28,6 @@ import checkers.inference.solver.util.Statistics;
  * doesn't support soft constraint.
  *
  * @author jianchu
- *
  */
 public class LingelingSolver extends MaxSatSolver {
 
@@ -44,8 +42,11 @@ public class LingelingSolver extends MaxSatSolver {
     private long serializationStart;
     private long serializationEnd;
 
-    public LingelingSolver(SolverEnvironment solverEnvironment, Collection<Slot> slots,
-            Collection<Constraint> constraints, MaxSatFormatTranslator formatTranslator,
+    public LingelingSolver(
+            SolverEnvironment solverEnvironment,
+            Collection<Slot> slots,
+            Collection<Constraint> constraints,
+            MaxSatFormatTranslator formatTranslator,
             Lattice lattice) {
         super(solverEnvironment, slots, constraints, formatTranslator, lattice);
     }
@@ -89,11 +90,12 @@ public class LingelingSolver extends MaxSatSolver {
      * @return and int array, which stores truth assignment for CNF predicate.
      */
     private int[] getSolverOutput(int localNth) {
-        String[] command = { lingeling,
-                CNFData.getAbsolutePath() + "/cnfdata" + localNth + ".txt" };
+        String[] command = {lingeling, CNFData.getAbsolutePath() + "/cnfdata" + localNth + ".txt"};
 
         final List<Integer> resultList = new ArrayList<Integer>();
-        ExternalSolverUtils.runExternalSolver(command, stdOut -> parseStdOut(stdOut, resultList),
+        ExternalSolverUtils.runExternalSolver(
+                command,
+                stdOut -> parseStdOut(stdOut, resultList),
                 stdErr -> ExternalSolverUtils.printStdStream(System.err, stdErr));
 
         // Java 8 style of List<Integer> to int[] conversion
@@ -107,7 +109,9 @@ public class LingelingSolver extends MaxSatSolver {
             while ((line = stdOut.readLine()) != null) {
                 if (line.charAt(0) == 'v') {
                     for (String retval : line.split(" ")) {
-                        if (!retval.equals("") && !retval.equals(" ") && !retval.equals("\n")
+                        if (!retval.equals("")
+                                && !retval.equals(" ")
+                                && !retval.equals("\n")
                                 && !retval.equals("v")) {
                             int val = Integer.parseInt(retval);
                             if (variableSet.contains(Math.abs(val))) {

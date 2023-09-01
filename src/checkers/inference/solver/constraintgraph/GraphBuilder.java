@@ -1,7 +1,7 @@
 package checkers.inference.solver.constraintgraph;
 
-import dataflow.DataflowAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -22,23 +22,22 @@ import checkers.inference.model.ExistentialConstraint;
 import checkers.inference.model.Slot;
 import checkers.inference.model.SubtypeConstraint;
 import checkers.inference.model.VariableSlot;
+import dataflow.DataflowAnnotatedTypeFactory;
 import dataflow.DataflowVisitor;
-import dataflow.util.DataflowUtils;
-import org.checkerframework.javacutil.BugInCF;
 
 /**
- * GraphBuilder builds the constraint graph and runs graph traversal algorithms
- * to separate the graph in different components.
- * 
- * @author jianchu
+ * GraphBuilder builds the constraint graph and runs graph traversal algorithms to separate the
+ * graph in different components.
  *
+ * @author jianchu
  */
 public class GraphBuilder {
     private final Collection<Constraint> constraints;
     private final ConstraintGraph graph;
     private final AnnotationMirror top;
 
-    public GraphBuilder(Collection<Slot> slots, Collection<Constraint> constraints, AnnotationMirror top) {
+    public GraphBuilder(
+            Collection<Slot> slots, Collection<Constraint> constraints, AnnotationMirror top) {
         this.constraints = constraints;
         this.graph = new ConstraintGraph();
         this.top = top;
@@ -64,9 +63,7 @@ public class GraphBuilder {
         return getGraph();
     }
 
-    /**
-     * Find all constant vertices.
-     */
+    /** Find all constant vertices. */
     private void addConstant() {
         for (Vertex vertex : graph.getVerticies()) {
             if (vertex.isConstant()) {
@@ -75,10 +72,7 @@ public class GraphBuilder {
         }
     }
 
-    /**
-     * This method runs BFS based algorithm, and calculates all independent
-     * components.
-     */
+    /** This method runs BFS based algorithm, and calculates all independent components. */
     private void calculateIndependentPath() {
         Set<Vertex> visited = new HashSet<Vertex>();
         for (Vertex vertex : this.graph.getVerticies()) {
@@ -91,8 +85,10 @@ public class GraphBuilder {
                     visited.add(current);
                     for (Edge edge : current.getEdges()) {
                         independentPath.add(edge.getConstraint());
-                        Vertex next = edge.getFromVertex().equals(current) ? edge.getToVertex() : edge
-                                .getFromVertex();
+                        Vertex next =
+                                edge.getFromVertex().equals(current)
+                                        ? edge.getToVertex()
+                                        : edge.getFromVertex();
                         if (!visited.contains(next)) {
                             queue.add(next);
                         }
@@ -104,8 +100,8 @@ public class GraphBuilder {
     }
 
     /**
-     * For each constant vertex, this method run BFS based algorithm on it, and
-     * and put all edges that can be reached by the vertex into one set.
+     * For each constant vertex, this method run BFS based algorithm on it, and and put all edges
+     * that can be reached by the vertex into one set.
      */
     private void calculateConstantPath() {
         for (Vertex vertex : this.graph.getConstantVerticies()) {
@@ -126,29 +122,38 @@ public class GraphBuilder {
                 if ((edge instanceof SubtypeEdge) && current.equals(edge.to)) {
                     continue;
                 }
-                Vertex next = current.equals(edge.getToVertex()) ? edge.getFromVertex() : edge.getToVertex();
+                Vertex next =
+                        current.equals(edge.getToVertex())
+                                ? edge.getFromVertex()
+                                : edge.getToVertex();
                 constantPathConstraints.add(edge.getConstraint());
                 if (!visited.contains(next)) {
                     if (next.isConstant()) {
                         if (AnnotationUtils.areSame(top, next.getValue())) {
                             continue;
-                        } else if (InferenceMain.getInstance().getVisitor() instanceof DataflowVisitor) {
-                            // TODO: find a proper way to adapt this behavior in type-system specific subclasses.
-                            DataflowAnnotatedTypeFactory typeFactory = (DataflowAnnotatedTypeFactory)
-                                    InferenceMain.getInstance().getRealTypeFactory();
-                            List<String> typeNames = typeFactory.dataflowUtils.getTypeNames(next.getValue());
+                        } else if (InferenceMain.getInstance().getVisitor()
+                                instanceof DataflowVisitor) {
+                            // TODO: find a proper way to adapt this behavior in type-system
+                            // specific subclasses.
+                            DataflowAnnotatedTypeFactory typeFactory =
+                                    (DataflowAnnotatedTypeFactory)
+                                            InferenceMain.getInstance().getRealTypeFactory();
+                            List<String> typeNames =
+                                    typeFactory.dataflowUtils.getTypeNames(next.getValue());
                             if (typeNames.size() == 1 && typeNames.get(0).isEmpty()) {
                                 continue;
                             }
                         }
                     } else {
                         VariableSlot slot = (VariableSlot) next.getSlot();
-                        if (slot.getLocation() != null && slot.getLocation().getKind().equals(Kind.MISSING)) {
+                        if (slot.getLocation() != null
+                                && slot.getLocation().getKind().equals(Kind.MISSING)) {
                             if (InferenceMain.isHackMode()) {
                                 continue;
                             } else {
-                                throw new BugInCF("In GraphBuilder.BFSSearch: find a slot of which " +
-                                        "the location is either null or MISSING_LOCATION!");
+                                throw new BugInCF(
+                                        "In GraphBuilder.BFSSearch: find a slot of which "
+                                                + "the location is either null or MISSING_LOCATION!");
                             }
                         }
                     }
@@ -172,9 +177,9 @@ public class GraphBuilder {
     }
 
     /**
-     * The order of subtype and supertype matters, first one has to be subtype,
-     * second one has to be supertype.
-     * 
+     * The order of subtype and supertype matters, first one has to be subtype, second one has to be
+     * supertype.
+     *
      * @param subtypeConstraint
      */
     private void addSubtypeEdge(SubtypeConstraint subtypeConstraint) {

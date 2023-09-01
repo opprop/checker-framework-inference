@@ -9,12 +9,10 @@ public class ExtendsOtherTypeVar {
             method(e0);
         }
 
-        public void method(T in_t) {
-
-        }
+        public void method(T in_t) {}
     }
 
-    //reverse the order of the type args
+    // reverse the order of the type args
     class GenRev<EE extends TT, TT extends Object> {
 
         public void context(TT tt0, TT tt1, EE ee0) {
@@ -23,8 +21,6 @@ public class ExtendsOtherTypeVar {
             method(ee0);
         }
 
-        public void method(TT in_tt) {
-
-        }
+        public void method(TT in_tt) {}
     }
 }

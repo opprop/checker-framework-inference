@@ -1,7 +1,7 @@
 import java.util.*;
 
 public class BoxingError<A, B> {
-    public <C, D>  D toAccess(C c1, D d1) {
+    public <C, D> D toAccess(C c1, D d1) {
         return d1;
     }
 

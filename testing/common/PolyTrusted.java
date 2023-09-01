@@ -1,13 +1,12 @@
 import trusted.qual.*;
 
-
 class TestPolyNull {
 
-    @PolyTrusted TestPolyNull(@PolyTrusted String astring) {
+    @PolyTrusted
+    TestPolyNull(@PolyTrusted String astring) {}
 
-    }
-
-    @Trusted TestPolyNull testConstructor1(String in) {
+    @Trusted
+    TestPolyNull testConstructor1(String in) {
         // TODO: This should certainly emit a warning as well if just typechecking
         return new TestPolyNull(in);
     }
@@ -16,17 +15,18 @@ class TestPolyNull {
         return new TestPolyNull(in);
     }
 
-    @PolyTrusted String id(@PolyTrusted String in) {
+    @PolyTrusted
+    String id(@PolyTrusted String in) {
         return in;
     }
 
     // TODO: This should certainly emit a warning as well if just typechecking
-    @Trusted String test(String s) {
+    @Trusted
+    String test(String s) {
         return id(s);
     }
 
     String test2(@Untrusted String s) {
         return id(s);
     }
-
 }

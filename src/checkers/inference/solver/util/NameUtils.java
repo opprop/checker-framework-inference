@@ -16,9 +16,8 @@ public class NameUtils {
     }
 
     /**
-     * Given a strategy class, return the strategy name by removing the common naming suffix.
-     * E.g. Given PlainSolvingStrategy, this method return "Plain".
-     *
+     * Given a strategy class, return the strategy name by removing the common naming suffix. E.g.
+     * Given PlainSolvingStrategy, this method return "Plain".
      */
     public static String getStrategyName(Class<? extends SolvingStrategy> strategyClass) {
         final String strategyClassName = strategyClass.getSimpleName();
@@ -27,9 +26,8 @@ public class NameUtils {
     }
 
     /**
-     * Given a solver class, return the solver name by removing the common naming suffix.
-     * E.g. Given MaxSatSolver, this method return "MaxSat".
-     *
+     * Given a solver class, return the solver name by removing the common naming suffix. E.g. Given
+     * MaxSatSolver, this method return "MaxSat".
      */
     public static String getSolverName(Class<? extends Solver<?>> solverClass) {
         final String solverClassName = solverClass.getSimpleName();

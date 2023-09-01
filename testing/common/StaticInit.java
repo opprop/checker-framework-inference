@@ -1,7 +1,7 @@
 class StaticInit {
-  static Object f;
+    static Object f;
 
-  static {
-    f = new Object();
-  }
+    static {
+        f = new Object();
+    }
 }

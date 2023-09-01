@@ -1,8 +1,5 @@
 package sparta.checkers.propagation;
 
-import checkers.inference.DefaultInferenceResult;
-import checkers.inference.InferenceResult;
-import checkers.inference.model.VariableSlot;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 
@@ -22,6 +19,8 @@ import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
 import javax.lang.model.element.ExecutableElement;
 
+import checkers.inference.DefaultInferenceResult;
+import checkers.inference.InferenceResult;
 import checkers.inference.InferenceSolver;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
@@ -29,31 +28,30 @@ import checkers.inference.model.EqualityConstraint;
 import checkers.inference.model.Slot;
 import checkers.inference.model.Slot.Kind;
 import checkers.inference.model.SubtypeConstraint;
+import checkers.inference.model.VariableSlot;
 import sparta.checkers.qual.Sink;
 import sparta.checkers.qual.Source;
 
 /**
  * Solver for solving Strings for @Source and @Sink annotations.
  *
- * This solver finds the Set of Strings that a VariableSlot should have.
- * There is both a sink solving mode and a source solving mode.
+ * <p>This solver finds the Set of Strings that a VariableSlot should have. There is both a sink
+ * solving mode and a source solving mode.
  *
- * For sink solving, subtype constraints cause all of the annotations from the LHS to be added to the RHS.
- * For example:
- * @Sink(INTERNET) String a = b;
- * The inferred sinks for b should now include INTERNET.
+ * <p>For sink solving, subtype constraints cause all of the annotations from the LHS to be added to
+ * the RHS. For example: @Sink(INTERNET) String a = b; The inferred sinks for b should now include
+ * INTERNET.
  *
- * For source solving, subtype constraints cause all of the annotations from the RHS to be added to the LHS.
- * @Source(INTERNET) String a;
- * b = a;
- * The inferred sources for b should now include INTERNET.
+ * <p>For source solving, subtype constraints cause all of the annotations from the RHS to be added
+ * to the LHS. @Source(INTERNET) String a; b = a; The inferred sources for b should now include
+ * INTERNET.
  *
- * For both modes, an equality constraint causes the Sets for both involved Slots
- * to be equal and include all Strings from either set.
+ * <p>For both modes, an equality constraint causes the Sets for both involved Slots to be equal and
+ * include all Strings from either set.
  *
- * The algorithm processes list of constraints, adding the Strings to the inferredValues
- * map as needed. The entire list of constraints is processed repeatedly until the inferredValues map
- * no longer changes.
+ * <p>The algorithm processes list of constraints, adding the Strings to the inferredValues map as
+ * needed. The entire list of constraints is processed repeatedly until the inferredValues map no
+ * longer changes.
  *
  * @author mcarthur
  */
@@ -61,15 +59,13 @@ public abstract class IFlowSolver implements InferenceSolver {
 
     private static final Logger logger = Logger.getLogger(Logger.class.getName());
 
-    private static final String PRINT_EMPTY_SINKS_KEY="print-empty-sinks";
-    private static final String PRINT_EMPTY_SOURCES_KEY="print-empty-sources";
+    private static final String PRINT_EMPTY_SINKS_KEY = "print-empty-sinks";
+    private static final String PRINT_EMPTY_SOURCES_KEY = "print-empty-sources";
 
     private ProcessingEnvironment processingEnvironment;
     private Map<String, String> configuration;
 
-    /**
-     * Map of inferred Strings for an VariableSlot's id.
-     */
+    /** Map of inferred Strings for an VariableSlot's id. */
     private final Map<Integer, Set<String>> inferredValues = new HashMap<>();
 
     // private final Map<String, Set<String>> flowPolicy = new HashMap<>();
@@ -92,8 +88,8 @@ public abstract class IFlowSolver implements InferenceSolver {
 
             for (Constraint constraint : constraints) {
                 if (constraint instanceof SubtypeConstraint) {
-                    Slot subtype = ((SubtypeConstraint)constraint).getSubtype();
-                    Slot supertype = ((SubtypeConstraint)constraint).getSupertype();
+                    Slot subtype = ((SubtypeConstraint) constraint).getSubtype();
+                    Slot supertype = ((SubtypeConstraint) constraint).getSupertype();
 
                     Set<String> subtypePerms = getInferredSlotPermissions(subtype);
                     Set<String> supertypePerms = getInferredSlotPermissions(supertype);
@@ -108,8 +104,8 @@ public abstract class IFlowSolver implements InferenceSolver {
                         }
                     }
                 } else if (constraint instanceof EqualityConstraint) {
-                    Slot first = ((EqualityConstraint)constraint).getFirst();
-                    Slot second = ((EqualityConstraint)constraint).getSecond();
+                    Slot first = ((EqualityConstraint) constraint).getFirst();
+                    Slot second = ((EqualityConstraint) constraint).getSecond();
 
                     Set<String> firstPerms = getInferredSlotPermissions(first);
                     Set<String> secondPerms = getInferredSlotPermissions(second);
@@ -141,12 +137,15 @@ public abstract class IFlowSolver implements InferenceSolver {
                 strings.remove("ANY");
                 AnnotationMirror atm;
                 if (isSinkSolver()) {
-                    if (strings.size() == 0 && "false".equalsIgnoreCase(configuration.get(PRINT_EMPTY_SINKS_KEY))) {
+                    if (strings.size() == 0
+                            && "false".equalsIgnoreCase(configuration.get(PRINT_EMPTY_SINKS_KEY))) {
                         continue;
                     }
                     atm = createAnnotationMirror(strings, Sink.class);
                 } else {
-                    if (strings.size() == 0 && "false".equalsIgnoreCase(configuration.get(PRINT_EMPTY_SOURCES_KEY))) {
+                    if (strings.size() == 0
+                            && "false"
+                                    .equalsIgnoreCase(configuration.get(PRINT_EMPTY_SOURCES_KEY))) {
                         continue;
                     }
                     atm = createAnnotationMirror(strings, Source.class);
@@ -157,14 +156,13 @@ public abstract class IFlowSolver implements InferenceSolver {
         return solutions;
     }
 
-
     /**
      * Look up the set of inferred Strings for a Slot.
      *
-     * If the Slot is a VariableSlot, return its entry in inferredValues.
+     * <p>If the Slot is a VariableSlot, return its entry in inferredValues.
      *
-     * If the Slot is a ConstantSlot, return an unmodifiable set based
-     * on the Strings used in the constant slots value.
+     * <p>If the Slot is a ConstantSlot, return an unmodifiable set based on the Strings used in the
+     * constant slots value.
      *
      * @param slot The slot to lookup
      * @return The slots current Set of Strings.
@@ -184,7 +182,8 @@ public abstract class IFlowSolver implements InferenceSolver {
                     List<?> values = (List<?>) entry.getValue().getValue();
                     for (Object elem : values) {
                         String flowPermString = elem.toString();
-                        flowPermString = flowPermString.substring(flowPermString.lastIndexOf(".") + 1);
+                        flowPermString =
+                                flowPermString.substring(flowPermString.lastIndexOf(".") + 1);
                         flowPermString = flowPermString.replace("\"", "");
                         constantSet.add(String.valueOf(flowPermString).intern());
                     }
@@ -194,19 +193,21 @@ public abstract class IFlowSolver implements InferenceSolver {
             return Collections.unmodifiableSet(constantSet);
         } else {
             return new HashSet<>();
-//            throw new BugInCF("Found slot that was neither a variable or a constant: " + slot);
+            //            throw new BugInCF("Found slot that was neither a variable or a constant: "
+            // + slot);
         }
     }
 
-    private AnnotationMirror createAnnotationMirror(Set<String> strings, Class<? extends Annotation> clazz) {
-        AnnotationBuilder builder = new AnnotationBuilder( processingEnvironment, clazz);
+    private AnnotationMirror createAnnotationMirror(
+            Set<String> strings, Class<? extends Annotation> clazz) {
+        AnnotationBuilder builder = new AnnotationBuilder(processingEnvironment, clazz);
         builder.setValue("value", strings.toArray());
         return builder.build();
     }
 
     /**
-     * Get the Set of Strings in aggregatedValues map for the given id.
-     * Create the Set and add it to the map if it does not already exist.
+     * Get the Set of Strings in aggregatedValues map for the given id. Create the Set and add it to
+     * the map if it does not already exist.
      *
      * @param id The id of the VariableSlot
      * @return The set of Strings for the id

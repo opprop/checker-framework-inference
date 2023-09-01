@@ -1,4 +1,4 @@
 class FieldInitCast {
-  Object f;
-  String g = (String) f;
+    Object f;
+    String g = (String) f;
 }

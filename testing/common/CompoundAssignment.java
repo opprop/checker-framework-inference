@@ -8,5 +8,4 @@ class CompoundAssignmentTest {
     public static int method() {
         return 1;
     }
-
 }

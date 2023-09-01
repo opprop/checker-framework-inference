@@ -4,9 +4,8 @@ import org.sat4j.core.VecInt;
 
 /**
  * Helper class for creating VecInt and VecInt array.
- * 
- * @author jianchu
  *
+ * @author jianchu
  */
 public class VectorUtils {
 
@@ -15,7 +14,6 @@ public class VectorUtils {
     }
 
     public static VecInt[] asVecArray(int... vars) {
-        return new VecInt[] { new VecInt(vars) };
+        return new VecInt[] {new VecInt(vars)};
     }
-
 }

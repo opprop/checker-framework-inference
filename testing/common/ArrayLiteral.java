@@ -1,4 +1,3 @@
-
 class ArrayLiteral {
     String[] s = {};
 }

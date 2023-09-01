@@ -1,4 +1,3 @@
-
 abstract class Base<X, Y> {
     protected X x;
     protected Y y;
@@ -8,13 +7,12 @@ abstract class Base<X, Y> {
         this.y = y;
     }
 
-    abstract public void set(X x);
+    public abstract void set(X x);
 }
-
 
 class PrintBase<X2> extends Base<X2, String> {
     public PrintBase(final X2 x, final String y) {
-        super( x, y );
+        super(x, y);
     }
 
     public void set(X2 x) {
@@ -28,4 +26,3 @@ class Instantiate {
         bis.set(new Integer(3));
     }
 }
-

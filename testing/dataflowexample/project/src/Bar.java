@@ -1,6 +1,7 @@
 package project;
 
 import libs.Foo;
+
 import java.util.*;
 
 public class Bar {
@@ -23,7 +24,7 @@ public class Bar {
 
     Integer noUnboxing = new Integer(1);
 
-    Bar(){
+    Bar() {
         this.fieldOfBar = new Foo(10);
     }
 
@@ -40,7 +41,7 @@ public class Bar {
     }
 
     Object testingUpperBound2() {
-        if(autoboxing > 0) {
+        if (autoboxing > 0) {
             return new LinkedList<String>();
         } else if (unboxing < 0) {
             return new ArrayList<String>();
@@ -56,7 +57,7 @@ public class Bar {
     Object o = new Object();
 
     void testingUpperBound3() {
-        if(autoboxing > 0) {
+        if (autoboxing > 0) {
             o = new Integer[1];
         } else if (unboxing < 0) {
             o = new Double[1];

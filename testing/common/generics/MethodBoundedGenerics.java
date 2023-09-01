@@ -1,12 +1,12 @@
-import trusted.qual.*;
-
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
+
+import trusted.qual.*;
 
 class MethodBoundedGenerics {
 
     // TODO: DOes this say, that the arguments must be subtypes of @Trusted but
-    //treat them as @Untrusted
+    // treat them as @Untrusted
     public <@Trusted T extends @Trusted Object> @Untrusted T method(@Untrusted T inc, T inc2) {
         inc.toString();
         T loc1 = inc2;
@@ -18,7 +18,7 @@ class MethodBoundedGenerics {
         @Untrusted T loc2 = inc;
 
         // TODO: Can't use it there
-        //List<@Untrusted T> list = new ArrayList<@Untrusted T>();
+        // List<@Untrusted T> list = new ArrayList<@Untrusted T>();
         List<@Trusted T> list = new ArrayList<@Trusted T>();
         list.add(loc2);
 
@@ -26,7 +26,7 @@ class MethodBoundedGenerics {
     }
 
     public void test() {
-        @Untrusted String s  = null;
+        @Untrusted String s = null;
         @Untrusted String s2 = this.method(s, "t");
     }
 }

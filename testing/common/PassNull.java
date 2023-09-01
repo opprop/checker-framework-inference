@@ -3,5 +3,5 @@ public class PassNull {
         bar(null);
     }
 
-    void bar(Object o) { }
+    void bar(Object o) {}
 }

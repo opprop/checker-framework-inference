@@ -194,4 +194,3 @@ For example, generic solver can be invoked through following command:
 ````
 ./scripts/inference --mode INFER --checker ostrusted.OsTrustedChecker --solver checkers.inference.solver.SolverEngine --solverArgs solver=MaxSat,useGraph=true,collectStatistics=true,solveInParallel=false [List of files]
 ````
-

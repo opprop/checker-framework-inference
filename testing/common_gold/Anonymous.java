@@ -8,11 +8,12 @@ interface Interface {
 
 class TestAnon {
     void context() {
-        Object o = new Interface() {
-            @Override
-            public @VarAnnot(12) String get(@VarAnnot(14) String param) {
-                return null;
-            }
-        };
+        Object o =
+                new Interface() {
+                    @Override
+                    public @VarAnnot(12) String get(@VarAnnot(14) String param) {
+                        return null;
+                    }
+                };
     }
 }

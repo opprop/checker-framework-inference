@@ -422,6 +422,12 @@ task countHacks(type: Exec) {
     commandLine "bash", "-c", "grep -r 'InferenceMain.isHackMode(' src/ | wc -l"
 }
 
+afterEvaluate {
+    tasks.named('spotlessGroovyGradle').configure {
+        dependsOn 'dist'
+    }
+}
+
 if (isJava11plus) {
     apply plugin: 'com.diffplug.spotless'
 

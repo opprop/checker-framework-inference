@@ -16,6 +16,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -702,8 +703,8 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         return inferenceRefinementVariable;
     }
 
-    protected Set<AnnotationMirror> filterThrowCatchBounds(Set<? extends AnnotationMirror> originals) {
-        Set<AnnotationMirror> throwBounds = new HashSet<>();
+    protected AnnotationMirrorSet filterThrowCatchBounds(Set<? extends AnnotationMirror> originals) {
+        AnnotationMirrorSet throwBounds = new AnnotationMirrorSet();
 
         for (AnnotationMirror throwBound : originals) {
             if (atypeFactory.areSameByClass(throwBound, VarAnnot.class)) {
@@ -728,7 +729,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
             // TODO: We probably want to unify this code with BaseTypeVisitor
             AnnotatedTypeMirror throwType = atypeFactory.getAnnotatedType(node
                     .getExpression());
-            Set<AnnotationMirror> throwBounds = filterThrowCatchBounds(getThrowUpperBoundAnnotations());
+            AnnotationMirrorSet throwBounds = filterThrowCatchBounds(getThrowUpperBoundAnnotations());
 
             final AnnotationMirror varAnnot =new AnnotationBuilder(atypeFactory.getProcessingEnv(), VarAnnot.class).build();
             final SlotManager slotManager = InferenceMain.getInstance().getSlotManager();
@@ -796,7 +797,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
 
         if (infer) {
             // TODO: Unify with BaseTypeVisitor implementation
-            Set<AnnotationMirror> requiredAnnotations = filterThrowCatchBounds(getExceptionParameterLowerBoundAnnotations());
+            AnnotationMirrorSet requiredAnnotations = filterThrowCatchBounds(getExceptionParameterLowerBoundAnnotations());
             AnnotatedTypeMirror exPar = atypeFactory.getAnnotatedType(node.getParameter());
 
             for (AnnotationMirror required : requiredAnnotations) {

@@ -94,13 +94,13 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         this.infer = infer;
         ProcessingEnvironment env = checker.getProcessingEnvironment();
         this.vectorCopyInto = TreeUtils.getMethod("java.util.Vector", "copyInto", 1, env);
-        ((InferenceValidator)typeValidator).setInfer(infer);
+        ((InferenceValidator) typeValidator).setInfer(infer);
     }
 
     @SuppressWarnings("unchecked")
     @Override
     protected Factory createTypeFactory() {
-        return (Factory)((BaseInferrableChecker)checker).getTypeFactory();
+        return (Factory) ((BaseInferrableChecker) checker).getTypeFactory();
     }
 
     @Override
@@ -113,7 +113,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     }
 
     public void doesNotContain(AnnotatedTypeMirror ty, AnnotationMirror mod, String msgkey, Tree node) {
-        doesNotContain(ty, new AnnotationMirror[] {mod}, msgkey, node);
+        doesNotContain(ty, new AnnotationMirror[]{mod}, msgkey, node);
     }
 
     public void doesNotContain(AnnotatedTypeMirror ty, AnnotationMirror[] mods, String msgkey, Tree node) {
@@ -167,10 +167,10 @@ public class InferenceVisitor<Checker extends InferenceChecker,
             doesNotContainInferImpl(arrayType.getComponentType(), mods, visited, node);
         } else if (ty.getKind() == TypeKind.TYPEVAR) {
             AnnotatedTypeVariable atv = (AnnotatedTypeVariable) ty;
-            if (atv.getUpperBound()!=null) {
+            if (atv.getUpperBound() != null) {
                 doesNotContainInferImpl(atv.getUpperBound(), mods, visited, node);
             }
-            if (atv.getLowerBound()!=null) {
+            if (atv.getLowerBound() != null) {
                 doesNotContainInferImpl(atv.getLowerBound(), mods, visited, node);
             }
         }
@@ -242,7 +242,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     }
 
     public void mainIsNot(AnnotatedTypeMirror ty, AnnotationMirror mod, String msgkey, Tree node) {
-        mainIsNoneOf(ty, new AnnotationMirror[] {mod}, msgkey, node);
+        mainIsNoneOf(ty, new AnnotationMirror[]{mod}, msgkey, node);
     }
 
     public void mainIsNoneOf(AnnotatedTypeMirror ty, AnnotationMirror[] mods, String msgkey, Tree node) {
@@ -417,7 +417,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
             AnnotatedTypeMirror varUpperBound = bounds.getUpperBound();
             final AnnotatedTypeMirror typeArgForUpperBoundCheck = typeArg;
 
-            if (typeArg.getKind() == TypeKind.WILDCARD ) {
+            if (typeArg.getKind() == TypeKind.WILDCARD) {
 
                 if (bounds.getUpperBound().getKind() == TypeKind.WILDCARD) {
                     // TODO: When capture conversion is implemented, this special case should be removed.
@@ -436,9 +436,9 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                 // This is sound because every NON-WILDCARD reference to MyClass MUST obey those bounds
                 // This leads to cases where varUpperBound is actually a subtype of typeArgForUpperBoundCheck
                 final TypeMirror varUnderlyingUb = varUpperBound.getUnderlyingType();
-                final TypeMirror argUnderlyingUb = ((AnnotatedWildcardType)typeArg).getExtendsBound().getUnderlyingType();
-                if ( !types.isSubtype(argUnderlyingUb, varUnderlyingUb)
-                        &&  types.isSubtype(varUnderlyingUb, argUnderlyingUb)) {
+                final TypeMirror argUnderlyingUb = ((AnnotatedWildcardType) typeArg).getExtendsBound().getUnderlyingType();
+                if (!types.isSubtype(argUnderlyingUb, varUnderlyingUb)
+                        && types.isSubtype(varUnderlyingUb, argUnderlyingUb)) {
                     varUpperBound = AnnotatedTypes.asSuper(atypeFactory,
                             varUpperBound, typeArgForUpperBoundCheck);
                 }
@@ -493,10 +493,10 @@ public class InferenceVisitor<Checker extends InferenceChecker,
      * to a variable and emits an error message (through the compiler's
      * messaging interface) if it is not valid.
      *
-     * @param varTree the AST node for the variable
-     * @param valueExp the AST node for the value
-     * @param errorKey the error message to use if the check fails (must be a
-     *        compiler message key, see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
+     * @param varTree   the AST node for the variable
+     * @param valueExp  the AST node for the value
+     * @param errorKey  the error message to use if the check fails (must be a
+     *                  compiler message key, see {@link org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey})
      * @param extraArgs arguments to the error message key, before "found" and "expected" types
      */
     @Override
@@ -591,9 +591,9 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                 if (valueType.hasAnnotation(mono)
                         && varType.hasAnnotation(mono)) {
                     checker.reportError(valueTree, "monotonic.type.incompatible",
-                                    mono.getCanonicalName(),
-                                    mono.getCanonicalName(),
-                                    valueType.toString());
+                            mono.getCanonicalName(),
+                            mono.getCanonicalName(),
+                            valueType.toString());
                     return;
                 }
             }
@@ -639,13 +639,13 @@ public class InferenceVisitor<Checker extends InferenceChecker,
      * A refinement variable generally has two constraints that must be enforce.  It must be a subtype of the
      * declared type it refines and it must be equal to the type on the right-hand side of the assignment or
      * pseudo-assignment that created it.
-     *
+     * <p>
      * This method detects the assignments that cause refinements and generates the above constraints.
-     *
-     * For declared type, we create the refinement constraint once the refinement variable is created in 
+     * <p>
+     * For declared type, we create the refinement constraint once the refinement variable is created in
      * {@link checkers.inference.dataflow.InferenceTransfer#createRefinementVar} during dataflow analysis.
      * Therefore nothing needs to be done here.
-     * TODO: handle type variables and wildcards the same way as declared types, so that finally all 
+     * TODO: handle type variables and wildcards the same way as declared types, so that finally all
      * refinement-related constraints are created in the dataflow analysis, and this method is removed.
      */
     public boolean maybeAddRefinementVariableConstraints(final AnnotatedTypeMirror varType, final AnnotatedTypeMirror valueType) {
@@ -665,7 +665,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                     varUpperBoundAtm = InferenceUtil.findUpperBoundType(varTypeTv);
                     varLowerBoundAtm = InferenceUtil.findLowerBoundType(varTypeTv);
 
-                } catch(Throwable exc) {
+                } catch (Throwable exc) {
                     if (InferenceMain.isHackMode()) {
                         return false;
                     } else {
@@ -683,7 +683,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                     try {
                         valUpperBoundAtm = InferenceUtil.findUpperBoundType(valueTypeTv);
                         valLowerBoundAtm = InferenceUtil.findLowerBoundType(valueTypeTv);
-                    } catch(Throwable exc) {
+                    } catch (Throwable exc) {
                         if (InferenceMain.isHackMode()) {
                             return false;
                         } else {
@@ -741,23 +741,23 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                     .getExpression());
             Set<AnnotationMirror> throwBounds = filterThrowCatchBounds(getThrowUpperBoundAnnotations());
 
-            final AnnotationMirror varAnnot =new AnnotationBuilder(atypeFactory.getProcessingEnv(), VarAnnot.class).build();
+            final AnnotationMirror varAnnot = new AnnotationBuilder(atypeFactory.getProcessingEnv(), VarAnnot.class).build();
             final SlotManager slotManager = InferenceMain.getInstance().getSlotManager();
             final ConstraintManager constraintManager = InferenceMain.getInstance().getConstraintManager();
             for (AnnotationMirror throwBound : throwBounds) {
                 switch (throwType.getKind()) {
                     case NULL:
                     case DECLARED:
-                    constraintManager.addSubtypeConstraint(slotManager.getSlot(throwType),
-                            slotManager.getSlot(throwBound)
+                        constraintManager.addSubtypeConstraint(slotManager.getSlot(throwType),
+                                slotManager.getSlot(throwBound)
                         );
                         break;
                     case TYPEVAR:
                     case WILDCARD:
                         AnnotationMirror foundEffective = AnnotatedTypes.findEffectiveAnnotationInHierarchy(
-                            atypeFactory.getQualifierHierarchy(), throwType, varAnnot);
-                    constraintManager.addSubtypeConstraint(slotManager.getSlot(foundEffective),
-                            slotManager.getSlot(throwBound)
+                                atypeFactory.getQualifierHierarchy(), throwType, varAnnot);
+                        constraintManager.addSubtypeConstraint(slotManager.getSlot(foundEffective),
+                                slotManager.getSlot(throwBound)
                         );
                         break;
 
@@ -765,16 +765,16 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                         AnnotatedUnionType unionType = (AnnotatedUnionType) throwType;
                         AnnotationMirror primary = unionType.getAnnotationInHierarchy(varAnnot);
                         if (primary != null) {
-                        constraintManager.addSubtypeConstraint(slotManager.getSlot(primary),
-                                slotManager.getSlot(throwBound)
+                            constraintManager.addSubtypeConstraint(slotManager.getSlot(primary),
+                                    slotManager.getSlot(throwBound)
                             );
                         }
 
                         for (AnnotatedTypeMirror altern : unionType.getAlternatives()) {
                             AnnotationMirror alternAnno = altern.getAnnotationInHierarchy(varAnnot);
                             if (alternAnno != null) {
-                            constraintManager.addSubtypeConstraint(slotManager.getSlot(alternAnno),
-                                    slotManager.getSlot(throwBound)
+                                constraintManager.addSubtypeConstraint(slotManager.getSlot(alternAnno),
+                                        slotManager.getSlot(throwBound)
                                 );
                             }
                         }
@@ -787,7 +787,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
             }
 
 
-        }  else {
+        } else {
             super.checkThrownExpression(node);
         }
 
@@ -830,7 +830,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                             checker.reportError(node.getParameter(), "exception.parameter.invalid", foundAltern,
                                     required);
                         }
-                        }
+                    }
                 }
             }
 
@@ -861,144 +861,17 @@ public class InferenceVisitor<Checker extends InferenceChecker,
 
     @Override
     public Void visitNewClass(NewClassTree tree, Void p) {
-        if (checker.shouldSkipUses(TreeUtils.elementFromUse(tree))) {
-            return super.visitNewClass(tree, p);
+        if (!infer) {
+            super.visitNewClass(tree, p);
         }
-
-        AnnotatedTypeFactory.ParameterizedExecutableType fromUse = atypeFactory.constructorFromUse(tree);
-        AnnotatedExecutableType constructorType = fromUse.executableType;
-        List<AnnotatedTypeMirror> typeargs = fromUse.typeArgs;
-
-        // Type check inner class enclosing expr type
-        checkEnclosingExpr(tree, constructorType);
-        List<? extends ExpressionTree> passedArguments = tree.getArguments();
-        List<AnnotatedTypeMirror> params =
-                AnnotatedTypes.adaptParameters(atypeFactory, constructorType, passedArguments);
-
-        ExecutableElement constructor = constructorType.getElement();
-        CharSequence constructorName = ElementUtils.getSimpleNameOrDescription(constructor);
-
-        checkArguments(params, passedArguments, constructorName, constructor.getParameters());
-        checkVarargs(constructorType, tree);
-
-        List<AnnotatedTypeParameterBounds> paramBounds =
-                CollectionsPlume.mapList(
-                        AnnotatedTypeVariable::getBounds, constructorType.getTypeVariables());
-
-        checkTypeArguments(
-                tree,
-                paramBounds,
-                typeargs,
-                tree.getTypeArguments(),
-                constructorName,
-                constructor.getTypeParameters());
-
-        boolean valid = validateTypeOf(tree);
-
-        if (valid) {
-            AnnotatedDeclaredType dt = atypeFactory.getAnnotatedType(tree);
-            atypeFactory.getDependentTypesHelper().checkTypeForErrorExpressions(dt, tree);
-            checkConstructorInvocation(dt, constructorType, tree);
-        }
-        // Do not call super, as that would observe the arguments without
-        // a set assignment context.
-        scan(tree.getEnclosingExpression(), p);
-        scan(tree.getIdentifier(), p);
-        scan(tree.getClassBody(), p);
-
         return null;
     }
 
     @Override
     public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
-
-        // Skip calls to the Enum constructor (they're generated by javac and
-        // hard to check), also see CFGBuilder.visitMethodInvocation.
-        if (TreeUtils.elementFromUse(tree) == null || TreeUtils.isEnumSuperCall(tree)) {
-            return super.visitMethodInvocation(tree, p);
+        if (!infer) {
+            super.visitMethodInvocation(tree, p);
         }
-
-        if (shouldSkipUses(tree)) {
-            return super.visitMethodInvocation(tree, p);
-        }
-
-        AnnotatedTypeFactory.ParameterizedExecutableType mType = atypeFactory.methodFromUse(tree);
-        AnnotatedExecutableType invokedMethod = mType.executableType;
-        List<AnnotatedTypeMirror> typeargs = mType.typeArgs;
-
-        if (!atypeFactory.ignoreUninferredTypeArguments) {
-            for (AnnotatedTypeMirror typearg : typeargs) {
-                if (typearg.getKind() == TypeKind.WILDCARD
-                        && ((AnnotatedWildcardType) typearg).isUninferredTypeArgument()) {
-                    checker.reportError(
-                            tree,
-                            "type.arguments.not.inferred",
-                            invokedMethod.getElement().getSimpleName());
-                    break; // only issue error once per method
-                }
-            }
-        }
-
-        List<AnnotatedTypeParameterBounds> paramBounds =
-                CollectionsPlume.mapList(
-                        AnnotatedTypeVariable::getBounds, invokedMethod.getTypeVariables());
-
-        ExecutableElement method = invokedMethod.getElement();
-        CharSequence methodName = ElementUtils.getSimpleNameOrDescription(method);
-        try {
-            checkTypeArguments(
-                    tree,
-                    paramBounds,
-                    typeargs,
-                    tree.getTypeArguments(),
-                    methodName,
-                    invokedMethod.getTypeVariables());
-            List<AnnotatedTypeMirror> params =
-                    AnnotatedTypes.adaptParameters(
-                            atypeFactory, invokedMethod, tree.getArguments());
-            checkArguments(params, tree.getArguments(), methodName, method.getParameters());
-            checkVarargs(invokedMethod, tree);
-
-            if (ElementUtils.isMethod(
-                    invokedMethod.getElement(), vectorCopyInto, atypeFactory.getProcessingEnv())) {
-                typeCheckVectorCopyIntoArgument(tree, params);
-            }
-
-            ExecutableElement invokedMethodElement = invokedMethod.getElement();
-            if (!ElementUtils.isStatic(invokedMethodElement)
-                    && !TreeUtils.isSuperConstructorCall(tree)) {
-                checkMethodInvocability(invokedMethod, tree);
-            }
-
-            // check precondition annotations
-            checkPreconditions(
-                    tree,
-                    atypeFactory.getContractsFromMethod().getPreconditions(invokedMethodElement));
-
-            if (TreeUtils.isSuperConstructorCall(tree)) {
-                checkSuperConstructorCall(tree);
-            } else if (TreeUtils.isThisConstructorCall(tree)) {
-                checkThisConstructorCall(tree);
-            }
-        } catch (RuntimeException t) {
-            // Sometimes the type arguments are inferred incorrectly, which causes crashes. Once
-            // #979 is fixed this should be removed and crashes should be reported normally.
-            if (tree.getTypeArguments().size() == typeargs.size()) {
-                // They type arguments were explicitly written.
-                throw t;
-            }
-            if (!atypeFactory.ignoreUninferredTypeArguments) {
-                checker.reportError(
-                        tree,
-                        "type.arguments.not.inferred",
-                        invokedMethod.getElement().getSimpleName());
-            } // else ignore the crash.
-        }
-
-        // Do not call super, as that would observe the arguments without
-        // a set assignment context.
-        scan(tree.getMethodSelect(), p);
-        return null; // super.visitMethodInvocation(tree, p);
+        return null;
     }
-
 }

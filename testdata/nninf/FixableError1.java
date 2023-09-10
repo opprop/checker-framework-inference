@@ -7,7 +7,7 @@ class FixableError1 {
         // :: fixable-error: (assignment.type.incompatible)
         this.id = id;
 
-        // :: error: (argument.type.incompatible)
+        // :: fixable-error: (argument.type.incompatible)
         recordIDs(id);
     }
 

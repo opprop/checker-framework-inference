@@ -6,7 +6,7 @@ public class ReceiverTest {
     }
 
     void otherMethod() {
-        // :: error: (method.invocation.invalid)
+        // :: fixable-error: (method.invocation.invalid)
         foo.myMethod ();
     }
 }

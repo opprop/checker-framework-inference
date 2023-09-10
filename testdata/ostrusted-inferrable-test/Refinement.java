@@ -5,11 +5,11 @@ public class Refinement {
 
     void foo(Object in1, Object in2) {
         Object o = in1;
-        // :: error: (argument.type.incompatible)
+        // :: fixable-error: (argument.type.incompatible)
         bar(o);
 
         o = in2;
-        // :: error: (argument.type.incompatible)
+        // :: fixable-error: (argument.type.incompatible)
         bar(o);
     }
 

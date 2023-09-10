@@ -864,6 +864,9 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         if (!infer) {
             super.visitNewClass(tree, p);
         }
+        scan(tree.getEnclosingExpression(), p);
+        scan(tree.getIdentifier(), p);
+        scan(tree.getClassBody(), p);
         return null;
     }
 
@@ -872,6 +875,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         if (!infer) {
             super.visitMethodInvocation(tree, p);
         }
+        scan(tree.getMethodSelect(), p);
         return null;
     }
 }

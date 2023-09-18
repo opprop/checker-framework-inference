@@ -19,6 +19,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -86,7 +87,8 @@ public class InferenceVisitor<Checker extends InferenceChecker,
 
     protected final Checker realChecker;
 
-    private final ExecutableElement vectorCopyInto;
+    /** The element for java.util.Vector#copyInto. */
+    protected final ExecutableElement vectorCopyInto;
 
     public InferenceVisitor(Checker checker, InferenceChecker ichecker, Factory factory, boolean infer) {
         super((infer) ? ichecker : checker, factory);
@@ -94,7 +96,6 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         this.infer = infer;
         ProcessingEnvironment env = checker.getProcessingEnvironment();
         this.vectorCopyInto = TreeUtils.getMethod("java.util.Vector", "copyInto", 1, env);
-        ((InferenceValidator) typeValidator).setInfer(infer);
     }
 
     @SuppressWarnings("unchecked")
@@ -713,8 +714,8 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         return inferenceRefinementVariable;
     }
 
-    protected Set<AnnotationMirror> filterThrowCatchBounds(Set<? extends AnnotationMirror> originals) {
-        Set<AnnotationMirror> throwBounds = new HashSet<>();
+    protected AnnotationMirrorSet filterThrowCatchBounds(Set<? extends AnnotationMirror> originals) {
+        AnnotationMirrorSet throwBounds = new AnnotationMirrorSet();
 
         for (AnnotationMirror throwBound : originals) {
             if (atypeFactory.areSameByClass(throwBound, VarAnnot.class)) {
@@ -739,7 +740,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
             // TODO: We probably want to unify this code with BaseTypeVisitor
             AnnotatedTypeMirror throwType = atypeFactory.getAnnotatedType(node
                     .getExpression());
-            Set<AnnotationMirror> throwBounds = filterThrowCatchBounds(getThrowUpperBoundAnnotations());
+            AnnotationMirrorSet throwBounds = filterThrowCatchBounds(getThrowUpperBoundAnnotations());
 
             final AnnotationMirror varAnnot = new AnnotationBuilder(atypeFactory.getProcessingEnv(), VarAnnot.class).build();
             final SlotManager slotManager = InferenceMain.getInstance().getSlotManager();
@@ -807,7 +808,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
 
         if (infer) {
             // TODO: Unify with BaseTypeVisitor implementation
-            Set<AnnotationMirror> requiredAnnotations = filterThrowCatchBounds(getExceptionParameterLowerBoundAnnotations());
+            AnnotationMirrorSet requiredAnnotations = filterThrowCatchBounds(getExceptionParameterLowerBoundAnnotations());
             AnnotatedTypeMirror exPar = atypeFactory.getAnnotatedType(node.getParameter());
 
             for (AnnotationMirror required : requiredAnnotations) {
@@ -859,23 +860,148 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         }
     }
 
-    @Override
-    public Void visitNewClass(NewClassTree tree, Void p) {
-        if (!infer) {
-            super.visitNewClass(tree, p);
-        }
-        scan(tree.getEnclosingExpression(), p);
-        scan(tree.getIdentifier(), p);
-        scan(tree.getClassBody(), p);
-        return null;
-    }
+     @Override
+     public Void visitNewClass(NewClassTree tree, Void p) {
+         if (!infer) {
+             super.visitNewClass(tree, p);
+         }
+         if (checker.shouldSkipUses(TreeUtils.elementFromUse(tree))) {
+             return super.visitNewClass(tree, p);
+         }
 
-    @Override
-    public Void visitMethodInvocation(MethodInvocationTree tree, Void p) {
-        if (!infer) {
-            super.visitMethodInvocation(tree, p);
-        }
-        scan(tree.getMethodSelect(), p);
-        return null;
-    }
+         AnnotatedTypeFactory.ParameterizedExecutableType fromUse = atypeFactory.constructorFromUse(tree);
+         AnnotatedExecutableType constructorType = fromUse.executableType;
+         List<AnnotatedTypeMirror> typeargs = fromUse.typeArgs;
+
+         List<? extends ExpressionTree> passedArguments = tree.getArguments();
+         List<AnnotatedTypeMirror> params =
+                 AnnotatedTypes.adaptParameters(atypeFactory, constructorType, passedArguments);
+
+         ExecutableElement constructor = constructorType.getElement();
+         CharSequence constructorName = ElementUtils.getSimpleNameOrDescription(constructor);
+
+         checkArguments(params, passedArguments, constructorName, constructor.getParameters());
+         checkVarargs(constructorType, tree);
+
+         List<AnnotatedTypeParameterBounds> paramBounds =
+                 CollectionsPlume.mapList(
+                         AnnotatedTypeVariable::getBounds, constructorType.getTypeVariables());
+
+         checkTypeArguments(
+                 tree,
+                 paramBounds,
+                 typeargs,
+                 tree.getTypeArguments(),
+                 constructorName,
+                 constructor.getTypeParameters());
+
+         boolean valid = validateTypeOf(tree);
+
+         if (valid) {
+             AnnotatedDeclaredType dt = atypeFactory.getAnnotatedType(tree);
+             atypeFactory.getDependentTypesHelper().checkTypeForErrorExpressions(dt, tree);
+             checkConstructorInvocation(dt, constructorType, tree);
+         }
+         // Do not call super, as that would observe the arguments without
+         // a set assignment context.
+         scan(tree.getEnclosingExpression(), p);
+         scan(tree.getIdentifier(), p);
+         scan(tree.getClassBody(), p);
+
+         return null;
+     }
+
+//     @Override
+//     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {
+//         if (!infer) {
+//             super.visitMethodInvocation(node, p);
+//         }
+////          Skip calls to the Enum constructor (they're generated by javac and
+////          hard to check), also see CFGBuilder.visitMethodInvocation.
+//         if (TreeUtils.elementFromUse(node) == null || TreeUtils.isEnumSuperCall(node)) {
+//             return super.visitMethodInvocation(node, p);
+//         }
+//
+//         if (shouldSkipUses(node)) {
+//             return super.visitMethodInvocation(node, p);
+//         }
+//
+//         AnnotatedTypeFactory.ParameterizedExecutableType mType = atypeFactory.methodFromUse(node);
+//         AnnotatedExecutableType invokedMethod = mType.executableType;
+//         List<AnnotatedTypeMirror> typeargs = mType.typeArgs;
+//
+//         if (!atypeFactory.ignoreUninferredTypeArguments) {
+//             for (AnnotatedTypeMirror typearg : typeargs) {
+//                 if (typearg.getKind() == TypeKind.WILDCARD
+//                         && ((AnnotatedWildcardType) typearg).isUninferredTypeArgument()) {
+//                     checker.reportError(
+//                             node,
+//                             "type.arguments.not.inferred",
+//                             invokedMethod.getElement().getSimpleName());
+//                     break; // only issue error once per method
+//                 }
+//             }
+//         }
+//
+//         List<AnnotatedTypeParameterBounds> paramBounds =
+//                 CollectionsPlume.mapList(
+//                         AnnotatedTypeVariable::getBounds, invokedMethod.getTypeVariables());
+//
+//         ExecutableElement method = invokedMethod.getElement();
+//         CharSequence methodName = ElementUtils.getSimpleNameOrDescription(method);
+//         try {
+//             checkTypeArguments(
+//                     node,
+//                     paramBounds,
+//                     typeargs,
+//                     node.getTypeArguments(),
+//                     methodName,
+//                     invokedMethod.getTypeVariables());
+//             List<AnnotatedTypeMirror> params =
+//                     AnnotatedTypes.adaptParameters(
+//                             atypeFactory, invokedMethod, node.getArguments());
+//             checkArguments(params, node.getArguments(), methodName, method.getParameters());
+//             checkVarargs(invokedMethod, node);
+//
+//             if (ElementUtils.isMethod(
+//                     invokedMethod.getElement(), vectorCopyInto, atypeFactory.getProcessingEnv())) {
+//                 typeCheckVectorCopyIntoArgument(node, params);
+//             }
+//
+//             ExecutableElement invokedMethodElement = invokedMethod.getElement();
+//             if (!ElementUtils.isStatic(invokedMethodElement)
+//                     && !TreeUtils.isSuperConstructorCall(node)) {
+//                 checkMethodInvocability(invokedMethod, node);
+//             }
+//
+//             // check precondition annotations
+//             checkPreconditions(
+//                     node,
+//                     atypeFactory.getContractsFromMethod().getPreconditions(invokedMethodElement));
+//
+//             if (TreeUtils.isSuperConstructorCall(node)) {
+//                 checkSuperConstructorCall(node);
+//             } else if (TreeUtils.isThisConstructorCall(node)) {
+//                 checkThisConstructorCall(node);
+//             }
+//         } catch (RuntimeException t) {
+//             // Sometimes the type arguments are inferred incorrectly, which causes crashes. Once
+//             // #979 is fixed this should be removed and crashes should be reported normally.
+//             if (node.getTypeArguments().size() == typeargs.size()) {
+//                 // They type arguments were explicitly written.
+//                 throw t;
+//             }
+//             if (!atypeFactory.ignoreUninferredTypeArguments) {
+//                 checker.reportError(
+//                         node,
+//                         "type.arguments.not.inferred",
+//                         invokedMethod.getElement().getSimpleName());
+//             } // else ignore the crash.
+//         }
+//
+//         // Do not call super, as that would observe the arguments without
+//         // a set assignment context.
+//         scan(node.getMethodSelect(), p);
+//         return null; // super.visitMethodInvocation(node, p);
+//     }
 }

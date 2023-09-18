@@ -860,56 +860,56 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         }
     }
 
-     @Override
-     public Void visitNewClass(NewClassTree tree, Void p) {
-         if (!infer) {
-             super.visitNewClass(tree, p);
-         }
-         if (checker.shouldSkipUses(TreeUtils.elementFromUse(tree))) {
-             return super.visitNewClass(tree, p);
-         }
-
-         AnnotatedTypeFactory.ParameterizedExecutableType fromUse = atypeFactory.constructorFromUse(tree);
-         AnnotatedExecutableType constructorType = fromUse.executableType;
-         List<AnnotatedTypeMirror> typeargs = fromUse.typeArgs;
-
-         List<? extends ExpressionTree> passedArguments = tree.getArguments();
-         List<AnnotatedTypeMirror> params =
-                 AnnotatedTypes.adaptParameters(atypeFactory, constructorType, passedArguments);
-
-         ExecutableElement constructor = constructorType.getElement();
-         CharSequence constructorName = ElementUtils.getSimpleNameOrDescription(constructor);
-
-         checkArguments(params, passedArguments, constructorName, constructor.getParameters());
-         checkVarargs(constructorType, tree);
-
-         List<AnnotatedTypeParameterBounds> paramBounds =
-                 CollectionsPlume.mapList(
-                         AnnotatedTypeVariable::getBounds, constructorType.getTypeVariables());
-
-         checkTypeArguments(
-                 tree,
-                 paramBounds,
-                 typeargs,
-                 tree.getTypeArguments(),
-                 constructorName,
-                 constructor.getTypeParameters());
-
-         boolean valid = validateTypeOf(tree);
-
-         if (valid) {
-             AnnotatedDeclaredType dt = atypeFactory.getAnnotatedType(tree);
-             atypeFactory.getDependentTypesHelper().checkTypeForErrorExpressions(dt, tree);
-             checkConstructorInvocation(dt, constructorType, tree);
-         }
-         // Do not call super, as that would observe the arguments without
-         // a set assignment context.
-         scan(tree.getEnclosingExpression(), p);
-         scan(tree.getIdentifier(), p);
-         scan(tree.getClassBody(), p);
-
-         return null;
-     }
+//     @Override
+//     public Void visitNewClass(NewClassTree tree, Void p) {
+//         if (!infer) {
+//             super.visitNewClass(tree, p);
+//         }
+//         if (checker.shouldSkipUses(TreeUtils.elementFromUse(tree))) {
+//             return super.visitNewClass(tree, p);
+//         }
+//
+//         AnnotatedTypeFactory.ParameterizedExecutableType fromUse = atypeFactory.constructorFromUse(tree);
+//         AnnotatedExecutableType constructorType = fromUse.executableType;
+//         List<AnnotatedTypeMirror> typeargs = fromUse.typeArgs;
+//
+//         List<? extends ExpressionTree> passedArguments = tree.getArguments();
+//         List<AnnotatedTypeMirror> params =
+//                 AnnotatedTypes.adaptParameters(atypeFactory, constructorType, passedArguments);
+//
+//         ExecutableElement constructor = constructorType.getElement();
+//         CharSequence constructorName = ElementUtils.getSimpleNameOrDescription(constructor);
+//
+//         checkArguments(params, passedArguments, constructorName, constructor.getParameters());
+//         checkVarargs(constructorType, tree);
+//
+//         List<AnnotatedTypeParameterBounds> paramBounds =
+//                 CollectionsPlume.mapList(
+//                         AnnotatedTypeVariable::getBounds, constructorType.getTypeVariables());
+//
+//         checkTypeArguments(
+//                 tree,
+//                 paramBounds,
+//                 typeargs,
+//                 tree.getTypeArguments(),
+//                 constructorName,
+//                 constructor.getTypeParameters());
+//
+//         boolean valid = validateTypeOf(tree);
+//
+//         if (valid) {
+//             AnnotatedDeclaredType dt = atypeFactory.getAnnotatedType(tree);
+//             atypeFactory.getDependentTypesHelper().checkTypeForErrorExpressions(dt, tree);
+//             checkConstructorInvocation(dt, constructorType, tree);
+//         }
+//         // Do not call super, as that would observe the arguments without
+//         // a set assignment context.
+//         scan(tree.getEnclosingExpression(), p);
+//         scan(tree.getIdentifier(), p);
+//         scan(tree.getClassBody(), p);
+//
+//         return null;
+//     }
 
 //     @Override
 //     public Void visitMethodInvocation(MethodInvocationTree node, Void p) {

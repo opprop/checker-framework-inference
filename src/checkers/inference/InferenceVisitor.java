@@ -873,8 +873,8 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         // First, init each type-use location to contain all type qualifiers.
         Set<Class<? extends Annotation>> supportQualifiers = atypeFactory.getSupportedTypeQualifiers();
         Set<AnnotationMirror> supportedAnnos = AnnotationUtils.createAnnotationSet();
-        for (Class<? extends Annotation> ac: supportQualifiers) {
-            supportedAnnos.add(new AnnotationBuilder(atypeFactory.getProcessingEnv(), ac).build());
+        for (Class<? extends Annotation> qual: supportQualifiers) {
+            supportedAnnos.add(new AnnotationBuilder(atypeFactory.getProcessingEnv(), qual).build());
         }
         for (TypeUseLocation location : TypeUseLocation.values()) {
             locationToIllegalQuals.put(location, new HashSet<>(supportedAnnos));

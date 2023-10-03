@@ -10,7 +10,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 import javax.lang.model.element.AnnotationMirror;
-import java.util.List;
 
 /**
  * A visitor to validate the types in a tree.
@@ -46,13 +45,13 @@ public class InferenceValidator extends BaseTypeValidator {
         AnnotationMirror[] mirrors = new AnnotationMirror[0];
         for (AnnotationMirror am : type.getSuperBound().getAnnotations()) {
             inferVisitor.annoIsNoneOf(type, am,
-                    inferVisitor.targetLocationToAnno.get(TypeUseLocation.LOWER_BOUND).toArray(mirrors),
+                    inferVisitor.locationToIllegalQuals.get(TypeUseLocation.LOWER_BOUND).toArray(mirrors),
                     "type.invalid.annotations.on.location", tree);
         }
 
         for (AnnotationMirror am : type.getExtendsBound().getAnnotations()) {
             inferVisitor.annoIsNoneOf(type, am,
-                    inferVisitor.targetLocationToAnno.get(TypeUseLocation.UPPER_BOUND).toArray(mirrors),
+                    inferVisitor.locationToIllegalQuals.get(TypeUseLocation.UPPER_BOUND).toArray(mirrors),
                     "type.invalid.annotations.on.location", tree);
         }
     }

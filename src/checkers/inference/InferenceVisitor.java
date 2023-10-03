@@ -26,6 +26,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
@@ -86,17 +87,17 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     protected final Checker realChecker;
 
     /**
-     * Map from type-use location to a list of annotations which cannot be used on that location.
-     * This is used to create inequality constraint during inference.
+     * Map from type-use location to a list of qualifiers which cannot be used on that location.
+     * This is used to create the inequality constraint in inference.
      */
-    protected HashMap<TypeUseLocation, Set<AnnotationMirror>> targetLocationToAnno = new HashMap<>();
+    protected final Map<TypeUseLocation, Set<AnnotationMirror>> locationToIllegalQuals;
 
     public InferenceVisitor(Checker checker, InferenceChecker ichecker, Factory factory, boolean infer) {
         super((infer) ? ichecker : checker, factory);
         this.realChecker = checker;
         this.infer = infer;
         ((InferenceValidator)typeValidator).setInfer(infer);
-        initTargetLocationToAnno();
+        locationToIllegalQuals = createMapForIllegalQuals();
     }
 
     @SuppressWarnings("unchecked")
@@ -861,26 +862,32 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         }
     }
 
-    protected void initTargetLocationToAnno() {
-        // first, init each type-use location contains all type qualifiers
+    /**
+     * This method creates a mapping from type-use locations a lists of qualifiers.
+     *
+     * @return A mapping from type-use location to list of qualifiers which cannot be applied to that location.
+     */
+    protected Map<TypeUseLocation, Set<AnnotationMirror>> createMapForIllegalQuals() {
+        Map<TypeUseLocation, Set<AnnotationMirror>> locationToIllegalQuals = new HashMap<>();
+        // First, init each type-use location to contain all type qualifiers.
         Set<Class<? extends Annotation>> supportQualifiers = atypeFactory.getSupportedTypeQualifiers();
         Set<AnnotationMirror> supportedAnnos = AnnotationUtils.createAnnotationSet();
         for (Class<? extends Annotation> ac: supportQualifiers) {
             supportedAnnos.add(new AnnotationBuilder(atypeFactory.getProcessingEnv(), ac).build());
         }
         for (TypeUseLocation location : TypeUseLocation.values()) {
-            targetLocationToAnno.put(location, new HashSet<>(supportedAnnos));
+            locationToIllegalQuals.put(location, new HashSet<>(supportedAnnos));
         }
-        // then, delete some qualifiers which can be applied on that type-use location
-        // this leaves only qualifiers not allowed on the location.
+        // Then, delete some qualifiers which can be applied to that type-use location.
+        // this leaves only qualifiers not allowed on that location.
         for (Class<? extends Annotation> qual : supportQualifiers) {
             Element elem = elements.getTypeElement(qual.getCanonicalName());
             TargetLocations tls = elem.getAnnotation(TargetLocations.class);
             // @Target({ElementType.TYPE_USE})} together with no @TargetLocations(...) means that
-            // the qualifier can be written on any type use
+            // the qualifier can be written on any type use.
             if (tls == null) {
                 for (TypeUseLocation location : TypeUseLocation.values()) {
-                    Set<AnnotationMirror> amSet = targetLocationToAnno.get(location);
+                    Set<AnnotationMirror> amSet = locationToIllegalQuals.get(location);
                     amSet.remove(AnnotationUtils.getAnnotationByName(supportedAnnos, qual.getCanonicalName()));
                 }
                 continue;
@@ -888,15 +895,16 @@ public class InferenceVisitor<Checker extends InferenceChecker,
             for (TypeUseLocation location : tls.value()) {
                 if (location == TypeUseLocation.ALL) {
                     for (TypeUseLocation val : TypeUseLocation.values()) {
-                        Set<AnnotationMirror> amSet = targetLocationToAnno.get(val);
+                        Set<AnnotationMirror> amSet = locationToIllegalQuals.get(val);
                         amSet.remove(AnnotationUtils.getAnnotationByName(supportedAnnos, qual.getCanonicalName()));
                     }
                     break;
                 }
-                Set<AnnotationMirror> amSet = targetLocationToAnno.get(location);
+                Set<AnnotationMirror> amSet = locationToIllegalQuals.get(location);
                 amSet.remove(AnnotationUtils.getAnnotationByName(supportedAnnos, qual.getCanonicalName()));
             }
         }
+        return locationToIllegalQuals;
     }
 
     @Override
@@ -906,7 +914,9 @@ public class InferenceVisitor<Checker extends InferenceChecker,
             return;
         }
 
-        if (ignoreTargetLocation) return;
+        if (ignoreTargetLocation) {
+            return;
+        }
         Element element = TreeUtils.elementFromTree(tree);
 
         if (element != null) {
@@ -934,13 +944,13 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                     break;
                 case ENUM_CONSTANT:
                     location = TypeUseLocation.CONSTRUCTOR_RESULT;
-                    // TODO: Add ? mainIsNoneOf(type, targetLocationToAnno.get(TypeUseLocation.FIELD).toArray(mirrors), "type.invalid.annotations.on.location", tree);
                     break;
                 default:
                     throw new BugInCF("Location not matched");
             }
             AnnotationMirror[] mirrors = new AnnotationMirror[0];
-            mainIsNoneOf(type, targetLocationToAnno.get(location).toArray(mirrors), "type.invalid.annotations.on.location", tree);
+            mainIsNoneOf(type, locationToIllegalQuals.get(location).toArray(mirrors),
+                    "type.invalid.annotations.on.location", tree);
         }
     }
 
@@ -953,7 +963,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
             if (ignoreTargetLocation) {
                 return;
             }
-            mainIsNoneOf(type, targetLocationToAnno.get(required).toArray(new AnnotationMirror[0]),
+            mainIsNoneOf(type, locationToIllegalQuals.get(required).toArray(new AnnotationMirror[0]),
                     "type.invalid.annotations.on.location", tree);
         }
     }

@@ -52,7 +52,8 @@ jobs:
           python3 -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Spotless Check
-        run : ./gradlew spotlessCheck
+        if: matrix.jdk == 11 || matrix.jdk == 17
+        run: ./gradlew spotlessCheck
       - name: Build
         run: |
           export JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8

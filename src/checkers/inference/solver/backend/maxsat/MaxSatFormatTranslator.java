@@ -1,5 +1,8 @@
 package checkers.inference.solver.backend.maxsat;
 
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.sat4j.core.VecInt;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -12,43 +15,37 @@ import javax.lang.model.element.AnnotationMirror;
 import checkers.inference.solver.backend.AbstractFormatTranslator;
 import checkers.inference.solver.backend.encoder.ConstraintEncoderFactory;
 import checkers.inference.solver.backend.maxsat.encoder.MaxSATConstraintEncoderFactory;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.sat4j.core.VecInt;
-
 import checkers.inference.solver.frontend.Lattice;
 
 /**
  * MaxSatFormatTranslator converts constraint into array of VecInt as clauses.
  *
  * @author jianchu
- *
  */
-
 public class MaxSatFormatTranslator extends AbstractFormatTranslator<VecInt[], VecInt[], Integer> {
 
     /**
-     * typeToInt maps each type qualifier to an unique integer value starts from
-     * 0 on continuous basis.
+     * typeToInt maps each type qualifier to an unique integer value starts from 0 on continuous
+     * basis.
      */
     protected final Map<AnnotationMirror, Integer> typeToInt;
 
     /**
-     * intToType maps an integer value to each type qualifier, which is a
-     * reversed map of typeToInt.
+     * intToType maps an integer value to each type qualifier, which is a reversed map of typeToInt.
      */
     protected final Map<Integer, AnnotationMirror> intToType;
 
     public MaxSatFormatTranslator(Lattice lattice) {
         super(lattice);
         // Initialize mappings between type and int.
-        Map<AnnotationMirror, Integer>typeToIntRes = AnnotationUtils.createAnnotationMap();
+        Map<AnnotationMirror, Integer> typeToIntRes = AnnotationUtils.createAnnotationMap();
         Map<Integer, AnnotationMirror> intToTypeRes = new HashMap<Integer, AnnotationMirror>();
 
         int curInt = 0;
         for (AnnotationMirror type : lattice.allTypes) {
             typeToIntRes.put(type, curInt);
             intToTypeRes.put(curInt, type);
-            curInt ++;
+            curInt++;
         }
 
         typeToInt = Collections.unmodifiableMap(typeToIntRes);
@@ -61,12 +58,9 @@ public class MaxSatFormatTranslator extends AbstractFormatTranslator<VecInt[], V
         return new MaxSATConstraintEncoderFactory(lattice, typeToInt, this);
     }
 
-    /**
-     * generate well form clauses such that there is one and only one beta value
-     * can be true.
-     *
-     */
-    public void generateWellFormednessClauses(List<VecInt> wellFormednessClauses, Integer varSlotId) {
+    /** generate well form clauses such that there is one and only one beta value can be true. */
+    public void generateWellFormednessClauses(
+            List<VecInt> wellFormednessClauses, Integer varSlotId) {
         int[] leastOneIsTrue = new int[lattice.numTypes];
         for (Integer i : intToType.keySet()) {
             leastOneIsTrue[i] = MathUtils.mapIdToMatrixEntry(varSlotId, i.intValue(), lattice);
@@ -84,8 +78,8 @@ public class MaxSatFormatTranslator extends AbstractFormatTranslator<VecInt[], V
     }
 
     @Override
-    public AnnotationMirror decodeSolution(Integer var, ProcessingEnvironment processingEnvironment) {
+    public AnnotationMirror decodeSolution(
+            Integer var, ProcessingEnvironment processingEnvironment) {
         return intToType.get(MathUtils.getIntRep(var, lattice));
     }
-
 }

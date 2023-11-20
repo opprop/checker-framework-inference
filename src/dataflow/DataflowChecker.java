@@ -1,10 +1,10 @@
 package dataflow;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.util.Elements;
-
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationBuilder;
+
+import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.util.Elements;
 
 import checkers.inference.BaseInferrableChecker;
 import checkers.inference.InferenceChecker;
@@ -16,9 +16,8 @@ import dataflow.qual.DataFlowTop;
 
 /**
  * Checker for Dataflow type system.
- * 
- * @author jianchu
  *
+ * @author jianchu
  */
 public class DataflowChecker extends BaseInferrableChecker {
     public AnnotationMirror DATAFLOW, DATAFLOWTOP;
@@ -36,8 +35,8 @@ public class DataflowChecker extends BaseInferrableChecker {
     }
 
     @Override
-    public DataflowVisitor createVisitor(InferenceChecker ichecker, BaseAnnotatedTypeFactory factory,
-            boolean infer) {
+    public DataflowVisitor createVisitor(
+            InferenceChecker ichecker, BaseAnnotatedTypeFactory factory, boolean infer) {
         return new DataflowVisitor(this, ichecker, factory, infer);
     }
 
@@ -47,12 +46,20 @@ public class DataflowChecker extends BaseInferrableChecker {
     }
 
     @Override
-    public DataflowInferenceAnnotatedTypeFactory createInferenceATF(InferenceChecker inferenceChecker,
-            InferrableChecker realChecker, BaseAnnotatedTypeFactory realTypeFactory,
-            SlotManager slotManager, ConstraintManager constraintManager) {
-        DataflowInferenceAnnotatedTypeFactory dataflowInferenceTypeFactory = new DataflowInferenceAnnotatedTypeFactory(
-                inferenceChecker, realChecker.withCombineConstraints(), realTypeFactory, realChecker,
-                slotManager, constraintManager);
+    public DataflowInferenceAnnotatedTypeFactory createInferenceATF(
+            InferenceChecker inferenceChecker,
+            InferrableChecker realChecker,
+            BaseAnnotatedTypeFactory realTypeFactory,
+            SlotManager slotManager,
+            ConstraintManager constraintManager) {
+        DataflowInferenceAnnotatedTypeFactory dataflowInferenceTypeFactory =
+                new DataflowInferenceAnnotatedTypeFactory(
+                        inferenceChecker,
+                        realChecker.withCombineConstraints(),
+                        realTypeFactory,
+                        realChecker,
+                        slotManager,
+                        constraintManager);
         return dataflowInferenceTypeFactory;
     }
 }

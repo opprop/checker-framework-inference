@@ -3,30 +3,30 @@ package nninf;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.Tree;
-import nninf.qual.KeyFor;
+import com.sun.source.util.TreePath;
+
 import org.checkerframework.checker.nullness.KeyForAnnotatedTypeFactory;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreePathUtil;
+import org.checkerframework.javacutil.TreeUtils;
 
 import java.lang.annotation.Annotation;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.util.TreePath;
-
-import nninf.qual.NonNull;
-import nninf.qual.Nullable;
-import nninf.qual.PolyNull;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.TreePathUtil;
-import org.checkerframework.javacutil.TreeUtils;
-
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
+
+import nninf.qual.KeyFor;
+import nninf.qual.NonNull;
+import nninf.qual.Nullable;
+import nninf.qual.PolyNull;
 
 public class NninfAnnotatedTypeFactory extends GameAnnotatedTypeFactory {
     NninfChecker checker;
@@ -44,14 +44,19 @@ public class NninfAnnotatedTypeFactory extends GameAnnotatedTypeFactory {
         KeyForAnnotatedTypeFactory mapGetFactory = new KeyForAnnotatedTypeFactory(checker);
         mapGetHeuristics = new MapGetHeuristics(processingEnv, this, mapGetFactory);
 
-        addAliasedTypeAnnotation(org.checkerframework.checker.nullness.qual.NonNull.class, checker.NONNULL);
-        addAliasedTypeAnnotation(org.checkerframework.checker.nullness.qual.Nullable.class, checker.NULLABLE);
-        addAliasedTypeAnnotation(org.checkerframework.checker.nullness.qual.KeyFor.class, checker.KEYFOR);
-        addAliasedTypeAnnotation(org.checkerframework.common.subtyping.qual.Unqualified.class, checker.UNKNOWNKEYFOR);
+        addAliasedTypeAnnotation(
+                org.checkerframework.checker.nullness.qual.NonNull.class, checker.NONNULL);
+        addAliasedTypeAnnotation(
+                org.checkerframework.checker.nullness.qual.Nullable.class, checker.NULLABLE);
+        addAliasedTypeAnnotation(
+                org.checkerframework.checker.nullness.qual.KeyFor.class, checker.KEYFOR);
+        addAliasedTypeAnnotation(
+                org.checkerframework.common.subtyping.qual.Unqualified.class,
+                checker.UNKNOWNKEYFOR);
 
         postInit();
 
-        defaults.addCheckedCodeDefault(checker.NONNULL,  TypeUseLocation.OTHERWISE);
+        defaults.addCheckedCodeDefault(checker.NONNULL, TypeUseLocation.OTHERWISE);
         defaults.addCheckedCodeDefault(checker.NULLABLE, TypeUseLocation.LOCAL_VARIABLE);
     }
 
@@ -80,7 +85,8 @@ public class NninfAnnotatedTypeFactory extends GameAnnotatedTypeFactory {
     }
 
     // TODO(Zhiping): try overriding getselftype and remove these deprecated methods copied
-    // TODO(Zhiping): from the Checker Framework: isMostEnclosingThisDeref, isSubtype, isAnyEnclosingThisDeref
+    // TODO(Zhiping): from the Checker Framework: isMostEnclosingThisDeref, isSubtype,
+    // isAnyEnclosingThisDeref
     /**
      * Determine whether the tree dereferences the most enclosing "this" object. That is, we have an
      * expression like "f.g" and want to know whether it is an access "this.f.g". Returns false if f

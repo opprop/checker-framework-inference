@@ -10,13 +10,11 @@ import java.lang.annotation.Target;
 
 /**
  * Annotation for inferring dataflow type system.
- * @author jianchu
  *
+ * @author jianchu
  */
 @InvisibleQualifier
-@SubtypeOf({ DataFlow.class })
-@Target({ ElementType.TYPE_USE })
-@TargetLocations({ TypeUseLocation.EXPLICIT_LOWER_BOUND })
-public @interface DataFlowInferenceBottom {
-
-}
+@SubtypeOf({DataFlow.class})
+@Target({ElementType.TYPE_USE})
+@TargetLocations({TypeUseLocation.EXPLICIT_LOWER_BOUND})
+public @interface DataFlowInferenceBottom {}

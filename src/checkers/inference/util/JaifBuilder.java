@@ -1,8 +1,11 @@
 package checkers.inference.util;
 
-import org.checkerframework.afu.scenelib.io.ASTRecord;
+import com.sun.source.tree.Tree;
+
 import org.checkerframework.afu.scenelib.io.ASTPath;
 import org.checkerframework.afu.scenelib.io.ASTPath.ASTEntry;
+import org.checkerframework.afu.scenelib.io.ASTRecord;
+import org.checkerframework.javacutil.Pair;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -20,54 +23,51 @@ import checkers.inference.model.AnnotationLocation;
 import checkers.inference.model.AnnotationLocation.AstPathLocation;
 import checkers.inference.model.AnnotationLocation.ClassDeclLocation;
 
-import com.sun.source.tree.Tree;
-
-import org.checkerframework.javacutil.Pair;
-
 /**
  * JaifBuilder creates Jaifs from a Map of ASTRecords to AnnotationMirrors.
  *
- * JaifBuilder first organizes ASTRecords by class and top level member, and then
- * builds a Jaif string.
+ * <p>JaifBuilder first organizes ASTRecords by class and top level member, and then builds a Jaif
+ * string.
  *
  * @author mcarthur
- *
  */
 public class JaifBuilder {
 
     /**
-     * Data structure that maps a class to its members (fields, variables, initializer)
-     * The nested Map maps a member to the List of VariableSlots for that member.
+     * Data structure that maps a class to its members (fields, variables, initializer) The nested
+     * Map maps a member to the List of VariableSlots for that member.
      */
     private Map<String, ClassEntry> classesMap;
 
     /**
-     * Represents a map of AnnotationLocation to the serialized form of the annotation
-     * that should be inserted at that location
+     * Represents a map of AnnotationLocation to the serialized form of the annotation that should
+     * be inserted at that location
      */
     private final Map<AnnotationLocation, String> locationToAnno;
 
     /**
-     * Used to build the import section of the Jaif and import all annotations that
-     * are referenced in locationToAnnos
+     * Used to build the import section of the Jaif and import all annotations that are referenced
+     * in locationToAnnos
      */
     private final Set<? extends Class<? extends Annotation>> supportedAnnotations;
 
-    /**
-     * Caches annotation definitions that have been written
-     */
+    /** Caches annotation definitions that have been written */
     private final Set<Class<? extends Annotation>> writeAnnotationHeaderCache = new HashSet<>();
 
     private final boolean insertMainModOfLocalVar;
 
     private StringBuilder builder;
 
-    public JaifBuilder(Map<AnnotationLocation, String> locationToAnno,
-                        Set<? extends Class<? extends Annotation>> annotationMirrors) {
+    public JaifBuilder(
+            Map<AnnotationLocation, String> locationToAnno,
+            Set<? extends Class<? extends Annotation>> annotationMirrors) {
         this(locationToAnno, annotationMirrors, false);
     }
-    public JaifBuilder(Map<AnnotationLocation, String> locationToAnno,
-                        Set<? extends Class<? extends Annotation>> annotationMirrors, boolean insertMethodBodies) {
+
+    public JaifBuilder(
+            Map<AnnotationLocation, String> locationToAnno,
+            Set<? extends Class<? extends Annotation>> annotationMirrors,
+            boolean insertMethodBodies) {
         this.locationToAnno = locationToAnno;
         this.supportedAnnotations = annotationMirrors;
         this.insertMainModOfLocalVar = insertMethodBodies;
@@ -91,7 +91,7 @@ public class JaifBuilder {
         }
 
         // Write out each class
-        for (Map.Entry<String, ClassEntry> entry: classesMap.entrySet()) {
+        for (Map.Entry<String, ClassEntry> entry : classesMap.entrySet()) {
             writeClassJaif(entry.getValue());
         }
 
@@ -134,8 +134,7 @@ public class JaifBuilder {
         }
 
         // write the header for the given annotation
-        builder.append(buildAnnotationHeader(annotation))
-               .append("\n");
+        builder.append(buildAnnotationHeader(annotation)).append("\n");
     }
 
     /**
@@ -148,20 +147,20 @@ public class JaifBuilder {
         StringBuilder sb = new StringBuilder();
         // insert package name
         sb.append(annotation.getPackage())
-          .append(":\n  annotation @")
-          // insert class name
-          .append(annotation.getSimpleName())
-          .append(":\n");
+                .append(":\n  annotation @")
+                // insert class name
+                .append(annotation.getSimpleName())
+                .append(":\n");
 
         for (Method method : annotation.getDeclaredMethods()) {
             // insert 4 space indentation for each return type
             sb.append("    ")
-              // insert the return type
-              .append(getAnnotationHeaderReturnType(method.getReturnType()))
-              .append(" ")
-              // insert method name
-              .append(method.getName())
-              .append("\n");
+                    // insert the return type
+                    .append(getAnnotationHeaderReturnType(method.getReturnType()))
+                    .append(" ")
+                    // insert method name
+                    .append(method.getName())
+                    .append("\n");
         }
 
         return sb.toString();
@@ -170,20 +169,20 @@ public class JaifBuilder {
     /**
      * Java allows the method return types in an annotation to be:
      *
-     * 1) Enums
+     * <p>1) Enums
      *
-     * 2) Annotations
+     * <p>2) Annotations
      *
-     * 3) String types
+     * <p>3) String types
      *
-     * 4) Class types
+     * <p>4) Class types
      *
-     * 5) primitive types
+     * <p>5) primitive types
      *
-     * 6) 1D arrays with a component type of one of the above
+     * <p>6) 1D arrays with a component type of one of the above
      *
-     * This method returns the appropriate return type name according to the JAIF specification for
-     * each of these scenarios for the given returnType argument.
+     * <p>This method returns the appropriate return type name according to the JAIF specification
+     * for each of these scenarios for the given returnType argument.
      */
     private String getAnnotationHeaderReturnType(final Class<?> returnType) {
         // de-sugar array return types
@@ -212,8 +211,9 @@ public class JaifBuilder {
 
     /**
      * Add the jaif for the given classname and members.
-     * @param classEntry A unique entry for all members of a class that will be converted to
-     *                   a jaif entry for that class
+     *
+     * @param classEntry A unique entry for all members of a class that will be converted to a jaif
+     *     entry for that class
      */
     private void writeClassJaif(ClassEntry classEntry) {
         builder.append("package " + classEntry.packageName + ":\n");
@@ -253,6 +253,7 @@ public class JaifBuilder {
 
     /**
      * Add the Jaif entries for all records under memberName
+     *
      * @param memberName the member
      * @param memberRecords the records for the member
      */
@@ -265,7 +266,7 @@ public class JaifBuilder {
             builder.append(memberName);
         }
 
-        for (RecordValue value: memberRecords.entries) {
+        for (RecordValue value : memberRecords.entries) {
             builder.append("insert-annotation ");
             builder.append(value.astPath.toString());
             builder.append(": ");
@@ -275,9 +276,7 @@ public class JaifBuilder {
         builder.append("\n");
     }
 
-    /**
-     * Change the Enum name to a String in the format required by AFU
-     */
+    /** Change the Enum name to a String in the format required by AFU */
     private String treeKindToTitleCase(Tree.Kind kind) {
         String[] parts = kind.toString().toUpperCase().split("_");
         String result = "";
@@ -288,11 +287,9 @@ public class JaifBuilder {
         return result;
     }
 
-    /**
-     * Iterate through each variable and add it to the appropriate Class and Member list.
-     */
+    /** Iterate through each variable and add it to the appropriate Class and Member list. */
     private void buildClassEntries() {
-        for (Entry<AnnotationLocation, String> entry: locationToAnno.entrySet()) {
+        for (Entry<AnnotationLocation, String> entry : locationToAnno.entrySet()) {
             AnnotationLocation location = entry.getKey();
             String annotation = entry.getValue();
             switch (location.getKind()) {
@@ -301,9 +298,10 @@ public class JaifBuilder {
                     ClassEntry classEntry = getClassEntry(astLocation);
                     ASTRecord astRecord = astLocation.getAstRecord();
 
-                    MemberRecords memberRecords = classEntry.getMemberRecords(astRecord.methodName, astRecord.varName);
+                    MemberRecords memberRecords =
+                            classEntry.getMemberRecords(astRecord.methodName, astRecord.varName);
                     if (!insertMainModOfLocalVar && isMainModOfLocalVar(astRecord.astPath)) {
-                            continue;
+                        continue;
                     }
 
                     // Don't insert annotation for empty ASTPath
@@ -313,7 +311,7 @@ public class JaifBuilder {
                         continue;
                     }
 
-                    memberRecords.entries.add(new RecordValue(astRecord.astPath,annotation));
+                    memberRecords.entries.add(new RecordValue(astRecord.astPath, annotation));
                     break;
 
                 case CLASS_DECL:
@@ -326,21 +324,22 @@ public class JaifBuilder {
                     break;
 
                 default:
-                    throw new RuntimeException("Unhandled AnnotationLocation " + location +
-                            " with value " + annotation);
-
+                    throw new RuntimeException(
+                            "Unhandled AnnotationLocation "
+                                    + location
+                                    + " with value "
+                                    + annotation);
             }
         }
     }
 
     /**
      * @param astRecord
-     * @return true if the given AST path represents a main modifier of a local variable
-     * An AST Path represents a main modifier of a local variable should have pattern like
-     * 1) ..., Block.statement #, ..., Variable.type
-     * 2) ..., Block.statement #, ..., Variable.type, ParameterizedType.type
-     * reference: Local Variable Declaration Statements in JLS8
-     * https://docs.oracle.com/javase/specs/jls/se8/html/jls-14.html#jls-14.4
+     * @return true if the given AST path represents a main modifier of a local variable An AST Path
+     *     represents a main modifier of a local variable should have pattern like 1) ...,
+     *     Block.statement #, ..., Variable.type 2) ..., Block.statement #, ..., Variable.type,
+     *     ParameterizedType.type reference: Local Variable Declaration Statements in JLS8
+     *     https://docs.oracle.com/javase/specs/jls/se8/html/jls-14.html#jls-14.4
      */
     protected boolean isMainModOfLocalVar(ASTPath astPath) {
         Iterator<ASTEntry> iterator = astPath.iterator();
@@ -372,8 +371,9 @@ public class JaifBuilder {
         if (isEntry(Tree.Kind.VARIABLE, ASTPath.TYPE, leafEntry)) {
             // the first kind of AST path of main modifier of local variable
             return true;
-        } else if (prevEntry != null && isEntry(Tree.Kind.VARIABLE, ASTPath.TYPE, prevEntry) &&
-            isEntry(Tree.Kind.PARAMETERIZED_TYPE, ASTPath.TYPE, leafEntry)) {
+        } else if (prevEntry != null
+                && isEntry(Tree.Kind.VARIABLE, ASTPath.TYPE, prevEntry)
+                && isEntry(Tree.Kind.PARAMETERIZED_TYPE, ASTPath.TYPE, leafEntry)) {
             // the second kind
             return true;
         }
@@ -382,14 +382,16 @@ public class JaifBuilder {
     }
 
     /**
-     * determine whether a given {@code ASTEntry} represents
-     * {@code (Tree.Kind).childSelector }, e.g. given an ASTEntry entry:
-     * <pre>
-     * {@code
+     * determine whether a given {@code ASTEntry} represents {@code (Tree.Kind).childSelector },
+     * e.g. given an ASTEntry entry:
+     *
+     * <pre>{@code
      * Block.statement #
      * }</pre>
-     * the tree kind is "Block", the childSelector is "statement"
-     * thus, {@code isEntry(Tree.BLOCK, ASTPATH.STATEMENT, entry) } will return true
+     *
+     * the tree kind is "Block", the childSelector is "statement" thus, {@code isEntry(Tree.BLOCK,
+     * ASTPATH.STATEMENT, entry) } will return true
+     *
      * @param kind
      * @param childSelector
      * @param entry
@@ -408,15 +410,16 @@ public class JaifBuilder {
     }
 
     /**
-     * Lookup or create, for a given class, a map of Members of that class
-     * to a list of VariableSlots for those members.
+     * Lookup or create, for a given class, a map of Members of that class to a list of
+     * VariableSlots for those members.
      *
      * @param fullyQualified The class to look up.
      */
     private ClassEntry getClassEntry(String fullyQualified) {
         ClassEntry classEntry = this.classesMap.get(fullyQualified);
         if (classEntry == null) {
-            Pair<String, String> packageToClass = ASTPathUtil.splitFullyQualifiedClass(fullyQualified);
+            Pair<String, String> packageToClass =
+                    ASTPathUtil.splitFullyQualifiedClass(fullyQualified);
             classEntry = new ClassEntry(packageToClass.first, packageToClass.second);
             this.classesMap.put(fullyQualified, classEntry);
         }
@@ -424,8 +427,8 @@ public class JaifBuilder {
     }
 
     /**
-     * Lookup or create, for a given class, a map of Members of that class
-     * to a list of VariableSlots for those members.
+     * Lookup or create, for a given class, a map of Members of that class to a list of
+     * VariableSlots for those members.
      *
      * @param record a record identifying a unique class
      */
@@ -466,17 +469,17 @@ public class JaifBuilder {
             declAnnos = new LinkedHashSet<>();
         }
 
-        /**
-         * Add an annotation that should go on the declaration of the class
-         */
+        /** Add an annotation that should go on the declaration of the class */
         public void addDeclarationAnnotation(String annotation) {
             declAnnos.add(annotation);
         }
 
         /**
          * Lookup or create the List of VariableSLots for a Class and Member
+         *
          * @param memberName The top-level member name to look up
-         * @param variableName If the record occurs in relation to a variable, this specifies the variable name
+         * @param variableName If the record occurs in relation to a variable, this specifies the
+         *     variable name
          * @return
          */
         public MemberRecords getMemberRecords(String memberName, String variableName) {
@@ -491,19 +494,16 @@ public class JaifBuilder {
         Map<String, MemberRecords> members = new HashMap<>();
     }
 
-    /**
-     * The records for a member.
-     */
+    /** The records for a member. */
     private static class MemberRecords {
         List<RecordValue> entries = new ArrayList<>();
     }
 
-    /**
-     * The value for a record.
-     */
+    /** The value for a record. */
     private static class RecordValue {
         ASTPath astPath;
         String value;
+
         RecordValue(ASTPath record, String value) {
             this.astPath = record;
             this.value = value;

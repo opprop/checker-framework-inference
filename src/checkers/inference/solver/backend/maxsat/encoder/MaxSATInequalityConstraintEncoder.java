@@ -1,19 +1,23 @@
 package checkers.inference.solver.backend.maxsat.encoder;
 
+import org.sat4j.core.VecInt;
+
+import java.util.Map;
+
+import javax.lang.model.element.AnnotationMirror;
+
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.solver.backend.encoder.binary.InequalityConstraintEncoder;
 import checkers.inference.solver.backend.maxsat.MathUtils;
 import checkers.inference.solver.backend.maxsat.VectorUtils;
 import checkers.inference.solver.frontend.Lattice;
-import org.sat4j.core.VecInt;
 
-import javax.lang.model.element.AnnotationMirror;
-import java.util.Map;
+public class MaxSATInequalityConstraintEncoder extends MaxSATAbstractConstraintEncoder
+        implements InequalityConstraintEncoder<VecInt[]> {
 
-public class MaxSATInequalityConstraintEncoder extends MaxSATAbstractConstraintEncoder implements InequalityConstraintEncoder<VecInt[]> {
-
-    public MaxSATInequalityConstraintEncoder(Lattice lattice, Map<AnnotationMirror, Integer> typeToInt) {
+    public MaxSATInequalityConstraintEncoder(
+            Lattice lattice, Map<AnnotationMirror, Integer> typeToInt) {
         super(lattice, typeToInt);
     }
 
@@ -24,12 +28,18 @@ public class MaxSATInequalityConstraintEncoder extends MaxSATAbstractConstraintE
         int i = 0;
         for (AnnotationMirror type : lattice.allTypes) {
             if (lattice.allTypes.contains(type)) {
-                result[i++] = VectorUtils.asVec(
-                        -MathUtils.mapIdToMatrixEntry(fst.getId(), typeToInt.get(type), lattice),
-                        -MathUtils.mapIdToMatrixEntry(snd.getId(), typeToInt.get(type), lattice));
-                result[i++] = VectorUtils.asVec(
-                        MathUtils.mapIdToMatrixEntry(snd.getId(), typeToInt.get(type), lattice),
-                        MathUtils.mapIdToMatrixEntry(fst.getId(), typeToInt.get(type), lattice));
+                result[i++] =
+                        VectorUtils.asVec(
+                                -MathUtils.mapIdToMatrixEntry(
+                                        fst.getId(), typeToInt.get(type), lattice),
+                                -MathUtils.mapIdToMatrixEntry(
+                                        snd.getId(), typeToInt.get(type), lattice));
+                result[i++] =
+                        VectorUtils.asVec(
+                                MathUtils.mapIdToMatrixEntry(
+                                        snd.getId(), typeToInt.get(type), lattice),
+                                MathUtils.mapIdToMatrixEntry(
+                                        fst.getId(), typeToInt.get(type), lattice));
             }
         }
         return result;
@@ -44,7 +54,8 @@ public class MaxSATInequalityConstraintEncoder extends MaxSATAbstractConstraintE
     public VecInt[] encodeConstant_Variable(ConstantSlot fst, VariableSlot snd) {
         if (lattice.allTypes.contains(fst.getValue())) {
             return VectorUtils.asVecArray(
-                    -MathUtils.mapIdToMatrixEntry(snd.getId(), typeToInt.get(fst.getValue()), lattice));
+                    -MathUtils.mapIdToMatrixEntry(
+                            snd.getId(), typeToInt.get(fst.getValue()), lattice));
         } else {
             return emptyValue;
         }

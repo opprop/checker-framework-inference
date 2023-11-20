@@ -1,14 +1,15 @@
 package sparta.checkers.qual;
+
 /**
- * This class contains constant that correspond to the FlowPermission.
- * These are to be used in @Source or @Sink annotations.
- * @author smillst
+ * This class contains constant that correspond to the FlowPermission. These are to be used
+ * in @Source or @Sink annotations.
  *
+ * @author smillst
  */
 public class FlowPermissionString {
     public static final String EXTRA_DEFAULT = "EXTRA_DEFAULT";
     public static final String ANY = "ANY";
-    
+
     public static final String CAMERA_SETTINGS = "CAMERA_SETTINGS";
     public static final String DISPLAY = "DISPLAY";
     public static final String FILESYSTEM = "FILESYSTEM";
@@ -29,26 +30,27 @@ public class FlowPermissionString {
     public static final String PHONE_NUMBER = "PHONE_NUMBER";
     public static final String SHARED_PREFERENCES = "SHARED_PREFERENCES";
     public static final String ACCELEROMETER = "ACCELEROMETER";
-    
+
     /**
-     * The following permissions are temporary and implemented now in a simple
-     * way for an upcoming engagement.
+     * The following permissions are temporary and implemented now in a simple way for an upcoming
+     * engagement.
      */
     public static final String REFLECTION = "REFLECTION";
+
     public static final String INTENT = "INTENT";
     public static final String BUNDLE = "BUNDLE";
     public static final String PROCESS_BUILDER = "PROCESS_BUILDER";
     public static final String PARCEL = "PARCEL";
     public static final String SECURE_HASH = "SECURE_HASH";
     public static final String CONTENT_PROVIDER = "CONTENT_PROVIDER";
-    
+
     /**
-     * Android Manifest.permissions (Do not add new permissions below here) I
-     * was mostly guessing whether the permissions should be source, sink or
-     * both, so feel free to change the T of the permission. -SOM
+     * Android Manifest.permissions (Do not add new permissions below here) I was mostly guessing
+     * whether the permissions should be source, sink or both, so feel free to change the T of the
+     * permission. -SOM
      */
-    
     public static final String ACCESS_CHECKIN_PROPERTIES = "ACCESS_CHECKIN_PROPERTIES";
+
     public static final String ACCESS_COARSE_LOCATION = "ACCESS_COARSE_LOCATION";
     public static final String ACCESS_FINE_LOCATION = "ACCESS_FINE_LOCATION";
     public static final String ACCESS_LOCATION_EXTRA_COMMANDS = "ACCESS_LOCATION_EXTRA_COMMANDS";
@@ -205,5 +207,4 @@ public class FlowPermissionString {
     public static final String SUSI_NETWORK = "SUSI_NETWORK";
     public static final String SUSI_FILE = "SUSI_FILE";
     public static final String SUSI_LOG = "SUSI_LOG";
-
 }

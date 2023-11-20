@@ -10,21 +10,17 @@ import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
 
-/**
- * Recorder for statistics.
- */
+/** Recorder for statistics. */
 public class Statistics {
     // statistics are sorted by insertion order
-    private final static Map<String, Long> statistics = new LinkedHashMap<>();
+    private static final Map<String, Long> statistics = new LinkedHashMap<>();
 
     /**
      * Adds or increments the given value to the statistics for the given key.
      *
-     * @param key
-     *            a statistic key. The key is treated case-insensitive: it will always be considered
-     *            in terms of its lower-case equivalent.
-     * @param value
-     *            a value
+     * @param key a statistic key. The key is treated case-insensitive: it will always be considered
+     *     in terms of its lower-case equivalent.
+     * @param value a value
      */
     public static void addOrIncrementEntry(String key, long value) {
         synchronized (statistics) {
@@ -110,9 +106,7 @@ public class Statistics {
         return Collections.unmodifiableMap(statistics);
     }
 
-    /**
-     * Erases all collected statistics.
-     */
+    /** Erases all collected statistics. */
     public static void clearStatistics() {
         statistics.clear();
     }

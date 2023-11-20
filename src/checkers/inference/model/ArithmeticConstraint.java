@@ -1,10 +1,11 @@
 package checkers.inference.model;
 
-import java.util.Arrays;
-import java.util.Objects;
+import com.sun.source.tree.Tree;
 
 import org.checkerframework.javacutil.BugInCF;
-import com.sun.source.tree.Tree;
+
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
  * Represents a constraint between the result of an arithmetic operation and its two operands.
@@ -34,10 +35,13 @@ public class ArithmeticConstraint extends Constraint {
         }
 
         /**
-         * Get the {@link ArithmeticOperationKind} corresponding to a {@link Tree.Kind}. For a compound
-         * assignment tree, get the {@link ArithmeticOperationKind} for the arithmetic operation of the RHS.
+         * Get the {@link ArithmeticOperationKind} corresponding to a {@link Tree.Kind}. For a
+         * compound assignment tree, get the {@link ArithmeticOperationKind} for the arithmetic
+         * operation of the RHS.
+         *
          * @param kind a {@link Tree.Kind} for an arithmetic operation
-         * @return the corresponding {@link ArithmeticOperationKind} for the given arithmetic operation
+         * @return the corresponding {@link ArithmeticOperationKind} for the given arithmetic
+         *     operation
          */
         public static ArithmeticOperationKind fromTreeKind(Tree.Kind kind) {
             switch (kind) {
@@ -75,8 +79,10 @@ public class ArithmeticConstraint extends Constraint {
                 case XOR_ASSIGNMENT:
                     return XOR;
                 default:
-                    throw new BugInCF("There are no defined ArithmeticOperationKinds "
-                            + "for the given com.sun.source.tree.Tree.Kind: " + kind);
+                    throw new BugInCF(
+                            "There are no defined ArithmeticOperationKinds "
+                                    + "for the given com.sun.source.tree.Tree.Kind: "
+                                    + kind);
             }
         }
 
@@ -90,8 +96,12 @@ public class ArithmeticConstraint extends Constraint {
     private final Slot rightOperand; // either a {@link ConstantSlot} or a {@link VariableSlot}
     private final ArithmeticVariableSlot result;
 
-    private ArithmeticConstraint(ArithmeticOperationKind operation, Slot leftOperand,
-            Slot rightOperand, ArithmeticVariableSlot result, AnnotationLocation location) {
+    private ArithmeticConstraint(
+            ArithmeticOperationKind operation,
+            Slot leftOperand,
+            Slot rightOperand,
+            ArithmeticVariableSlot result,
+            AnnotationLocation location) {
         super(Arrays.asList(leftOperand, rightOperand, result), location);
         this.operation = operation;
         this.leftOperand = leftOperand;
@@ -99,13 +109,23 @@ public class ArithmeticConstraint extends Constraint {
         this.result = result;
     }
 
-    protected static ArithmeticConstraint create(ArithmeticOperationKind operation,
-            Slot leftOperand, Slot rightOperand, ArithmeticVariableSlot result,
+    protected static ArithmeticConstraint create(
+            ArithmeticOperationKind operation,
+            Slot leftOperand,
+            Slot rightOperand,
+            ArithmeticVariableSlot result,
             AnnotationLocation location) {
         if (operation == null || leftOperand == null || rightOperand == null || result == null) {
-            throw new BugInCF("Create arithmetic constraint with null argument. "
-                    + "Operation: " + operation + " LeftOperand: " + leftOperand + " RightOperand: "
-                    + rightOperand + " Result: " + result);
+            throw new BugInCF(
+                    "Create arithmetic constraint with null argument. "
+                            + "Operation: "
+                            + operation
+                            + " LeftOperand: "
+                            + leftOperand
+                            + " RightOperand: "
+                            + rightOperand
+                            + " Result: "
+                            + result);
         }
         if (location == null || location.getKind() == AnnotationLocation.Kind.MISSING) {
             throw new BugInCF(
@@ -152,7 +172,9 @@ public class ArithmeticConstraint extends Constraint {
             return false;
         }
         ArithmeticConstraint other = (ArithmeticConstraint) obj;
-        return operation.equals(other.operation) && leftOperand.equals(other.leftOperand)
-                && rightOperand.equals(other.rightOperand) && result.equals(other.result);
+        return operation.equals(other.operation)
+                && leftOperand.equals(other.leftOperand)
+                && rightOperand.equals(other.rightOperand)
+                && result.equals(other.result);
     }
 }

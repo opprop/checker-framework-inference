@@ -16,12 +16,10 @@ import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.NameUtils;
 
 /**
- * DecodingTool decodes the result from LogicBlox, change the form to human
- * readable form and put the result to HashMap result and return it to
- * LogicSolver.
+ * DecodingTool decodes the result from LogicBlox, change the form to human readable form and put
+ * the result to HashMap result and return it to LogicSolver.
  *
  * @author Jianchu Li
- *
  */
 public class DecodingTool {
 
@@ -49,8 +47,7 @@ public class DecodingTool {
     }
 
     /**
-     * DecodeLogicBloxOutput decodes the LogicBloxOutput, and put it in HashMap
-     * result.
+     * DecodeLogicBloxOutput decodes the LogicBloxOutput, and put it in HashMap result.
      *
      * @throws FileNotFoundException
      */

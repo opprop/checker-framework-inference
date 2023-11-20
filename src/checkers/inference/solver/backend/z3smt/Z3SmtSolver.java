@@ -1,5 +1,23 @@
 package checkers.inference.solver.backend.z3smt;
 
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
+import com.microsoft.z3.Expr;
+
+import org.checkerframework.javacutil.BugInCF;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.logging.Logger;
+
+import javax.lang.model.element.AnnotationMirror;
+
 import checkers.inference.InferenceMain;
 import checkers.inference.model.ArithmeticConstraint;
 import checkers.inference.model.ArithmeticConstraint.ArithmeticOperationKind;
@@ -15,21 +33,6 @@ import checkers.inference.solver.util.FileUtils;
 import checkers.inference.solver.util.SolverArg;
 import checkers.inference.solver.util.SolverEnvironment;
 import checkers.inference.solver.util.Statistics;
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
-import com.microsoft.z3.Expr;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.logging.Logger;
-import javax.lang.model.element.AnnotationMirror;
-import org.checkerframework.javacutil.BugInCF;
 
 public class Z3SmtSolver<SlotEncodingT, SlotSolutionT>
         extends Solver<Z3SmtFormatTranslator<SlotEncodingT, SlotSolutionT>> {
@@ -50,13 +53,13 @@ public class Z3SmtSolver<SlotEncodingT, SlotSolutionT>
     protected static final String z3Program = "z3";
     protected boolean optimizingMode;
 
-    /** This field indicates that whether we are going to explain unsatisfiable.*/
+    /** This field indicates that whether we are going to explain unsatisfiable. */
     protected boolean explainUnsat;
 
     /**
-     * This fields store the mapping from the constraint string ID to the constraint.
-     * In non-optimizing mode, all ID-constraint mappings are cached during encoding,
-     * so that we can retrieve the unsat constraints later using the constraint name.
+     * This fields store the mapping from the constraint string ID to the constraint. In
+     * non-optimizing mode, all ID-constraint mappings are cached during encoding, so that we can
+     * retrieve the unsat constraints later using the constraint name.
      */
     protected final Map<String, Constraint> serializedConstraints = new HashMap<>();
 
@@ -73,7 +76,6 @@ public class Z3SmtSolver<SlotEncodingT, SlotSolutionT>
     protected long serializationEnd;
     protected long solvingStart;
     protected long solvingEnd;
-
 
     public Z3SmtSolver(
             SolverEnvironment solverEnvironment,
@@ -124,9 +126,8 @@ public class Z3SmtSolver<SlotEncodingT, SlotSolutionT>
             logger.fine("!!! The set of constraints is unsatisfiable! !!!");
             return null;
         }
-        
-        return formatTranslator.decodeSolution(
-                        results, solverEnvironment.processingEnvironment);
+
+        return formatTranslator.decodeSolution(results, solverEnvironment.processingEnvironment);
     }
 
     @Override
@@ -187,7 +188,7 @@ public class Z3SmtSolver<SlotEncodingT, SlotSolutionT>
         } else {
             smtFileContents.append("(get-model)\n");
         }
-        
+
         logger.fine("Writing constraints to file: " + constraintsFile);
 
         writeConstraintsToSMTFile();
@@ -210,11 +211,12 @@ public class Z3SmtSolver<SlotEncodingT, SlotSolutionT>
     protected void encodeAllSlots() {
         // preprocess slots
         formatTranslator.preAnalyzeSlots(slots);
-        
+
         // generate slot constraints
         for (Slot slot : slots) {
             if (slot instanceof VariableSlot) {
-                BoolExpr wfConstraint = formatTranslator.encodeSlotWellformednessConstraint((VariableSlot) slot);
+                BoolExpr wfConstraint =
+                        formatTranslator.encodeSlotWellformednessConstraint((VariableSlot) slot);
 
                 if (!wfConstraint.simplify().isTrue()) {
                     solver.Assert(wfConstraint);
@@ -302,21 +304,22 @@ public class Z3SmtSolver<SlotEncodingT, SlotSolutionT>
     }
 
     protected void encodeAllSoftConstraints() {
-    	final Z3SmtSoftConstraintEncoder<SlotEncodingT, SlotSolutionT> encoder = formatTranslator.createSoftConstraintEncoder();
+        final Z3SmtSoftConstraintEncoder<SlotEncodingT, SlotSolutionT> encoder =
+                formatTranslator.createSoftConstraintEncoder();
         smtFileContents.append(encoder.encodeAndGetSoftConstraints(constraints));
     }
 
     protected void encodeSlotPreferenceConstraint(VariableSlot varSlot) {
         // empty string means no optimization group
         // TODO: support variable weight for preference constraint
-        solver.AssertSoft(
-                formatTranslator.encodeSlotPreferenceConstraint(varSlot), 1, "");
+        solver.AssertSoft(formatTranslator.encodeSlotPreferenceConstraint(varSlot), 1, "");
     }
 
     /**
      * Runs z3 solver and returns the parsed results based on whether it's sat/unsat
-     * @param results an output parameter that stores (1) the parsed solution if it's sat
-     *                (2) the unsatisfiable constraint identifier strings otherwise
+     *
+     * @param results an output parameter that stores (1) the parsed solution if it's sat (2) the
+     *     unsatisfiable constraint identifier strings otherwise
      * @return true if sat and false otherwise
      */
     private boolean runZ3Solver(List<String> results) {
@@ -342,9 +345,9 @@ public class Z3SmtSolver<SlotEncodingT, SlotSolutionT>
 
     /**
      * Parses the STD output from the z3 process and handles SAT and UNSAT outputs
-     * @param results For sat case, this stores the parsed solution
-     *                For unsat case, this stores the unsatisfiable constraint identifiers
-     *                parsed from the z3 output
+     *
+     * @param results For sat case, this stores the parsed solution For unsat case, this stores the
+     *     unsatisfiable constraint identifiers parsed from the z3 output
      */
     private void parseStdOut(BufferedReader stdOut, List<String> results) {
         String line;
@@ -424,9 +427,7 @@ public class Z3SmtSolver<SlotEncodingT, SlotSolutionT>
         }
     }
 
-    /**
-     * Prints arithmetic constraints for debugging
-     */
+    /** Prints arithmetic constraints for debugging */
     private void printArithmeticConstraints() {
         logger.fine("=== Arithmetic Constraints Printout ===");
         Map<ArithmeticOperationKind, Integer> arithmeticConstraintCounters = new HashMap<>();

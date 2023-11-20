@@ -1,8 +1,29 @@
 package dataflow;
 
+import com.sun.source.tree.LiteralTree;
+import com.sun.source.tree.MethodInvocationTree;
+import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree.Kind;
+
+import org.checkerframework.common.basetype.BaseTypeChecker;
+import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
+import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
+import org.checkerframework.framework.type.MostlyNoElementQualifierHierarchy;
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
+import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
+import org.checkerframework.framework.util.QualifierKind;
+import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.ElementUtils;
+import org.checkerframework.javacutil.TreeUtils;
+import org.checkerframework.javacutil.TypeSystemError;
+
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -20,47 +41,24 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 
 import checkers.inference.BaseInferenceRealTypeFactory;
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
-import org.checkerframework.common.basetype.BaseTypeChecker;
-import org.checkerframework.framework.type.AnnotatedTypeMirror;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedArrayType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedDeclaredType;
-import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiveType;
-import org.checkerframework.framework.type.MostlyNoElementQualifierHierarchy;
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
-import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.QualifierKind;
-import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
-import org.checkerframework.javacutil.TreeUtils;
-import org.checkerframework.javacutil.TypeSystemError;
-
-import com.sun.source.tree.LiteralTree;
-import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.NewArrayTree;
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree.Kind;
-
 import dataflow.qual.DataFlow;
 import dataflow.qual.DataFlowTop;
 import dataflow.util.DataflowUtils;
 
 /**
- * DataflowAnnotatedTypeFactory is the type factory for Dataflow type system. It
- * defines the subtype relationship of Dataflow type system, annotate the base
- * cases, and implements simplification algorithm.
- * 
- * @author jianchu
+ * DataflowAnnotatedTypeFactory is the type factory for Dataflow type system. It defines the subtype
+ * relationship of Dataflow type system, annotate the base cases, and implements simplification
+ * algorithm.
  *
+ * @author jianchu
  */
 public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
 
     protected final AnnotationMirror DATAFLOW, DATAFLOWBOTTOM, DATAFLOWTOP;
+
     /**
-     * For each Java type is present in the target program, typeNamesMap maps
-     * String of the type to the TypeMirror.
+     * For each Java type is present in the target program, typeNamesMap maps String of the type to
+     * the TypeMirror.
      */
     private final Map<String, TypeMirror> typeNamesMap = new HashMap<String, TypeMirror>();
 
@@ -69,7 +67,8 @@ public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
     public DataflowAnnotatedTypeFactory(BaseTypeChecker checker, boolean isInfer) {
         super(checker, isInfer);
         DATAFLOW = AnnotationBuilder.fromClass(elements, DataFlow.class);
-        DATAFLOWBOTTOM = DataflowUtils.createDataflowAnnotation(DataflowUtils.convert(""), processingEnv);
+        DATAFLOWBOTTOM =
+                DataflowUtils.createDataflowAnnotation(DataflowUtils.convert(""), processingEnv);
         DATAFLOWTOP = AnnotationBuilder.fromClass(elements, DataFlowTop.class);
         dataflowUtils = new DataflowUtils(processingEnv);
         postInit();
@@ -86,33 +85,33 @@ public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
     }
 
     /**
-     * This method handles autoboxing for primitive type.
-     * For statements, Integer i = 3;
-     * The annotation for i should be @DataFlow(typeNames = {"Integer"}).
+     * This method handles autoboxing for primitive type. For statements, Integer i = 3; The
+     * annotation for i should be @DataFlow(typeNames = {"Integer"}).
      */
     @Override
     public AnnotatedDeclaredType getBoxedType(AnnotatedPrimitiveType type) {
         TypeElement typeElt = types.boxedClass(type.getUnderlyingType());
-        AnnotationMirror am = DataflowUtils.createDataflowAnnotation(typeElt.asType().toString(),
-                this.processingEnv);
+        AnnotationMirror am =
+                DataflowUtils.createDataflowAnnotation(
+                        typeElt.asType().toString(), this.processingEnv);
         AnnotatedDeclaredType dt = fromElement(typeElt);
         dt.addAnnotation(am);
         return dt;
     }
 
     /**
-     * This method handles unboxing for reference type.
-     * For statements, int i = new Integer(3);
-     * The annotation for i should be @DataFlow(typeNames = {"int"}).
+     * This method handles unboxing for reference type. For statements, int i = new Integer(3); The
+     * annotation for i should be @DataFlow(typeNames = {"int"}).
      */
     @Override
     public AnnotatedPrimitiveType getUnboxedType(AnnotatedDeclaredType type)
             throws IllegalArgumentException {
         PrimitiveType primitiveType = types.unboxedType(type.getUnderlyingType());
-        AnnotationMirror am = DataflowUtils.createDataflowAnnotation(primitiveType.toString(),
-                this.processingEnv);
-        AnnotatedPrimitiveType pt = (AnnotatedPrimitiveType) AnnotatedTypeMirror.createType(
-                primitiveType, this, false);
+        AnnotationMirror am =
+                DataflowUtils.createDataflowAnnotation(
+                        primitiveType.toString(), this.processingEnv);
+        AnnotatedPrimitiveType pt =
+                (AnnotatedPrimitiveType) AnnotatedTypeMirror.createType(primitiveType, this, false);
         pt.addAnnotation(am);
         return pt;
     }
@@ -123,17 +122,15 @@ public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
         private final QualifierKind DATAFLOW_KIND;
 
         public DataFlowQualifierHierarchy(
-                Collection<Class<? extends Annotation>> qualifierClasses,
-                Elements elements
-        ) {
+                Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
             super(qualifierClasses, elements);
             DATAFLOW_KIND = getQualifierKind(DATAFLOW);
         }
 
         /**
-         * This method checks whether rhs is subtype of lhs. rhs and lhs are
-         * both Dataflow types with typeNameRoots argument.
-         * 
+         * This method checks whether rhs is subtype of lhs. rhs and lhs are both Dataflow types
+         * with typeNameRoots argument.
+         *
          * @param rhs
          * @param lhs
          * @return true is rhs is subtype of lhs, otherwise return false.
@@ -151,8 +148,9 @@ public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
             combinedRoots.addAll(rRootsSet);
             combinedRoots.addAll(lRootsSet);
 
-            AnnotationMirror combinedAnno = DataflowUtils.createDataflowAnnotationWithRoots(
-                    combinedTypeNames, combinedRoots, processingEnv);
+            AnnotationMirror combinedAnno =
+                    DataflowUtils.createDataflowAnnotationWithRoots(
+                            combinedTypeNames, combinedRoots, processingEnv);
             AnnotationMirror refinedCombinedAnno = refineDataflow(combinedAnno);
             AnnotationMirror refinedLhs = refineDataflow(lhs);
 
@@ -164,11 +162,10 @@ public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
         }
 
         /**
-         * This method checks whether rhs is subtype of lhs. rhs and lhs are
-         * both Dataflow types without typeNameRoots argument. Currently this
-         * method is not used, but we can use it for a lightweight dataflow type
-         * system. (One without typeNameRoots argument).
-         * 
+         * This method checks whether rhs is subtype of lhs. rhs and lhs are both Dataflow types
+         * without typeNameRoots argument. Currently this method is not used, but we can use it for
+         * a lightweight dataflow type system. (One without typeNameRoots argument).
+         *
          * @param rhs
          * @param lhs
          * @return true is rhs is subtype of lhs, otherwise return false.
@@ -184,8 +181,7 @@ public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
                 AnnotationMirror subAnno,
                 QualifierKind subKind,
                 AnnotationMirror superAnno,
-                QualifierKind superKind
-        ) {
+                QualifierKind superKind) {
             if (subKind == DATAFLOW_KIND && superKind == DATAFLOW_KIND) {
                 return isSubtypeWithRoots(subAnno, superAnno);
             }
@@ -199,8 +195,7 @@ public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
                 QualifierKind qualifierKind2,
-                QualifierKind lubKind
-        ) {
+                QualifierKind lubKind) {
             if (qualifierKind1.isBottom()) {
                 return a2;
             } else if (qualifierKind2.isBottom()) {
@@ -225,8 +220,7 @@ public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
                 QualifierKind qualifierKind1,
                 AnnotationMirror a2,
                 QualifierKind qualifierKind2,
-                QualifierKind glbKind
-        ) {
+                QualifierKind glbKind) {
             if (qualifierKind1.isTop()) {
                 return a2;
             } else if (qualifierKind2.isTop()) {
@@ -253,8 +247,8 @@ public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
 
         @Override
         public Void visitNewArray(final NewArrayTree node, final AnnotatedTypeMirror type) {
-            AnnotationMirror dataFlowType = DataflowUtils.genereateDataflowAnnoFromNewClass(type,
-                    processingEnv);
+            AnnotationMirror dataFlowType =
+                    DataflowUtils.genereateDataflowAnnoFromNewClass(type, processingEnv);
             TypeMirror tm = type.getUnderlyingType();
             typeNamesMap.put(tm.toString(), tm);
             type.replaceAnnotation(dataFlowType);
@@ -263,8 +257,8 @@ public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
 
         @Override
         public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror type) {
-            AnnotationMirror dataFlowType = DataflowUtils.genereateDataflowAnnoFromNewClass(type,
-                    processingEnv);
+            AnnotationMirror dataFlowType =
+                    DataflowUtils.genereateDataflowAnnoFromNewClass(type, processingEnv);
             TypeMirror tm = type.getUnderlyingType();
             typeNamesMap.put(tm.toString(), tm);
             type.replaceAnnotation(dataFlowType);
@@ -275,8 +269,8 @@ public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
         public Void visitLiteral(LiteralTree node, AnnotatedTypeMirror type) {
             if (!node.getKind().equals(Kind.NULL_LITERAL)) {
                 AnnotatedTypeMirror annoType = type;
-                AnnotationMirror dataFlowType = DataflowUtils.generateDataflowAnnoFromLiteral(annoType,
-                        processingEnv);
+                AnnotationMirror dataFlowType =
+                        DataflowUtils.generateDataflowAnnoFromLiteral(annoType, processingEnv);
                 type.replaceAnnotation(dataFlowType);
             }
             return super.visitLiteral(node, type);
@@ -287,8 +281,8 @@ public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
             ExecutableElement methodElement = TreeUtils.elementFromUse(node);
             boolean isBytecode = ElementUtils.isElementFromByteCode(methodElement);
             if (isBytecode) {
-                AnnotationMirror dataFlowType = DataflowUtils.genereateDataflowAnnoFromByteCode(type,
-                        processingEnv);
+                AnnotationMirror dataFlowType =
+                        DataflowUtils.genereateDataflowAnnoFromByteCode(type, processingEnv);
                 TypeMirror tm = type.getUnderlyingType();
                 if (tm.getKind() == TypeKind.ARRAY) {
                     replaceArrayComponentATM((AnnotatedArrayType) type);
@@ -299,10 +293,10 @@ public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
             return super.visitMethodInvocation(node, type);
         }
     }
-    
+
     /**
      * Simplification algorithm.
-     * 
+     *
      * @param type
      * @return A simplified annotation.
      */
@@ -342,21 +336,24 @@ public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
             }
         }
 
-        return DataflowUtils.createDataflowAnnotationWithRoots(refinedtypeNames, refinedRoots,
-                processingEnv);
+        return DataflowUtils.createDataflowAnnotationWithRoots(
+                refinedtypeNames, refinedRoots, processingEnv);
     }
 
     /**
-     * Add the bytecode default Dataflow annotation for component type of the given {@link AnnotatedArrayType}.
+     * Add the bytecode default Dataflow annotation for component type of the given {@link
+     * AnnotatedArrayType}.
      *
-     *<p> For multi-dimensional array, this method will recursively add bytecode default Dataflow annotation to array's component type.
+     * <p>For multi-dimensional array, this method will recursively add bytecode default Dataflow
+     * annotation to array's component type.
      *
-     * @param arrayAtm the given {@link AnnotatedArrayType}, whose component type will be added the bytecode default.
+     * @param arrayAtm the given {@link AnnotatedArrayType}, whose component type will be added the
+     *     bytecode default.
      */
     private void replaceArrayComponentATM(AnnotatedArrayType arrayAtm) {
         AnnotatedTypeMirror componentAtm = arrayAtm.getComponentType();
-        AnnotationMirror componentAnno = DataflowUtils.genereateDataflowAnnoFromByteCode(componentAtm,
-                processingEnv);
+        AnnotationMirror componentAnno =
+                DataflowUtils.genereateDataflowAnnoFromByteCode(componentAtm, processingEnv);
         componentAtm.replaceAnnotation(componentAnno);
         if (componentAtm.getKind() == TypeKind.ARRAY) {
             replaceArrayComponentATM((AnnotatedArrayType) componentAtm);
@@ -406,24 +403,24 @@ public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
 
     private String convertToReferenceType(String typeName) {
         switch (typeName) {
-        case "int":
-            return Integer.class.getName();
-        case "short":
-            return Short.class.getName();
-        case "byte":
-            return Byte.class.getName();
-        case "long":
-            return Long.class.getName();
-        case "char":
-            return Character.class.getName();
-        case "float":
-            return Float.class.getName();
-        case "double":
-            return Double.class.getName();
-        case "boolean":
-            return Boolean.class.getName();
-        default:
-            return typeName;
+            case "int":
+                return Integer.class.getName();
+            case "short":
+                return Short.class.getName();
+            case "byte":
+                return Byte.class.getName();
+            case "long":
+                return Long.class.getName();
+            case "char":
+                return Character.class.getName();
+            case "float":
+                return Float.class.getName();
+            case "double":
+                return Double.class.getName();
+            case "boolean":
+                return Boolean.class.getName();
+            default:
+                return typeName;
         }
     }
 

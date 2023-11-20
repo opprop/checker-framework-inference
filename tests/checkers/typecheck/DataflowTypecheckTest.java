@@ -11,14 +11,21 @@ import java.util.List;
 public class DataflowTypecheckTest extends CheckerFrameworkPerFileTest {
 
     public DataflowTypecheckTest(File testFile) {
-        super(testFile,  dataflow.DataflowChecker.class, "dataflow",
-                "-Anomsgtext", "-d", "tests/build/outputdir");
+        super(
+                testFile,
+                dataflow.DataflowChecker.class,
+                "dataflow",
+                "-Anomsgtext",
+                "-d",
+                "tests/build/outputdir");
     }
 
     @Parameters
-    public static List<File> getTestFiles(){
+    public static List<File> getTestFiles() {
         List<File> testfiles = new ArrayList<>();
-        testfiles.addAll(TestUtilities.findRelativeNestedJavaFiles("testing", "dataflow-not-inferrable-test"));
+        testfiles.addAll(
+                TestUtilities.findRelativeNestedJavaFiles(
+                        "testing", "dataflow-not-inferrable-test"));
         return testfiles;
     }
 }

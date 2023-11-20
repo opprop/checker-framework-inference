@@ -1,13 +1,13 @@
 package checkers.inference.model;
 
-import java.util.Arrays;
 import org.checkerframework.javacutil.BugInCF;
 
+import java.util.Arrays;
+
 /**
- * Represents a constraint that the viewpoint adaptation between
- * target and decl gives result.
+ * Represents a constraint that the viewpoint adaptation between target and decl gives result.
  *
- * TODO: clarify relation to CombVariableSlot. Should we add separate types?
+ * <p>TODO: clarify relation to CombVariableSlot. Should we add separate types?
  */
 public class CombineConstraint extends Constraint {
 
@@ -15,18 +15,24 @@ public class CombineConstraint extends Constraint {
     private final Slot decl;
     private final CombVariableSlot result;
 
-    private CombineConstraint(Slot target, Slot decl, CombVariableSlot result, AnnotationLocation location) {
+    private CombineConstraint(
+            Slot target, Slot decl, CombVariableSlot result, AnnotationLocation location) {
         super(Arrays.asList(target, decl, result), location);
         this.target = target;
         this.decl = decl;
         this.result = result;
     }
 
-    protected static CombineConstraint create(Slot target, Slot decl, CombVariableSlot result,
-            AnnotationLocation location) {
+    protected static CombineConstraint create(
+            Slot target, Slot decl, CombVariableSlot result, AnnotationLocation location) {
         if (target == null || decl == null || result == null) {
-            throw new BugInCF("Create combine constraint with null argument. Target: "
-                    + target + " Decl: " + decl + " Result: " + result);
+            throw new BugInCF(
+                    "Create combine constraint with null argument. Target: "
+                            + target
+                            + " Decl: "
+                            + decl
+                            + " Result: "
+                            + result);
         }
 
         return new CombineConstraint(target, decl, result, location);
@@ -60,16 +66,11 @@ public class CombineConstraint extends Constraint {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         CombineConstraint other = (CombineConstraint) obj;
-        if (target.equals(other.target) &&
-                decl.equals(other.decl) &&
-                result.equals(other.result)) {
+        if (target.equals(other.target) && decl.equals(other.decl) && result.equals(other.result)) {
             return true;
         } else {
             return false;

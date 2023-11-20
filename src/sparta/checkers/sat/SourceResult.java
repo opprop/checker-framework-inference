@@ -1,18 +1,18 @@
 package sparta.checkers.sat;
 
-import sparta.checkers.iflow.util.IFlowUtils;
-import sparta.checkers.iflow.util.PFPermission;
+import java.util.*;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
-import java.util.*;
 
-/**
- * Created by smillst on 9/21/15.
- */
+import sparta.checkers.iflow.util.IFlowUtils;
+import sparta.checkers.iflow.util.PFPermission;
+
+/** Created by smillst on 9/21/15. */
 public class SourceResult extends IFlowResult {
 
-    public SourceResult(Collection<PermissionSolution> solutions, ProcessingEnvironment processingEnv) {
+    public SourceResult(
+            Collection<PermissionSolution> solutions, ProcessingEnvironment processingEnv) {
         super(solutions, processingEnv);
     }
 
@@ -23,7 +23,8 @@ public class SourceResult extends IFlowResult {
     }
 
     @Override
-    protected AnnotationMirror createAnnotationFromPermissions(ProcessingEnvironment processingEnv, Set<PFPermission> permissions) {
+    protected AnnotationMirror createAnnotationFromPermissions(
+            ProcessingEnvironment processingEnv, Set<PFPermission> permissions) {
         return IFlowUtils.createAnnoFromSource(permissions, processingEnv);
     }
 }

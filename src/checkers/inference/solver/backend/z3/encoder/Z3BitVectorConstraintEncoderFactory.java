@@ -1,5 +1,8 @@
 package checkers.inference.solver.backend.z3.encoder;
 
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
+
 import checkers.inference.solver.backend.encoder.AbstractConstraintEncoderFactory;
 import checkers.inference.solver.backend.encoder.ArithmeticConstraintEncoder;
 import checkers.inference.solver.backend.encoder.ComparisonConstraintEncoder;
@@ -12,20 +15,19 @@ import checkers.inference.solver.backend.encoder.implication.ImplicationConstrai
 import checkers.inference.solver.backend.encoder.preference.PreferenceConstraintEncoder;
 import checkers.inference.solver.backend.z3.Z3BitVectorFormatTranslator;
 import checkers.inference.solver.frontend.Lattice;
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
 
 /**
  * Z3 implementation of {@link checkers.inference.solver.backend.encoder.ConstraintEncoderFactory}.
  *
  * @see checkers.inference.solver.backend.encoder.ConstraintEncoderFactory
  */
-public class Z3BitVectorConstraintEncoderFactory extends AbstractConstraintEncoderFactory<BoolExpr, Z3BitVectorFormatTranslator>{
+public class Z3BitVectorConstraintEncoderFactory
+        extends AbstractConstraintEncoderFactory<BoolExpr, Z3BitVectorFormatTranslator> {
 
     protected final Context context;
 
-    public Z3BitVectorConstraintEncoderFactory(Lattice lattice, Context context,
-            Z3BitVectorFormatTranslator formatTranslator) {
+    public Z3BitVectorConstraintEncoderFactory(
+            Lattice lattice, Context context, Z3BitVectorFormatTranslator formatTranslator) {
         super(lattice, formatTranslator);
         this.context = context;
     }
@@ -75,7 +77,7 @@ public class Z3BitVectorConstraintEncoderFactory extends AbstractConstraintEncod
     public ImplicationConstraintEncoder<BoolExpr> createImplicationConstraintEncoder() {
         return null;
     }
-  
+
     @Override
     public ArithmeticConstraintEncoder<BoolExpr> createArithmeticConstraintEncoder() {
         return null;

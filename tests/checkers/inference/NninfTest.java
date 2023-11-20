@@ -1,7 +1,5 @@
 package checkers.inference;
 
-import checkers.inference.solver.MaxSat2TypeSolver;
-import checkers.inference.test.CFInferenceTest;
 import org.checkerframework.framework.test.TestUtilities;
 import org.checkerframework.javacutil.Pair;
 import org.junit.runners.Parameterized.Parameters;
@@ -10,11 +8,19 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import checkers.inference.solver.MaxSat2TypeSolver;
+import checkers.inference.test.CFInferenceTest;
+
 public class NninfTest extends CFInferenceTest {
 
     public NninfTest(File testFile) {
-        super(testFile, nninf.NninfChecker.class, "nninf",
-                "-Anomsgtext", "-d", "tests/build/outputdir");
+        super(
+                testFile,
+                nninf.NninfChecker.class,
+                "nninf",
+                "-Anomsgtext",
+                "-d",
+                "tests/build/outputdir");
     }
 
     @Override

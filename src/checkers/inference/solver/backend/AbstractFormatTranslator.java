@@ -16,8 +16,8 @@ import checkers.inference.model.InequalityConstraint;
 import checkers.inference.model.LubVariableSlot;
 import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.RefinementVariableSlot;
-import checkers.inference.model.SubtypeConstraint;
 import checkers.inference.model.SourceVariableSlot;
+import checkers.inference.model.SubtypeConstraint;
 import checkers.inference.solver.backend.encoder.ArithmeticConstraintEncoder;
 import checkers.inference.solver.backend.encoder.ComparisonConstraintEncoder;
 import checkers.inference.solver.backend.encoder.ConstraintEncoderCoordinator;
@@ -35,39 +35,41 @@ import checkers.inference.solver.frontend.Lattice;
 /**
  * Abstract base class for all concrete {@link FormatTranslator}.
  *
- * Class {@code AbstractFormatTranslator} provides default implementation for both serializing
- * {@link checkers.inference.model.Slot slot} and {@link checkers.inference.model.Constraint constraint}:
- * <p>
- * {@link checkers.inference.model.Slot Slot} serialization methods does nothing but returns null.
- * Subclasses of {@code AbstractFormatTranslator} should override corresponding {@code Slot}
+ * <p>Class {@code AbstractFormatTranslator} provides default implementation for both serializing
+ * {@link checkers.inference.model.Slot slot} and {@link checkers.inference.model.Constraint
+ * constraint}:
+ *
+ * <p>{@link checkers.inference.model.Slot Slot} serialization methods does nothing but returns
+ * null. Subclasses of {@code AbstractFormatTranslator} should override corresponding {@code Slot}
  * serialization methods if subclasses have concrete serialization logic.
- * <p>
- * {@link checkers.inference.model.Constraint Constraint} serialization methods first check
+ *
+ * <p>{@link checkers.inference.model.Constraint Constraint} serialization methods first check
  * whether corresponding encoder is null. If yes, returns null as the encoding. Otherwise, delegates
  * encoding job to that encoder.
- * <p>
- * Subclasses of {@code AbstractFormatTranslator} need to override method
- * {@link #createConstraintEncoderFactory()} to create the concrete {@code
- * ConstraintEncoderFactory}. Then at the last step of initializing subclasses of {@code AbstractFormatTranslator},
- * {@link #finishInitializingEncoders()} must be called in order to finish initializing encoders.
- * The reason is: concrete {@link ConstraintEncoderFactory} may depend on some fields in subclasses
- * of {@link AbstractFormatTranslator}.
- * <p>
- * For example, {@link checkers.inference.solver.backend.maxsat.encoder.MaxSATConstraintEncoderFactory}
- * depends on {@link checkers.inference.solver.backend.maxsat.MaxSatFormatTranslator#typeToInt typeToInt}
- * filed in {@link checkers.inference.solver.backend.maxsat.MaxSatFormatTranslator}. So only after those
+ *
+ * <p>Subclasses of {@code AbstractFormatTranslator} need to override method {@link
+ * #createConstraintEncoderFactory()} to create the concrete {@code ConstraintEncoderFactory}. Then
+ * at the last step of initializing subclasses of {@code AbstractFormatTranslator}, {@link
+ * #finishInitializingEncoders()} must be called in order to finish initializing encoders. The
+ * reason is: concrete {@link ConstraintEncoderFactory} may depend on some fields in subclasses of
+ * {@link AbstractFormatTranslator}.
+ *
+ * <p>For example, {@link
+ * checkers.inference.solver.backend.maxsat.encoder.MaxSATConstraintEncoderFactory} depends on
+ * {@link checkers.inference.solver.backend.maxsat.MaxSatFormatTranslator#typeToInt typeToInt} filed
+ * in {@link checkers.inference.solver.backend.maxsat.MaxSatFormatTranslator}. So only after those
  * dependent fields are initialized in subclasses constructors, encoders can be then initialized.
- * Calling {@link #finishInitializingEncoders()} at the last step of initialization makes sure all the
- * dependent fields are already initialized.
- * <p>
- * In terms of "last step of initialization", different {@code FormatTranslator}s have different definitions.
- * For {@link checkers.inference.solver.backend.maxsat.MaxSatFormatTranslator} and
+ * Calling {@link #finishInitializingEncoders()} at the last step of initialization makes sure all
+ * the dependent fields are already initialized.
+ *
+ * <p>In terms of "last step of initialization", different {@code FormatTranslator}s have different
+ * definitions. For {@link checkers.inference.solver.backend.maxsat.MaxSatFormatTranslator} and
  * {@link checkers.inference.solver.backend.logiql.LogiQLFormatTranslator}, it's at the end of the
- * subclass constructor; While for {@link checkers.inference.solver.backend.z3.Z3BitVectorFormatTranslator},
- * it's at the end of
- * {@link checkers.inference.solver.backend.z3.Z3BitVectorFormatTranslator#initSolver(com.microsoft.z3.Optimize)}.
- * The general guideline is that {@link #finishInitializingEncoders() finishInitializingEncoders()} call
- * should always precede actual solving process.
+ * subclass constructor; While for {@link
+ * checkers.inference.solver.backend.z3.Z3BitVectorFormatTranslator}, it's at the end of {@link
+ * checkers.inference.solver.backend.z3.Z3BitVectorFormatTranslator#initSolver(com.microsoft.z3.Optimize)}.
+ * The general guideline is that {@link #finishInitializingEncoders() finishInitializingEncoders()}
+ * call should always precede actual solving process.
  *
  * @see ConstraintEncoderFactory
  * @see #finishInitializingEncoders()
@@ -76,11 +78,9 @@ import checkers.inference.solver.frontend.Lattice;
  * @see checkers.inference.solver.backend.z3.Z3BitVectorFormatTranslator
  */
 public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncodingT, SlotSolutionT>
-        implements FormatTranslator<SlotEncodingT, ConstraintEncodingT, SlotSolutionT>{
+        implements FormatTranslator<SlotEncodingT, ConstraintEncodingT, SlotSolutionT> {
 
-    /**
-     * {@link Lattice} that is used by subclasses during format translation.
-     */
+    /** {@link Lattice} that is used by subclasses during format translation. */
     protected final Lattice lattice;
 
     /**
@@ -89,27 +89,32 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
     protected SubtypeConstraintEncoder<ConstraintEncodingT> subtypeConstraintEncoder;
 
     /**
-     * {@code EqualityConstraintEncoder} to which encoding of {@link EqualityConstraint} is delegated.
+     * {@code EqualityConstraintEncoder} to which encoding of {@link EqualityConstraint} is
+     * delegated.
      */
     protected EqualityConstraintEncoder<ConstraintEncodingT> equalityConstraintEncoder;
 
     /**
-     * {@code InequalityConstraintEncoder} to which encoding of {@link InequalityConstraint} is delegated.
+     * {@code InequalityConstraintEncoder} to which encoding of {@link InequalityConstraint} is
+     * delegated.
      */
     protected InequalityConstraintEncoder<ConstraintEncodingT> inequalityConstraintEncoder;
 
     /**
-     * {@code ComparableConstraintEncoder} to which encoding of {@link ComparableConstraint} is delegated.
+     * {@code ComparableConstraintEncoder} to which encoding of {@link ComparableConstraint} is
+     * delegated.
      */
     protected ComparableConstraintEncoder<ConstraintEncodingT> comparableConstraintEncoder;
 
     /**
-     * {@code ComparisonConstraintEncoder} to which encoding of {@link ComparableConstraint} is delegated.
+     * {@code ComparisonConstraintEncoder} to which encoding of {@link ComparableConstraint} is
+     * delegated.
      */
     protected ComparisonConstraintEncoder<ConstraintEncodingT> comparisonConstraintEncoder;
 
     /**
-     * {@code PreferenceConstraintEncoder} to which encoding of {@link PreferenceConstraint} is delegated.
+     * {@code PreferenceConstraintEncoder} to which encoding of {@link PreferenceConstraint} is
+     * delegated.
      */
     protected PreferenceConstraintEncoder<ConstraintEncodingT> preferenceConstraintEncoder;
 
@@ -119,14 +124,16 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
     protected CombineConstraintEncoder<ConstraintEncodingT> combineConstraintEncoder;
 
     /**
-     * {@code ExistentialConstraintEncoder} to which encoding of {@link ExistentialConstraint} is delegated.
+     * {@code ExistentialConstraintEncoder} to which encoding of {@link ExistentialConstraint} is
+     * delegated.
      */
     protected ExistentialConstraintEncoder<ConstraintEncodingT> existentialConstraintEncoder;
 
     protected ImplicationConstraintEncoder<ConstraintEncodingT> implicationConstraintEncoder;
 
     /**
-     * {@code ArithmeticConstraintEncoder} to which encoding of {@link ArithmeticConstraint} is delegated.
+     * {@code ArithmeticConstraintEncoder} to which encoding of {@link ArithmeticConstraint} is
+     * delegated.
      */
     protected ArithmeticConstraintEncoder<ConstraintEncodingT> arithmeticConstraintEncoder;
 
@@ -135,14 +142,15 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
     }
 
     /**
-     * Finishes initializing encoders for subclasses of {@code AbstractFormatTranslator}. Subclasses of
-     * {@code AbstractFormatTranslator} MUST call this method to finish initializing encoders at the end
-     * of initialization phase. See Javadoc on {@link AbstractFormatTranslator} to see what the last
-     * step of initialization phase means and why the encoder creation steps are separate out from constructor
-     * {@link AbstractFormatTranslator#AbstractFormatTranslator(Lattice)}
+     * Finishes initializing encoders for subclasses of {@code AbstractFormatTranslator}. Subclasses
+     * of {@code AbstractFormatTranslator} MUST call this method to finish initializing encoders at
+     * the end of initialization phase. See Javadoc on {@link AbstractFormatTranslator} to see what
+     * the last step of initialization phase means and why the encoder creation steps are separate
+     * out from constructor {@link AbstractFormatTranslator#AbstractFormatTranslator(Lattice)}
      */
     protected void finishInitializingEncoders() {
-        final ConstraintEncoderFactory<ConstraintEncodingT> encoderFactory = createConstraintEncoderFactory();
+        final ConstraintEncoderFactory<ConstraintEncodingT> encoderFactory =
+                createConstraintEncoderFactory();
         subtypeConstraintEncoder = encoderFactory.createSubtypeConstraintEncoder();
         equalityConstraintEncoder = encoderFactory.createEqualityConstraintEncoder();
         inequalityConstraintEncoder = encoderFactory.createInequalityConstraintEncoder();
@@ -156,71 +164,84 @@ public abstract class AbstractFormatTranslator<SlotEncodingT, ConstraintEncoding
     }
 
     /**
-     * Creates concrete implementation of {@link ConstraintEncoderFactory}. Subclasses should implement this method
-     * to provide their concrete {@code ConstraintEncoderFactory}.
+     * Creates concrete implementation of {@link ConstraintEncoderFactory}. Subclasses should
+     * implement this method to provide their concrete {@code ConstraintEncoderFactory}.
      *
-     * @return Concrete implementation of {@link ConstraintEncoderFactory} for a particular solver backend
+     * @return Concrete implementation of {@link ConstraintEncoderFactory} for a particular solver
+     *     backend
      */
-    protected abstract ConstraintEncoderFactory<ConstraintEncodingT> createConstraintEncoderFactory();
+    protected abstract ConstraintEncoderFactory<ConstraintEncodingT>
+            createConstraintEncoderFactory();
 
     @Override
     public ConstraintEncodingT serialize(SubtypeConstraint constraint) {
-        return subtypeConstraintEncoder == null ? null :
-                ConstraintEncoderCoordinator.dispatch(constraint, subtypeConstraintEncoder);
+        return subtypeConstraintEncoder == null
+                ? null
+                : ConstraintEncoderCoordinator.dispatch(constraint, subtypeConstraintEncoder);
     }
 
     @Override
     public ConstraintEncodingT serialize(EqualityConstraint constraint) {
-        return equalityConstraintEncoder == null ? null :
-                ConstraintEncoderCoordinator.dispatch(constraint, equalityConstraintEncoder);
+        return equalityConstraintEncoder == null
+                ? null
+                : ConstraintEncoderCoordinator.dispatch(constraint, equalityConstraintEncoder);
     }
 
     @Override
     public ConstraintEncodingT serialize(InequalityConstraint constraint) {
-        return inequalityConstraintEncoder == null ? null :
-                ConstraintEncoderCoordinator.dispatch(constraint, inequalityConstraintEncoder);
+        return inequalityConstraintEncoder == null
+                ? null
+                : ConstraintEncoderCoordinator.dispatch(constraint, inequalityConstraintEncoder);
     }
 
     @Override
     public ConstraintEncodingT serialize(ComparableConstraint constraint) {
-        return comparableConstraintEncoder == null ? null :
-                ConstraintEncoderCoordinator.dispatch(constraint, comparableConstraintEncoder);
+        return comparableConstraintEncoder == null
+                ? null
+                : ConstraintEncoderCoordinator.dispatch(constraint, comparableConstraintEncoder);
     }
 
     @Override
     public ConstraintEncodingT serialize(ComparisonConstraint constraint) {
-        return comparisonConstraintEncoder == null ? null :
-                ConstraintEncoderCoordinator.dispatch(constraint, comparisonConstraintEncoder);
+        return comparisonConstraintEncoder == null
+                ? null
+                : ConstraintEncoderCoordinator.dispatch(constraint, comparisonConstraintEncoder);
     }
 
     @Override
     public ConstraintEncodingT serialize(PreferenceConstraint constraint) {
-        return constraint == null ? null :
-                ConstraintEncoderCoordinator.redirect(constraint, preferenceConstraintEncoder);
+        return constraint == null
+                ? null
+                : ConstraintEncoderCoordinator.redirect(constraint, preferenceConstraintEncoder);
     }
 
     @Override
     public ConstraintEncodingT serialize(CombineConstraint combineConstraint) {
-        return combineConstraintEncoder == null ? null :
-                ConstraintEncoderCoordinator.dispatch(combineConstraint, combineConstraintEncoder);
+        return combineConstraintEncoder == null
+                ? null
+                : ConstraintEncoderCoordinator.dispatch(
+                        combineConstraint, combineConstraintEncoder);
     }
 
     @Override
     public ConstraintEncodingT serialize(ExistentialConstraint constraint) {
-        return existentialConstraintEncoder == null ? null :
-                ConstraintEncoderCoordinator.redirect(constraint, existentialConstraintEncoder);
+        return existentialConstraintEncoder == null
+                ? null
+                : ConstraintEncoderCoordinator.redirect(constraint, existentialConstraintEncoder);
     }
 
     @Override
     public ConstraintEncodingT serialize(ImplicationConstraint constraint) {
-        return implicationConstraintEncoder == null ? null :
-                ConstraintEncoderCoordinator.redirect(constraint, implicationConstraintEncoder);
+        return implicationConstraintEncoder == null
+                ? null
+                : ConstraintEncoderCoordinator.redirect(constraint, implicationConstraintEncoder);
     }
-    
+
     @Override
     public ConstraintEncodingT serialize(ArithmeticConstraint constraint) {
-        return arithmeticConstraintEncoder == null ? null :
-            ConstraintEncoderCoordinator.dispatch(constraint, arithmeticConstraintEncoder);
+        return arithmeticConstraintEncoder == null
+                ? null
+                : ConstraintEncoderCoordinator.dispatch(constraint, arithmeticConstraintEncoder);
     }
 
     @Override

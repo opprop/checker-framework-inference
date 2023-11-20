@@ -2,8 +2,6 @@ package checkers.inference.model;
 
 import org.checkerframework.javacutil.BugInCF;
 
-import checkers.inference.InferenceMain;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -11,42 +9,37 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
+import checkers.inference.InferenceMain;
+
 /**
- * Constraint that models implication logic. If all the assumptions are
- * satisfied, then conclusion should also be satisfied.
- * <p>
- * Suppose one needs to enforce this restriction: if {@code @A} is inferred as
- * on declaration of class {@code MyClass}, then every usage of class
- * {@code MyClass} needs to be inferred to {@code @A}.
- * {@link ImplicationConstraint} can express this restriction:
- * <p>
- * {@code @1 == @A -> @2 == @A}, in which {@code @1} is the slot inserted on the
- * class tree and {@code @2} is the slot that represents one usage of
- * {@code MyClass}.
+ * Constraint that models implication logic. If all the assumptions are satisfied, then conclusion
+ * should also be satisfied.
+ *
+ * <p>Suppose one needs to enforce this restriction: if {@code @A} is inferred as on declaration of
+ * class {@code MyClass}, then every usage of class {@code MyClass} needs to be inferred to
+ * {@code @A}. {@link ImplicationConstraint} can express this restriction:
+ *
+ * <p>{@code @1 == @A -> @2 == @A}, in which {@code @1} is the slot inserted on the class tree and
+ * {@code @2} is the slot that represents one usage of {@code MyClass}.
  */
 public class ImplicationConstraint extends Constraint {
 
-    /**
-     * An immutable set of {@link Constraint}s that are conjuncted together.
-     */
+    /** An immutable set of {@link Constraint}s that are conjuncted together. */
     private final Set<Constraint> assumptions;
 
-    /**
-     * A single {@link Constraint} that is implicated by the
-     * {@link #assumptions}.
-     */
+    /** A single {@link Constraint} that is implicated by the {@link #assumptions}. */
     private final Constraint conclusion;
 
-    public ImplicationConstraint(Set<Constraint> assumptions,
-            Constraint conclusion, AnnotationLocation location) {
+    public ImplicationConstraint(
+            Set<Constraint> assumptions, Constraint conclusion, AnnotationLocation location) {
         super(extractAllSlots(assumptions, conclusion), location);
 
         this.assumptions = Collections.unmodifiableSet(assumptions);
         this.conclusion = conclusion;
     }
 
-    private static List<Slot> extractAllSlots(Iterable<Constraint> assumptions,
-            Constraint conclusion) {
+    private static List<Slot> extractAllSlots(
+            Iterable<Constraint> assumptions, Constraint conclusion) {
         List<Slot> slots = new ArrayList<>();
         for (Constraint a : assumptions) {
             slots.addAll(a.getSlots());
@@ -57,12 +50,16 @@ public class ImplicationConstraint extends Constraint {
 
     // TODO: the input should be a set of constraints instead of a list. This
     // requires modifying the constraint manager and PICO.
-    public static Constraint create(List<Constraint> assumptions,
-            Constraint conclusion, AnnotationLocation currentLocation) {
+    public static Constraint create(
+            List<Constraint> assumptions,
+            Constraint conclusion,
+            AnnotationLocation currentLocation) {
         if (assumptions == null || conclusion == null) {
             throw new BugInCF(
                     "Adding implication constraint with null argument. assumptions: "
-                            + assumptions + " conclusion: " + conclusion);
+                            + assumptions
+                            + " conclusion: "
+                            + conclusion);
         }
 
         // Normalization cases:
@@ -117,8 +114,7 @@ public class ImplicationConstraint extends Constraint {
         if (conclusion instanceof AlwaysFalseConstraint) {
             // Instead of creating a "conjunction constraint", here we directly
             // add the set of constraints to the constraint manager
-            InferenceMain.getInstance().getConstraintManager()
-                    .addAll(refinedAssumptions);
+            InferenceMain.getInstance().getConstraintManager().addAll(refinedAssumptions);
             // since all assumptions are added to the constraint manager, we
             // return a dummy always true constraint as the normalized result
             return AlwaysTrueConstraint.create();
@@ -126,8 +122,7 @@ public class ImplicationConstraint extends Constraint {
 
         // 6) refinedAssumptions != empty && conclusion != TRUE && conclusion !=
         // FALSE ==> CREATE_REAL_IMPLICATION_CONSTRAINT
-        return new ImplicationConstraint(refinedAssumptions, conclusion,
-                currentLocation);
+        return new ImplicationConstraint(refinedAssumptions, conclusion, currentLocation);
     }
 
     @Override
@@ -157,7 +152,6 @@ public class ImplicationConstraint extends Constraint {
             return false;
         }
         ImplicationConstraint other = (ImplicationConstraint) obj;
-        return assumptions.equals(other.assumptions)
-                && conclusion.equals(other.conclusion);
+        return assumptions.equals(other.assumptions) && conclusion.equals(other.conclusion);
     }
 }

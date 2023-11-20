@@ -1,5 +1,11 @@
 package checkers.inference.solver.backend.z3;
 
+import com.microsoft.z3.BitVecExpr;
+import com.microsoft.z3.BitVecNum;
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Context;
+import com.microsoft.z3.Optimize;
+
 import java.math.BigInteger;
 import java.util.HashMap;
 import java.util.Map;
@@ -7,29 +13,22 @@ import java.util.Map;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
-import checkers.inference.model.ComparisonVariableSlot;
-import org.checkerframework.javacutil.BugInCF;
-
-import checkers.inference.solver.backend.AbstractFormatTranslator;
-import checkers.inference.solver.backend.encoder.ConstraintEncoderFactory;
-import checkers.inference.solver.backend.z3.encoder.Z3BitVectorConstraintEncoderFactory;
-import com.microsoft.z3.BitVecExpr;
-import com.microsoft.z3.BitVecNum;
-import com.microsoft.z3.BoolExpr;
-import com.microsoft.z3.Context;
-import com.microsoft.z3.Optimize;
-
 import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
+import checkers.inference.model.ComparisonVariableSlot;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.LubVariableSlot;
 import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.SourceVariableSlot;
 import checkers.inference.model.VariableSlot;
+import checkers.inference.solver.backend.AbstractFormatTranslator;
+import checkers.inference.solver.backend.encoder.ConstraintEncoderFactory;
+import checkers.inference.solver.backend.z3.encoder.Z3BitVectorConstraintEncoderFactory;
 import checkers.inference.solver.frontend.Lattice;
 
-public abstract class Z3BitVectorFormatTranslator extends AbstractFormatTranslator<BitVecExpr, BoolExpr, BitVecNum> {
+public abstract class Z3BitVectorFormatTranslator
+        extends AbstractFormatTranslator<BitVecExpr, BoolExpr, BitVecNum> {
 
     protected Context context;
 
@@ -52,9 +51,8 @@ public abstract class Z3BitVectorFormatTranslator extends AbstractFormatTranslat
     }
 
     /**
-     * Initialize fields that requires context.
-     * Sub-class override this method to initialize
-     * objects that require the context being initialized first.
+     * Initialize fields that requires context. Sub-class override this method to initialize objects
+     * that require the context being initialized first.
      */
     protected void postInitWithContext() {
         // Intentional empty.
@@ -65,8 +63,9 @@ public abstract class Z3BitVectorFormatTranslator extends AbstractFormatTranslat
     }
 
     /**
-     * Create a Z3BitVectorCodec responsible for encoding/decoding a type qualifier.
-     * Each type system must provide a specific Z3BitVectorCodec.
+     * Create a Z3BitVectorCodec responsible for encoding/decoding a type qualifier. Each type
+     * system must provide a specific Z3BitVectorCodec.
+     *
      * @return a z3BitVectorCodec
      */
     protected abstract Z3BitVectorCodec createZ3BitVectorCodec();
@@ -77,6 +76,7 @@ public abstract class Z3BitVectorFormatTranslator extends AbstractFormatTranslat
 
     /**
      * Add a soft constraint to underlying solver.
+     *
      * @param constraint the soft constraint
      * @param weight the weight of this soft constraint
      * @param group the group of this soft constraint
@@ -92,8 +92,9 @@ public abstract class Z3BitVectorFormatTranslator extends AbstractFormatTranslat
             return serializedSlots.get(slotId);
         }
 
-        BitVecExpr bitVector = context.mkBVConst(String.valueOf(slot.getId()),
-                z3BitVectorCodec.getFixedBitVectorSize());
+        BitVecExpr bitVector =
+                context.mkBVConst(
+                        String.valueOf(slot.getId()), z3BitVectorCodec.getFixedBitVectorSize());
         serializedSlots.put(slotId, bitVector);
 
         return bitVector;
@@ -108,7 +109,8 @@ public abstract class Z3BitVectorFormatTranslator extends AbstractFormatTranslat
 
         BigInteger numeralValue = z3BitVectorCodec.encodeConstantAM(slot.getValue());
 
-        BitVecNum bitVecNum = context.mkBV(numeralValue.toString(), z3BitVectorCodec.getFixedBitVectorSize());
+        BitVecNum bitVecNum =
+                context.mkBV(numeralValue.toString(), z3BitVectorCodec.getFixedBitVectorSize());
         serializedSlots.put(slotId, bitVecNum);
 
         return bitVecNum;
@@ -148,7 +150,7 @@ public abstract class Z3BitVectorFormatTranslator extends AbstractFormatTranslat
     public BitVecExpr serialize(LubVariableSlot slot) {
         return serializeVarSlot(slot);
     }
-    
+
     @Override
     public BitVecExpr serialize(ArithmeticVariableSlot slot) {
         return serializeVarSlot(slot);
@@ -160,7 +162,8 @@ public abstract class Z3BitVectorFormatTranslator extends AbstractFormatTranslat
     }
 
     @Override
-    public AnnotationMirror decodeSolution(BitVecNum solution, ProcessingEnvironment processingEnvironment) {
+    public AnnotationMirror decodeSolution(
+            BitVecNum solution, ProcessingEnvironment processingEnvironment) {
         return z3BitVectorCodec.decodeNumeralValue(solution.getBigInteger(), processingEnvironment);
     }
 }

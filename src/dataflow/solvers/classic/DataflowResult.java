@@ -22,13 +22,15 @@ public class DataflowResult extends DefaultInferenceResult {
     private final Map<Integer, Boolean> idToExistance;
     private final DataflowAnnotatedTypeFactory realTypeFactory;
 
-    public DataflowResult(Collection<DatatypeSolution> solutions, ProcessingEnvironment processingEnv) {
+    public DataflowResult(
+            Collection<DatatypeSolution> solutions, ProcessingEnvironment processingEnv) {
         // Legacy solver doesn't support explanation
         super();
         this.typeNameResults = new HashMap<>();
         this.typeRootResults = new HashMap<>();
         this.idToExistance = new HashMap<>();
-        this.realTypeFactory = (DataflowAnnotatedTypeFactory)InferenceMain.getInstance().getRealTypeFactory();
+        this.realTypeFactory =
+                (DataflowAnnotatedTypeFactory) InferenceMain.getInstance().getRealTypeFactory();
         mergeSolutions(solutions);
         createAnnotations(processingEnv);
         simplifyAnnotation();
@@ -79,7 +81,9 @@ public class DataflowResult extends DefaultInferenceResult {
             Set<String> roots = typeRootResults.get(slotId);
             AnnotationMirror anno;
             if (roots != null) {
-                anno = DataflowUtils.createDataflowAnnotationWithRoots(datatypes, typeRootResults.get(slotId), processingEnv);
+                anno =
+                        DataflowUtils.createDataflowAnnotationWithRoots(
+                                datatypes, typeRootResults.get(slotId), processingEnv);
             } else {
                 anno = DataflowUtils.createDataflowAnnotation(datatypes, processingEnv);
             }
@@ -91,16 +95,17 @@ public class DataflowResult extends DefaultInferenceResult {
             Set<String> roots = entry.getValue();
             Set<String> typeNames = typeNameResults.get(slotId);
             if (typeNames == null) {
-                AnnotationMirror anno = DataflowUtils.createDataflowAnnotationWithoutName(roots, processingEnv);
+                AnnotationMirror anno =
+                        DataflowUtils.createDataflowAnnotationWithoutName(roots, processingEnv);
                 varIdToAnnotation.put(slotId, anno);
             }
         }
-
     }
 
     private void simplifyAnnotation() {
         for (Map.Entry<Integer, AnnotationMirror> entry : varIdToAnnotation.entrySet()) {
-            AnnotationMirror refinedDataflow = this.realTypeFactory.refineDataflow(entry.getValue());
+            AnnotationMirror refinedDataflow =
+                    this.realTypeFactory.refineDataflow(entry.getValue());
             entry.setValue(refinedDataflow);
         }
     }
@@ -112,7 +117,9 @@ public class DataflowResult extends DefaultInferenceResult {
             if (idToExistance.containsKey(id)) {
                 boolean alreadyExists = idToExistance.get(id);
                 if (alreadyExists ^ existsDatatype) {
-                    InferenceMain.getInstance().logger.log(Level.INFO, "Mismatch between existance of annotation");
+                    InferenceMain.getInstance()
+                            .logger
+                            .log(Level.INFO, "Mismatch between existance of annotation");
                 }
             } else {
                 idToExistance.put(id, existsDatatype);
@@ -127,5 +134,4 @@ public class DataflowResult extends DefaultInferenceResult {
     public boolean containsSolutionForVariable(int varId) {
         return idToExistance.containsKey(varId);
     }
-
 }

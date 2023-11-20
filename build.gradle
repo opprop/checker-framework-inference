@@ -1,3 +1,14 @@
+buildscript {
+    dependencies {
+        if (JavaVersion.current() >= JavaVersion.VERSION_11) {
+            // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
+            // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
+            // Only works on JDK 11+.
+            classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.22.0'
+        }
+    }
+}
+
 plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
@@ -19,22 +30,104 @@ ext {
     // On a Java 8 JVM, use error-prone javac and source/target 8.
     // On a Java 9+ JVM, use the host javac, default source/target, and required module flags.
     isJava8 = JavaVersion.current() == JavaVersion.VERSION_1_8
+    isJava14 = JavaVersion.current() == JavaVersion.VERSION_14
+    isJava15 = JavaVersion.current() == JavaVersion.VERSION_15
+    isJava16 = JavaVersion.current() == JavaVersion.VERSION_16
+    isJava17 = JavaVersion.current() == JavaVersion.VERSION_17
+    isJava18 = JavaVersion.current() == JavaVersion.VERSION_18
+    isJava19 = JavaVersion.current() == JavaVersion.VERSION_19
+    isJava20 = JavaVersion.current() == JavaVersion.VERSION_20
+    isJava21 = JavaVersion.current() == JavaVersion.VERSION_21
+
+    isJava21plus = isJava21
+    isJava20plus = isJava20 || isJava21plus
+    isJava19plus = isJava19 || isJava20plus
+    isJava18plus = isJava18 || isJava19plus
+    isJava17plus = isJava17 || isJava18plus
+    isJava16plus = isJava16 || isJava17plus
+    isJava15plus = isJava15 || isJava16plus
+    isJava14plus = isJava14 || isJava15plus
+    isJava11plus = JavaVersion.current() >= JavaVersion.VERSION_11
 
     errorproneJavacVersion = '9+181-r4173-1'
 
     // Keep in sync with checker-framework/build.gradle.
     // TODO: find a way to directly use that variable.
     compilerArgsForRunningCF = [
-            "--add-exports", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
-            "--add-exports", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-            "--add-exports", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
-            "--add-exports", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
-            "--add-exports", "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
-            "--add-exports", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
-            "--add-exports", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-            "--add-exports", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
-            "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+        "--add-opens",
+        "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
     ]
+
+    if (isJava11plus) {
+        apply plugin: 'com.diffplug.spotless'
+        spotless {
+            format 'misc', {
+                target '*.md', '*.tex', '.gitignore', 'Makefile'
+                indentWithSpaces(2)
+                trimTrailingWhitespace()
+            }
+
+            java {
+                googleJavaFormat().aosp()
+                importOrder('com', 'jdk', 'lib', 'lombok', 'org', 'java', 'javax')
+                formatAnnotations().addTypeAnnotation("PolyInitialized")
+            }
+
+            groovyGradle {
+                target '**/*.gradle'
+                greclipse()  // which formatter Spotless should use to format .gradle files.
+                indentWithSpaces(4)
+                trimTrailingWhitespace()
+            }
+        }
+    }
+}
+
+if (isJava11plus) {
+    apply plugin: 'com.diffplug.spotless'
+    spotless {
+        // Resolve the Spotless plugin dependencies from the buildscript repositories rather than the
+        // project repositories.  That way the spotless plugin does not use the locally built version of
+        // checker-qual as a dependency. Without this, errors like the follow are issued when running
+        // a spotless task without a locally-built version of checker-qual.jar:
+        // Could not determine the dependencies of task ':checker-qual:spotlessCheck'.
+        //  > Could not create task ':checker-qual:spotlessJavaCheck'.
+        //     > Could not create task ':checker-qual:spotlessJava'.
+        //        > File signature can only be created for existing regular files, given:
+        //          .../checker-framework/checker-qual/build/libs/checker-qual-3.25.1-SNAPSHOT.jar
+        predeclareDepsFromBuildscript()
+    }
+
+    spotlessPredeclare {
+        // Put all the formatters that have dependencies here.  Without this, errors like the following
+        // will happen:
+        // Could not determine the dependencies of task ':spotlessCheck'.
+        //  > Could not create task ':spotlessJavaCheck'.
+        //     > Could not create task ':spotlessJava'.
+        //        > Add a step with [com.google.googlejavaformat:google-java-format:1.15.0] into the `spotlessPredeclare` block in the root project.
+        java {
+            googleJavaFormat()
+        }
+        groovyGradle {
+            greclipse()
+        }
+    }
 }
 
 println '===================================='
@@ -127,7 +220,7 @@ test {
     dependsOn('dist')
 
     systemProperties 'path.afu.scripts': "${afu}/scripts",
-            'use.hacks': true
+    'use.hacks': true
 
     systemProperties += [JDK_JAR: "${checkerFrameworkPath}/checker/dist/jdk8.jar"]
 
@@ -136,7 +229,9 @@ test {
     }
 
     if (isJava8) {
-        jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}"]
+        jvmArgs += [
+            "-Xbootclasspath/p:${configurations.javacJar.asPath}"
+        ]
     } else {
         // Without this, the test throw "java.lang.OutOfMemoryError: Java heap space"
         // Corresponding pull request: https://github.com/opprop/checker-framework-inference/pull/263
@@ -166,7 +261,6 @@ test {
                     "Skipped: ${result.skippedTestCount}, " +
                     "Time elapsed: ${seconds} sec\n"
         }
-
     }
 }
 
@@ -174,13 +268,14 @@ compileJava {
     dependsOn(buildLingeling)
     dependsOn(buildDLJC)
     options.compilerArgs = [
-            '-implicit:class',
-            '-Awarns',
-            '-Xmaxwarns', '10000',
-            // Can't use this because JSON library contains raw types:
-            // '-Xlint:unchecked',
-            '-Xlint:deprecation',
-            '-Werror',
+        '-implicit:class',
+        '-Awarns',
+        '-Xmaxwarns',
+        '10000',
+        // Can't use this because JSON library contains raw types:
+        // '-Xlint:unchecked',
+        '-Xlint:deprecation',
+        '-Werror',
     ]
 }
 
@@ -214,7 +309,7 @@ task dist(dependsOn: shadowJar, type: Copy) {
             "${checkerFrameworkPath}/checker/dist/checker-qual.jar",
             "${checkerFrameworkPath}/checker/dist/checker-util.jar",
             "${checkerFrameworkPath}/checker/dist/javac.jar",
-    )
+            )
     into file('dist')
 }
 
@@ -270,20 +365,30 @@ task cloneAndBuildDependencies(type: Exec) {
 task testCheckerInferenceScript(type: Exec, dependsOn: dist) {
     description 'Basic sanity check of scripts/inference'
     executable './scripts/inference'
-    args = ['--mode', 'TYPECHECK',
-            '--checker', 'ostrusted.OsTrustedChecker',
-            '--solver', 'checkers.inference.solver.PropagationSolver',
-            'testdata/ostrusted/Test.java']
+    args = [
+        '--mode',
+        'TYPECHECK',
+        '--checker',
+        'ostrusted.OsTrustedChecker',
+        '--solver',
+        'checkers.inference.solver.PropagationSolver',
+        'testdata/ostrusted/Test.java'
+    ]
 }
 
 task testCheckerInferenceDevScript(type: Exec, dependsOn: [dist, dependenciesJar]) {
     description 'Basic sanity check of scripts/inference-dev'
     executable './scripts/inference-dev'
-    args = ['--mode', 'INFER',
-            '--checker', 'interning.InterningChecker',
-            '--solver', 'checkers.inference.solver.MaxSat2TypeSolver',
-            '--hacks=true',
-            'testdata/interning/MapAssignment.java']
+    args = [
+        '--mode',
+        'INFER',
+        '--checker',
+        'interning.InterningChecker',
+        '--solver',
+        'checkers.inference.solver.MaxSat2TypeSolver',
+        '--hacks=true',
+        'testdata/interning/MapAssignment.java'
+    ]
 }
 
 task testDataflowExternalSolvers(type: Exec, dependsOn: [dist, dependenciesJar]) {
@@ -294,10 +399,10 @@ task testDataflowExternalSolvers(type: Exec, dependsOn: [dist, dependenciesJar])
 afterEvaluate {
     // Create a task for each test class whose name is the same as the class name.
     sourceSets.test.java.filter {
-            it.path.contains('tests/checkers') &&
-            it.path.endsWith('Test.java') &&
-            !it.path.contains('CFInferenceTest')
-        }.forEach { file ->
+        it.path.contains('tests/checkers') &&
+                it.path.endsWith('Test.java') &&
+                !it.path.contains('CFInferenceTest')
+    }.forEach { file ->
         String junitClassName = file.name.replaceAll(".java", "")
         tasks.create(name: "${junitClassName}", type: Test, group: 'Verification') {
             description "Run ${junitClassName} tests."
@@ -310,16 +415,18 @@ afterEvaluate {
         dependsOn(shadowJar)
 
         systemProperties 'path.afu.scripts': "${afu}/scripts",
-                'path.inference.script': "${projectDir}/scripts/inference",
-                'use.hacks': true,
-                JDK_JAR: "${checkerFrameworkPath}/checker/dist/jdk8.jar"
+        'path.inference.script': "${projectDir}/scripts/inference",
+        'use.hacks': true,
+        JDK_JAR: "${checkerFrameworkPath}/checker/dist/jdk8.jar"
 
         if (project.hasProperty('emit.test.debug')) {
             systemProperties += ["emit.test.debug": 'true']
         }
 
         if (isJava8) {
-            jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}"]
+            jvmArgs += [
+                "-Xbootclasspath/p:${configurations.javacJar.asPath}"
+            ]
         }
 
         testLogging {

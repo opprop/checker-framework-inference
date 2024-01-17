@@ -36,9 +36,9 @@ public class InferenceUtil {
      * Clear all primary annotations on atm
      * @return the set of cleared annotations
      */
-    public static Set<AnnotationMirror> clearAnnos(final AnnotatedTypeMirror atm) {
+    public static AnnotationMirrorSet clearAnnos(final AnnotatedTypeMirror atm) {
 
-        final Set<AnnotationMirror> oldAnnos = new AnnotationMirrorSet();
+        final AnnotationMirrorSet oldAnnos = new AnnotationMirrorSet();
         oldAnnos.addAll(atm.getAnnotations());
 
         atm.clearAnnotations();

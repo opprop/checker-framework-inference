@@ -277,7 +277,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // we cannot call super.postDirectSuperTypes because GenericAnnotatedTypeFactory will cause
         // annotateImplicit(element,type) to be called on the supertype which will overwrite the annotations from type
         // with those for the declaration of the super type
-        Set<AnnotationMirror> annotations = type.getEffectiveAnnotations();
+        AnnotationMirrorSet annotations = type.getEffectiveAnnotations();
         for (AnnotatedTypeMirror supertype : supertypes) {
             if (!annotations.equals(supertype.getEffectiveAnnotations())) {
                 supertype.clearAnnotations();

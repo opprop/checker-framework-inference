@@ -15,6 +15,7 @@ import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotato
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
@@ -164,7 +165,7 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
                 }
 
                 if (empty) {
-                    defaultedSet = AnnotationUtils.createAnnotationSet();
+                    defaultedSet = new AnnotationMirrorSet();
                     defaultedSet.add(NOSOURCE);
                     defaultedSet.add(ANYSINK);
                 }

@@ -14,6 +14,7 @@ import javax.lang.model.element.AnnotationMirror;
 import checkers.inference.DefaultInferenceResult;
 import com.sun.tools.javac.util.Pair;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 import checkers.inference.InferenceMain;
@@ -104,7 +105,7 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
                     if (AnnotationUtils.areSameByName(dataflowAnno, DATAFLOW_NAME)) {
                         Set<AnnotationMirror> datas = dataflowResults.get(id);
                         if (datas == null) {
-                            datas = AnnotationUtils.createAnnotationSet();
+                            datas = new AnnotationMirrorSet();
                             dataflowResults.put(id, datas);
                         }
                         datas.add(dataflowAnno);

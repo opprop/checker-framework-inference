@@ -394,7 +394,19 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         addComputedTypeAnnotations(newClassTree, constructorReturnType);
 
         final AnnotatedExecutableType constructorType = AnnotatedTypes.asMemberOf(types, this, constructorReturnType, constructorElem);
-
+        // Take adapt parameter logic from AnnotatedTypeFactory#constructorFromUse to
+        // InferenceAnnotatedTypeFactory#constructorFromUse
+        // Store varargType before calling setParameterTypes, otherwise we may lose the
+        // varargType as it is the last element of the original parameterTypes.
+        // AnnotatedTypes.asMemberOf handles vararg type properly, so we do not need to compute
+        // vararg type again.
+        constructorType.computeVarargType();
+        // Adapt parameters, which makes parameters and arguments be the same size for later
+        // checking. The vararg type of con has been already computed and stored when calling
+        // typeVarSubstitutor.substitute.
+        List<AnnotatedTypeMirror> parameters =
+                AnnotatedTypes.adaptParameters(this, constructorType, newClassTree.getArguments());
+        constructorType.setParameterTypes(parameters);
         if (viewpointAdapter != null) {
             viewpointAdapter.viewpointAdaptConstructor(constructorReturnType, constructorElem, constructorType);
         }

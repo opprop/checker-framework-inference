@@ -342,8 +342,19 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             viewpointAdapter.viewpointAdaptMethod(receiverType, methodElem, methodOfReceiver);
         }
         ParameterizedExecutableType mType = substituteTypeArgs(methodInvocationTree, methodElem, methodOfReceiver);
-
         AnnotatedExecutableType method = mType.executableType;
+
+        // Take adapt parameter logic from AnnotatedTypeFactory#methodFromUse to
+        // InferenceAnnotatedTypeFactory#methodFromUse
+        // Store varargType before calling setParameterTypes, otherwise we may lose the varargType
+        // as it is the last element of the original parameterTypes.
+        method.computeVarargType();
+        // Adapt parameters, which makes parameters and arguments be the same size for later
+        // checking.
+        List<AnnotatedTypeMirror> parameters =
+                AnnotatedTypes.adaptParameters(this, method, methodInvocationTree.getArguments());
+        method.setParameterTypes(parameters);
+
         inferencePoly.replacePolys(methodInvocationTree, method);
 
         if (methodInvocationTree.getKind() == Tree.Kind.METHOD_INVOCATION &&

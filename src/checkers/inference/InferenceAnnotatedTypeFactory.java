@@ -345,7 +345,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         AnnotatedExecutableType method = mType.executableType;
 
         // Take adapt parameter logic from AnnotatedTypeFactory#methodFromUse to
-        // InferenceAnnotatedTypeFactory#methodFromUse
+        // InferenceAnnotatedTypeFactory#methodFromUse.
         // Store varargType before calling setParameterTypes, otherwise we may lose the varargType
         // as it is the last element of the original parameterTypes.
         method.computeVarargType();
@@ -395,7 +395,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         final AnnotatedExecutableType constructorType = AnnotatedTypes.asMemberOf(types, this, constructorReturnType, constructorElem);
         // Take adapt parameter logic from AnnotatedTypeFactory#constructorFromUse to
-        // InferenceAnnotatedTypeFactory#constructorFromUse
+        // InferenceAnnotatedTypeFactory#constructorFromUse.
         // Store varargType before calling setParameterTypes, otherwise we may lose the
         // varargType as it is the last element of the original parameterTypes.
         // AnnotatedTypes.asMemberOf handles vararg type properly, so we do not need to compute

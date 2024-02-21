@@ -389,8 +389,8 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                       "Current path:\n" + getVisitorTreePath();
 
         final ExecutableElement constructorElem = TreeUtils.elementFromUse(newClassTree);
-        @SuppressWarnings("deprecation") // TODO
-        final AnnotatedTypeMirror constructorReturnType = fromNewClass(newClassTree);
+        AnnotatedDeclaredType constructorReturnType =
+                (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
         addComputedTypeAnnotations(newClassTree, constructorReturnType);
 
         final AnnotatedExecutableType constructorType = AnnotatedTypes.asMemberOf(types, this, constructorReturnType, constructorElem);

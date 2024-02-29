@@ -15,6 +15,7 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.Pair;
 
@@ -71,7 +72,7 @@ public class InferenceAnalysis extends CFAnalysis {
      */
     @Override
     public CFValue defaultCreateAbstractValue(CFAbstractAnalysis<CFValue, ?, ?> analysis,
-                                              Set<AnnotationMirror> annos,
+                                              AnnotationMirrorSet annos,
                                               TypeMirror underlyingType) {
 
         if (annos.size() == 0 && underlyingType.getKind() != TypeKind.TYPEVAR) {

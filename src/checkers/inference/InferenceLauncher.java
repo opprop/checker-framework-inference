@@ -205,7 +205,7 @@ public class InferenceLauncher {
 
         Mode mode = Mode.valueOf(InferenceOptions.mode);
         if (InferenceOptions.makeDefaultsExplicit
-                && (mode == Mode.ROUNDTRIP || mode == Mode.ROUNDTRIP_TYPECHECK)) {
+                && (mode == Mode.ROUNDTRIP || mode == Mode.ROUNDTRIP_TYPECHECK || mode == Mode.INFER)) {
             // Two conditions have to be met to make defaults explicit:
             // 1. the command-line flag `makeDefaultsExplicit` is provided
             // 2. the inference solution will be written back to the source code (roundtrip `mode`)

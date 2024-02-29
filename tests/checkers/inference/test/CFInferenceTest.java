@@ -30,6 +30,10 @@ public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
         return SystemUtil.getBooleanSystemProperty("use.hacks");
     }
 
+    public boolean makeDefaultsExplicit() {
+        return false;
+    }
+
     public abstract Pair<String, List<String>> getSolverNameAndOptions();
 
     public List<String> getAdditionalInferenceOptions() {
@@ -54,7 +58,8 @@ public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
 
         InferenceTestConfiguration config = InferenceTestConfigurationBuilder.buildDefaultConfiguration(testDir,
                 testFile, testDataDir, checker, checkerOptions, getAdditionalInferenceOptions(), solverArgs.first,
-                solverArgs.second, useHacks(), shouldEmitDebugInfo, getPathToAfuScripts(), getPathToInferenceScript());
+                solverArgs.second, useHacks(), makeDefaultsExplicit(), shouldEmitDebugInfo, getPathToAfuScripts(),
+                getPathToInferenceScript());
 
         InferenceTestResult testResult = new InferenceTestExecutor().runTest(config);
         InferenceTestUtilities.assertResultsAreValid(testResult);

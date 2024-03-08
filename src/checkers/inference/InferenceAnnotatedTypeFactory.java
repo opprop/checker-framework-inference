@@ -376,22 +376,13 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     };
 
-    /**
-     * TODO: Similar but not the same as AnnotatedTypeFactory.constructorFromUse with space set aside from
-     * TODO: comb constraints, track down the differences with constructorFromUse
-     * Note: super() and this() calls
-     * @see org.checkerframework.checker.type.AnnotatedTypeFactory#constructorFromUse(com.sun.source.tree.NewClassTree)
-     *
-     * @param newClassTree
-     * @return
-     */
     @Override
     public ParameterizedExecutableType constructorFromUse(final NewClassTree newClassTree) {
         assert newClassTree != null : "NewClassTree was null when attempting to get constructorFromUse. " +
                                       "Current path:\n" + getVisitorTreePath();
 
         final ExecutableElement constructorElem = TreeUtils.elementFromUse(newClassTree);
-
+        // Get constructorReturnType for add equality constraint by calling addComputedTypeAnnotations
         AnnotatedDeclaredType constructorReturnType =
                 (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
         addComputedTypeAnnotations(newClassTree, constructorReturnType);

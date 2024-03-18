@@ -376,6 +376,15 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     };
 
+    /**
+     * This method is similar to the one in its superclass AnnotatedTypeFactory, but it has additional logic to handle
+     * constraints in the context of type inference.
+     * @see org.checkerframework.checker.type.AnnotatedTypeFactory#constructorFromUse(com.sun.source.tree.NewClassTree)
+     *
+     * @param newClassTree
+     * @return a ParameterizedExecutableType
+     */
+
     @Override
     public ParameterizedExecutableType constructorFromUse(final NewClassTree newClassTree) {
         assert newClassTree != null : "NewClassTree was null when attempting to get constructorFromUse. " +

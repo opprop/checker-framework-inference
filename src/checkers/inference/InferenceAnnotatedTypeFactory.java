@@ -382,7 +382,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                       "Current path:\n" + getVisitorTreePath();
 
         final ExecutableElement constructorElem = TreeUtils.elementFromUse(newClassTree);
-        // Get constructorReturnType for add equality constraint by calling addComputedTypeAnnotations
+        // Add equality constraints to return type by calling addComputedTypeAnnotations.
         AnnotatedDeclaredType constructorReturnType =
                 (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
         addComputedTypeAnnotations(newClassTree, constructorReturnType);

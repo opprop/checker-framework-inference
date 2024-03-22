@@ -70,8 +70,6 @@ import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
-import org.checkerframework.javacutil.TypesUtils;
-import org.plumelib.util.CollectionsPlume;
 
 /**
  * InferenceAnnotatedTypeFactory is responsible for creating AnnotatedTypeMirrors that are annotated with
@@ -391,6 +389,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                                       "Current path:\n" + getVisitorTreePath();
 
         final ExecutableElement constructorElem = TreeUtils.elementFromUse(newClassTree);
+        // TODO Super seems calling the same thing. Add a note for future clear up.
         // Add equality constraints to return type by calling addComputedTypeAnnotations.
         AnnotatedDeclaredType constructorReturnType =
                 (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);

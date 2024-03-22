@@ -375,46 +375,30 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     };
 
     /**
-     * TODO: Similar but not the same as AnnotatedTypeFactory.constructorFromUse with space set aside from
-     * TODO: comb constraints, track down the differences with constructorFromUse
-     * Note: super() and this() calls
+     * This method is similar to the one in its superclass AnnotatedTypeFactory, but it has additional logic to handle
+     * constraints in the context of type inference.
      * @see org.checkerframework.checker.type.AnnotatedTypeFactory#constructorFromUse(com.sun.source.tree.NewClassTree)
      *
      * @param newClassTree
-     * @return
+     * @return a ParameterizedExecutableType
      */
+
     @Override
     public ParameterizedExecutableType constructorFromUse(final NewClassTree newClassTree) {
         assert newClassTree != null : "NewClassTree was null when attempting to get constructorFromUse. " +
                                       "Current path:\n" + getVisitorTreePath();
 
         final ExecutableElement constructorElem = TreeUtils.elementFromUse(newClassTree);
-        @SuppressWarnings("deprecation") // TODO
-        final AnnotatedTypeMirror constructorReturnType = fromNewClass(newClassTree);
+        // TODO Super seems calling the same thing. Add a note for future clear up.
+        // Add equality constraints to return type by calling addComputedTypeAnnotations.
+        AnnotatedDeclaredType constructorReturnType =
+                (AnnotatedDeclaredType) toAnnotatedType(TreeUtils.typeOf(newClassTree), false);
         addComputedTypeAnnotations(newClassTree, constructorReturnType);
 
-        final AnnotatedExecutableType constructorType = AnnotatedTypes.asMemberOf(types, this, constructorReturnType, constructorElem);
-        // Take adapt parameter logic from AnnotatedTypeFactory#constructorFromUse to
-        // InferenceAnnotatedTypeFactory#constructorFromUse.
-        // Store varargType before calling setParameterTypes, otherwise we may lose the
-        // varargType as it is the last element of the original parameterTypes.
-        // AnnotatedTypes.asMemberOf handles vararg type properly, so we do not need to compute
-        // vararg type again.
-        constructorType.computeVarargType();
-        // Adapt parameters, which makes parameters and arguments be the same size for later
-        // checking. The vararg type of con has been already computed and stored when calling
-        // typeVarSubstitutor.substitute.
-        List<AnnotatedTypeMirror> parameters =
-                AnnotatedTypes.adaptParameters(this, constructorType, newClassTree.getArguments());
-        constructorType.setParameterTypes(parameters);
-        if (viewpointAdapter != null) {
-            viewpointAdapter.viewpointAdaptConstructor(constructorReturnType, constructorElem, constructorType);
-        }
-
-        ParameterizedExecutableType substitutedPair = substituteTypeArgs(newClassTree, constructorElem, constructorType);
+        ParameterizedExecutableType result = super.constructorFromUse(newClassTree);
+        ParameterizedExecutableType substitutedPair = substituteTypeArgs(newClassTree, constructorElem, result.executableType);
         inferencePoly.replacePolys(newClassTree, substitutedPair.executableType);
 
-        // TODO: Should we be doing asMemberOf like super?
         return substitutedPair;
     }
 

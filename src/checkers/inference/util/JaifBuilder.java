@@ -22,7 +22,6 @@ import checkers.inference.model.AnnotationLocation.ClassDeclLocation;
 
 import com.sun.source.tree.Tree;
 
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.org.plumelib.util.IPair;
 
 /**

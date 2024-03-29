@@ -2,7 +2,6 @@ package checkers.inference.test;
 
 import org.checkerframework.framework.test.CheckerFrameworkPerFileTest;
 import org.checkerframework.framework.test.TestUtilities;
-import org.checkerframework.javacutil.Pair;
 import org.checkerframework.javacutil.SystemUtil;
 
 import java.io.File;
@@ -11,6 +10,7 @@ import java.util.List;
 
 import javax.annotation.processing.AbstractProcessor;
 
+import org.checkerframework.org.plumelib.util.IPair;
 import org.checkerframework.org.plumelib.util.SystemPlume;
 import org.junit.Test;
 
@@ -31,7 +31,7 @@ public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
         return SystemPlume.getBooleanSystemProperty("use.hacks");
     }
 
-    public abstract Pair<String, List<String>> getSolverNameAndOptions();
+    public abstract IPair<String, List<String>> getSolverNameAndOptions();
 
     public List<String> getAdditionalInferenceOptions() {
         return new ArrayList<String>();
@@ -49,7 +49,7 @@ public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
     @Test
     public void run() {
         boolean shouldEmitDebugInfo = TestUtilities.getShouldEmitDebugInfo();
-        Pair<String, List<String>> solverArgs = getSolverNameAndOptions();
+        IPair<String, List<String>> solverArgs = getSolverNameAndOptions();
 
         final File testDataDir = new File("testdata");
 

@@ -23,11 +23,11 @@ export AFU="${AFU:-../annotation-tools/annotation-file-utilities}"
 # Don't use `AT=${AFU}/..` which causes a git failure.
 AT=$(dirname "${AFU}")
 
-## Build annotation-tools (Annotation File Utilities)
-#/tmp/plume-scripts/git-clone-related opprop annotation-tools "${AT}"
-#if [ ! -d ../annotation-tools ] ; then
-# ln -s "${AT}" ../annotation-tools
-#fi
+# Build annotation-tools (Annotation File Utilities)
+/tmp/plume-scripts/git-clone-related opprop annotation-tools "${AT}"
+if [ ! -d ../annotation-tools ] ; then
+ ln -s "${AT}" ../annotation-tools
+fi
 
 echo "Running:  (cd ${AT} && ./.build-without-test.sh)"
 (cd "${AT}" && ./.build-without-test.sh)

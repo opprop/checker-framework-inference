@@ -90,7 +90,7 @@ public class InterningAnnotatedTypeFactory extends BaseInferenceRealTypeFactory 
 
     @Override
     public void addComputedTypeAnnotations(Element element, AnnotatedTypeMirror type) {
-        if (!type.isAnnotatedInHierarchy(INTERNED) && ElementUtils.isCompileTimeConstant(element))
+        if (!type.hasAnnotationInHierarchy(INTERNED) && ElementUtils.isCompileTimeConstant(element))
             type.addAnnotation(INTERNED);
         super.addComputedTypeAnnotations(element, type);
     }
@@ -153,7 +153,7 @@ public class InterningAnnotatedTypeFactory extends BaseInferenceRealTypeFactory 
             // TODO: @Interned then the type would already receive an @Interned from the framework without
             // TODO: this case (I think from InheritFromClass)
             // TODO: IF this is true, perhaps remove item 6 I added to the class comment
-            } else if (typeFactory.fromElement(elt).hasAnnotation(INTERNED)) {
+            } else if (atypeFactory.fromElement(elt).hasAnnotation(INTERNED)) {
                 // If the class/interface has an @Interned annotation, use it.
                 t.replaceAnnotation(INTERNED);
             }

@@ -44,8 +44,8 @@ public class ComparableConstraint extends Constraint implements BinaryConstraint
             ConstantSlot firstConst = (ConstantSlot) first;
             ConstantSlot secondConst = (ConstantSlot) second;
 
-            return realQualHierarchy.isSubtype(firstConst.getValue(), secondConst.getValue())
-                    || realQualHierarchy.isSubtype(secondConst.getValue(), firstConst.getValue())
+            return realQualHierarchy.isSubtypeQualifiersOnly(firstConst.getValue(), secondConst.getValue())
+                    || realQualHierarchy.isSubtypeQualifiersOnly(secondConst.getValue(), firstConst.getValue())
                             ? AlwaysTrueConstraint.create()
                             : AlwaysFalseConstraint.create();
         }

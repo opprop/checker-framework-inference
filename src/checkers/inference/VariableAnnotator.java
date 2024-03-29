@@ -80,6 +80,7 @@ import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.ASTPathUtil;
 import checkers.inference.util.CopyUtil;
 import checkers.inference.util.InferenceUtil;
+import org.checkerframework.org.plumelib.util.IPair;
 
 
 /**
@@ -108,12 +109,12 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      * annotation mirror for a tree is calculated (i.e least upper bound for
      * binary tree), and the calculated result is cached in the set.
      **/
-    protected final Map<Tree, Pair<Slot, Set<? extends AnnotationMirror>>> treeToVarAnnoPair;
+    protected final Map<Tree, IPair<Slot, Set<? extends AnnotationMirror>>> treeToVarAnnoPair;
 
     /** Store elements that have already been annotated **/
     private final Map<Element, AnnotatedTypeMirror> elementToAtm;
 
-    private final Map<Pair<Integer,Integer>, ExistentialVariableSlot> idsToExistentialSlots;
+    private final Map<IPair<Integer,Integer>, ExistentialVariableSlot> idsToExistentialSlots;
 
     private final AnnotatedTypeFactory realTypeFactory;
     private final InferrableChecker realChecker;
@@ -238,7 +239,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
 //            }
 //        }
 
-        final Pair<Slot, Set<? extends AnnotationMirror>> varATMPair = Pair
+        final IPair<Slot, Set<? extends AnnotationMirror>> varATMPair = IPair
                 .<Slot, Set<? extends AnnotationMirror>> of(varSlot,
                         new AnnotationMirrorSet());
         treeToVarAnnoPair.put(tree, varATMPair);
@@ -273,7 +274,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
 //        }
         Set<AnnotationMirror> annotations = new AnnotationMirrorSet();
         annotations.add(constantSlot.getValue());
-        final Pair<Slot, Set<? extends AnnotationMirror>> varATMPair = Pair
+        final IPair<Slot, Set<? extends AnnotationMirror>> varATMPair = IPair
                 .<Slot, Set<? extends AnnotationMirror>> of(constantSlot,
                         annotations);
         treeToVarAnnoPair.put(tree, varATMPair);
@@ -311,7 +312,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
      */
     ExistentialVariableSlot getOrCreateExistentialVariable(final Slot potentialVariable,
                                                            final Slot alternativeSlot) {
-        final Pair<Integer, Integer> idPair = Pair.of(potentialVariable.getId(), alternativeSlot.getId());
+        final IPair<Integer, Integer> idPair = IPair.of(potentialVariable.getId(), alternativeSlot.getId());
         ExistentialVariableSlot existentialVariable = idsToExistentialSlots.get(idPair);
 
         if (existentialVariable == null) {
@@ -436,7 +437,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             }
 
             potentialVariable = createVariable(typeTree);
-            final Pair<Slot, Set<? extends AnnotationMirror>> varATMPair = Pair
+            final IPair<Slot, Set<? extends AnnotationMirror>> varATMPair = IPair
                     .<Slot, Set<? extends AnnotationMirror>> of(
                     potentialVariable, typeVar.getAnnotations());
             treeToVarAnnoPair.put(typeTree, varATMPair);
@@ -517,7 +518,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
                 ((SourceVariableSlot) variable).setInsertable(false);
             }
 
-            final Pair<Slot, Set<? extends AnnotationMirror>> varATMPair = Pair
+            final IPair<Slot, Set<? extends AnnotationMirror>> varATMPair = IPair
                     .of(variable,
                     new AnnotationMirrorSet());
 
@@ -1542,12 +1543,12 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void,Tree> {
             AnnotatedTypeMirror a = inferenceTypeFactory.getAnnotatedType(binaryTree.getLeftOperand());
             AnnotatedTypeMirror b = inferenceTypeFactory.getAnnotatedType(binaryTree.getRightOperand());
             Set<? extends AnnotationMirror> lubs = inferenceTypeFactory
-                    .getQualifierHierarchy().leastUpperBounds(a.getEffectiveAnnotations(),
-                            b.getEffectiveAnnotations());
+                    .getQualifierHierarchy().leastUpperBoundsShallow(a.getEffectiveAnnotations(), a.getUnderlyingType(),
+                            b.getEffectiveAnnotations(), b.getUnderlyingType());
             atm.clearAnnotations();
             atm.addAnnotations(lubs);
             if (slotManager.getSlot(atm) instanceof VariableSlot) {
-                final Pair<Slot, Set<? extends AnnotationMirror>> varATMPair = Pair.<Slot, Set<? extends AnnotationMirror>>of(
+                final IPair<Slot, Set<? extends AnnotationMirror>> varATMPair = IPair.<Slot, Set<? extends AnnotationMirror>>of(
                         slotManager.getSlot(atm), lubs);
                 treeToVarAnnoPair.put(binaryTree, varATMPair);
             } else {

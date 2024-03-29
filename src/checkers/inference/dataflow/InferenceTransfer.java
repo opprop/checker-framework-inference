@@ -35,6 +35,7 @@ import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.util.InferenceUtil;
+import org.checkerframework.org.plumelib.util.IPair;
 
 /**
  *
@@ -58,7 +59,7 @@ public class InferenceTransfer extends CFTransfer {
 
     // Type variables will have two refinement variables (one for each bound).  This covers the
     // case where the correct, inferred RHS has no primary annotation
-    private final Map<Tree, Pair<RefinementVariableSlot, RefinementVariableSlot>> createdTypeVarRefinementVariables = new HashMap<>();
+    private final Map<Tree, IPair<RefinementVariableSlot, RefinementVariableSlot>> createdTypeVarRefinementVariables = new HashMap<>();
 
     private final InferenceAnnotatedTypeFactory typeFactory;
 
@@ -320,7 +321,7 @@ public class InferenceTransfer extends CFTransfer {
         final RefinementVariableSlot upperBoundRefVar;
         final RefinementVariableSlot lowerBoundRefVar;
         if (createdTypeVarRefinementVariables.containsKey(assignmentTree)) {
-            Pair<RefinementVariableSlot, RefinementVariableSlot> ubToLb = createdTypeVarRefinementVariables.get(assignmentTree);
+            IPair<RefinementVariableSlot, RefinementVariableSlot> ubToLb = createdTypeVarRefinementVariables.get(assignmentTree);
             upperBoundRefVar = ubToLb.first;
             lowerBoundRefVar = ubToLb.second;
 
@@ -337,7 +338,7 @@ public class InferenceTransfer extends CFTransfer {
             upperBoundSlot.getRefinedToSlots().add(upperBoundRefVar);
             lowerBoundSlot.getRefinedToSlots().add(lowerBoundRefVar);
 
-            createdTypeVarRefinementVariables.put(assignmentTree, Pair.of(upperBoundRefVar, lowerBoundRefVar));
+            createdTypeVarRefinementVariables.put(assignmentTree, IPair.of(upperBoundRefVar, lowerBoundRefVar));
         }
 
         upperBoundType.replaceAnnotation(slotManager.getAnnotation(upperBoundRefVar));

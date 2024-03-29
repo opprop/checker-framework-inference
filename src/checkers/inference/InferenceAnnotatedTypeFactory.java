@@ -228,7 +228,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     protected QualifierHierarchy createQualifierHierarchy() {
-        return new InferenceQualifierHierarchy(getSupportedTypeQualifiers(), elements);
+        return new InferenceQualifierHierarchy(getSupportedTypeQualifiers(), elements, realTypeFactory);
     }
 
     @Override
@@ -352,7 +352,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         // Adapt parameters, which makes parameters and arguments be the same size for later
         // checking.
         List<AnnotatedTypeMirror> parameters =
-                AnnotatedTypes.adaptParameters(this, method, methodInvocationTree.getArguments());
+                AnnotatedTypes.adaptParameters(this, method, methodInvocationTree.getArguments(), null);
         method.setParameterTypes(parameters);
 
         inferencePoly.replacePolys(methodInvocationTree, method);

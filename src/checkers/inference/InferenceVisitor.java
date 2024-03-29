@@ -489,13 +489,13 @@ public class InferenceVisitor<Checker extends InferenceChecker,
      * @param extraArgs arguments to the error message key, before "found" and "expected" types
      */
     @Override
-    protected void commonAssignmentCheck(
+    protected boolean commonAssignmentCheck(
             Tree varTree,
             ExpressionTree valueExp,
             @CompilerMessageKey String errorKey,
             Object... extraArgs) {
         if (!validateTypeOf(varTree)) {
-            return;
+            return true;
         }
 
         AnnotatedTypeMirror var;
@@ -516,11 +516,11 @@ public class InferenceVisitor<Checker extends InferenceChecker,
 
         assert var != null : "no variable found for tree: " + varTree;
 
-        commonAssignmentCheck(var, valueExp, errorKey, extraArgs);
+        return commonAssignmentCheck(var, valueExp, errorKey, extraArgs);
     }
 
     @Override
-    protected void commonAssignmentCheck(
+    protected boolean commonAssignmentCheck(
             AnnotatedTypeMirror varType,
             AnnotatedTypeMirror valueType,
             Tree valueTree,
@@ -583,7 +583,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                                     mono.getCanonicalName(),
                                     mono.getCanonicalName(),
                                     valueType.toString());
-                    return;
+                    return true;
                 }
             }
         }
@@ -606,6 +606,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                     errorKey,
                     ArraysPlume.concatenate(extraArgs, valueTypeString, varTypeString));
         }
+        return success;
         // ####### End Copied Code ########
     }
 
@@ -805,7 +806,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
 
                 if (exPar.getKind() != TypeKind.UNION) {
                     if (!atypeFactory.getQualifierHierarchy()
-                            .isSubtype(required, found)) {
+                            .isSubtypeQualifiersOnly(required, found)) {
                         checker.reportError(node.getParameter(), "exception.parameter.invalid",
                                 found, required);
                     }
@@ -814,7 +815,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                     for (AnnotatedTypeMirror alterntive : aut.getAlternatives()) {
                         AnnotationMirror foundAltern = alterntive
                                 .getAnnotationInHierarchy(required);
-                        if (!atypeFactory.getQualifierHierarchy().isSubtype(
+                        if (!atypeFactory.getQualifierHierarchy().isSubtypeQualifiersOnly(
                                 required, foundAltern)) {
                             checker.reportError(node.getParameter(), "exception.parameter.invalid", foundAltern,
                                     required);

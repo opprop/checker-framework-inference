@@ -68,7 +68,7 @@ public class InferenceValue extends CFValue {
 
         // Delegate the LUB computation to inferenceQualifierHierarchy, by passing
         // the two VarAnnos getting from slotManager.
-        final AnnotationMirror lub = qualifierHierarchy.leastUpperBound(anno1, anno2);
+        final AnnotationMirror lub = qualifierHierarchy.leastUpperBoundQualifiersOnly(anno1, anno2);
 
         return analysis.createAbstractValue(AnnotationMirrorSet.singleton(lub), getLubType(other, null));
     }

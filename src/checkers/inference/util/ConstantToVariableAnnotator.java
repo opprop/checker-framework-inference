@@ -43,7 +43,7 @@ public class ConstantToVariableAnnotator extends AnnotatedTypeScanner<Void, Void
      * @param type A type annotated in the "real qualifier hierarch"
      */
     protected void addVariablePrimaryAnnotation(final AnnotatedTypeMirror type) {
-        if (type.isAnnotatedInHierarchy(varAnnot)) {
+        if (type.hasAnnotationInHierarchy(varAnnot)) {
             return;
         }
 

@@ -17,9 +17,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedUnionTyp
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.util.AnnotatedTypes;
-import org.checkerframework.javacutil.AnnotationBuilder;
-import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.*;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -52,7 +50,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
 
-import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.ArraysPlume;
 
 
@@ -872,7 +869,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         Map<TypeUseLocation, Set<AnnotationMirror>> locationToIllegalQuals = new HashMap<>();
         // First, init each type-use location to contain all type qualifiers.
         Set<Class<? extends Annotation>> supportQualifiers = atypeFactory.getSupportedTypeQualifiers();
-        Set<AnnotationMirror> supportedAnnos = AnnotationUtils.createAnnotationSet();
+        Set<AnnotationMirror> supportedAnnos = new AnnotationMirrorSet();
         for (Class<? extends Annotation> qual: supportQualifiers) {
             supportedAnnos.add(new AnnotationBuilder(atypeFactory.getProcessingEnv(), qual).build());
         }
@@ -915,7 +912,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
             return;
         }
 
-        if (ignoreTargetLocation) {
+        if (ignoreTargetLocations) {
             return;
         }
         Element element = TreeUtils.elementFromTree(tree);
@@ -961,7 +958,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         if (!this.infer) {
             super.validateTargetLocation(tree, type, required);
         } else {
-            if (ignoreTargetLocation) {
+            if (ignoreTargetLocations) {
                 return;
             }
             mainIsNoneOf(type, locationToIllegalQuals.get(required).toArray(new AnnotationMirror[0]),

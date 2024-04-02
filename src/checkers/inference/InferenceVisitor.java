@@ -1,7 +1,5 @@
 package checkers.inference;
 
-import com.sun.source.tree.ClassTree;
-import com.sun.source.util.TreePath;
 import org.checkerframework.checker.compilermsgs.qual.CompilerMessageKey;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeVisitor;
@@ -22,11 +20,13 @@ import org.checkerframework.javacutil.BugInCF;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
@@ -40,11 +40,14 @@ import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.InferenceUtil;
 
 import com.sun.source.tree.CatchTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ExpressionTree;
+import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ThrowTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.VariableTree;
+import com.sun.source.util.TreePath;
 
 import org.plumelib.util.ArraysPlume;
 
@@ -848,4 +851,38 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         }
     }
 
+    @Override
+    public boolean validateTypeOf(Tree tree) {
+        boolean res = true;
+        if (infer && tree.getKind() == Kind.METHOD) {
+            // Validate implicit receiver parameters separately, while explicit receivers are validated
+            // in the super.validateTypeOf()
+            AnnotatedExecutableType methodType = (AnnotatedExecutableType) atypeFactory.getAnnotatedType(tree);
+            AnnotatedDeclaredType type = methodType.getReceiverType();
+            if (type != null && ((MethodTree) tree).getReceiverParameter() == null) {
+                res = validateType(tree, type);
+
+                // receiver type arguments are bounded by the declaration upper/lower bounds
+                List<AnnotatedTypeMirror> typeArgs = type.getTypeArguments();
+                Element declarationEle = type.getUnderlyingType().asElement();
+                AnnotatedDeclaredType declaration =
+                        (AnnotatedDeclaredType) atypeFactory.getAnnotatedType(declarationEle);
+                List<AnnotatedTypeMirror> declarationTypeVars = declaration.getTypeArguments();
+
+                assert typeArgs.size() == declarationTypeVars.size();
+
+                final Iterator<AnnotatedTypeMirror> declTypeVarIterator = declarationTypeVars.iterator();
+                final Iterator<AnnotatedTypeMirror> typeArgIterator = typeArgs.iterator();
+                while (declTypeVarIterator.hasNext()) {
+                    AnnotatedTypeMirror declTypeVar = declTypeVarIterator.next();
+                    AnnotatedTypeMirror typeArg = typeArgIterator.next();
+                    AnnotatedTypeMirror declUpperBound = ((AnnotatedTypeVariable) declTypeVar).getUpperBound();
+                    AnnotatedTypeMirror declLowerBound = ((AnnotatedTypeVariable) declTypeVar).getLowerBound();
+                    atypeFactory.getTypeHierarchy().isSubtype(declLowerBound, typeArg);
+                    atypeFactory.getTypeHierarchy().isSubtype(typeArg, declUpperBound);
+                }
+            }
+        }
+        return super.validateTypeOf(tree) && res;
+    }
 }

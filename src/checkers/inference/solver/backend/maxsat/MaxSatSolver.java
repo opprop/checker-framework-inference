@@ -14,7 +14,6 @@ import javax.lang.model.element.AnnotationMirror;
 
 import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.IPair;
-import org.plumelib.util.Pair;
 import org.sat4j.core.VecInt;
 import org.sat4j.maxsat.SolverFactory;
 import org.sat4j.maxsat.WeightedMaxSatDecorator;

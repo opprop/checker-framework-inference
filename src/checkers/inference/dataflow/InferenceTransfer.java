@@ -34,7 +34,7 @@ import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.util.InferenceUtil;
-import org.checkerframework.org.plumelib.util.IPair;
+import org.plumelib.util.IPair;
 
 /**
  *

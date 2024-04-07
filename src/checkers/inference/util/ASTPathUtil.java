@@ -26,7 +26,7 @@ import com.sun.source.util.TreePath;
 import org.checkerframework.afu.scenelib.io.ASTIndex;
 import org.checkerframework.afu.scenelib.io.ASTPath;
 import org.checkerframework.afu.scenelib.io.ASTRecord;
-import org.checkerframework.org.plumelib.util.IPair;
+import org.plumelib.util.IPair;
 
 /**
  * ASTPathUtil is a collection of utilities to create ASTRecord for existing trees, as well

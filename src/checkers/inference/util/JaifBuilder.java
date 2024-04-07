@@ -22,7 +22,7 @@ import checkers.inference.model.AnnotationLocation.ClassDeclLocation;
 
 import com.sun.source.tree.Tree;
 
-import org.checkerframework.org.plumelib.util.IPair;
+import org.plumelib.util.IPair;
 
 /**
  * JaifBuilder creates Jaifs from a Map of ASTRecords to AnnotationMirrors.

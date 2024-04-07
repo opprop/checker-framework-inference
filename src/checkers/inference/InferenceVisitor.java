@@ -594,7 +594,8 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                                     mono.getCanonicalName(),
                                     mono.getCanonicalName(),
                                     valueType.toString());
-                    return true;
+                    // Assign success to false to report the error.
+                    success = false;
                 }
             }
         }

@@ -12,6 +12,8 @@ import javax.lang.model.element.AnnotationMirror;
 import checkers.inference.InferenceMain;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorMap;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 
 import checkers.inference.model.ConstantSlot;
@@ -66,10 +68,10 @@ public class LatticeBuilder {
     public final Collection<AnnotationMirror> allAnnotations;
 
     public LatticeBuilder() {
-        subType = AnnotationUtils .createAnnotationMap();
-        superType = AnnotationUtils.createAnnotationMap();
-        incomparableType = AnnotationUtils.createAnnotationMap();
-        allAnnotations = AnnotationUtils.createAnnotationSet();
+        subType = new AnnotationMirrorMap<>();
+        superType = new AnnotationMirrorMap<>();
+        incomparableType = new AnnotationMirrorMap<>();
+        allAnnotations = new AnnotationMirrorSet();
 
     }
 
@@ -82,7 +84,7 @@ public class LatticeBuilder {
     public Lattice buildLattice(QualifierHierarchy qualHierarchy, Collection<Slot> slots) {
         clear();
 
-        Set<AnnotationMirror> supportedAnnos = AnnotationUtils.createAnnotationSet();
+        Set<AnnotationMirror> supportedAnnos = new AnnotationMirrorSet();
         Set<Class<? extends Annotation>> annoClasses =
                 InferenceMain.getInstance().getRealTypeFactory().getSupportedTypeQualifiers();
         for (Class<? extends Annotation> ac: annoClasses) {
@@ -145,7 +147,7 @@ public class LatticeBuilder {
      */
     public TwoQualifiersLattice buildTwoTypeLattice(AnnotationMirror top, AnnotationMirror bottom) {
         clear();
-        Set<AnnotationMirror> tempSet = AnnotationUtils.createAnnotationSet();
+        Set<AnnotationMirror> tempSet = new AnnotationMirrorSet();
         tempSet.add(top);
         tempSet.add(bottom);
         allTypes = Collections.unmodifiableSet(tempSet);
@@ -154,8 +156,8 @@ public class LatticeBuilder {
         numTypes = 2;
 
         // Calculate subertypes map and supertypes map.
-        Set<AnnotationMirror> topSet = AnnotationUtils.createAnnotationSet();
-        Set<AnnotationMirror> bottomSet = AnnotationUtils.createAnnotationSet();
+        Set<AnnotationMirror> topSet = new AnnotationMirrorSet();
+        Set<AnnotationMirror> bottomSet = new AnnotationMirrorSet();
         topSet.add(top);
         bottomSet.add(bottom);
         subType.put(top, Collections.unmodifiableSet(allTypes));

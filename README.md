@@ -8,21 +8,6 @@ Given a program with no type annotations, Checker Framework Inference produces a
 
 By contrast, given a program with type annotations, the Checker Framework determines verifies the program's correctness or reveals errors in it.
 
-
-Developer Notes
-===============
-
-If you want to extend the framework for your own type system or add
-additional constraint solvers, please send us mail.
-
-The checker-framework-inference Google Drive folder contains
-additional documents for developers:
-
-https://drive.google.com/drive/u/1/folders/0B7vOZvme6aAOfjQ0bWlFU1VoeVZCVjExVmJLM0lGY3NBV0VLcENYdm03c0RCNGFzZURHX2c
-
-That information is being moved to here in the repository.
-
-
 Configure Eclipse to edit Checker Framework Inference
 ------------
 

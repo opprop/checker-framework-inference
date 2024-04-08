@@ -43,6 +43,7 @@ public class InferenceValidator extends BaseTypeValidator {
         if (inferVisitor.ignoreTargetLocations) {
             return;
         }
+
         AnnotationMirror[] mirrors = new AnnotationMirror[0];
         for (AnnotationMirror am : type.getSuperBound().getAnnotations()) {
             inferVisitor.annoIsNoneOf(type, am,

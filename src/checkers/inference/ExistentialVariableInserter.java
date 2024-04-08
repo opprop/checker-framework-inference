@@ -159,7 +159,7 @@ public class ExistentialVariableInserter {
         }
 
         @Override
-        protected String defaultErrorMessage(org.checkerframework.framework.type.AnnotatedTypeMirror type1, org.checkerframework.framework.type.AnnotatedTypeMirror type2, Void aVoid) {
+        public String defaultErrorMessage(org.checkerframework.framework.type.AnnotatedTypeMirror type1, org.checkerframework.framework.type.AnnotatedTypeMirror type2, Void aVoid) {
             return "Input types should have identical structures.  Input types are limited to those types" +
                     "that can appear in a type variable bound:\n"
                     +  "type1=" + type1 + "\n"

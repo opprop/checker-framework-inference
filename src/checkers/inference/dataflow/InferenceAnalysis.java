@@ -1,11 +1,7 @@
 package checkers.inference.dataflow;
 
-import java.util.List;
-import java.util.Set;
 import java.util.logging.Logger;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 
@@ -17,7 +13,6 @@ import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.Pair;
 
 import checkers.inference.InferenceChecker;
 import checkers.inference.InferrableChecker;

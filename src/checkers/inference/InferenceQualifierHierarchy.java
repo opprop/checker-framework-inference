@@ -9,6 +9,7 @@ import checkers.inference.util.InferenceUtil;
 import com.google.common.collect.ImmutableMap;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.framework.type.ElementQualifierHierarchy;
+import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.util.DefaultQualifierKindHierarchy;
 import org.checkerframework.framework.util.QualifierKind;
@@ -19,6 +20,7 @@ import org.checkerframework.javacutil.BugInCF;
 import org.plumelib.util.StringsPlume;
 
 import javax.lang.model.element.AnnotationMirror;
+import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import java.lang.annotation.Annotation;
 import java.util.Collection;
@@ -42,9 +44,10 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
 
     public InferenceQualifierHierarchy(
             Collection<Class<? extends Annotation>> qualifierClasses,
-            Elements elements
+            Elements elements,
+            GenericAnnotatedTypeFactory<?, ?, ?, ?> atypeFactory
     ) {
-        super(qualifierClasses, elements);
+        super(qualifierClasses, elements, atypeFactory);
 
         slotMgr = inferenceMain.getSlotManager();
         constraintMgr = inferenceMain.getConstraintManager();
@@ -137,8 +140,10 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
     }
 
     @Override
-    public boolean isSubtype(final Collection<? extends AnnotationMirror> rhsAnnos,
-                             final Collection<? extends AnnotationMirror> lhsAnnos ) {
+    public boolean isSubtypeShallow(final Collection<? extends AnnotationMirror> rhsAnnos,
+                             TypeMirror subType,
+                             final Collection<? extends AnnotationMirror> lhsAnnos,
+                             TypeMirror superType ) {
 
         final AnnotationMirror rhsVarAnnot = findVarAnnot(rhsAnnos);
         final AnnotationMirror lhsVarAnnot = findVarAnnot(lhsAnnos);
@@ -156,11 +161,11 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
               + "    rhs=" + StringsPlume.join(", ", rhsAnnos) + "\n"
               + "    lhs=" + StringsPlume.join(", ", lhsAnnos );
 
-        return isSubtype(rhsVarAnnot, lhsVarAnnot);
+        return isSubtypeQualifiers(rhsVarAnnot, lhsVarAnnot);
     }
 
     @Override
-    public boolean isSubtype(final AnnotationMirror subtype, final AnnotationMirror supertype) {
+    public boolean isSubtypeQualifiers(final AnnotationMirror subtype, final AnnotationMirror supertype) {
 
         // NOTE: subtype and supertype are nullable because, for example, in BaseTypeVisitor::checkConstructorInvocation,
         // findAnnotationInSameHierarchy may return null since @VarAnnot and some constant real qualifier
@@ -187,19 +192,21 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
     }
 
     @Override
-    public AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+    public AnnotationMirror greatestLowerBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
         return merge(a1, a2, false);
     }
 
     @Override
-    public Set<? extends AnnotationMirror> leastUpperBounds(
+    public Set<? extends AnnotationMirror> leastUpperBoundsShallow(
             Collection<? extends AnnotationMirror> annos1,
-            Collection<? extends AnnotationMirror> annos2) {
+            TypeMirror tm1,
+            Collection<? extends AnnotationMirror> annos2,
+            TypeMirror tm2) {
         if (InferenceMain.isHackMode(annos1.size() != annos2.size())) {
             Set<AnnotationMirror> result = new AnnotationMirrorSet();
             for (AnnotationMirror a1 : annos1) {
                 for (AnnotationMirror a2 : annos2) {
-                    AnnotationMirror lub = leastUpperBound(a1, a2);
+                    AnnotationMirror lub = leastUpperBoundQualifiersOnly(a1, a2);
                     if (lub != null) {
                         result.add(lub);
                     }
@@ -207,11 +214,11 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
             }
             return result;
         }
-        return super.leastUpperBounds(annos1, annos2);
+        return super.leastUpperBoundsShallow(annos1, tm1, annos2, tm2);
     }
 
     @Override
-    public AnnotationMirror leastUpperBound(final AnnotationMirror a1, final AnnotationMirror a2) {
+    public AnnotationMirror leastUpperBoundQualifiers(final AnnotationMirror a1, final AnnotationMirror a2) {
         return merge(a1, a2, true);
     }
 
@@ -239,9 +246,9 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
 
             if (!isA1VarAnnot && !isA2VarAnnot) {
                 if (isLub) {
-                    return realQualifierHierarchy.leastUpperBound(a1, a2);
+                    return realQualifierHierarchy.leastUpperBoundQualifiersOnly(a1, a2);
                 } else {
-                    return realQualifierHierarchy.greatestLowerBound(a1, a2);
+                    return realQualifierHierarchy.greatestLowerBoundQualifiersOnly(a1, a2);
                 }
             } else {
                 // two annotations are not under the same qualifier hierarchy
@@ -262,9 +269,9 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
 
                 AnnotationMirror mergedType;
                 if (isLub) {
-                    mergedType = realQualifierHierarchy.leastUpperBound(realAnno1, realAnno2);
+                    mergedType = realQualifierHierarchy.leastUpperBoundQualifiersOnly(realAnno1, realAnno2);
                 } else {
-                    mergedType = realQualifierHierarchy.greatestLowerBound(realAnno1, realAnno2);
+                    mergedType = realQualifierHierarchy.greatestLowerBoundQualifiersOnly(realAnno1, realAnno2);
                 }
 
                 Slot constantSlot = slotMgr.createConstantSlot(mergedType);

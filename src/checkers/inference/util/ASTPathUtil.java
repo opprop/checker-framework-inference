@@ -15,7 +15,6 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.Pair;
 
 import java.util.IdentityHashMap;
 import java.util.logging.Logger;
@@ -27,6 +26,7 @@ import com.sun.source.util.TreePath;
 import org.checkerframework.afu.scenelib.io.ASTIndex;
 import org.checkerframework.afu.scenelib.io.ASTPath;
 import org.checkerframework.afu.scenelib.io.ASTRecord;
+import org.plumelib.util.IPair;
 
 /**
  * ASTPathUtil is a collection of utilities to create ASTRecord for existing trees, as well
@@ -230,7 +230,7 @@ public class ASTPathUtil {
     /**
      * Converts fully qualified class name into a pair of Strings (packageName -> className)
      */
-    public static Pair<String, String> splitFullyQualifiedClass(String fullClassname) {
+    public static IPair<String, String> splitFullyQualifiedClass(String fullClassname) {
         String pkgName;
         String className;
         int lastPeriod = fullClassname.lastIndexOf(".");
@@ -243,6 +243,6 @@ public class ASTPathUtil {
             className = fullClassname.substring(lastPeriod + 1, fullClassname.length());
         }
 
-        return Pair.of(pkgName, className);
+        return IPair.of(pkgName, className);
     }
 }

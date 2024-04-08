@@ -50,7 +50,7 @@ public class InferenceTypeHierarchy extends DefaultTypeHierarchy {
     public StructuralEqualityComparer createEqualityComparer() {
         return new InferenceEqualityComparer(
                 this.areEqualVisitHistory,
-                InferenceQualifierHierarchy.findVarAnnot(qualifierHierarchy.getTopAnnotations()));
+                InferenceQualifierHierarchy.findVarAnnot(qualHierarchy.getTopAnnotations()));
     }
 
     private static class InferenceEqualityComparer extends StructuralEqualityComparer {

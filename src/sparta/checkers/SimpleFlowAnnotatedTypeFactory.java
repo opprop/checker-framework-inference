@@ -300,12 +300,12 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
                 Collection<Class<? extends Annotation>> qualifierClasses,
                 Elements elements
         ) {
-            super(qualifierClasses, elements);
+            super(qualifierClasses, elements, SimpleFlowAnnotatedTypeFactory.this);
         }
 
         @Override
-        public Set<? extends AnnotationMirror> getTopAnnotations() {
-            return Collections.singleton(checker instanceof IFlowSinkChecker ?
+        public AnnotationMirrorSet getTopAnnotations() {
+            return AnnotationMirrorSet.singleton(checker instanceof IFlowSinkChecker ?
                     NOSINK :
                     ANYSOURCE);
         }
@@ -320,8 +320,8 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
         }
 
         @Override
-        public Set<? extends AnnotationMirror> getBottomAnnotations() {
-            return Collections.singleton(checker instanceof IFlowSinkChecker ?
+        public AnnotationMirrorSet getBottomAnnotations() {
+            return AnnotationMirrorSet.singleton(checker instanceof IFlowSinkChecker ?
                     ANYSINK :
                     NOSOURCE);
         }
@@ -336,12 +336,12 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
         }
 
         @Override
-        public @Nullable AnnotationMirror leastUpperBound(AnnotationMirror a1, AnnotationMirror a2) {
+        public @Nullable AnnotationMirror leastUpperBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
             if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
                 return null;
-            } else if (isSubtype(a1, a2)) {
+            } else if (isSubtypeQualifiersOnly(a1, a2)) {
                 return a2;
-            } else if (isSubtype(a2, a1)) {
+            } else if (isSubtypeQualifiersOnly(a2, a1)) {
                 return a1;
             } else if (isSourceQualifier(a1)) {
                 // Since the two annotations are same by name, they are both source qualifier.
@@ -359,12 +359,12 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
         }
 
         @Override
-        public @Nullable AnnotationMirror greatestLowerBound(AnnotationMirror a1, AnnotationMirror a2) {
+        public @Nullable AnnotationMirror greatestLowerBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
             if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
                 return null;
-            } else if (isSubtype(a1, a2)) {
+            } else if (isSubtypeQualifiersOnly(a1, a2)) {
                 return a1;
-            } else if (isSubtype(a2, a1)) {
+            } else if (isSubtypeQualifiersOnly(a2, a1)) {
                 return a2;
             } else if (isSourceQualifier(a1)) {
                 // Since the two annotations are same by name, they are both source qualifier.
@@ -382,7 +382,7 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror subtype, AnnotationMirror supertype) {
+        public boolean isSubtypeQualifiers(AnnotationMirror subtype, AnnotationMirror supertype) {
             if (isPolySourceQualifier(supertype) && isPolySourceQualifier(subtype)) {
                 return true;
             } else if (isPolySourceQualifier(supertype) && isSourceQualifier(subtype)) {

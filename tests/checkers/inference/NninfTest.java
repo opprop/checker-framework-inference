@@ -3,7 +3,7 @@ package checkers.inference;
 import checkers.inference.solver.MaxSat2TypeSolver;
 import checkers.inference.test.CFInferenceTest;
 import org.checkerframework.framework.test.TestUtilities;
-import org.checkerframework.javacutil.Pair;
+import org.plumelib.util.IPair;
 import org.junit.runners.Parameterized.Parameters;
 
 import java.io.File;
@@ -18,8 +18,8 @@ public class NninfTest extends CFInferenceTest {
     }
 
     @Override
-    public Pair<String, List<String>> getSolverNameAndOptions() {
-        return Pair.of(MaxSat2TypeSolver.class.getCanonicalName(), new ArrayList<>());
+    public IPair<String, List<String>> getSolverNameAndOptions() {
+        return IPair.of(MaxSat2TypeSolver.class.getCanonicalName(), new ArrayList<>());
     }
 
     @Parameters

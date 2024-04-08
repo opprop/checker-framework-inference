@@ -41,12 +41,15 @@ public class InferenceValidator extends BaseTypeValidator {
     protected void validateWildCardTargetLocation(AnnotatedTypeMirror.AnnotatedWildcardType type, Tree tree) {
 
         InferenceVisitor<?,?> inferVisitor = (InferenceVisitor<?,?>) visitor;
-        if (inferVisitor.getIgnoreTargetLocation()) return;
+        if (inferVisitor.ignoreTargetLocations) {
+            return;
+        }
 
         AnnotationMirror[] mirrors = new AnnotationMirror[0];
         for (AnnotationMirror am : type.getSuperBound().getAnnotations()) {
             inferVisitor.annoIsNoneOf(type, am,
                     inferVisitor.targetLocationToAnno.get(TypeUseLocation.LOWER_BOUND).toArray(mirrors),
+                    inferVisitor.locationToIllegalQuals.get(TypeUseLocation.LOWER_BOUND).toArray(mirrors),
                     "type.invalid.annotations.on.location", tree);
         }
 

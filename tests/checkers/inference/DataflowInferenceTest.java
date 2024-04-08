@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.checkerframework.framework.test.TestUtilities;
-import org.checkerframework.javacutil.Pair;
+import org.plumelib.util.IPair;
 import org.junit.runners.Parameterized.Parameters;
 
 import checkers.inference.test.CFInferenceTest;
@@ -19,8 +19,8 @@ public class DataflowInferenceTest extends CFInferenceTest {
     }
 
     @Override
-    public Pair<String, List<String>> getSolverNameAndOptions() {
-        return Pair.<String, List<String>> of(DataflowSolverEngine.class.getCanonicalName(),
+    public IPair<String, List<String>> getSolverNameAndOptions() {
+        return IPair.<String, List<String>> of(DataflowSolverEngine.class.getCanonicalName(),
                 new ArrayList<String>());
     }
 

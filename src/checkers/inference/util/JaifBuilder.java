@@ -22,7 +22,7 @@ import checkers.inference.model.AnnotationLocation.ClassDeclLocation;
 
 import com.sun.source.tree.Tree;
 
-import org.checkerframework.javacutil.Pair;
+import org.plumelib.util.IPair;
 
 /**
  * JaifBuilder creates Jaifs from a Map of ASTRecords to AnnotationMirrors.
@@ -416,7 +416,7 @@ public class JaifBuilder {
     private ClassEntry getClassEntry(String fullyQualified) {
         ClassEntry classEntry = this.classesMap.get(fullyQualified);
         if (classEntry == null) {
-            Pair<String, String> packageToClass = ASTPathUtil.splitFullyQualifiedClass(fullyQualified);
+            IPair<String, String> packageToClass = ASTPathUtil.splitFullyQualifiedClass(fullyQualified);
             classEntry = new ClassEntry(packageToClass.first, packageToClass.second);
             this.classesMap.put(fullyQualified, classEntry);
         }

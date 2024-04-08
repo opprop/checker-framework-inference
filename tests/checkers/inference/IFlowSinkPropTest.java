@@ -2,7 +2,7 @@ package checkers.inference;
 
 import checkers.inference.test.CFInferenceTest;
 import org.checkerframework.framework.test.TestUtilities;
-import org.checkerframework.org.plumelib.util.IPair;
+import org.plumelib.util.IPair;
 import org.junit.runners.Parameterized.Parameters;
 import sparta.checkers.IFlowSinkChecker;
 import sparta.checkers.propagation.IFlowSinkSolver;

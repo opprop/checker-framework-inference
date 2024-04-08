@@ -78,8 +78,7 @@ import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.ASTPathUtil;
 import checkers.inference.util.CopyUtil;
 import checkers.inference.util.InferenceUtil;
-import org.checkerframework.org.plumelib.util.IPair;
-
+import org.plumelib.util.IPair;
 
 /**
  *  VariableAnnotator takes a type and the tree that the type represents.  It determines what locations on the tree

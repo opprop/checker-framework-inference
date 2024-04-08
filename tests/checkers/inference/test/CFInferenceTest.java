@@ -10,8 +10,8 @@ import java.util.List;
 
 import javax.annotation.processing.AbstractProcessor;
 
-import org.checkerframework.org.plumelib.util.IPair;
-import org.checkerframework.org.plumelib.util.SystemPlume;
+import org.plumelib.util.IPair;
+import org.plumelib.util.SystemPlume;
 import org.junit.Test;
 
 public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {

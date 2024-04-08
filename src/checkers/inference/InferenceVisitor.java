@@ -594,7 +594,8 @@ public class InferenceVisitor<Checker extends InferenceChecker,
                                     mono.getCanonicalName(),
                                     mono.getCanonicalName(),
                                     valueType.toString());
-                    return true;
+                    // Assign success to false to report the error.
+                    success = false;
                 }
             }
         }
@@ -861,9 +862,9 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     }
 
     /**
-     * This method creates a mapping from type-use locations a lists of qualifiers.
+     * This method creates a mapping from type-use locations to a set of qualifiers which cannot be applied to that location.
      *
-     * @return A mapping from type-use location to list of qualifiers which cannot be applied to that location.
+     * @return a mapping from type-use locations to a set of qualifiers which cannot be applied to that location
      */
     protected Map<TypeUseLocation, Set<AnnotationMirror>> createMapForIllegalQuals() {
         Map<TypeUseLocation, Set<AnnotationMirror>> locationToIllegalQuals = new HashMap<>();

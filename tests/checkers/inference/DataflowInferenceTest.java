@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.checkerframework.framework.test.TestUtilities;
-import org.checkerframework.org.plumelib.util.IPair;
+import org.plumelib.util.IPair;
 import org.junit.runners.Parameterized.Parameters;
 
 import checkers.inference.test.CFInferenceTest;

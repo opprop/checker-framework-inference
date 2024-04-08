@@ -34,7 +34,6 @@ libDir="$cfiDir"/lib
 CFBuild="${cfDir}"/dataflow/"${classes}":"${cfDir}"/javacutil/"${classes}":"${cfDir}"/framework/"${classes}":"${cfDir}"/framework/"${resources}"
 CFBuild="${CFBuild}":"${cfDir}"/checker/"${classes}":"${cfDir}"/checker/"${resources}":"${annoToolsDir}"/scene-lib/bin
 
-#CFDepJars="${stubparserDir}"/javaparser-core/target/stubparser-3.25.5.jar:"${afuDir}"/annotation-file-utilities-all.jar
 CFDepJars="${afuDir}"/annotation-file-utilities-all.jar
 
 # sanity check: ensure each jar in CFDepJars actually exists in the file system

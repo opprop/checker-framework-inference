@@ -3,7 +3,7 @@ package checkers.inference;
 import checkers.inference.solver.MaxSat2TypeSolver;
 import checkers.inference.test.CFInferenceTest;
 import org.checkerframework.framework.test.TestUtilities;
-import org.checkerframework.org.plumelib.util.IPair;
+import org.plumelib.util.IPair;
 import org.junit.runners.Parameterized.Parameters;
 
 import java.io.File;

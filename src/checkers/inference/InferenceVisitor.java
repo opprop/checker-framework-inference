@@ -84,7 +84,7 @@ public class InferenceVisitor<Checker extends InferenceChecker,
     protected final boolean infer;
 
     protected final Checker realChecker;
-
+     /*
      * Map from type-use location to a list of qualifiers which cannot be used on that location.
      * This is used to create the inequality constraint in inference.
      */
@@ -905,16 +905,16 @@ public class InferenceVisitor<Checker extends InferenceChecker,
      *
      * @return a mapping from type-use locations to a set of qualifiers which cannot be applied to that location
      */
-    protected Map<TypeUseLocation, Set<AnnotationMirror>> createMapForIllegalQuals() {
-        Map<TypeUseLocation, Set<AnnotationMirror>> locationToIllegalQuals = new HashMap<>();
+    protected Map<TypeUseLocation, AnnotationMirrorSet> createMapForIllegalQuals() {
+        Map<TypeUseLocation, AnnotationMirrorSet> locationToIllegalQuals = new HashMap<>();
         // First, init each type-use location to contain all type qualifiers.
         Set<Class<? extends Annotation>> supportQualifiers = atypeFactory.getSupportedTypeQualifiers();
-        Set<AnnotationMirror> supportedAnnos = new AnnotationMirrorSet();
+        AnnotationMirrorSet supportedAnnos = new AnnotationMirrorSet();
         for (Class<? extends Annotation> qual: supportQualifiers) {
             supportedAnnos.add(new AnnotationBuilder(atypeFactory.getProcessingEnv(), qual).build());
         }
         for (TypeUseLocation location : TypeUseLocation.values()) {
-            locationToIllegalQuals.put(location, new HashSet<>(supportedAnnos));
+            locationToIllegalQuals.put(location, new AnnotationMirrorSet(supportedAnnos));
         }
         // Then, delete some qualifiers which can be applied to that type-use location.
         // this leaves only qualifiers not allowed on that location.
@@ -998,10 +998,10 @@ public class InferenceVisitor<Checker extends InferenceChecker,
         if (!this.infer) {
             super.validateTargetLocation(tree, type, required);
         } else {
-            if (ignoreTargetLocation) {
+            if (ignoreTargetLocations) {
                 return;
             }
-            mainIsNoneOf(type, targetLocationToAnno.get(required).toArray(new AnnotationMirror[0]),
+            mainIsNoneOf(type, locationToIllegalQuals.get(required).toArray(new AnnotationMirror[0]),
                     "type.invalid.annotations.on.location", tree);
         }
     }

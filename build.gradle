@@ -62,6 +62,13 @@ dependencies {
     implementation files("${checkerJar}")
     implementation group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
 
+    if (isJava8) {
+        implementation 'io.jenetics:jenetics:5.2.0'
+    }
+    else {
+        implementation 'io.jenetics:jenetics:6.3.0'
+    }
+
     implementation 'org.plumelib:options:1.0.5'
     implementation 'org.plumelib:plume-util:1.8.1'
 

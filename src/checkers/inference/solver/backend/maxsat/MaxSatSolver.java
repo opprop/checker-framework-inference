@@ -1,6 +1,7 @@
 package checkers.inference.solver.backend.maxsat;
 
 import java.io.File;
+import java.math.BigInteger;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -20,6 +21,7 @@ import org.sat4j.maxsat.WeightedMaxSatDecorator;
 import org.sat4j.pb.IPBSolver;
 import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.IConstr;
+import org.sat4j.specs.TimeoutException;
 import org.sat4j.tools.xplain.DeletionStrategy;
 import org.sat4j.tools.xplain.Xplain;
 
@@ -58,14 +60,16 @@ public class MaxSatSolver extends Solver<MaxSatFormatTranslator> {
     private MaxSATUnsatisfiableConstraintExplainer unsatisfiableConstraintExplainer;
     protected final File CNFData = new File(new File("").getAbsolutePath() + "/cnfData");
     protected StringBuilder CNFInput = new StringBuilder();
+    protected StringBuilder WCNFInput = new StringBuilder();
 
+    private int sumSoftConstraintWeights = 0;
     private long serializationStart;
     private long serializationEnd;
     protected long solvingStart;
     protected long solvingEnd;
 
     public MaxSatSolver(SolverEnvironment solverEnvironment, Collection<Slot> slots,
-            Collection<Constraint> constraints, MaxSatFormatTranslator formatTranslator, Lattice lattice) {
+                        Collection<Constraint> constraints, MaxSatFormatTranslator formatTranslator, Lattice lattice) {
         super(solverEnvironment, slots, constraints, formatTranslator,
                 lattice);
         this.slotManager = InferenceMain.getInstance().getSlotManager();
@@ -85,12 +89,15 @@ public class MaxSatSolver extends Solver<MaxSatFormatTranslator> {
         this.serializationStart = System.currentTimeMillis();
         // Serialization step:
         encodeAllConstraints();
+        solver.setTopWeight(BigInteger.valueOf(sumSoftConstraintWeights + 1));
         encodeWellFormednessRestriction();
         this.serializationEnd = System.currentTimeMillis();
 
         if (shouldOutputCNF()) {
             buildCNFInput();
             writeCNFInput();
+            buildWCNFInput();
+            writeWCNFInput();
         }
         // printClauses();
         configureSatSolver(solver);
@@ -145,7 +152,9 @@ public class MaxSatSolver extends Solver<MaxSatFormatTranslator> {
             for (VecInt res : encoding) {
                 if (res != null && res.size() != 0) {
                     if (constraint instanceof PreferenceConstraint) {
-                        softClauses.add(IPair.of(res, ((PreferenceConstraint) constraint).getWeight()));
+                        int constraintWeight = ((PreferenceConstraint) constraint).getWeight();
+                        sumSoftConstraintWeights += constraintWeight;
+                        softClauses.add(IPair.of(res, constraintWeight).getWeight());
                     } else {
                         hardClauses.add(res);
                     }
@@ -251,19 +260,69 @@ public class MaxSatSolver extends Solver<MaxSatFormatTranslator> {
 
     private void buildCNFInputHelper(VecInt clause) {
         int[] literals = clause.toArray();
-        for (int i = 0; i < literals.length; i++) {
-            CNFInput.append(literals[i]);
+        for (int literal : literals) {
+            CNFInput.append(literal);
             CNFInput.append(" ");
         }
         CNFInput.append("0\n");
     }
 
     protected void writeCNFInput() {
-        writeCNFInput("cnfdata.txt");
+        writeCNFInput("cnfdata.cnf");
     }
 
     protected void writeCNFInput(String file) {
+        CNFInput.setLength(CNFInput.length() - 1); // to prevent unwanted character at the end of file
         FileUtils.writeFile(new File(CNFData.getAbsolutePath() + "/" + file), CNFInput.toString());
+    }
+
+    /**
+     * Write WCNF clauses into a string.
+     */
+    protected void buildWCNFInput() {
+
+        final int totalClauses = softClauses.size() + hardClauses.size() + wellFormednessClauses.size();
+        final int totalVars = slotManager.getNumberOfSlots() * lattice.numTypes;
+        final int topWeight = sumSoftConstraintWeights + 1;
+
+        WCNFInput.append("c This is the WCNF input\n");
+        WCNFInput.append("p wcnf ");
+        WCNFInput.append(totalVars);
+        WCNFInput.append(" ");
+        WCNFInput.append(totalClauses);
+        WCNFInput.append(" ");
+        WCNFInput.append(topWeight);
+        WCNFInput.append("\n");
+
+        for (VecInt hardClause : hardClauses) {
+            buildWCNFInputHelper(hardClause, topWeight);
+        }
+        for (VecInt wellFormedNessClause: wellFormednessClauses) {
+            buildWCNFInputHelper(wellFormedNessClause, topWeight);
+        }
+        for (Pair<VecInt, Integer> softclause : softClauses) {
+            buildWCNFInputHelper(softclause.a, softclause.b);
+        }
+    }
+
+    private void buildWCNFInputHelper(VecInt clause, int weight) {
+        int[] literals = clause.toArray();
+        WCNFInput.append(weight);
+        WCNFInput.append(" ");
+        for (int literal : literals) {
+            WCNFInput.append(literal);
+            WCNFInput.append(" ");
+        }
+        WCNFInput.append("0\n");
+    }
+
+    protected void writeWCNFInput() {
+        writeWCNFInput("wcnfdata.wcnf");
+    }
+
+    protected void writeWCNFInput(String file) {
+        WCNFInput.setLength(WCNFInput.length() - 1); // to prevent unwanted character at the end of file
+        FileUtils.writeFile(new File(CNFData.getAbsolutePath() + "/" + file), WCNFInput.toString());
     }
 
     /**
@@ -370,7 +429,7 @@ public class MaxSatSolver extends Solver<MaxSatFormatTranslator> {
         }
 
         private void configureExplanationSolver(final List<VecInt> hardClauses, final List<VecInt> wellformedness,
-                final SlotManager slotManager, final Lattice lattice, final Xplain<IPBSolver> explainer) {
+                                                final SlotManager slotManager, final Lattice lattice, final Xplain<IPBSolver> explainer) {
             int numberOfNewVars = slotManager.getNumberOfSlots() * lattice.numTypes;
             System.out.println("Number of variables: " + numberOfNewVars);
             int numberOfClauses = hardClauses.size() + wellformedness.size();

@@ -63,7 +63,7 @@ public class InferenceTypeHierarchy extends DefaultTypeHierarchy {
         }
 
         @Override
-        protected boolean arePrimeAnnosEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+        protected boolean arePrimaryAnnosEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
             final InferenceMain inferenceMain = InferenceMain.getInstance();
             final AnnotationMirror varAnnot1 = type1.getAnnotationInHierarchy(varAnnot);
             final AnnotationMirror varAnnot2 = type2.getAnnotationInHierarchy(varAnnot);

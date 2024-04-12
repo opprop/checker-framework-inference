@@ -126,7 +126,7 @@ public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
                 Collection<Class<? extends Annotation>> qualifierClasses,
                 Elements elements
         ) {
-            super(qualifierClasses, elements);
+            super(qualifierClasses, elements, DataflowAnnotatedTypeFactory.this);
             DATAFLOW_KIND = getQualifierKind(DATAFLOW);
         }
 

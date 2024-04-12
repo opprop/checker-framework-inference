@@ -2,7 +2,7 @@ package checkers.inference;
 
 import checkers.inference.test.CFInferenceTest;
 import org.checkerframework.framework.test.TestUtilities;
-import org.checkerframework.javacutil.Pair;
+import org.plumelib.util.IPair;
 import org.junit.runners.Parameterized.Parameters;
 import sparta.checkers.IFlowSourceChecker;
 import sparta.checkers.sat.SourceSolver;
@@ -19,8 +19,8 @@ public class IFlowSourceSatTest extends CFInferenceTest {
     }
 
     @Override
-    public Pair<String, List<String>> getSolverNameAndOptions() {
-        return Pair.<String, List<String>>of(SourceSolver.class.getCanonicalName(), new ArrayList<String>());
+    public IPair<String, List<String>> getSolverNameAndOptions() {
+        return IPair.<String, List<String>>of(SourceSolver.class.getCanonicalName(), new ArrayList<String>());
     }
 
     @Parameters

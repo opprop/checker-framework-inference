@@ -2,7 +2,7 @@ package checkers.inference;
 
 import checkers.inference.test.CFInferenceTest;
 import org.checkerframework.framework.test.TestUtilities;
-import org.checkerframework.javacutil.Pair;
+import org.plumelib.util.IPair;
 import org.junit.runners.Parameterized.Parameters;
 import sparta.checkers.IFlowSinkChecker;
 import sparta.checkers.propagation.IFlowSinkSolver;
@@ -19,8 +19,8 @@ public class IFlowSinkPropTest extends CFInferenceTest {
     }
 
     @Override
-    public Pair<String, List<String>> getSolverNameAndOptions() {
-        return Pair.<String, List<String>>of(IFlowSinkSolver.class.getCanonicalName(), new ArrayList<String>());
+    public IPair<String, List<String>> getSolverNameAndOptions() {
+        return IPair.<String, List<String>>of(IFlowSinkSolver.class.getCanonicalName(), new ArrayList<String>());
     }
 
     @Parameters

@@ -108,10 +108,10 @@ public class LatticeBuilder {
             Set<AnnotationMirror> subtypeOfi = new HashSet<AnnotationMirror>();
             Set<AnnotationMirror> supertypeOfi = new HashSet<AnnotationMirror>();
             for (AnnotationMirror j : allTypes) {
-                if (qualHierarchy.isSubtype(j, i)) {
+                if (qualHierarchy.isSubtypeQualifiersOnly(j, i)) {
                     subtypeOfi.add(j);
                 }
-                if (qualHierarchy.isSubtype(i, j)) {
+                if (qualHierarchy.isSubtypeQualifiersOnly(i, j)) {
                     supertypeOfi.add(j);
                 }
             }

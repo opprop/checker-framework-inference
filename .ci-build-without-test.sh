@@ -42,7 +42,7 @@ export PATH=$AFU/scripts:$JAVA_HOME/bin:$PATH
 /tmp/plume-scripts/git-clone-related opprop checker-framework ${CHECKERFRAMEWORK}
 
 # This also builds annotation-tools
-(cd $CHECKERFRAMEWORK && ./gradlew assemble)
+(cd $CHECKERFRAMEWORK && ./gradlew assembleForJavac)
 
 # Finally build checker-framework-inference
 ./gradlew dist && ./gradlew testLibJar

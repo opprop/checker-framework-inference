@@ -106,6 +106,8 @@ public class InferenceMain {
     // Eventually we will get rid of this.
     private boolean hackMode;
 
+    private boolean writeDefaultAnnotations;
+
     private ResultHandler resultHandler;
 
     public void setResultHandler(ResultHandler resultHandler) {
@@ -149,7 +151,7 @@ public class InferenceMain {
         solve();
         // solverResult = null covers case when debug solver is used, but in this case
         // shouldn't exit
-        if (solverResult != null && !solverResult.hasSolution()) {
+        if (solverResult != null && !solverResult.hasSolution() && !writeDefaultAnnotations) {
             logger.info("No solution, exiting...");
             System.exit(1);
         }
@@ -183,6 +185,10 @@ public class InferenceMain {
 
         if (InferenceOptions.hacks) {
             hackMode = true;
+        }
+
+        if (InferenceOptions.writeDefaultAnnotations) {
+            writeDefaultAnnotations = true;
         }
 
         if (InferenceOptions.javacOptions != null) {
@@ -248,7 +254,11 @@ public class InferenceMain {
                 }
             }
 
-            JaifBuilder builder = new JaifBuilder(values, annotationClasses, realChecker.isInsertMainModOfLocalVar());
+            boolean insertMainModOfLocalVar = realChecker.isInsertMainModOfLocalVar();
+            if (writeDefaultAnnotations) {
+                insertMainModOfLocalVar = true; // insert annotations of main modifier of local variables
+            }
+            JaifBuilder builder = new JaifBuilder(values, annotationClasses, insertMainModOfLocalVar);
             String jaif = builder.createJaif();
             writer.println(jaif);
 
@@ -294,12 +304,20 @@ public class InferenceMain {
         AnnotationMirror result = solverResult.getSolutionForVariable(slot.getId());
         if (result != null && slot instanceof SourceVariableSlot) {
             AnnotationMirror defaultAnnotation = ((SourceVariableSlot) slot).getDefaultAnnotation();
-
             if (defaultAnnotation != null && AnnotationUtils.areSame(defaultAnnotation, result)) {
                 // Don't need to write a solution that's equivalent to the default annotation.
                 result = null;
             }
         }
+
+        else if (writeDefaultAnnotations && slot instanceof SourceVariableSlot) {
+            AnnotationMirror defaultAnnotation = ((SourceVariableSlot) slot).getDefaultAnnotation();
+            System.out.println("For " + slot.getId() + "Result: " + result + " Default: " + defaultAnnotation);
+            if (defaultAnnotation != null) {
+                result = defaultAnnotation;
+            }
+        }
+
         return result;
     }
 

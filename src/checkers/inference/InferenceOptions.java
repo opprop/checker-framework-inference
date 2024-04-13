@@ -49,6 +49,9 @@ public class InferenceOptions {
     @Option("Should we log certain exceptions rather than crash")
     public static boolean hacks;
 
+    @Option("Should we annotate source code with default annotations")
+    public static boolean writeDefaultAnnotations;
+
     /**
      * The type system to use for checker, solver, and related command-line
      * options.  If you use this option, all required command-line

@@ -24,11 +24,6 @@ public class DataflowInferenceTest extends CFInferenceTest {
                 new ArrayList<String>());
     }
 
-    @Override
-    public boolean useHacks() {
-        return true;
-    }
-
     @Parameters
     public static List<File> getTestFiles(){
         List<File> testfiles = new ArrayList<>();//InferenceTestUtilities.findAllSystemTests();

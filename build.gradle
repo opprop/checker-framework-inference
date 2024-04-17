@@ -127,9 +127,8 @@ test {
     dependsOn('dist')
 
     systemProperties 'path.afu.scripts': "${afu}/scripts",
-            'use.hacks': true
-
-    systemProperties += [JDK_JAR: "${checkerFrameworkPath}/checker/dist/jdk8.jar"]
+            'path.inference.script': "${projectDir}/scripts/inference",
+            JDK_JAR: "${checkerFrameworkPath}/checker/dist/jdk8.jar"
 
     if (project.hasProperty('emit.test.debug')) {
         systemProperties += ["emit.test.debug": 'true']
@@ -282,7 +281,6 @@ task testCheckerInferenceDevScript(type: Exec, dependsOn: [dist, dependenciesJar
     args = ['--mode', 'INFER',
             '--checker', 'interning.InterningChecker',
             '--solver', 'checkers.inference.solver.MaxSat2TypeSolver',
-            '--hacks=true',
             'testdata/interning/MapAssignment.java']
 }
 
@@ -307,20 +305,6 @@ afterEvaluate {
 
     // Configure Tests
     tasks.withType(Test) {
-        dependsOn(shadowJar)
-
-        systemProperties 'path.afu.scripts': "${afu}/scripts",
-                'path.inference.script': "${projectDir}/scripts/inference",
-                'use.hacks': true,
-                JDK_JAR: "${checkerFrameworkPath}/checker/dist/jdk8.jar"
-
-        if (project.hasProperty('emit.test.debug')) {
-            systemProperties += ["emit.test.debug": 'true']
-        }
-
-        if (isJava8) {
-            jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}"]
-        }
 
         testLogging {
             // Always run the tests

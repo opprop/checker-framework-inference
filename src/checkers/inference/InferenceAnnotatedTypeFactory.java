@@ -607,4 +607,3 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     }
 
 }
-

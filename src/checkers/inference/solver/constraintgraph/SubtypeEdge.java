@@ -4,9 +4,8 @@ import checkers.inference.model.SubtypeConstraint;
 
 /**
  * SubtypeEdge is for subtype constraint. It can be treated as directed edge.
- * 
- * @author jianchu
  *
+ * @author jianchu
  */
 public class SubtypeEdge extends Edge {
 

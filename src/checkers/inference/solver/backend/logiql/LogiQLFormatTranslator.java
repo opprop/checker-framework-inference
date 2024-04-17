@@ -12,7 +12,6 @@ import checkers.inference.solver.frontend.Lattice;
  * LogiQLFormatTranslator converts constraint into string as logiQL data.
  *
  * @author jianchu
- *
  */
 public class LogiQLFormatTranslator extends AbstractFormatTranslator<String, String, String> {
 
@@ -27,10 +26,10 @@ public class LogiQLFormatTranslator extends AbstractFormatTranslator<String, Str
     }
 
     @Override
-    public AnnotationMirror decodeSolution(String solution, ProcessingEnvironment processingEnvironment) {
+    public AnnotationMirror decodeSolution(
+            String solution, ProcessingEnvironment processingEnvironment) {
         // TODO Refactor LogiQL backend to follow the design protocal.
         // https://github.com/opprop/checker-framework-inference/issues/108
         return null;
     }
-
 }

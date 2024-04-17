@@ -1,21 +1,25 @@
 package checkers.inference.solver.backend.maxsat.encoder;
 
+import org.sat4j.core.VecInt;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+import javax.lang.model.element.AnnotationMirror;
+
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.solver.backend.encoder.binary.ComparableConstraintEncoder;
 import checkers.inference.solver.backend.maxsat.MathUtils;
 import checkers.inference.solver.backend.maxsat.VectorUtils;
 import checkers.inference.solver.frontend.Lattice;
-import org.sat4j.core.VecInt;
 
-import javax.lang.model.element.AnnotationMirror;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+public class MaxSATComparableConstraintEncoder extends MaxSATAbstractConstraintEncoder
+        implements ComparableConstraintEncoder<VecInt[]> {
 
-public class MaxSATComparableConstraintEncoder extends MaxSATAbstractConstraintEncoder implements ComparableConstraintEncoder<VecInt[]> {
-
-    public MaxSATComparableConstraintEncoder(Lattice lattice, Map<AnnotationMirror, Integer> typeToInt) {
+    public MaxSATComparableConstraintEncoder(
+            Lattice lattice, Map<AnnotationMirror, Integer> typeToInt) {
         super(lattice, typeToInt);
     }
 
@@ -26,11 +30,16 @@ public class MaxSATComparableConstraintEncoder extends MaxSATAbstractConstraintE
         for (AnnotationMirror type : lattice.allTypes) {
             if (lattice.incomparableType.keySet().contains(type)) {
                 for (AnnotationMirror notComparable : lattice.incomparableType.get(type)) {
-                    list.add(VectorUtils.asVec(
-                            -MathUtils.mapIdToMatrixEntry(fst.getId(), typeToInt.get(type), lattice),
-                            -MathUtils.mapIdToMatrixEntry(snd.getId(), typeToInt.get(notComparable), lattice),
-                            MathUtils.mapIdToMatrixEntry(snd.getId(), typeToInt.get(notComparable), lattice),
-                            MathUtils.mapIdToMatrixEntry(fst.getId(), typeToInt.get(type), lattice)));
+                    list.add(
+                            VectorUtils.asVec(
+                                    -MathUtils.mapIdToMatrixEntry(
+                                            fst.getId(), typeToInt.get(type), lattice),
+                                    -MathUtils.mapIdToMatrixEntry(
+                                            snd.getId(), typeToInt.get(notComparable), lattice),
+                                    MathUtils.mapIdToMatrixEntry(
+                                            snd.getId(), typeToInt.get(notComparable), lattice),
+                                    MathUtils.mapIdToMatrixEntry(
+                                            fst.getId(), typeToInt.get(type), lattice)));
                 }
             }
         }
@@ -45,8 +54,9 @@ public class MaxSATComparableConstraintEncoder extends MaxSATAbstractConstraintE
             for (AnnotationMirror incomparable : lattice.incomparableType.get(snd.getValue())) {
                 // Should not be equal to incomparable
                 resultList.add(
-                    VectorUtils.asVec(
-                        -MathUtils.mapIdToMatrixEntry(fst.getId(), typeToInt.get(incomparable), lattice)));
+                        VectorUtils.asVec(
+                                -MathUtils.mapIdToMatrixEntry(
+                                        fst.getId(), typeToInt.get(incomparable), lattice)));
             }
             VecInt[] resultArray = new VecInt[resultList.size()];
             return resultList.toArray(resultArray);

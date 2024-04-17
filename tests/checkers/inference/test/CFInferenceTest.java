@@ -3,16 +3,15 @@ package checkers.inference.test;
 import org.checkerframework.framework.test.CheckerFrameworkPerFileTest;
 import org.checkerframework.framework.test.TestUtilities;
 import org.checkerframework.javacutil.SystemUtil;
+import org.junit.Test;
+import org.plumelib.util.IPair;
+import org.plumelib.util.SystemPlume;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.processing.AbstractProcessor;
-
-import org.plumelib.util.IPair;
-import org.plumelib.util.SystemPlume;
-import org.junit.Test;
 
 public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
 
@@ -22,8 +21,11 @@ public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
         isAtMost7Jvm = SystemUtil.jreVersion <= 7;
     }
 
-    public CFInferenceTest(File testFile, Class<? extends AbstractProcessor> checker,
-                           String testDir, String... checkerOptions) {
+    public CFInferenceTest(
+            File testFile,
+            Class<? extends AbstractProcessor> checker,
+            String testDir,
+            String... checkerOptions) {
         super(testFile, checker, testDir, checkerOptions);
     }
 
@@ -53,9 +55,20 @@ public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
 
         final File testDataDir = new File("testdata");
 
-        InferenceTestConfiguration config = InferenceTestConfigurationBuilder.buildDefaultConfiguration(testDir,
-                testFile, testDataDir, checker, checkerOptions, getAdditionalInferenceOptions(), solverArgs.first,
-                solverArgs.second, useHacks(), shouldEmitDebugInfo, getPathToAfuScripts(), getPathToInferenceScript());
+        InferenceTestConfiguration config =
+                InferenceTestConfigurationBuilder.buildDefaultConfiguration(
+                        testDir,
+                        testFile,
+                        testDataDir,
+                        checker,
+                        checkerOptions,
+                        getAdditionalInferenceOptions(),
+                        solverArgs.first,
+                        solverArgs.second,
+                        useHacks(),
+                        shouldEmitDebugInfo,
+                        getPathToAfuScripts(),
+                        getPathToInferenceScript());
 
         InferenceTestResult testResult = new InferenceTestExecutor().runTest(config);
         InferenceTestUtilities.assertResultsAreValid(testResult);

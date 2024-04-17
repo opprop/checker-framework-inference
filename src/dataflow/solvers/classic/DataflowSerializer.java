@@ -1,15 +1,13 @@
 package dataflow.solvers.classic;
 
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.sat4j.core.VecInt;
 
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
-
-import org.sat4j.core.VecInt;
 
 import checkers.inference.InferenceMain;
 import checkers.inference.model.ConstantSlot;
@@ -56,8 +54,7 @@ public class DataflowSerializer extends CnfVecIntSerializer {
     }
 
     @Override
-    public List<VecInt> convertAll(Iterable<Constraint> constraints,
-            List<VecInt> results) {
+    public List<VecInt> convertAll(Iterable<Constraint> constraints, List<VecInt> results) {
         for (Constraint constraint : constraints) {
             for (VecInt res : constraint.serialize(this)) {
                 if (res.size() != 0) {

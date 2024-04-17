@@ -36,15 +36,24 @@ ext {
     // Keep in sync with checker-framework/build.gradle.
     // TODO: find a way to directly use that variable.
     compilerArgsForRunningCF = [
-            "--add-exports", "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
-            "--add-exports", "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
-            "--add-exports", "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
-            "--add-exports", "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
-            "--add-exports", "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
-            "--add-exports", "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
-            "--add-exports", "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
-            "--add-exports", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
-            "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED",
+        "--add-exports",
+        "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
+        "--add-opens",
+        "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
     ]
     if (isJava11plus) {
         apply plugin: 'com.diffplug.spotless'
@@ -161,7 +170,7 @@ test {
     dependsOn('dist')
 
     systemProperties 'path.afu.scripts': "${afu}/scripts",
-            'use.hacks': true
+    'use.hacks': true
 
     systemProperties += [JDK_JAR: "${checkerFrameworkPath}/checker/dist/jdk8.jar"]
 
@@ -170,7 +179,9 @@ test {
     }
 
     if (isJava8) {
-        jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}"]
+        jvmArgs += [
+            "-Xbootclasspath/p:${configurations.javacJar.asPath}"
+        ]
     } else {
         // Without this, the test throw "java.lang.OutOfMemoryError: Java heap space"
         // Corresponding pull request: https://github.com/opprop/checker-framework-inference/pull/263
@@ -200,7 +211,6 @@ test {
                     "Skipped: ${result.skippedTestCount}, " +
                     "Time elapsed: ${seconds} sec\n"
         }
-
     }
 }
 
@@ -208,13 +218,14 @@ compileJava {
     dependsOn(buildLingeling)
     dependsOn(buildDLJC)
     options.compilerArgs = [
-            '-implicit:class',
-            '-Awarns',
-            '-Xmaxwarns', '10000',
-            // Can't use this because JSON library contains raw types:
-            // '-Xlint:unchecked',
-            '-Xlint:deprecation',
-            '-Werror',
+        '-implicit:class',
+        '-Awarns',
+        '-Xmaxwarns',
+        '10000',
+        // Can't use this because JSON library contains raw types:
+        // '-Xlint:unchecked',
+        '-Xlint:deprecation',
+        '-Werror',
     ]
 }
 
@@ -248,7 +259,7 @@ task dist(dependsOn: shadowJar, type: Copy) {
             "${checkerFrameworkPath}/checker/dist/checker-qual.jar",
             "${checkerFrameworkPath}/checker/dist/checker-util.jar",
             "${checkerFrameworkPath}/checker/dist/javac.jar",
-    )
+            )
     into file('dist')
 }
 
@@ -304,20 +315,30 @@ task cloneAndBuildDependencies(type: Exec) {
 task testCheckerInferenceScript(type: Exec, dependsOn: dist) {
     description 'Basic sanity check of scripts/inference'
     executable './scripts/inference'
-    args = ['--mode', 'TYPECHECK',
-            '--checker', 'ostrusted.OsTrustedChecker',
-            '--solver', 'checkers.inference.solver.PropagationSolver',
-            'testdata/ostrusted/Test.java']
+    args = [
+        '--mode',
+        'TYPECHECK',
+        '--checker',
+        'ostrusted.OsTrustedChecker',
+        '--solver',
+        'checkers.inference.solver.PropagationSolver',
+        'testdata/ostrusted/Test.java'
+    ]
 }
 
 task testCheckerInferenceDevScript(type: Exec, dependsOn: [dist, dependenciesJar]) {
     description 'Basic sanity check of scripts/inference-dev'
     executable './scripts/inference-dev'
-    args = ['--mode', 'INFER',
-            '--checker', 'interning.InterningChecker',
-            '--solver', 'checkers.inference.solver.MaxSat2TypeSolver',
-            '--hacks=true',
-            'testdata/interning/MapAssignment.java']
+    args = [
+        '--mode',
+        'INFER',
+        '--checker',
+        'interning.InterningChecker',
+        '--solver',
+        'checkers.inference.solver.MaxSat2TypeSolver',
+        '--hacks=true',
+        'testdata/interning/MapAssignment.java'
+    ]
 }
 
 task testDataflowExternalSolvers(type: Exec, dependsOn: [dist, dependenciesJar]) {
@@ -328,10 +349,10 @@ task testDataflowExternalSolvers(type: Exec, dependsOn: [dist, dependenciesJar])
 afterEvaluate {
     // Create a task for each test class whose name is the same as the class name.
     sourceSets.test.java.filter {
-            it.path.contains('tests/checkers') &&
-            it.path.endsWith('Test.java') &&
-            !it.path.contains('CFInferenceTest')
-        }.forEach { file ->
+        it.path.contains('tests/checkers') &&
+                it.path.endsWith('Test.java') &&
+                !it.path.contains('CFInferenceTest')
+    }.forEach { file ->
         String junitClassName = file.name.replaceAll(".java", "")
         tasks.create(name: "${junitClassName}", type: Test, group: 'Verification') {
             description "Run ${junitClassName} tests."
@@ -344,16 +365,18 @@ afterEvaluate {
         dependsOn(shadowJar)
 
         systemProperties 'path.afu.scripts': "${afu}/scripts",
-                'path.inference.script': "${projectDir}/scripts/inference",
-                'use.hacks': true,
-                JDK_JAR: "${checkerFrameworkPath}/checker/dist/jdk8.jar"
+        'path.inference.script': "${projectDir}/scripts/inference",
+        'use.hacks': true,
+        JDK_JAR: "${checkerFrameworkPath}/checker/dist/jdk8.jar"
 
         if (project.hasProperty('emit.test.debug')) {
             systemProperties += ["emit.test.debug": 'true']
         }
 
         if (isJava8) {
-            jvmArgs += ["-Xbootclasspath/p:${configurations.javacJar.asPath}"]
+            jvmArgs += [
+                "-Xbootclasspath/p:${configurations.javacJar.asPath}"
+            ]
         }
 
         testLogging {

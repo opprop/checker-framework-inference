@@ -1,6 +1,8 @@
 package sparta.checkers;
 
-import checkers.inference.BaseInferenceRealTypeFactory;
+import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.Tree;
+
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.LiteralKind;
@@ -36,6 +38,7 @@ import javax.lang.model.element.PackageElement;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.util.Elements;
 
+import checkers.inference.BaseInferenceRealTypeFactory;
 import sparta.checkers.iflow.util.IFlowUtils;
 import sparta.checkers.iflow.util.PFPermission;
 import sparta.checkers.qual.FlowPermission;
@@ -46,12 +49,7 @@ import sparta.checkers.qual.PolySource;
 import sparta.checkers.qual.Sink;
 import sparta.checkers.qual.Source;
 
-import com.sun.source.tree.NewClassTree;
-import com.sun.source.tree.Tree;
-
-/**
- * Created by mcarthur on 4/3/14.
- */
+/** Created by mcarthur on 4/3/14. */
 public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
 
     static AnnotationMirror ANYSOURCE, NOSOURCE, ANYSINK, NOSINK;
@@ -67,25 +65,23 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
     public final IFlowUtils flowUtils;
 
     /**
-     * Constructs a factory from the given {@link ProcessingEnvironment}
-     * instance and syntax tree root. (These parameters are required so that the
-     * factory may conduct the appropriate annotation-gathering analyses on
-     * certain tree types.)
-     * <p/>
-     * Root can be {@code null} if the factory does not operate on trees.
-     * <p/>
-     * A subclass must call postInit at the end of its constructor.
+     * Constructs a factory from the given {@link ProcessingEnvironment} instance and syntax tree
+     * root. (These parameters are required so that the factory may conduct the appropriate
+     * annotation-gathering analyses on certain tree types.)
      *
-     * @param checker
-     *            the {@link SourceChecker} to which this factory belongs
-     * @throws IllegalArgumentException
-     *             if either argument is {@code null}
+     * <p>Root can be {@code null} if the factory does not operate on trees.
+     *
+     * <p>A subclass must call postInit at the end of its constructor.
+     *
+     * @param checker the {@link SourceChecker} to which this factory belongs
+     * @throws IllegalArgumentException if either argument is {@code null}
      */
     public SimpleFlowAnnotatedTypeFactory(BaseTypeChecker checker, boolean isInfer) {
         super(checker, isInfer);
 
         NOSOURCE = buildAnnotationMirrorFlowPermission(Source.class);
-        ANYSOURCE = buildAnnotationMirrorFlowPermission(Source.class, FlowPermission.ANY.toString());
+        ANYSOURCE =
+                buildAnnotationMirrorFlowPermission(Source.class, FlowPermission.ANY.toString());
         NOSINK = buildAnnotationMirrorFlowPermission(Sink.class);
         ANYSINK = buildAnnotationMirrorFlowPermission(Sink.class, FlowPermission.ANY.toString());
         POLYSOURCE = buildAnnotationMirror(PolySource.class);
@@ -117,8 +113,7 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
     }
 
     private AnnotationMirror buildAnnotationMirrorFlowPermission(
-            Class<? extends java.lang.annotation.Annotation> clazz,
-            String... flowPermission) {
+            Class<? extends java.lang.annotation.Annotation> clazz, String... flowPermission) {
         AnnotationBuilder builder = new AnnotationBuilder(processingEnv, clazz);
         builder.setValue("value", flowPermission);
         return builder.build();
@@ -138,48 +133,52 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
         implicits.addLiteralKind(LiteralKind.ALL, NOSOURCE);
         implicits.addLiteralKind(LiteralKind.ALL, ANYSINK);
 
-        return new ListTreeAnnotator(new PropagationTreeAnnotator(this),
+        return new ListTreeAnnotator(
+                new PropagationTreeAnnotator(this),
                 implicits,
                 new TreeAnnotator(this) {
-            @Override
-            public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror p) {
-                // This is a horrible hack around the bad implementation of constructor results
-                // (CF treats annotations on constructor results in stub files as if it were a
-                // default and therefore ignores it.)
-                AnnotatedTypeMirror defaulted = atypeFactory.constructorFromUse(node).executableType.getReturnType();
-                Set<AnnotationMirror> defaultedSet = defaulted.getAnnotations();
-                // The default of OTHERWISE locations such as constructor results
-                // is {}{}, but for constructor results we really want bottom.
-                // So if the result is {}{}, then change it to {}->ANY (bottom)
+                    @Override
+                    public Void visitNewClass(NewClassTree node, AnnotatedTypeMirror p) {
+                        // This is a horrible hack around the bad implementation of constructor
+                        // results
+                        // (CF treats annotations on constructor results in stub files as if it were
+                        // a
+                        // default and therefore ignores it.)
+                        AnnotatedTypeMirror defaulted =
+                                atypeFactory
+                                        .constructorFromUse(node)
+                                        .executableType
+                                        .getReturnType();
+                        Set<AnnotationMirror> defaultedSet = defaulted.getAnnotations();
+                        // The default of OTHERWISE locations such as constructor results
+                        // is {}{}, but for constructor results we really want bottom.
+                        // So if the result is {}{}, then change it to {}->ANY (bottom)
 
-                boolean empty = true;
-                for (AnnotationMirror am: defaultedSet) {
-                    List<String> s = Collections.emptyList();
-                    if (IFlowUtils.isSink(am)) {
-                        s = flowUtils.getRawSinks(am);
-                    } else if (IFlowUtils.isSource(am)) {
-                        s = flowUtils.getRawSources(am);
+                        boolean empty = true;
+                        for (AnnotationMirror am : defaultedSet) {
+                            List<String> s = Collections.emptyList();
+                            if (IFlowUtils.isSink(am)) {
+                                s = flowUtils.getRawSinks(am);
+                            } else if (IFlowUtils.isSource(am)) {
+                                s = flowUtils.getRawSources(am);
+                            }
+
+                            empty = s.isEmpty() && empty;
+                        }
+
+                        if (empty) {
+                            defaultedSet = new AnnotationMirrorSet();
+                            defaultedSet.add(NOSOURCE);
+                            defaultedSet.add(ANYSINK);
+                        }
+
+                        p.replaceAnnotations(defaultedSet);
+                        return null;
                     }
-
-                    empty = s.isEmpty() && empty;
-                }
-
-                if (empty) {
-                    defaultedSet = new AnnotationMirrorSet();
-                    defaultedSet.add(NOSOURCE);
-                    defaultedSet.add(ANYSINK);
-                }
-
-                p.replaceAnnotations(defaultedSet);
-                return null;
-            }
                 });
-
     }
 
-    /**
-     * Initializes qualifier defaults for @PolyFlow, @PolyFlowReceiver, and @FromByteCode
-     */
+    /** Initializes qualifier defaults for @PolyFlow, @PolyFlowReceiver, and @FromByteCode */
     private void initQualifierDefaults() {
         // Final fields from byte code are {} -> ANY
         byteCodeFieldDefault.addCheckedCodeDefault(NOSOURCE, TypeUseLocation.OTHERWISE);
@@ -192,14 +191,15 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
 
         // Use poly flow sources and sinks for return types and
         // parameter types (This is excluding receivers).
-        TypeUseLocation[] polyFlowLoc = { TypeUseLocation.RETURN, TypeUseLocation.PARAMETER };
+        TypeUseLocation[] polyFlowLoc = {TypeUseLocation.RETURN, TypeUseLocation.PARAMETER};
         polyFlowDefaults.addCheckedCodeDefaults(POLYSOURCE, polyFlowLoc);
         polyFlowDefaults.addCheckedCodeDefaults(POLYSINK, polyFlowLoc);
 
         // Use poly flow sources and sinks for return types and
         // parameter types and receivers).
-        TypeUseLocation[] polyFlowReceiverLoc = { TypeUseLocation.RETURN, TypeUseLocation.PARAMETER,
-                TypeUseLocation.RECEIVER };
+        TypeUseLocation[] polyFlowReceiverLoc = {
+            TypeUseLocation.RETURN, TypeUseLocation.PARAMETER, TypeUseLocation.RECEIVER
+        };
         polyFlowReceiverDefaults.addCheckedCodeDefaults(POLYSOURCE, polyFlowReceiverLoc);
         polyFlowReceiverDefaults.addCheckedCodeDefaults(POLYSINK, polyFlowReceiverLoc);
     }
@@ -207,19 +207,23 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
     @Override
     protected void addCheckedCodeDefaults(QualifierDefaults defaults) {
         // CLIMB-to-the-top defaults
-        TypeUseLocation[] topLocations = { TypeUseLocation.LOCAL_VARIABLE, TypeUseLocation.RESOURCE_VARIABLE,
-                TypeUseLocation.UPPER_BOUND };
+        TypeUseLocation[] topLocations = {
+            TypeUseLocation.LOCAL_VARIABLE,
+            TypeUseLocation.RESOURCE_VARIABLE,
+            TypeUseLocation.UPPER_BOUND
+        };
         defaults.addCheckedCodeDefaults(ANYSOURCE, topLocations);
         defaults.addCheckedCodeDefaults(NOSINK, topLocations);
 
         // Default for receivers is top
-        TypeUseLocation[] conditionalSinkLocs = { TypeUseLocation.RECEIVER, TypeUseLocation.PARAMETER,
-                TypeUseLocation.EXCEPTION_PARAMETER };
+        TypeUseLocation[] conditionalSinkLocs = {
+            TypeUseLocation.RECEIVER, TypeUseLocation.PARAMETER, TypeUseLocation.EXCEPTION_PARAMETER
+        };
         defaults.addCheckedCodeDefaults(ANYSOURCE, conditionalSinkLocs);
         defaults.addCheckedCodeDefaults(NOSINK, conditionalSinkLocs);
 
         // Default for returns and fields is {}->ANY (bottom)
-        TypeUseLocation[] bottomLocs = { TypeUseLocation.RETURN, TypeUseLocation.FIELD };
+        TypeUseLocation[] bottomLocs = {TypeUseLocation.RETURN, TypeUseLocation.FIELD};
         defaults.addCheckedCodeDefaults(NOSOURCE, bottomLocs);
         defaults.addCheckedCodeDefaults(ANYSINK, bottomLocs);
 
@@ -229,8 +233,8 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
     }
 
     @Override
-    protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type,
-            boolean useFlow) {
+    protected void addComputedTypeAnnotations(
+            Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
         Element element = TreeUtils.elementFromTree(tree);
         handleDefaulting(element, type);
         super.addComputedTypeAnnotations(tree, type, useFlow);
@@ -243,8 +247,7 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
     }
 
     protected void handleDefaulting(final Element element, final AnnotatedTypeMirror type) {
-        if (element == null)
-            return;
+        if (element == null) return;
         handlePolyFlow(element, type);
 
         if (isFromByteCode(element)
@@ -281,8 +284,7 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
             }
 
             if (iter instanceof PackageElement) {
-                iter = ElementUtils.parentPackage((PackageElement) iter,
-                        this.elements);
+                iter = ElementUtils.parentPackage((PackageElement) iter, this.elements);
             } else {
                 iter = iter.getEnclosingElement();
             }
@@ -297,17 +299,14 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
     protected class FlowQualifierHierarchy extends ElementQualifierHierarchy {
 
         public FlowQualifierHierarchy(
-                Collection<Class<? extends Annotation>> qualifierClasses,
-                Elements elements
-        ) {
+                Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
             super(qualifierClasses, elements, SimpleFlowAnnotatedTypeFactory.this);
         }
 
         @Override
         public AnnotationMirrorSet getTopAnnotations() {
-            return AnnotationMirrorSet.singleton(checker instanceof IFlowSinkChecker ?
-                    NOSINK :
-                    ANYSOURCE);
+            return AnnotationMirrorSet.singleton(
+                    checker instanceof IFlowSinkChecker ? NOSINK : ANYSOURCE);
         }
 
         @Override
@@ -321,9 +320,8 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
 
         @Override
         public AnnotationMirrorSet getBottomAnnotations() {
-            return AnnotationMirrorSet.singleton(checker instanceof IFlowSinkChecker ?
-                    ANYSINK :
-                    NOSOURCE);
+            return AnnotationMirrorSet.singleton(
+                    checker instanceof IFlowSinkChecker ? ANYSINK : NOSOURCE);
         }
 
         @Override
@@ -336,7 +334,8 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
         }
 
         @Override
-        public @Nullable AnnotationMirror leastUpperBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
+        public @Nullable AnnotationMirror leastUpperBoundQualifiers(
+                AnnotationMirror a1, AnnotationMirror a2) {
             if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
                 return null;
             } else if (isSubtypeQualifiersOnly(a1, a2)) {
@@ -347,19 +346,22 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
                 // Since the two annotations are same by name, they are both source qualifier.
                 Set<PFPermission> lubPermissions = getSources(a1);
                 lubPermissions.addAll(getSources(a2));
-                return buildAnnotationMirrorFlowPermission(Source.class, toPermissionArray(lubPermissions));
+                return buildAnnotationMirrorFlowPermission(
+                        Source.class, toPermissionArray(lubPermissions));
             } else {
                 // Since the two annotations are same by name, they are both sink qualifier.
                 assert isSinkQualifier(a1);
 
                 Set<PFPermission> lubPermissions = getSinks(a1);
                 lubPermissions.retainAll(getSinks(a2));
-                return buildAnnotationMirrorFlowPermission(Sink.class, toPermissionArray(lubPermissions));
+                return buildAnnotationMirrorFlowPermission(
+                        Sink.class, toPermissionArray(lubPermissions));
             }
         }
 
         @Override
-        public @Nullable AnnotationMirror greatestLowerBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
+        public @Nullable AnnotationMirror greatestLowerBoundQualifiers(
+                AnnotationMirror a1, AnnotationMirror a2) {
             if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
                 return null;
             } else if (isSubtypeQualifiersOnly(a1, a2)) {
@@ -370,14 +372,16 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
                 // Since the two annotations are same by name, they are both source qualifier.
                 Set<PFPermission> glbPermissions = getSources(a1);
                 glbPermissions.retainAll(getSources(a2));
-                return buildAnnotationMirrorFlowPermission(Source.class, toPermissionArray(glbPermissions));
+                return buildAnnotationMirrorFlowPermission(
+                        Source.class, toPermissionArray(glbPermissions));
             } else {
                 // Since the two annotations are same by name, they are both sink qualifier.
                 assert isSinkQualifier(a1);
 
                 Set<PFPermission> glbPermissions = getSinks(a1);
                 glbPermissions.addAll(getSinks(a2));
-                return buildAnnotationMirrorFlowPermission(Sink.class, toPermissionArray(glbPermissions));
+                return buildAnnotationMirrorFlowPermission(
+                        Sink.class, toPermissionArray(glbPermissions));
             }
         }
 
@@ -432,8 +436,7 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
         }
 
         private boolean isSourceQualifier(AnnotationMirror anno) {
-            return IFlowUtils.isSource(anno)
-                    || isPolySourceQualifier(anno);
+            return IFlowUtils.isSource(anno) || isPolySourceQualifier(anno);
         }
 
         private boolean isPolySourceQualifier(AnnotationMirror anno) {

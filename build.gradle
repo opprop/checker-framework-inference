@@ -1,3 +1,14 @@
+buildscript {
+    dependencies {
+        if (JavaVersion.current() >= JavaVersion.VERSION_11) {
+            // Code formatting; defines targets "spotlessApply" and "spotlessCheck".
+            // https://github.com/diffplug/spotless/tags ; see tags starting "gradle/"
+            // Only works on JDK 11+.
+            classpath 'com.diffplug.spotless:spotless-plugin-gradle:6.22.0'
+        }
+    }
+}
+
 plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
@@ -19,7 +30,7 @@ ext {
     // On a Java 8 JVM, use error-prone javac and source/target 8.
     // On a Java 9+ JVM, use the host javac, default source/target, and required module flags.
     isJava8 = JavaVersion.current() == JavaVersion.VERSION_1_8
-
+    isJava11plus = JavaVersion.current() >= JavaVersion.VERSION_11
     errorproneJavacVersion = '9+181-r4173-1'
 
     // Keep in sync with checker-framework/build.gradle.
@@ -35,6 +46,29 @@ ext {
             "--add-exports", "jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED",
             "--add-opens", "jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED",
     ]
+    if (isJava11plus) {
+        apply plugin: 'com.diffplug.spotless'
+        spotless {
+            format 'misc', {
+                target '*.md', '*.tex', '.gitignore', 'Makefile'
+                indentWithSpaces(2)
+                trimTrailingWhitespace()
+            }
+
+            java {
+                googleJavaFormat().aosp()
+                importOrder('com', 'jdk', 'lib', 'lombok', 'org', 'java', 'javax')
+                formatAnnotations().addTypeAnnotation("PolyInitialized")
+            }
+
+            groovyGradle {
+                target '**/*.gradle'
+                greclipse()  // which formatter Spotless should use to format .gradle files.
+                indentWithSpaces(4)
+                trimTrailingWhitespace()
+            }
+        }
+    }
 }
 
 println '===================================='

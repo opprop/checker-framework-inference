@@ -1,8 +1,8 @@
 package checkers.inference.util;
 
-import scenelib.annotations.io.ASTRecord;
-import scenelib.annotations.io.ASTPath;
-import scenelib.annotations.io.ASTPath.ASTEntry;
+import org.checkerframework.afu.scenelib.io.ASTRecord;
+import org.checkerframework.afu.scenelib.io.ASTPath;
+import org.checkerframework.afu.scenelib.io.ASTPath.ASTEntry;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -22,7 +22,7 @@ import checkers.inference.model.AnnotationLocation.ClassDeclLocation;
 
 import com.sun.source.tree.Tree;
 
-import org.checkerframework.javacutil.Pair;
+import org.plumelib.util.IPair;
 
 /**
  * JaifBuilder creates Jaifs from a Map of ASTRecords to AnnotationMirrors.
@@ -363,11 +363,8 @@ public class JaifBuilder {
         ASTEntry prevEntry = null;
         ASTEntry leafEntry = null;
         while (iterator.hasNext()) {
-            leafEntry = iterator.next();
-            if (!iterator.hasNext()) {
-                break;
-            }
             prevEntry = leafEntry;
+            leafEntry = iterator.next();
         }
 
         assert leafEntry != null;
@@ -419,7 +416,7 @@ public class JaifBuilder {
     private ClassEntry getClassEntry(String fullyQualified) {
         ClassEntry classEntry = this.classesMap.get(fullyQualified);
         if (classEntry == null) {
-            Pair<String, String> packageToClass = ASTPathUtil.splitFullyQualifiedClass(fullyQualified);
+            IPair<String, String> packageToClass = ASTPathUtil.splitFullyQualifiedClass(fullyQualified);
             classEntry = new ClassEntry(packageToClass.first, packageToClass.second);
             this.classesMap.put(fullyQualified, classEntry);
         }

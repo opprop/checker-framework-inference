@@ -1,7 +1,7 @@
 package checkers.inference.model;
 
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.SystemUtil;
+import org.plumelib.util.StringsPlume;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,7 +25,7 @@ import java.util.List;
 public class ExistentialConstraint extends Constraint {
 
     // A variable whose annotation may or may not exist
-    private final VariableSlot potentialVariable;
+    private final Slot potentialVariable;
 
     // The constraints to enforce if potentialVariable exists
     private final List<Constraint> potentialConstraints;
@@ -33,7 +33,7 @@ public class ExistentialConstraint extends Constraint {
     // the constraints to enforce if potentialVariable DOES NOT exist
     private final List<Constraint> alternateConstraints;
 
-    public ExistentialConstraint(VariableSlot potentialVariable,
+    public ExistentialConstraint(Slot potentialVariable,
                                  List<Constraint> potentialConstraints,
                                  List<Constraint> alternateConstraints, AnnotationLocation location) {
         super(combineSlots(potentialVariable, potentialConstraints, alternateConstraints), location);
@@ -42,7 +42,7 @@ public class ExistentialConstraint extends Constraint {
         this.alternateConstraints = Collections.unmodifiableList(alternateConstraints);
     }
 
-    protected static ExistentialConstraint create(VariableSlot potentialVariable,
+    protected static ExistentialConstraint create(Slot potentialVariable,
             List<Constraint> potentialConstraints, List<Constraint> alternateConstraints,
             AnnotationLocation location) {
         if (potentialVariable == null || potentialConstraints == null
@@ -69,7 +69,7 @@ public class ExistentialConstraint extends Constraint {
         return Collections.unmodifiableList(slots);
     }
 
-    public VariableSlot getPotentialVariable() {
+    public Slot getPotentialVariable() {
         return potentialVariable;
     }
 
@@ -92,9 +92,9 @@ public class ExistentialConstraint extends Constraint {
         String doubleTab = tab + tab;
         return "ExistentialConstraint[\n"
                 + tab + "if( " + potentialVariable + " ) {\n"
-                + doubleTab + SystemUtil.join("\n" + doubleTab, potentialConstraints) + "\n"
+                + doubleTab + StringsPlume.join("\n" + doubleTab, potentialConstraints) + "\n"
                 + tab + "} else {\n"
-                + doubleTab + SystemUtil.join("\n" + doubleTab, alternateConstraints ) + "\n"
+                + doubleTab + StringsPlume.join("\n" + doubleTab, alternateConstraints ) + "\n"
                 + tab + "}\n"
                 + "]";
     }

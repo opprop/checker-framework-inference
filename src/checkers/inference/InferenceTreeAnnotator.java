@@ -1,5 +1,9 @@
 package checkers.inference;
 
+import checkers.inference.model.ConstraintManager;
+import checkers.inference.model.SourceVariableSlot;
+import checkers.inference.model.Slot;
+
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeFactory.ParameterizedExecutableType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
@@ -11,6 +15,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedPrimitiv
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.TreePathUtil;
 import org.checkerframework.javacutil.TreeUtils;
 
 import java.util.List;
@@ -19,6 +24,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 
 import com.sun.source.tree.AnnotatedTypeTree;
+import com.sun.source.tree.AnnotationTree;
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ClassTree;
@@ -75,7 +81,7 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
 
     @Override
     public Void visitAnnotatedType(AnnotatedTypeTree node, AnnotatedTypeMirror atm) {
-        visit(node.getUnderlyingType(), atm);
+        variableAnnotator.visit(atm, node);
         return null;
     }
 
@@ -114,11 +120,27 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
         InferenceUtil.testArgument(classType instanceof AnnotatedDeclaredType,
                 "Unexpected type for ClassTree ( " + classTree + " ) AnnotatedTypeMirror ( " + classType + " ) ");
 
-        // For anonymous classes, we do not create additional variables, as they
-        // were already handled by the visitNewClass. This would otherwise result
-        // in new variables for an extends clause, which then cannot be inserted.
-        if (!InferenceUtil.isAnonymousClass(classTree)) {
-            this.variableAnnotator.visit(classType, classTree);
+        // Annotate the current class type
+        variableAnnotator.visit(classType, classTree);
+
+        // Annotate the enclosing type recursively:
+        // We start at the current class tree and the current class type, then in each iteration
+        // get the enclosing (parent) class, and run VariableAnnotator on each of them
+        // This is a workaround for the issue:
+        // https://github.com/opprop/checker-framework-inference/issues/333
+        // TODO: reconsidered this when the issue is resolved
+        AnnotatedDeclaredType enclosingType = (AnnotatedDeclaredType) classType;
+        TreePath classPath = atypeFactory.getPath(classTree);
+        while (classPath != null) {
+            ClassTree enclosingClass = TreePathUtil.enclosingClass(classPath.getParentPath());
+            enclosingType = enclosingType.getEnclosingType();
+            if (enclosingType == null || enclosingClass == null) {
+                break;
+            }
+            // Annotate the enclosing type if it exists
+            variableAnnotator.visit(enclosingType, enclosingClass);
+            // Get the enclosing class and type
+            classPath = atypeFactory.getPath(enclosingClass);
         }
 
         return null;
@@ -155,6 +177,35 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
                         }
                     }
 
+                } else if (parentNode.getKind() == Kind.CLASS) {
+                    // This happens when a class explicitly extends another class or implements
+                    // another interface
+                    variableAnnotator.visit(identifierType, node);
+
+                } else if (parentNode.getKind() == Kind.NEW_CLASS
+                        && ((NewClassTree) parentNode).getIdentifier() == node) {
+                    // This can happen in two cases related to NewClassTrees:
+                    // (1) The type identifier of non-anonymous class instantiations, without explict
+                    //     annotations, such as `A` of `new A()`;
+                    // (2) The type identifier of anonymous class instantiations, with or without
+                    //     explicit annotations.
+                    // TODO: A NewClassTree should be handled in visitNewClass method exclusively
+                    // without messing around with the IdentifierTree or ClassTree, see issue:
+                    // https://github.com/opprop/checker-framework-inference/issues/332
+
+                    NewClassTree newClassTree = (NewClassTree) parentNode;
+                    if (newClassTree.getClassBody() != null) {
+                        // For case 2, get the explicit annotation if any exists so that no variable slot
+                        // is created. Note the annotation cannot be retrieved from the identifier, but
+                        // from the modifier of the anonymous class body. e.g. for the following case
+                        //      new @HERE Class() {}
+                        // @HERE is on the modifier of the anonymous class body, instead of on the type identifier.
+                        List<? extends AnnotationTree> annos =
+                                newClassTree.getClassBody().getModifiers().getAnnotations();
+                        identifierType.addAnnotations(TreeUtils.annotationsFromTypeAnnotationTrees(annos));
+                        ((InferenceAnnotatedTypeFactory) atypeFactory).getConstantToVariableAnnotator().visit(identifierType);
+                    }
+                    variableAnnotator.visit(identifierType, node);
                 }
             }
         }
@@ -270,6 +321,31 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
         variableAnnotator.visit(atm, newClassTree.getIdentifier());
 
         annotateMethodTypeArgs(newClassTree);
+
+
+        if (newClassTree.getClassBody() != null) {
+            // For a fully annotated anonymous class instantiation as follows,
+            //     new @VarAnnot(1) A() @VarAnnot(2) {...}
+            // create the implied equality constraint "1 == 2"
+            ConstraintManager constraintManager = InferenceMain.getInstance().getConstraintManager();
+            SlotManager slotManager = InferenceMain.getInstance().getSlotManager();
+
+            // Get the varSlot on the type identifier
+            Slot identifierSlot = slotManager.getSlot(atm);
+            AnnotatedTypeMirror classType = atypeFactory.getAnnotatedType(newClassTree.getClassBody());
+            // Get the varSlot on the anonymous class body
+            Slot classBodySlot = slotManager.getSlot(classType);
+            // When the NewClassTree is pre-annotated, the compiler automatically annotates the class body
+            // with the same annotation on the type identifier. In this case the slot on the class body is
+            // constant, and always equals to the slot on the type identifier
+            if (classBodySlot instanceof SourceVariableSlot) {
+                constraintManager.addEqualityConstraint(identifierSlot, classBodySlot);
+
+                // The location for `@VarAnnot(2)` in the above case is not syntactically valid, so the
+                // slot for this location should not be inserted back to source code
+                ((SourceVariableSlot) classBodySlot).setInsertable(false);
+            }
+        }
 
         return null;
     }
@@ -413,16 +489,6 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
         // Unary trees and compound assignments (x++ or x +=y) get desugared
         // by dataflow to be x = x + 1 and x = x + y.
         // Dataflow will then look up the types of the binary operations (x + 1) and (y + 1)
-        //
-        // InferenceTransfer currently sets the value of a compound assignment or unary
-        // to be the just the type of the variable.
-        // So, the type returned from this for desugared trees is not used.
-        // We don't create a LUB to reduce confusion
-        if (realTypeFactory.getPath(node) == null) {
-            // Desugared tree's don't have paths.
-            // There currently is some case that we are missing that requires us to annotate these.
-            return null;
-        }
 
         variableAnnotator.visit(type, node);
         return null;

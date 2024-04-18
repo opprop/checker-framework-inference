@@ -13,16 +13,16 @@ public class CombineConstraint extends Constraint {
 
     private final Slot target;
     private final Slot decl;
-    private final Slot result;
+    private final CombVariableSlot result;
 
-    private CombineConstraint(Slot target, Slot decl, Slot result, AnnotationLocation location) {
+    private CombineConstraint(Slot target, Slot decl, CombVariableSlot result, AnnotationLocation location) {
         super(Arrays.asList(target, decl, result), location);
         this.target = target;
         this.decl = decl;
         this.result = result;
     }
 
-    protected static CombineConstraint create(Slot target, Slot decl, Slot result,
+    protected static CombineConstraint create(Slot target, Slot decl, CombVariableSlot result,
             AnnotationLocation location) {
         if (target == null || decl == null || result == null) {
             throw new BugInCF("Create combine constraint with null argument. Target: "
@@ -45,7 +45,7 @@ public class CombineConstraint extends Constraint {
         return decl;
     }
 
-    public Slot getResult() {
+    public CombVariableSlot getResult() {
         return result;
     }
 

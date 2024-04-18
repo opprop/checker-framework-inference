@@ -17,7 +17,7 @@ then
     myDir=$(pwd)
 fi
 
-ROOT=$(cd ${myDir}/../../ && pwd)
+ROOT=$(cd ${myDir}/../../ >/dev/null 2>&1 && pwd)
 
 distDir=$myDir"/../dist"
 
@@ -38,4 +38,14 @@ if [ $? -eq 0 ]; then
     runtimeBCP="${distDir}/javac.jar"
 fi
 
-eval "java -DInferenceLauncher.runtime.bcp="$runtimeBCP" -classpath "$classpath" checkers.inference.InferenceLauncher " "$@"
+# use default "pathToAfuScripts" unless specified
+defaultPathToAfuScripts="--pathToAfuScripts=${ROOT}/annotation-tools/annotation-file-utilities/scripts"
+for arg in "$@"
+do
+    case "$arg" in
+        --pathToAfuScripts=*) defaultPathToAfuScripts="" ;;
+    esac
+done
+
+eval "java -DInferenceLauncher.runtime.bcp="$runtimeBCP" -classpath "$classpath" checkers.inference.InferenceLauncher " \
+ "$defaultPathToAfuScripts" "$@"

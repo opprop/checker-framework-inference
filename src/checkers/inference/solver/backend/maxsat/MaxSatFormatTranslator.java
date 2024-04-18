@@ -12,6 +12,7 @@ import javax.lang.model.element.AnnotationMirror;
 import checkers.inference.solver.backend.AbstractFormatTranslator;
 import checkers.inference.solver.backend.encoder.ConstraintEncoderFactory;
 import checkers.inference.solver.backend.maxsat.encoder.MaxSATConstraintEncoderFactory;
+import org.checkerframework.javacutil.AnnotationMirrorMap;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.sat4j.core.VecInt;
 
@@ -41,7 +42,7 @@ public class MaxSatFormatTranslator extends AbstractFormatTranslator<VecInt[], V
     public MaxSatFormatTranslator(Lattice lattice) {
         super(lattice);
         // Initialize mappings between type and int.
-        Map<AnnotationMirror, Integer>typeToIntRes = AnnotationUtils.createAnnotationMap();
+        Map<AnnotationMirror, Integer>typeToIntRes = new AnnotationMirrorMap<>();
         Map<Integer, AnnotationMirror> intToTypeRes = new HashMap<Integer, AnnotationMirror>();
 
         int curInt = 0;

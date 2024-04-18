@@ -17,11 +17,13 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import checkers.inference.InferenceMain;
+import checkers.inference.model.AnnotationLocation;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.ConstraintManager;
 import checkers.inference.model.Slot;
-import checkers.inference.model.VariableSlot;
-import static checkers.inference.model.serialization.JsonSerializer.COMP_CONSTRAINT_KEY;
+import checkers.inference.model.SourceVariableSlot;
+import static checkers.inference.model.serialization.JsonSerializer.COMPARABLE_CONSTRAINT_KEY;
+import static checkers.inference.model.serialization.JsonSerializer.COMPARISON_CONSTRAINT_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.CONSTRAINTS_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.CONSTRAINT_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.EQUALITY_CONSTRAINT_KEY;
@@ -35,6 +37,8 @@ import static checkers.inference.model.serialization.JsonSerializer.EXISTENTIAL_
 import static checkers.inference.model.serialization.JsonSerializer.INEQUALITY_CONSTRAINT_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.INEQUALITY_LHS;
 import static checkers.inference.model.serialization.JsonSerializer.INEQUALITY_RHS;
+import static checkers.inference.model.serialization.JsonSerializer.COMPARABLE_LHS;
+import static checkers.inference.model.serialization.JsonSerializer.COMPARABLE_RHS;
 import static checkers.inference.model.serialization.JsonSerializer.SUBTYPE_CONSTRAINT_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.SUBTYPE_SUB_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.SUBTYPE_SUPER_KEY;
@@ -105,9 +109,9 @@ public class JsonDeserializer {
                     Slot lhs = parseSlot((String) constraint.get(INEQUALITY_LHS));
                     Slot rhs = parseSlot((String) constraint.get(INEQUALITY_RHS));
                     results.add(constraintManager.createInequalityConstraint(lhs, rhs));
-                } else if (COMP_CONSTRAINT_KEY.equals(constraintType)) {
-                    Slot lhs = parseSlot((String) constraint.get(INEQUALITY_LHS));
-                    Slot rhs = parseSlot((String) constraint.get(INEQUALITY_RHS));
+                } else if (COMPARABLE_CONSTRAINT_KEY.equals(constraintType)) {
+                    Slot lhs = parseSlot((String) constraint.get(COMPARABLE_LHS));
+                    Slot rhs = parseSlot((String) constraint.get(COMPARABLE_RHS));
                     results.add(constraintManager.createComparableConstraint(lhs, rhs));
                 } else if (EXISTENTIAL_CONSTRAINT_KEY.equals(constraintType)) {
                     Slot potential = parseSlot((String) constraint.get(EXISTENTIAL_ID));
@@ -115,7 +119,7 @@ public class JsonDeserializer {
                             jsonArrayToConstraints((JSONArray) constraint.get(EXISTENTIAL_THEN));
                     List<Constraint> elseConstraints =
                             jsonArrayToConstraints((JSONArray) constraint.get(EXISTENTIAL_ELSE));
-                    results.add(constraintManager.createExistentialConstraint((VariableSlot) potential,
+                    results.add(constraintManager.createExistentialConstraint(potential,
                             thenConstraints, elseConstraints));
                 }  else {
                     throw new IllegalArgumentException("Parse error: unknown constraint type: " + obj);
@@ -142,7 +146,7 @@ public class JsonDeserializer {
 
                 String constraintType = (String) constraint.get(CONSTRAINT_KEY);
                 if (constraintType.equals(EXISTENTIAL_CONSTRAINT_KEY)) {
-                    VariableSlot potential = (VariableSlot) parseSlot((String) constraint.get(EXISTENTIAL_ID));
+                    Slot potential = parseSlot((String) constraint.get(EXISTENTIAL_ID));
                     potentialVariableIds.add(String.valueOf(potential.getId()));
 
                     Object thenConstraints = constraint.get(EXISTENTIAL_THEN);
@@ -204,7 +208,9 @@ public class JsonDeserializer {
     private Slot parseSlot(String slot) {
         if (slot.startsWith(VAR_PREFIX)) {
             int id = Integer.valueOf(slot.split(":")[1]);
-            return new VariableSlot(id);
+            // TODO: Here we are creating a SourceVariableSlot without any detailed information.
+            //  We should consider refactor this implementation.
+            return new SourceVariableSlot(id, AnnotationLocation.MISSING_LOCATION, null, null, true);
         } else {
             // TODO: THIS NEEDS FIXING
             AnnotationMirror value = annotationSerializer.deserialize(slot);

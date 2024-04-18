@@ -66,7 +66,7 @@ public class SubtypeConstraint extends Constraint implements BinaryConstraint {
             ConstantSlot subConstant = (ConstantSlot) subtype;
             ConstantSlot superConstant = (ConstantSlot) supertype;
 
-            return realQualHierarchy.isSubtype(subConstant.getValue(), superConstant.getValue())
+            return realQualHierarchy.isSubtypeQualifiersOnly(subConstant.getValue(), superConstant.getValue())
                     ? AlwaysTrueConstraint.create()
                     : AlwaysFalseConstraint.create();
         }

@@ -1,5 +1,6 @@
 package interning;
 
+import checkers.inference.BaseInferenceRealTypeFactory;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.DefaultQualifier;
@@ -49,7 +50,7 @@ import com.sun.source.tree.Tree;
  * user-specified defaults via {@link DefaultQualifier}.
  * Case 5 is handled by the stub library.
  */
-public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class InterningAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
 
     /** The {@link Interned} annotation. */
     final AnnotationMirror INTERNED, TOP;
@@ -60,13 +61,13 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      *
      * @param checker the checker to use
      */
-    public InterningAnnotatedTypeFactory(BaseTypeChecker checker) {
-        super(checker);
+    public InterningAnnotatedTypeFactory(BaseTypeChecker checker, boolean isInfer) {
+        super(checker, isInfer);
         this.INTERNED = AnnotationBuilder.fromClass(elements, Interned.class);
         this.TOP = AnnotationBuilder.fromClass(elements, UnknownInterned.class);
 
         // If you update the following, also update ../../../manual/interning-checker.tex .
-        addAliasedAnnotation("com.sun.istack.internal.Interned", INTERNED);
+        addAliasedTypeAnnotation("com.sun.istack.internal.Interned", INTERNED);
 
         this.postInit();
     }
@@ -89,7 +90,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public void addComputedTypeAnnotations(Element element, AnnotatedTypeMirror type) {
-        if (!type.isAnnotatedInHierarchy(INTERNED) && ElementUtils.isCompileTimeConstant(element))
+        if (!type.hasAnnotationInHierarchy(INTERNED) && ElementUtils.isCompileTimeConstant(element))
             type.addAnnotation(INTERNED);
         super.addComputedTypeAnnotations(element, type);
     }
@@ -152,7 +153,7 @@ public class InterningAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
             // TODO: @Interned then the type would already receive an @Interned from the framework without
             // TODO: this case (I think from InheritFromClass)
             // TODO: IF this is true, perhaps remove item 6 I added to the class comment
-            } else if (typeFactory.fromElement(elt).hasAnnotation(INTERNED)) {
+            } else if (atypeFactory.fromElement(elt).hasAnnotation(INTERNED)) {
                 // If the class/interface has an @Interned annotation, use it.
                 t.replaceAnnotation(INTERNED);
             }

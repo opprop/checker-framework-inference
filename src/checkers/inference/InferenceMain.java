@@ -1,5 +1,7 @@
 package checkers.inference;
 
+import checkers.inference.model.SourceVariableSlot;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 
 import java.io.FileOutputStream;
@@ -26,6 +28,8 @@ import checkers.inference.model.VariableSlot;
 import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.InferenceUtil;
 import checkers.inference.util.JaifBuilder;
+import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 
 /**
@@ -164,7 +168,7 @@ public class InferenceMain {
                 "-source", "8",
                 "-target", "8"));
 
-        if (SystemUtil.getJreVersion() == 8) {
+        if (SystemUtil.jreVersion == 8) {
             checkerFrameworkArgs.addAll(Arrays.asList("-source", "8", "-target", "8"));
         }
 
@@ -234,21 +238,13 @@ public class InferenceMain {
                     annotationClasses.add(annotation);
                 }
             }
+
             for (VariableSlot slot : varSlots) {
-                if (slot.getLocation() != null && slot.isInsertable()
-                 && (solverResult == null || solverResult.containsSolutionForVariable(slot.getId()))) {
+                if (slot.getLocation() != null) {
                     // TODO: String serialization of annotations.
-                    if (solverResult != null) {
-                        // Not all VariableSlots will have an inferred value.
-                        // This happens for VariableSlots that have no constraints.
-                        AnnotationMirror result = solverResult.getSolutionForVariable(slot.getId());
-                        if (result != null) {
-                            values.put(slot.getLocation(), result.toString());
-                        }
-                    } else {
-                        // Just use the VarAnnot in the jaif.
-                        String value = slotManager.getAnnotation(slot).toString();
-                        values.put(slot.getLocation(), value);
+                    AnnotationMirror annotationToWrite = getAnnotationToWrite(slot);
+                    if (annotationToWrite != null) {
+                        values.put(slot.getLocation(), annotationToWrite.toString());
                     }
                 }
             }
@@ -284,6 +280,28 @@ public class InferenceMain {
                     getRealTypeFactory().getQualifierHierarchy(),
                     inferenceChecker.getProcessingEnvironment());
         }
+    }
+
+    private @Nullable AnnotationMirror getAnnotationToWrite(VariableSlot slot) {
+        if (!slot.isInsertable()) {
+            return null;
+        } else if (solverResult == null) {
+            // Just use the VarAnnot in the jaif.
+            return slotManager.getAnnotation(slot);
+        }
+
+        // Not all VariableSlots will have an inferred value.
+        // This happens for VariableSlots that have no constraints.
+        AnnotationMirror result = solverResult.getSolutionForVariable(slot.getId());
+        if (result != null && slot instanceof SourceVariableSlot) {
+            AnnotationMirror defaultAnnotation = ((SourceVariableSlot) slot).getDefaultAnnotation();
+
+            if (defaultAnnotation != null && AnnotationUtils.areSame(defaultAnnotation, result)) {
+                // Don't need to write a solution that's equivalent to the default annotation.
+                result = null;
+            }
+        }
+        return result;
     }
 
     // ================================================================================
@@ -324,7 +342,6 @@ public class InferenceMain {
         return inferenceTypeFactory;
     }
 
-
     /**
      * This method is NOT deprecated but SHOULD NOT BE USED other than in getInferenceTypeFactory AND
      * InferenceAnnotatedTypeFactory.getSupportedQualifierTypes.  We have made it deprecated in order to bring
@@ -333,7 +350,7 @@ public class InferenceMain {
      */
     public BaseAnnotatedTypeFactory getRealTypeFactory() {
         if (realTypeFactory == null) {
-            realTypeFactory = getRealChecker().createRealTypeFactory();
+            realTypeFactory = getRealChecker().createRealTypeFactory(true);
             logger.finer(String.format("Created real type factory: %s", realTypeFactory));
         }
         return realTypeFactory;
@@ -341,8 +358,17 @@ public class InferenceMain {
 
     public SlotManager getSlotManager() {
         if (slotManager == null ) {
-            slotManager = new DefaultSlotManager(inferenceChecker.getProcessingEnvironment(),
-                    realTypeFactory.getSupportedTypeQualifiers(), true );
+            Set<? extends AnnotationMirror> tops = realTypeFactory.getQualifierHierarchy().getTopAnnotations();
+            if (tops.size() != 1) {
+                throw new BugInCF("Expected 1 real top qualifier, but received %d instead", tops.size());
+            }
+
+            slotManager = new DefaultSlotManager(
+                    inferenceChecker.getProcessingEnvironment(),
+                    tops.iterator().next(),
+                    realTypeFactory.getSupportedTypeQualifiers(),
+                    true
+            );
             logger.finer("Created slot manager" + slotManager);
         }
         return slotManager;

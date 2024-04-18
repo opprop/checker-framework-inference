@@ -1,24 +1,27 @@
 package sparta.checkers;
 
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
+import checkers.inference.BaseInferenceRealTypeFactory;
+import org.checkerframework.checker.nullness.qual.Nullable;
 import org.checkerframework.common.basetype.BaseTypeChecker;
 import org.checkerframework.framework.qual.LiteralKind;
 import org.checkerframework.framework.qual.TypeUseLocation;
 import org.checkerframework.framework.source.SourceChecker;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
+import org.checkerframework.framework.type.ElementQualifierHierarchy;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.framework.type.treeannotator.ListTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.PropagationTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
-import org.checkerframework.framework.util.MultiGraphQualifierHierarchy;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationBuilder;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 import java.lang.annotation.Annotation;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -31,6 +34,7 @@ import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.PackageElement;
 import javax.lang.model.type.TypeKind;
+import javax.lang.model.util.Elements;
 
 import sparta.checkers.iflow.util.IFlowUtils;
 import sparta.checkers.iflow.util.PFPermission;
@@ -48,7 +52,7 @@ import com.sun.source.tree.Tree;
 /**
  * Created by mcarthur on 4/3/14.
  */
-public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
+public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
 
     static AnnotationMirror ANYSOURCE, NOSOURCE, ANYSINK, NOSINK;
     private final AnnotationMirror POLYSOURCE;
@@ -59,6 +63,8 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
     final QualifierDefaults byteCodeDefaults = new QualifierDefaults(elements, this);
     final QualifierDefaults polyFlowDefaults = new QualifierDefaults(elements, this);
     final QualifierDefaults polyFlowReceiverDefaults = new QualifierDefaults(elements, this);
+
+    public final IFlowUtils flowUtils;
 
     /**
      * Constructs a factory from the given {@link ProcessingEnvironment}
@@ -75,8 +81,8 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
      * @throws IllegalArgumentException
      *             if either argument is {@code null}
      */
-    public SimpleFlowAnnotatedTypeFactory(BaseTypeChecker checker) {
-        super(checker);
+    public SimpleFlowAnnotatedTypeFactory(BaseTypeChecker checker, boolean isInfer) {
+        super(checker, isInfer);
 
         NOSOURCE = buildAnnotationMirrorFlowPermission(Source.class);
         ANYSOURCE = buildAnnotationMirrorFlowPermission(Source.class, FlowPermission.ANY.toString());
@@ -84,6 +90,9 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         ANYSINK = buildAnnotationMirrorFlowPermission(Sink.class, FlowPermission.ANY.toString());
         POLYSOURCE = buildAnnotationMirror(PolySource.class);
         POLYSINK = buildAnnotationMirror(PolySink.class);
+
+        flowUtils = new IFlowUtils(this.processingEnv);
+
         this.postInit();
     }
 
@@ -121,7 +130,6 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         return builder.build();
     }
 
-
     @Override
     protected TreeAnnotator createTreeAnnotator() {
 
@@ -146,13 +154,18 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
                 boolean empty = true;
                 for (AnnotationMirror am: defaultedSet) {
-                   List<String> s = AnnotationUtils.getElementValueArray(am, "value",
-                            String.class, true);
-                   empty = s.isEmpty() && empty;
+                    List<String> s = Collections.emptyList();
+                    if (IFlowUtils.isSink(am)) {
+                        s = flowUtils.getRawSinks(am);
+                    } else if (IFlowUtils.isSource(am)) {
+                        s = flowUtils.getRawSources(am);
+                    }
+
+                    empty = s.isEmpty() && empty;
                 }
 
                 if (empty) {
-                    defaultedSet = AnnotationUtils.createAnnotationSet();
+                    defaultedSet = new AnnotationMirrorSet();
                     defaultedSet.add(NOSOURCE);
                     defaultedSet.add(ANYSINK);
                 }
@@ -276,36 +289,30 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
     }
 
-
     @Override
-    protected MultiGraphQualifierHierarchy.MultiGraphFactory createQualifierHierarchyFactory() {
-        return new MultiGraphQualifierHierarchy.MultiGraphFactory(this);
+    protected QualifierHierarchy createQualifierHierarchy() {
+        return new FlowQualifierHierarchy(this.getSupportedTypeQualifiers(), elements);
     }
 
-    @Override
-    public QualifierHierarchy createQualifierHierarchy(
-            MultiGraphQualifierHierarchy.MultiGraphFactory factory) {
-        return new FlowQualifierHierarchy(factory);
-    }
+    protected class FlowQualifierHierarchy extends ElementQualifierHierarchy {
 
-    protected class FlowQualifierHierarchy extends MultiGraphQualifierHierarchy {
-
-        public FlowQualifierHierarchy(MultiGraphFactory f) {
-            super(f);
-            polyQualifiers.clear();
-            polyQualifiers.put(NOSINK, POLYSINK);
-            polyQualifiers.put(ANYSOURCE, POLYSOURCE);
+        public FlowQualifierHierarchy(
+                Collection<Class<? extends Annotation>> qualifierClasses,
+                Elements elements
+        ) {
+            super(qualifierClasses, elements, SimpleFlowAnnotatedTypeFactory.this);
         }
 
-        @Override public Set<? extends AnnotationMirror> getTopAnnotations() {
-            return Collections.singleton(checker instanceof IFlowSinkChecker ?
-                                                 NOSINK :
-                                                 ANYSOURCE);
+        @Override
+        public AnnotationMirrorSet getTopAnnotations() {
+            return AnnotationMirrorSet.singleton(checker instanceof IFlowSinkChecker ?
+                    NOSINK :
+                    ANYSOURCE);
         }
 
         @Override
         public AnnotationMirror getTopAnnotation(AnnotationMirror start) {
-            if (start.toString().contains("Sink")) {
+            if (IFlowUtils.isSink(start)) {
                 return NOSINK;
             } else {
                 return ANYSOURCE;
@@ -313,15 +320,15 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public Set<? extends AnnotationMirror> getBottomAnnotations() {
-            return Collections.singleton(checker instanceof IFlowSinkChecker ?
+        public AnnotationMirrorSet getBottomAnnotations() {
+            return AnnotationMirrorSet.singleton(checker instanceof IFlowSinkChecker ?
                     ANYSINK :
                     NOSOURCE);
         }
 
         @Override
         public AnnotationMirror getBottomAnnotation(AnnotationMirror start) {
-            if (start.toString().contains("Sink")) {
+            if (IFlowUtils.isSink(start)) {
                 return ANYSINK;
             } else {
                 return NOSOURCE;
@@ -329,37 +336,87 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         @Override
-        public boolean isSubtype(AnnotationMirror subtype, AnnotationMirror supertype) {
+        public @Nullable AnnotationMirror leastUpperBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
+            if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
+                return null;
+            } else if (isSubtypeQualifiersOnly(a1, a2)) {
+                return a2;
+            } else if (isSubtypeQualifiersOnly(a2, a1)) {
+                return a1;
+            } else if (isSourceQualifier(a1)) {
+                // Since the two annotations are same by name, they are both source qualifier.
+                Set<PFPermission> lubPermissions = getSources(a1);
+                lubPermissions.addAll(getSources(a2));
+                return buildAnnotationMirrorFlowPermission(Source.class, toPermissionArray(lubPermissions));
+            } else {
+                // Since the two annotations are same by name, they are both sink qualifier.
+                assert isSinkQualifier(a1);
+
+                Set<PFPermission> lubPermissions = getSinks(a1);
+                lubPermissions.retainAll(getSinks(a2));
+                return buildAnnotationMirrorFlowPermission(Sink.class, toPermissionArray(lubPermissions));
+            }
+        }
+
+        @Override
+        public @Nullable AnnotationMirror greatestLowerBoundQualifiers(AnnotationMirror a1, AnnotationMirror a2) {
+            if (!AnnotationUtils.areSameByName(getTopAnnotation(a1), getTopAnnotation(a2))) {
+                return null;
+            } else if (isSubtypeQualifiersOnly(a1, a2)) {
+                return a1;
+            } else if (isSubtypeQualifiersOnly(a2, a1)) {
+                return a2;
+            } else if (isSourceQualifier(a1)) {
+                // Since the two annotations are same by name, they are both source qualifier.
+                Set<PFPermission> glbPermissions = getSources(a1);
+                glbPermissions.retainAll(getSources(a2));
+                return buildAnnotationMirrorFlowPermission(Source.class, toPermissionArray(glbPermissions));
+            } else {
+                // Since the two annotations are same by name, they are both sink qualifier.
+                assert isSinkQualifier(a1);
+
+                Set<PFPermission> glbPermissions = getSinks(a1);
+                glbPermissions.addAll(getSinks(a2));
+                return buildAnnotationMirrorFlowPermission(Sink.class, toPermissionArray(glbPermissions));
+            }
+        }
+
+        @Override
+        public boolean isSubtypeQualifiers(AnnotationMirror subtype, AnnotationMirror supertype) {
             if (isPolySourceQualifier(supertype) && isPolySourceQualifier(subtype)) {
                 return true;
             } else if (isPolySourceQualifier(supertype) && isSourceQualifier(subtype)) {
                 // If super is poly, only bottom is a subtype
-                return IFlowUtils.getSources(subtype).isEmpty();
+                return getSources(subtype).isEmpty();
             } else if (isSourceQualifier(supertype) && isPolySourceQualifier(subtype)) {
                 // if sub is poly, only top is a supertype
-                return IFlowUtils.getSources(supertype).contains(PFPermission.ANY);
+                return getSources(supertype).contains(PFPermission.ANY);
             } else if (isSourceQualifier(supertype) && isSourceQualifier(subtype)) {
                 // Check the set
-                Set<PFPermission> superset = IFlowUtils.getSources(supertype);
-                Set<PFPermission> subset = IFlowUtils.getSources(subtype);
+                Set<PFPermission> superset = getSources(supertype);
+                Set<PFPermission> subset = getSources(subtype);
                 return isSuperSet(superset, subset);
             } else if (isPolySinkQualifier(supertype) && isPolySinkQualifier(subtype)) {
                 return true;
             } else if (isPolySinkQualifier(supertype) && isSinkQualifier(subtype)) {
                 // If super is poly, only bottom is a subtype
-                return IFlowUtils.getSinks(subtype).contains(PFPermission.ANY);
+                return getSinks(subtype).contains(PFPermission.ANY);
             } else if (isSinkQualifier(supertype) && isPolySinkQualifier(subtype)) {
                 // if sub is poly, only top is a supertype
-                return IFlowUtils.getSinks(supertype).isEmpty();
+                return getSinks(supertype).isEmpty();
             } else if (isSinkQualifier(supertype) && isSinkQualifier(subtype)) {
                 // Check the set (sinks are backward)
-                Set<PFPermission> subset = IFlowUtils.getSinks(supertype);
-                Set<PFPermission> superset = IFlowUtils.getSinks(subtype);
+                Set<PFPermission> subset = getSinks(supertype);
+                Set<PFPermission> superset = getSinks(subtype);
                 return isSuperSet(superset, subset);
             } else {
                 // annotations should either both be sources or sinks.
                 return false;
             }
+        }
+
+        private String[] toPermissionArray(Collection<PFPermission> permissions) {
+            return permissions.stream().map(PFPermission::toString).toArray(String[]::new);
         }
 
         private boolean isSuperSet(Set<PFPermission> superset, Set<PFPermission> subset) {
@@ -375,21 +432,34 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
 
         private boolean isSourceQualifier(AnnotationMirror anno) {
-            return AnnotationUtils.areSameByClass(anno, Source.class)
+            return IFlowUtils.isSource(anno)
                     || isPolySourceQualifier(anno);
         }
 
         private boolean isPolySourceQualifier(AnnotationMirror anno) {
-            return AnnotationUtils.areSameByClass(anno, PolySource.class);
+            return IFlowUtils.isPolySource(anno);
         }
 
         private boolean isSinkQualifier(AnnotationMirror anno) {
-            return isPolySinkQualifier(anno) || AnnotationUtils.areSameByClass(anno, Sink.class);
+            return isPolySinkQualifier(anno) || IFlowUtils.isSink(anno);
         }
 
         private boolean isPolySinkQualifier(AnnotationMirror anno) {
-            return AnnotationUtils.areSameByClass(anno, PolySink.class);
+            return IFlowUtils.isPolySink(anno);
         }
 
+        private Set<PFPermission> getSinks(AnnotationMirror anno) {
+            if (IFlowUtils.isSink(anno)) {
+                return flowUtils.getSinks(anno);
+            }
+            return Collections.emptySet();
+        }
+
+        private Set<PFPermission> getSources(AnnotationMirror anno) {
+            if (IFlowUtils.isSource(anno)) {
+                return flowUtils.getSources(anno);
+            }
+            return Collections.emptySet();
+        }
     }
 }

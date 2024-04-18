@@ -48,8 +48,9 @@ public class InferenceTypeHierarchy extends DefaultTypeHierarchy {
 
     @Override
     public StructuralEqualityComparer createEqualityComparer() {
-        return new InferenceEqualityComparer(this.typeargVisitHistory,
-                InferenceQualifierHierarchy.findVarAnnot(qualifierHierarchy.getTopAnnotations()));
+        return new InferenceEqualityComparer(
+                this.areEqualVisitHistory,
+                InferenceQualifierHierarchy.findVarAnnot(qualHierarchy.getTopAnnotations()));
     }
 
     private static class InferenceEqualityComparer extends StructuralEqualityComparer {
@@ -62,7 +63,7 @@ public class InferenceTypeHierarchy extends DefaultTypeHierarchy {
         }
 
         @Override
-        protected boolean arePrimeAnnosEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
+        protected boolean arePrimaryAnnosEqual(AnnotatedTypeMirror type1, AnnotatedTypeMirror type2) {
             final InferenceMain inferenceMain = InferenceMain.getInstance();
             final AnnotationMirror varAnnot1 = type1.getAnnotationInHierarchy(varAnnot);
             final AnnotationMirror varAnnot2 = type2.getAnnotationInHierarchy(varAnnot);

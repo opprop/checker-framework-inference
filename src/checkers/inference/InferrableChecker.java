@@ -6,12 +6,9 @@ import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
-import org.checkerframework.javacutil.Pair;
 import java.lang.annotation.Annotation;
-import java.util.List;
 import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
-import javax.lang.model.element.VariableElement;
 
 import checkers.inference.dataflow.InferenceAnalysis;
 import checkers.inference.model.ConstraintManager;
@@ -37,7 +34,7 @@ public interface InferrableChecker {
     void initChecker();
 
     // Instantiate the real type factory
-    BaseAnnotatedTypeFactory createRealTypeFactory();
+    BaseInferenceRealTypeFactory createRealTypeFactory(boolean infer);
 
     public InferenceAnnotatedTypeFactory createInferenceATF(InferenceChecker inferenceChecker,
             InferrableChecker realChecker, BaseAnnotatedTypeFactory realTypeFactory,
@@ -57,7 +54,6 @@ public interface InferrableChecker {
     CFAnalysis createInferenceAnalysis(
             InferenceChecker checker,
             GenericAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis> factory,
-            List<Pair<VariableElement, CFValue>> fieldValues,
             SlotManager slotManager, ConstraintManager constraintManager,
             InferrableChecker realChecker);
 

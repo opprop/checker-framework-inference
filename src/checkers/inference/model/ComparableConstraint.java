@@ -6,8 +6,9 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.BugInCF;
 
 /**
- * Represents a constraint that two slots must be comparable.
+ * Represents a constraint that two slots must be comparable,  i.e. one type can be cast to the other.
  *
+ * In contrast, a {@link ComparisonConstraint} is created when two expressions are compared.
  */
 public class ComparableConstraint extends Constraint implements BinaryConstraint {
 
@@ -43,8 +44,8 @@ public class ComparableConstraint extends Constraint implements BinaryConstraint
             ConstantSlot firstConst = (ConstantSlot) first;
             ConstantSlot secondConst = (ConstantSlot) second;
 
-            return realQualHierarchy.isSubtype(firstConst.getValue(), secondConst.getValue())
-                    || realQualHierarchy.isSubtype(secondConst.getValue(), firstConst.getValue())
+            return realQualHierarchy.isSubtypeQualifiersOnly(firstConst.getValue(), secondConst.getValue())
+                    || realQualHierarchy.isSubtypeQualifiersOnly(secondConst.getValue(), firstConst.getValue())
                             ? AlwaysTrueConstraint.create()
                             : AlwaysFalseConstraint.create();
         }

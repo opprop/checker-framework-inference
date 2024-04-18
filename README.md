@@ -1,11 +1,8 @@
-Continuous integration status of master:
-[![Build Status](https://travis-ci.com/opprop/checker-framework-inference.png?branch=master)](https://travis-ci.com/opprop/checker-framework-inference)
-
-Checker Framework Inference
+Checker Framework Inference [![Build Status](https://github.com/opprop/checker-framework-inference/workflows/CI/badge.svg)](https://github.com/opprop/checker-framework-inference/actions/workflows/main.yml)
 ===========================
 
 This project is a general type inference framework,
-built upon the [Checker Framework](https://checkerframework.org/).
+built upon the [EISOP Checker Framework](https://eisop.github.io/).
 
 Given a program with no type annotations, Checker Framework Inference produces a program with type annotations.
 
@@ -31,7 +28,7 @@ Configure Eclipse to edit Checker Framework Inference
 
 The instructions here assumes you have cloned this project into a folder called `checker-framework-inference`.
 
-1) Follow the instructions in the [Checker Framework Manual](https://checkerframework.org/manual/#building-eclipse)
+1) Follow the instructions in the [EISOP Checker Framework Manual](https://eisop.github.io/cf/manual/manual.html#eclipse)
 to download, build, and configure Eclipse to edit the Checker Framework. The Checker Framework Inference Eclipse
 project depends on the eclipse projects from Checker Framework.
 
@@ -95,7 +92,7 @@ To test the build:
 Execution
 ---------
 
-Verify you have all of the requirements.
+Verify you have all the requirements.
 
 ````
 ./scripts/inference
@@ -119,7 +116,7 @@ Available options are [INFER, TYPECHECK, ROUNDTRIP, ROUNDTRIP_TYPECHECK]
     Generates and solves the constraints and writes the results to default.jaif file
 
   * `TYPECHECK`:
-    Typechecks the existin code
+    Typechecks the existing code
 
   * `ROUNDTRIP`:
     Generates and solves the constraints and then inserts the results
@@ -143,26 +140,26 @@ Which solver to use on the constraints.
 * `--targetclasspath`
 The classpath that is required by target program.
 
-`checkers.inference.solver.PropagationSolver` and `checkers.inference.solver.GeneralSolver` are real solvers
+`checkers.inference.solver.PropagationSolver` and `checkers.inference.solver.SolverEngine` are real solvers
 at the moment.
 
-Omiting the solver will create an output that numbers all of the
+Omitting the solver will create an output that numbers all the
 annotation positions in the program.
 
-`checkers.inference.solver.DebugSolver` will output all of the
+`checkers.inference.solver.DebugSolver` will output all the
 constraints generated.
 
 
 Other options can be found by `./scripts/inference --help`.
 
-## Use of General solver
+## Use of SolverEngine
 
 Generic solver is designed for solving type constraints from arbitrary type system.
 
 You can invoke generic solver through:
 
 ````
---solver checkers.inference.solver.GeneralSolver
+--solver checkers.inference.solver.SolverEngine
 ````
 
 There are a couple of arguments that generic solver can accept:
@@ -172,22 +169,22 @@ Specifies what concrete solver is going to use.
 
   At this moment, we have below available back ends:
 
-  * `MaxSAT`: Encodes constraints as Max-SAT problem and use Sat4j library to solve.
+  * `MaxSat`: Encodes constraints as Max-SAT problem and use Sat4j library to solve.
 
   * `Lingeling`: Encodes constraints as SAT problem and use Lingeling solver to solve.
 
   * `LogiQL`: Encodes constraints as statements of LogiQL language and use LogicBlox to solve.
 
-  * `Z3` with bit vector theory: Encodes constraints as Max-SMT problem with bit vectory theory, and use Z3 library to solve.
+  * `Z3` with bit vector theory: Encodes constraints as Max-SMT problem with bit vector theory, and use Z3 library to solve.
 
 
-  `MaxSAT` solver is used by default.
+  `MaxSat` solver is used by default.
 
 * `useGraph`
 Specifies whether to separate constraints into multiple components through constraint graph and solve them respectively. The default value is true.
 
 * `solveInParallel`
-If constraints are separated by constraint graph, this arguments indicates whether to solve the components in parallel (multithreading). The default value is true.
+If constraints are separated by constraint graph, this argument indicates whether to solve the components in parallel (multithreading). The default value is true.
 
 * `collectStatistics`
 Specifies whether to collect statistic with respect to timing, size of constraints, size of encoding, etc. The default value is false.
@@ -195,6 +192,6 @@ Specifies whether to collect statistic with respect to timing, size of constrain
 For example, generic solver can be invoked through following command:
 
 ````
-./scripts/inference --mode INFER --checker ostrusted.OsTrustedChecker --solver checkers.inference.solver.GeneralSolver --solverArgs solver=MaxSAT,useGraph=true,collectStatistics=true,solveInParallel=false [List of files]
+./scripts/inference --mode INFER --checker ostrusted.OsTrustedChecker --solver checkers.inference.solver.SolverEngine --solverArgs solver=MaxSat,useGraph=true,collectStatistics=true,solveInParallel=false [List of files]
 ````
 

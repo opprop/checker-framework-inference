@@ -4,6 +4,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedIntersectionType;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedTypeVariable;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcardType;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
@@ -37,11 +38,29 @@ public class InferenceUtil {
      */
     public static Set<AnnotationMirror> clearAnnos(final AnnotatedTypeMirror atm) {
 
-        final Set<AnnotationMirror> oldAnnos = AnnotationUtils.createAnnotationSet();
+        final Set<AnnotationMirror> oldAnnos = new AnnotationMirrorSet();
         oldAnnos.addAll(atm.getAnnotations());
 
         atm.clearAnnotations();
         return oldAnnos;
+    }
+
+    /**
+     * TODO: This method is similar to the code in https://github.com/eisop/checker-framework
+     * /blob/6f12277290642f8fb89a5c614b31fe419eb0a7b1/framework/src/main/java/
+     * org/checkerframework/framework/type/DefaultInferredTypesApplier.java#L134,
+     * it should be cleaned up when the code of this link is improved.
+     */
+    public static void removePrimaryTypeVariableAnnotation(AnnotatedTypeVariable atv, AnnotationMirror potentialVarAnno)  {
+        AnnotationMirror ub = atv.getUpperBound().getAnnotationInHierarchy(potentialVarAnno);
+        AnnotationMirror lb = atv.getLowerBound().getAnnotationInHierarchy(potentialVarAnno);
+        atv.removeAnnotation(potentialVarAnno);
+        if (ub != null) {
+            atv.getUpperBound().addAnnotation(ub);
+        }
+        if (lb != null) {
+            atv.getLowerBound().addAnnotation(lb);
+        }
     }
 
     /**
@@ -193,7 +212,7 @@ public class InferenceUtil {
             case INTERSECTION:
                 // TODO: We need clear semantics for INTERSECTIONS, using first
                 // alternative for now
-                upperBoundType = ((AnnotatedIntersectionType) upperBoundType).directSuperTypes().get(0);
+                upperBoundType = upperBoundType.directSupertypes().get(0);
                 break;
 
             default:
@@ -228,7 +247,7 @@ public class InferenceUtil {
 
                 case INTERSECTION:
                     // TODO: We need clear semantics for INTERSECTIONS, using first alternative for now
-                    lowerBoundType = ((AnnotatedIntersectionType) lowerBoundType).directSuperTypes().get(0);
+                    lowerBoundType = lowerBoundType.directSupertypes().get(0);
                     break;
 
 

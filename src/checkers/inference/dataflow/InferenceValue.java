@@ -52,7 +52,7 @@ public class InferenceValue extends CFValue {
      *
      */
     @Override
-    public CFValue leastUpperBound(CFValue other) {
+    public CFValue upperBound(CFValue other, TypeMirror upperBoundTypeMirror, boolean shouldWiden) {
         if (other == null) {
             return this;
         }

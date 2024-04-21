@@ -1,5 +1,11 @@
 package checkers.inference.solver.backend.maxsat.encoder;
 
+import org.sat4j.core.VecInt;
+
+import java.util.Map;
+
+import javax.lang.model.element.AnnotationMirror;
+
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.VariableSlot;
@@ -7,14 +13,12 @@ import checkers.inference.solver.backend.encoder.preference.PreferenceConstraint
 import checkers.inference.solver.backend.maxsat.MathUtils;
 import checkers.inference.solver.backend.maxsat.VectorUtils;
 import checkers.inference.solver.frontend.Lattice;
-import org.sat4j.core.VecInt;
 
-import javax.lang.model.element.AnnotationMirror;
-import java.util.Map;
+public class MaxSATPreferenceConstraintEncoder extends MaxSATAbstractConstraintEncoder
+        implements PreferenceConstraintEncoder<VecInt[]> {
 
-public class MaxSATPreferenceConstraintEncoder extends MaxSATAbstractConstraintEncoder implements PreferenceConstraintEncoder<VecInt[]> {
-
-    public MaxSATPreferenceConstraintEncoder(Lattice lattice, Map<AnnotationMirror, Integer> typeToInt) {
+    public MaxSATPreferenceConstraintEncoder(
+            Lattice lattice, Map<AnnotationMirror, Integer> typeToInt) {
         super(lattice, typeToInt);
     }
 
@@ -25,8 +29,9 @@ public class MaxSATPreferenceConstraintEncoder extends MaxSATAbstractConstraintE
         VariableSlot vs = constraint.getVariable();
         ConstantSlot cs = constraint.getGoal();
         if (lattice.allTypes.contains(cs.getValue())) {
-            return VectorUtils.asVecArray(MathUtils.mapIdToMatrixEntry(vs.getId(), typeToInt.get(cs.getValue()),
-                    lattice));
+            return VectorUtils.asVecArray(
+                    MathUtils.mapIdToMatrixEntry(
+                            vs.getId(), typeToInt.get(cs.getValue()), lattice));
         } else {
             return emptyValue;
         }

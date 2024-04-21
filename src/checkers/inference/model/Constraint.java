@@ -3,20 +3,16 @@ package checkers.inference.model;
 import java.util.List;
 
 /**
- * A Constraint represents a logical relationship between two or more Slots of any type.  ConstraintSolvers
- * assign values to VariableSlots such that the resulting assignments, if possible, satisfy all the given
- * Constraints.
+ * A Constraint represents a logical relationship between two or more Slots of any type.
+ * ConstraintSolvers assign values to VariableSlots such that the resulting assignments, if
+ * possible, satisfy all the given Constraints.
  */
 public abstract class Constraint {
 
-    /**
-     * The slots constrained by this object
-     */
+    /** The slots constrained by this object */
     private final List<Slot> slots;
 
-    /**
-     * Used to locate this constraint in source code.
-     */
+    /** Used to locate this constraint in source code. */
     private final AnnotationLocation location;
 
     public Constraint(List<Slot> slots, AnnotationLocation location) {

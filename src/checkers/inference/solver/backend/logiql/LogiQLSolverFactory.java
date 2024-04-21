@@ -12,8 +12,11 @@ import checkers.inference.solver.util.SolverEnvironment;
 public class LogiQLSolverFactory extends AbstractSolverFactory<LogiQLFormatTranslator> {
 
     @Override
-    public Solver<?> createSolver(SolverEnvironment solverEnvironment, Collection<Slot> slots,
-            Collection<Constraint> constraints, Lattice lattice) {
+    public Solver<?> createSolver(
+            SolverEnvironment solverEnvironment,
+            Collection<Slot> slots,
+            Collection<Constraint> constraints,
+            Lattice lattice) {
         LogiQLFormatTranslator formatTranslator = createFormatTranslator(lattice);
         return new LogiQLSolver(solverEnvironment, slots, constraints, formatTranslator, lattice);
     }
@@ -22,5 +25,4 @@ public class LogiQLSolverFactory extends AbstractSolverFactory<LogiQLFormatTrans
     public LogiQLFormatTranslator createFormatTranslator(Lattice lattice) {
         return new LogiQLFormatTranslator(lattice);
     }
-
 }

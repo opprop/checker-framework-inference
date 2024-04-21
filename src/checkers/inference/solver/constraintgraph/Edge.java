@@ -6,9 +6,8 @@ import checkers.inference.model.Constraint;
 
 /**
  * Edge represents a constraint. Edge is undirected.
- * 
- * @author jianchu
  *
+ * @author jianchu
  */
 public class Edge {
 

@@ -22,35 +22,44 @@ import checkers.inference.model.ConstraintManager;
 import dataflow.util.DataflowUtils;
 
 /**
- * DataflowInferenceAnnotatedTypeFactory handles boxing and unboxing for
- * primitive types. The Dataflow type should always same as declared type for
- * both cases.
- * 
- * @author jianchu
+ * DataflowInferenceAnnotatedTypeFactory handles boxing and unboxing for primitive types. The
+ * Dataflow type should always same as declared type for both cases.
  *
+ * @author jianchu
  */
 public class DataflowInferenceAnnotatedTypeFactory extends InferenceAnnotatedTypeFactory {
 
-    public DataflowInferenceAnnotatedTypeFactory(InferenceChecker inferenceChecker,
-            boolean withCombineConstraints, BaseAnnotatedTypeFactory realTypeFactory,
-            InferrableChecker realChecker, SlotManager slotManager, ConstraintManager constraintManager) {
-        super(inferenceChecker, withCombineConstraints, realTypeFactory, realChecker, slotManager,
+    public DataflowInferenceAnnotatedTypeFactory(
+            InferenceChecker inferenceChecker,
+            boolean withCombineConstraints,
+            BaseAnnotatedTypeFactory realTypeFactory,
+            InferrableChecker realChecker,
+            SlotManager slotManager,
+            ConstraintManager constraintManager) {
+        super(
+                inferenceChecker,
+                withCombineConstraints,
+                realTypeFactory,
+                realChecker,
+                slotManager,
                 constraintManager);
         postInit();
     }
 
     @Override
     public TreeAnnotator createTreeAnnotator() {
-        return new ListTreeAnnotator(new LiteralTreeAnnotator(this),
-                new DataflowInferenceTreeAnnotator(this, realChecker, realTypeFactory,
-                        variableAnnotator, slotManager));
+        return new ListTreeAnnotator(
+                new LiteralTreeAnnotator(this),
+                new DataflowInferenceTreeAnnotator(
+                        this, realChecker, realTypeFactory, variableAnnotator, slotManager));
     }
 
     @Override
     public AnnotatedDeclaredType getBoxedType(AnnotatedPrimitiveType type) {
         TypeElement typeElt = types.boxedClass(type.getUnderlyingType());
-        AnnotationMirror am = DataflowUtils.createDataflowAnnotation(typeElt.asType().toString(),
-                this.processingEnv);
+        AnnotationMirror am =
+                DataflowUtils.createDataflowAnnotation(
+                        typeElt.asType().toString(), this.processingEnv);
         AnnotatedDeclaredType dt = fromElement(typeElt);
         ConstantSlot cs = InferenceMain.getInstance().getSlotManager().createConstantSlot(am);
         dt.addAnnotation(InferenceMain.getInstance().getSlotManager().getAnnotation(cs));
@@ -62,10 +71,11 @@ public class DataflowInferenceAnnotatedTypeFactory extends InferenceAnnotatedTyp
     public AnnotatedPrimitiveType getUnboxedType(AnnotatedDeclaredType type)
             throws IllegalArgumentException {
         PrimitiveType primitiveType = types.unboxedType(type.getUnderlyingType());
-        AnnotationMirror am = DataflowUtils.createDataflowAnnotation(primitiveType.toString(),
-                this.processingEnv);
-        AnnotatedPrimitiveType pt = (AnnotatedPrimitiveType) AnnotatedTypeMirror.createType(
-                primitiveType, this, false);
+        AnnotationMirror am =
+                DataflowUtils.createDataflowAnnotation(
+                        primitiveType.toString(), this.processingEnv);
+        AnnotatedPrimitiveType pt =
+                (AnnotatedPrimitiveType) AnnotatedTypeMirror.createType(primitiveType, this, false);
         ConstantSlot cs = InferenceMain.getInstance().getSlotManager().createConstantSlot(am);
         pt.addAnnotation(InferenceMain.getInstance().getSlotManager().getAnnotation(cs));
         pt.addAnnotation(cs.getValue());

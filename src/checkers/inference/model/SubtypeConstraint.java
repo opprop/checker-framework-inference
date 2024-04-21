@@ -1,32 +1,25 @@
 package checkers.inference.model;
 
-import java.util.Arrays;
-
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.BugInCF;
 
+import java.util.Arrays;
+
 /**
- * Represents a subtyping relationship between two slots.
- * E.g.
- *  String s = "yo";
- *  String a = s;
+ * Represents a subtyping relationship between two slots. E.g. String s = "yo"; String a = s;
  *
- * If, using the Nullness type system:
- *    // vs represents the variable corresponding to the annotation on s
- *    vs = VariableSlot( astPathToS, 0 )
+ * <p>If, using the Nullness type system: // vs represents the variable corresponding to the
+ * annotation on s vs = VariableSlot( astPathToS, 0 )
  *
- *    // va represents the variable corresponding to the annotation on a
- *    va = VariableSlot( astPathToA, 1 )
+ * <p>// va represents the variable corresponding to the annotation on a va = VariableSlot(
+ * astPathToA, 1 )
  *
- *    // cn represents the constant NonNull value (which "yo" inherently has)
- *    cnn = ConstantSlot( NonNull )
+ * <p>// cn represents the constant NonNull value (which "yo" inherently has) cnn = ConstantSlot(
+ * NonNull )
  *
- * Then:
- *   The above statements would result in the following SubtypeConstraints:
- *   logical representation:           in Java:
- *   vs <: cnn                         new SubtypeConstraint( vs, cnn )
- *   va <: vs                          new SubtypeConstraint( va, vs  )
- *
+ * <p>Then: The above statements would result in the following SubtypeConstraints: logical
+ * representation: in Java: vs <: cnn new SubtypeConstraint( vs, cnn ) va <: vs new
+ * SubtypeConstraint( va, vs )
  */
 public class SubtypeConstraint extends Constraint implements BinaryConstraint {
 
@@ -45,11 +38,17 @@ public class SubtypeConstraint extends Constraint implements BinaryConstraint {
         this.supertype = supertype;
     }
 
-    protected static Constraint create(Slot subtype, Slot supertype, AnnotationLocation location,
+    protected static Constraint create(
+            Slot subtype,
+            Slot supertype,
+            AnnotationLocation location,
             QualifierHierarchy realQualHierarchy) {
         if (subtype == null || supertype == null) {
-            throw new BugInCF("Create subtype constraint with null argument. Subtype: "
-                    + subtype + " Supertype: " + supertype);
+            throw new BugInCF(
+                    "Create subtype constraint with null argument. Subtype: "
+                            + subtype
+                            + " Supertype: "
+                            + supertype);
         }
 
         // Normalization cases:
@@ -66,7 +65,8 @@ public class SubtypeConstraint extends Constraint implements BinaryConstraint {
             ConstantSlot subConstant = (ConstantSlot) subtype;
             ConstantSlot superConstant = (ConstantSlot) supertype;
 
-            return realQualHierarchy.isSubtypeQualifiersOnly(subConstant.getValue(), superConstant.getValue())
+            return realQualHierarchy.isSubtypeQualifiersOnly(
+                            subConstant.getValue(), superConstant.getValue())
                     ? AlwaysTrueConstraint.create()
                     : AlwaysFalseConstraint.create();
         }
@@ -129,30 +129,22 @@ public class SubtypeConstraint extends Constraint implements BinaryConstraint {
         final int prime = 31;
         int result = 1;
         result = prime * result + ((subtype == null) ? 0 : subtype.hashCode());
-        result = prime * result
-                + ((supertype == null) ? 0 : supertype.hashCode());
+        result = prime * result + ((supertype == null) ? 0 : supertype.hashCode());
         return result;
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         SubtypeConstraint other = (SubtypeConstraint) obj;
         if (subtype == null) {
-            if (other.subtype != null)
-                return false;
-        } else if (!subtype.equals(other.subtype))
-            return false;
+            if (other.subtype != null) return false;
+        } else if (!subtype.equals(other.subtype)) return false;
         if (supertype == null) {
-            if (other.supertype != null)
-                return false;
-        } else if (!supertype.equals(other.supertype))
-            return false;
+            if (other.supertype != null) return false;
+        } else if (!supertype.equals(other.supertype)) return false;
         return true;
     }
 

@@ -1,5 +1,7 @@
 package checkers.inference.solver;
 
+import org.checkerframework.framework.type.QualifierHierarchy;
+
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -9,8 +11,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
 import javax.annotation.processing.ProcessingEnvironment;
-import org.checkerframework.framework.type.QualifierHierarchy;
+
 import checkers.inference.InferenceResult;
 import checkers.inference.InferenceSolver;
 import checkers.inference.model.Constraint;
@@ -22,11 +25,11 @@ import checkers.inference.util.InferenceUtil;
  * Debug solver prints out variables and constraints.
  *
  * @author mcarthur
- *
  */
 public class DebugSolver implements InferenceSolver {
 
-    private static final boolean showAstPaths = true; // System.getProperty("showAstPaths", "false").equalsIgnoreCase("true");
+    private static final boolean showAstPaths =
+            true; // System.getProperty("showAstPaths", "false").equalsIgnoreCase("true");
     public static final String constraintFile = "constraint-file";
 
     @Override
@@ -71,8 +74,7 @@ public class DebugSolver implements InferenceSolver {
         if (configuration.containsKey(constraintFile)) {
             String filename = configuration.get(constraintFile);
             try (FileWriter file = new FileWriter(new File(filename))) {
-                for (String out : output)
-                    file.write(out);
+                for (String out : output) file.write(out);
                 file.flush();
             } catch (IOException e) {
                 e.printStackTrace();

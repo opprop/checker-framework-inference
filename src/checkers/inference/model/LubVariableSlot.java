@@ -1,9 +1,9 @@
 package checkers.inference.model;
 
 /**
- * LubVariableSlot models the least-upper-bounds of two other slots.
- * TODO(Zhiping): Rename this to MergeVariableSlot, also consider the difference
- * TODO(Zhiping): between this class and CombVariableSlot
+ * LubVariableSlot models the least-upper-bounds of two other slots. TODO(Zhiping): Rename this to
+ * MergeVariableSlot, also consider the difference TODO(Zhiping): between this class and
+ * CombVariableSlot
  */
 public class LubVariableSlot extends VariableSlot {
 
@@ -35,8 +35,8 @@ public class LubVariableSlot extends VariableSlot {
     }
 
     /**
-     * LubVariableSlot should never be inserted into the source code. record
-     * does not correspond to an annotatable position.
+     * LubVariableSlot should never be inserted into the source code. record does not correspond to
+     * an annotatable position.
      *
      * @return false
      */
@@ -56,23 +56,16 @@ public class LubVariableSlot extends VariableSlot {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         LubVariableSlot other = (LubVariableSlot) obj;
         if (left == null) {
-            if (other.left != null)
-                return false;
-        } else if (!left.equals(other.left))
-            return false;
+            if (other.left != null) return false;
+        } else if (!left.equals(other.left)) return false;
         if (right == null) {
-            if (other.right != null)
-                return false;
-        } else if (!right.equals(other.right))
-            return false;
+            if (other.right != null) return false;
+        } else if (!right.equals(other.right)) return false;
         return true;
     }
 }

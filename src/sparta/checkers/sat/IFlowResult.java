@@ -14,14 +14,13 @@ import checkers.inference.DefaultInferenceResult;
 import checkers.inference.InferenceMain;
 import sparta.checkers.iflow.util.PFPermission;
 
-/**
- * Created by smillst on 9/21/15.
- */
+/** Created by smillst on 9/21/15. */
 public abstract class IFlowResult extends DefaultInferenceResult {
     protected final Map<Integer, Set<PFPermission>> tempResults;
     protected final Map<Integer, Boolean> idToExistance;
 
-    public IFlowResult(Collection<PermissionSolution> solutions, ProcessingEnvironment processingEnv) {
+    public IFlowResult(
+            Collection<PermissionSolution> solutions, ProcessingEnvironment processingEnv) {
         // Legacy solver doesn't support explanation
         super();
         this.tempResults = new HashMap<>();
@@ -71,7 +70,8 @@ public abstract class IFlowResult extends DefaultInferenceResult {
         }
     }
 
-    protected abstract AnnotationMirror createAnnotationFromPermissions(ProcessingEnvironment processingEnv, Set<PFPermission> permissions);
+    protected abstract AnnotationMirror createAnnotationFromPermissions(
+            ProcessingEnvironment processingEnv, Set<PFPermission> permissions);
 
     private void mergeIdToExistance(PermissionSolution solution) {
         for (Map.Entry<Integer, Boolean> entry : solution.getResult().entrySet()) {
@@ -80,7 +80,9 @@ public abstract class IFlowResult extends DefaultInferenceResult {
             if (idToExistance.containsKey(id)) {
                 boolean alreadyExists = idToExistance.get(id);
                 if (alreadyExists ^ existsPermission) {
-                    InferenceMain.getInstance().logger.log(Level.INFO, "Mismatch between existance of annotation");
+                    InferenceMain.getInstance()
+                            .logger
+                            .log(Level.INFO, "Mismatch between existance of annotation");
                 }
             } else {
                 idToExistance.put(id, existsPermission);
@@ -95,5 +97,4 @@ public abstract class IFlowResult extends DefaultInferenceResult {
     public boolean containsSolutionForVariable(int varId) {
         return idToExistance.containsKey(varId);
     }
-
 }

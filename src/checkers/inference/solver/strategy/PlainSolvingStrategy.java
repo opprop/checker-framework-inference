@@ -14,17 +14,21 @@ import checkers.inference.solver.backend.SolverFactory;
 import checkers.inference.solver.frontend.Lattice;
 import checkers.inference.solver.util.SolverEnvironment;
 
-public class PlainSolvingStrategy extends AbstractSolvingStrategy{
+public class PlainSolvingStrategy extends AbstractSolvingStrategy {
 
     public PlainSolvingStrategy(SolverFactory solverFactory) {
         super(solverFactory);
     }
 
     @Override
-    public InferenceResult solve(SolverEnvironment solverEnvironment, Collection<Slot> slots,
-                                 Collection<Constraint> constraints, Lattice lattice) {
+    public InferenceResult solve(
+            SolverEnvironment solverEnvironment,
+            Collection<Slot> slots,
+            Collection<Constraint> constraints,
+            Lattice lattice) {
 
-        Solver<?> underlyingSolver = solverFactory.createSolver(solverEnvironment, slots, constraints, lattice);
+        Solver<?> underlyingSolver =
+                solverFactory.createSolver(solverEnvironment, slots, constraints, lattice);
 
         Map<Integer, AnnotationMirror> solutions = underlyingSolver.solve();
 

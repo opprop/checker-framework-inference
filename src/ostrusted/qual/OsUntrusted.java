@@ -1,19 +1,18 @@
 package ostrusted.qual;
 
+import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
+import org.checkerframework.framework.qual.SubtypeOf;
+
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
-import org.checkerframework.framework.qual.SubtypeOf;
-
 /**
- * Represents data that may not be suitable to pass to OS commands such as
- * exec.<p/>
+ * Represents data that may not be suitable to pass to OS commands such as exec.
  *
- * Types are implicitly {@code OsUntrusted}.
+ * <p>Types are implicitly {@code OsUntrusted}.
  *
  * @see OsTrusted
  * @see PolyOsTrusted

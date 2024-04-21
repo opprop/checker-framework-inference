@@ -10,9 +10,8 @@ import checkers.inference.model.Slot;
 
 /**
  * Vertex represents a slot. Two vertices are same if they have same slot id.
- * 
- * @author jianchu
  *
+ * @author jianchu
  */
 public class Vertex {
 

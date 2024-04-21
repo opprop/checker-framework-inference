@@ -1,6 +1,5 @@
 package checkers.inference;
 
-import checkers.inference.model.VariableSlot;
 import org.checkerframework.javacutil.BugInCF;
 
 import java.util.ArrayList;
@@ -19,11 +18,12 @@ import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.Slot;
+import checkers.inference.model.VariableSlot;
 
 /**
- * This class currently just removes ExistentialVariables from the set of constraints
- * and replaces them with ExistentialConstraints.  In the future, we may want to make
- * this an interface or make it customizable
+ * This class currently just removes ExistentialVariables from the set of constraints and replaces
+ * them with ExistentialConstraints. In the future, we may want to make this an interface or make it
+ * customizable
  */
 public class ConstraintNormalizer {
 
@@ -33,9 +33,7 @@ public class ConstraintNormalizer {
         boolean accept(Constraint constraint);
     }
 
-    public ConstraintNormalizer() {
-
-    }
+    public ConstraintNormalizer() {}
 
     public Set<Constraint> normalize(Set<Constraint> constraints) {
         Set<Constraint> filteredConstraints = new LinkedHashSet<>(constraints);
@@ -69,8 +67,9 @@ public class ConstraintNormalizer {
         }
 
         /**
-         * Returns true if this constraint contains an ExistentialVariable and
-         * this constraint will be replaced by this normalizer
+         * Returns true if this constraint contains an ExistentialVariable and this constraint will
+         * be replaced by this normalizer
+         *
          * @param constraint
          * @return
          */
@@ -99,7 +98,8 @@ public class ConstraintNormalizer {
             addToTree(leftSlot, rightSlot, constraint);
         }
 
-        // TODO: DOCUMENT THAT WE BASICALLY (FOR BINARY CONSTRAINTS) BUILD UP ALL POSSIBLE EXISTS/DOESN'T EXISTS
+        // TODO: DOCUMENT THAT WE BASICALLY (FOR BINARY CONSTRAINTS) BUILD UP ALL POSSIBLE
+        // EXISTS/DOESN'T EXISTS
         // TODO: FOR EITHER SIDE OF THE CONSTRAINT THEN TAKE THE CARTESIAN PRODUCT
 
         protected List<Slot> slotsToConditionals(final Slot existentialVariableSlot) {
@@ -125,21 +125,23 @@ public class ConstraintNormalizer {
         // !1 2 !5 1 => [ filtered out as it unsatisfiable
         // !1 2 !5 !1 6 => 2 [ 6
         //  ...
-        protected void addToTree(final List<Slot> leftSlots,
-                              final List<Slot> rightSlots,
-                              final BinaryConstraint constraint) {
+        protected void addToTree(
+                final List<Slot> leftSlots,
+                final List<Slot> rightSlots,
+                final BinaryConstraint constraint) {
 
-            final int initialSize = (int) Math.floor((Math.pow(leftSlots.size() * leftSlots.size(), 2) * 3/4));
+            final int initialSize =
+                    (int) Math.floor((Math.pow(leftSlots.size() * leftSlots.size(), 2) * 3 / 4));
 
             // a list of values from leftSlots, where exist == false
             // we have already added their positive cases to implications
             final HashSet<Value> previouslyEncountered = new HashSet<>(initialSize);
 
-            final int lastLeftIndex  = leftSlots.size() - 1;
+            final int lastLeftIndex = leftSlots.size() - 1;
             final int lastRightIndex = rightSlots.size() - 1;
 
             for (int leftIndex = 0; leftIndex < leftSlots.size(); leftIndex++) {
-                final Slot left  = leftSlots.get(leftIndex);
+                final Slot left = leftSlots.get(leftIndex);
                 final boolean lastLeft = leftIndex == lastLeftIndex;
 
                 final TreeSet<Value> encountered = new TreeSet<>(previouslyEncountered);
@@ -165,8 +167,6 @@ public class ConstraintNormalizer {
                 }
             }
         }
-
-
     }
 
     private static class ExistentialTree {
@@ -192,7 +192,8 @@ public class ConstraintNormalizer {
             current.constraints.add(constraint);
         }
 
-        private static ExistentialNode getOrCreateNode(final TreeMap<Slot, ExistentialNode> nodes, Value value) {
+        private static ExistentialNode getOrCreateNode(
+                final TreeMap<Slot, ExistentialNode> nodes, Value value) {
             ExistentialNode node;
             if (!nodes.containsKey(value.slot)) {
                 node = new ExistentialNode(value);
@@ -212,9 +213,7 @@ public class ConstraintNormalizer {
             }
             return constraints;
         }
-
     }
-
 
     private static class ExistentialNode {
         private final Slot slot;
@@ -250,11 +249,11 @@ public class ConstraintNormalizer {
             }
             final LinkedHashSet<Constraint> ret = new LinkedHashSet<>();
 
-            ret.add(InferenceMain
-                    .getInstance()
-                    .getConstraintManager()
-                    .createExistentialConstraint(slot, ifExistsConstraints,
-                            ifNotExistsConstraints));
+            ret.add(
+                    InferenceMain.getInstance()
+                            .getConstraintManager()
+                            .createExistentialConstraint(
+                                    slot, ifExistsConstraints, ifNotExistsConstraints));
             return ret;
         }
     }
@@ -296,8 +295,9 @@ public class ConstraintNormalizer {
             if (alwaysExists) {
                 sb.append("[");
                 sb.append(
-                        slot instanceof VariableSlot ? slot.getId()
-                                          : ((ConstantSlot) slot).getValue());
+                        slot instanceof VariableSlot
+                                ? slot.getId()
+                                : ((ConstantSlot) slot).getValue());
                 sb.append("]");
             } else {
                 if (!exists) {
@@ -310,6 +310,7 @@ public class ConstraintNormalizer {
     }
 
     private static SlotComparator SLOT_COMPARATOR = new SlotComparator();
+
     private static class SlotComparator implements Comparator<Slot> {
 
         @Override
@@ -319,9 +320,10 @@ public class ConstraintNormalizer {
             }
             if (o1 instanceof ConstantSlot) {
                 if (o2 instanceof ConstantSlot) {
-                    return ((ConstantSlot) o1).getValue().toString().compareTo(
-                            ((ConstantSlot) o2).getValue().toString()
-                    );
+                    return ((ConstantSlot) o1)
+                            .getValue()
+                            .toString()
+                            .compareTo(((ConstantSlot) o2).getValue().toString());
                 } else {
                     return 1;
                 }
@@ -342,8 +344,11 @@ public class ConstraintNormalizer {
             for (Slot slot : constraint.getSlots()) {
                 if (slot == null) {
                     if (!InferenceMain.isHackMode()) {
-                        throw new BugInCF("Null slot in constraint " + constraint.getClass().getName() + "\n"
-                                               + constraint);
+                        throw new BugInCF(
+                                "Null slot in constraint "
+                                        + constraint.getClass().getName()
+                                        + "\n"
+                                        + constraint);
                     }
                     return true;
                 }

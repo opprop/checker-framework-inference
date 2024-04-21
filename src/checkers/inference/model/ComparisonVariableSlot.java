@@ -1,10 +1,9 @@
 package checkers.inference.model;
 
 /**
- * ComparisonVariableSlot represent the left side refinement of an comparison operation between two other
- * {@link VariableSlot}s. 
- * e.g., for a comparison constraint c := x &lt y, the comparison variable slot c is the refined value of
- * x where x < y is always when x = c.
+ * ComparisonVariableSlot represent the left side refinement of an comparison operation between two
+ * other {@link VariableSlot}s. e.g., for a comparison constraint c := x &lt y, the comparison
+ * variable slot c is the refined value of x where x < y is always when x = c.
  */
 public class ComparisonVariableSlot extends VariableSlot {
     private final Slot refined;

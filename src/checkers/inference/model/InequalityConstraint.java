@@ -1,8 +1,8 @@
 package checkers.inference.model;
 
-import java.util.Arrays;
-
 import org.checkerframework.javacutil.BugInCF;
+
+import java.util.Arrays;
 
 public class InequalityConstraint extends Constraint implements BinaryConstraint {
 
@@ -23,8 +23,11 @@ public class InequalityConstraint extends Constraint implements BinaryConstraint
 
     protected static Constraint create(Slot first, Slot second, AnnotationLocation location) {
         if (first == null || second == null) {
-            throw new BugInCF("Create inequality constraint with null argument. Subtype: "
-                    + first + " Supertype: " + second);
+            throw new BugInCF(
+                    "Create inequality constraint with null argument. Subtype: "
+                            + first
+                            + " Supertype: "
+                            + second);
         }
 
         // Normalization cases:
@@ -81,12 +84,9 @@ public class InequalityConstraint extends Constraint implements BinaryConstraint
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         InequalityConstraint other = (InequalityConstraint) obj;
         if ((first.equals(other.first) && second.equals(other.second))
                 || (first.equals(other.second) && (second.equals(other.first)))) {

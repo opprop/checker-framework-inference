@@ -13,15 +13,18 @@ import checkers.inference.solver.util.SolverEnvironment;
 public class LingelingSolverFactory extends AbstractSolverFactory<MaxSatFormatTranslator> {
 
     @Override
-    public Solver<?> createSolver(SolverEnvironment solverEnvironment, Collection<Slot> slots,
-            Collection<Constraint> constraints, Lattice lattice) {
+    public Solver<?> createSolver(
+            SolverEnvironment solverEnvironment,
+            Collection<Slot> slots,
+            Collection<Constraint> constraints,
+            Lattice lattice) {
         MaxSatFormatTranslator formatTranslator = createFormatTranslator(lattice);
-        return new LingelingSolver(solverEnvironment, slots, constraints, formatTranslator, lattice);
+        return new LingelingSolver(
+                solverEnvironment, slots, constraints, formatTranslator, lattice);
     }
 
     @Override
     protected MaxSatFormatTranslator createFormatTranslator(Lattice lattice) {
-           return new MaxSatFormatTranslator(lattice);
+        return new MaxSatFormatTranslator(lattice);
     }
-
 }

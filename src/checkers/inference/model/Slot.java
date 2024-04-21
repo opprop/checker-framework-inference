@@ -5,29 +5,26 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Slots represent constraint variables that represent either
- * (1) the qualifiers of the real type system {@link ConstantSlot} or
- * (2) placeholders for which a solution needs to be inferred {@link VariableSlot}.
+ * Slots represent constraint variables that represent either (1) the qualifiers of the real type
+ * system {@link ConstantSlot} or (2) placeholders for which a solution needs to be inferred {@link
+ * VariableSlot}.
  *
- * Each Slot has a unique identification number.
+ * <p>Each Slot has a unique identification number.
  *
- * Slots are represented by {@code @VarAnnot( slot id )} annotations in AnnotatedTypeMirrors.
- * The {@link checkers.inference.VariableAnnotator} generates the Slots for source code.
+ * <p>Slots are represented by {@code @VarAnnot( slot id )} annotations in AnnotatedTypeMirrors. The
+ * {@link checkers.inference.VariableAnnotator} generates the Slots for source code.
  *
- * A slot maintains the set of {@link LubVariableSlot}s of least-upper bound computations it is
+ * <p>A slot maintains the set of {@link LubVariableSlot}s of least-upper bound computations it is
  * involved in.
- *
  */
 public abstract class Slot implements Comparable<Slot> {
     /**
-     * Uniquely identifies this Slot.  id's are monotonically increasing in value by the order they
+     * Uniquely identifies this Slot. id's are monotonically increasing in value by the order they
      * are generated
      */
     protected final int id;
 
-    /**
-     * Slots this variable has been merged to.
-     */
+    /** Slots this variable has been merged to. */
     private final Set<LubVariableSlot> mergedToSlots = new HashSet<>();
 
     public Slot(int id) {
@@ -53,7 +50,7 @@ public abstract class Slot implements Comparable<Slot> {
     }
 
     public boolean isMergedTo(Slot other) {
-        for (LubVariableSlot mergedTo: mergedToSlots) {
+        for (LubVariableSlot mergedTo : mergedToSlots) {
             if (mergedTo.equals(other)) {
                 return true;
             } else {
@@ -72,15 +69,11 @@ public abstract class Slot implements Comparable<Slot> {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         Slot other = (Slot) obj;
-        if (id != other.id)
-            return false;
+        if (id != other.id) return false;
         return true;
     }
 

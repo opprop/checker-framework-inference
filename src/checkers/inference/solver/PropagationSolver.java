@@ -1,8 +1,5 @@
 package checkers.inference.solver;
 
-import checkers.inference.DefaultInferenceResult;
-import checkers.inference.InferenceResult;
-import checkers.inference.model.VariableSlot;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationUtils;
 
@@ -17,7 +14,9 @@ import java.util.Set;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
 
+import checkers.inference.DefaultInferenceResult;
 import checkers.inference.InferenceMain;
+import checkers.inference.InferenceResult;
 import checkers.inference.InferenceSolver;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Constraint;
@@ -25,14 +24,14 @@ import checkers.inference.model.EqualityConstraint;
 import checkers.inference.model.ExistentialConstraint;
 import checkers.inference.model.Slot;
 import checkers.inference.model.SubtypeConstraint;
+import checkers.inference.model.VariableSlot;
 
 /**
  * InferenceSolver FloodSolver implementation
  *
- * TODO: Parameters to configure where to push conflicts?
+ * <p>TODO: Parameters to configure where to push conflicts?
  *
  * @author mcarthur
- *
  */
 public class PropagationSolver implements InferenceSolver {
 
@@ -67,25 +66,23 @@ public class PropagationSolver implements InferenceSolver {
     /**
      * Flood solve a list of constraints.
      *
-     * 1) Find all variables that must be top (@TOP <: Var or VAR == @TOP)
+     * <p>1) Find all variables that must be top (@TOP <: Var or VAR == @TOP)
      *
-     * 2) Find all variables that must be bot (Var <: @BOT or VAR == @BOT)
+     * <p>2) Find all variables that must be bot (Var <: @BOT or VAR == @BOT)
      *
-     * 3) From constraints, create propagation maps.
-     *  These maps one variable to a list of other variables.
-     *  If the key variable is a certain annotation the variables in the value list must also be that annotation.
-     *  A map is create for subtype propagation and supertype propagation.
+     * <p>3) From constraints, create propagation maps. These maps one variable to a list of other
+     * variables. If the key variable is a certain annotation the variables in the value list must
+     * also be that annotation. A map is create for subtype propagation and supertype propagation.
      *
-     *  As an example, given a subtype propagation map of:
-     *  @1 -> [ @2, @3 ]
+     * <p>As an example, given a subtype propagation map of: @1 -> [ @2, @3 ]
      *
-     *  If @1 was inferred to be @BOT, then @2 and @3 would also have to be bot.
+     * <p>If @1 was inferred to be @BOT, then @2 and @3 would also have to be bot.
      *
-     * 4) Propagate the supertype values first
+     * <p>4) Propagate the supertype values first
      *
-     * 5) Propagate the subtype values second
+     * <p>5) Propagate the subtype values second
      *
-     * 6) Merge the results to get just one AnnotationMirror for each variable.
+     * <p>6) Merge the results to get just one AnnotationMirror for each variable.
      *
      * @return Map of int variable id to its inferred AnnotationMirror value
      */
@@ -109,24 +106,27 @@ public class PropagationSolver implements InferenceSolver {
     /**
      * Perform steps 1-3 of flood solving.
      *
-     * The parameters are the results of processing.
+     * <p>The parameters are the results of processing.
      *
-     * fixedBottom and fixedTop contain relationships between variables and constants
-     * (the constant for bottom and the constant for top respectively)
+     * <p>fixedBottom and fixedTop contain relationships between variables and constants (the
+     * constant for bottom and the constant for top respectively)
      *
-     * superTypePropagation and subTypePropagation
+     * <p>superTypePropagation and subTypePropagation
      *
      * @param fixedBottom Variables that must be bottom
      * @param fixedTop Variables that must be top
-     * @param superTypePropagation Map, where if a key is a supertyp, all variables in the value must also be supertype
-     * @param subTypePropagation Map, where if a key is a subtype, all variables in the value must also be subtypes
+     * @param superTypePropagation Map, where if a key is a supertyp, all variables in the value
+     *     must also be supertype
+     * @param subTypePropagation Map, where if a key is a subtype, all variables in the value must
+     *     also be subtypes
      */
-    private void preprocessConstraints(Set<Slot> fixedBottom,
+    private void preprocessConstraints(
+            Set<Slot> fixedBottom,
             Set<Slot> fixedTop,
             Map<Slot, List<Slot>> superTypePropagation,
             Map<Slot, List<Slot>> subTypePropagation) {
 
-        for (Constraint constraint: constraints) {
+        for (Constraint constraint : constraints) {
             // Skip constraints that are just constants
             if (!checkContainsVariable(constraint)) {
                 continue;
@@ -153,11 +153,28 @@ public class PropagationSolver implements InferenceSolver {
                         fixedBottom.add(variable);
                     }
                 } else {
-                    // Variable equality means values of one propagates to values of the other, for both subtype and supertype
-                    addEntryToMap(superTypePropagation, equality.getFirst(), equality.getSecond(), constraint);
-                    addEntryToMap(superTypePropagation, equality.getSecond(), equality.getFirst(), constraint);
-                    addEntryToMap(subTypePropagation, equality.getFirst(), equality.getSecond(), constraint);
-                    addEntryToMap(subTypePropagation, equality.getSecond(), equality.getFirst(), constraint);
+                    // Variable equality means values of one propagates to values of the other, for
+                    // both subtype and supertype
+                    addEntryToMap(
+                            superTypePropagation,
+                            equality.getFirst(),
+                            equality.getSecond(),
+                            constraint);
+                    addEntryToMap(
+                            superTypePropagation,
+                            equality.getSecond(),
+                            equality.getFirst(),
+                            constraint);
+                    addEntryToMap(
+                            subTypePropagation,
+                            equality.getFirst(),
+                            equality.getSecond(),
+                            constraint);
+                    addEntryToMap(
+                            subTypePropagation,
+                            equality.getSecond(),
+                            equality.getFirst(),
+                            constraint);
                 }
             } else if (constraint instanceof SubtypeConstraint) {
                 SubtypeConstraint subtype = (SubtypeConstraint) constraint;
@@ -177,12 +194,23 @@ public class PropagationSolver implements InferenceSolver {
                     }
                 } else {
                     // If the RHS is top, the LHS must be top
-                    addEntryToMap(superTypePropagation, subtype.getSubtype(), subtype.getSupertype(), constraint);
+                    addEntryToMap(
+                            superTypePropagation,
+                            subtype.getSubtype(),
+                            subtype.getSupertype(),
+                            constraint);
                     // If the LHS is bottom, the RHS must be bottom
-                    addEntryToMap(subTypePropagation, subtype.getSupertype(), subtype.getSubtype(), constraint);
+                    addEntryToMap(
+                            subTypePropagation,
+                            subtype.getSupertype(),
+                            subtype.getSubtype(),
+                            constraint);
                 }
             } else if (constraint instanceof ExistentialConstraint) {
-                InferenceMain.getInstance().logger.warning("PropagationSolver: Existential constraint found.  Inferred annotations may not type check ");
+                InferenceMain.getInstance()
+                        .logger
+                        .warning(
+                                "PropagationSolver: Existential constraint found.  Inferred annotations may not type check ");
             }
         }
     }
@@ -190,15 +218,18 @@ public class PropagationSolver implements InferenceSolver {
     /**
      * Given the inferred values, return a value for each slot.
      *
-     * Variables will have conflicting values if the constraints were not solvable.
+     * <p>Variables will have conflicting values if the constraints were not solvable.
      *
-     * This currently gives value precedence to fixedBottom, fixedTop, inferredBottom, inferredTop
+     * <p>This currently gives value precedence to fixedBottom, fixedTop, inferredBottom,
+     * inferredTop
      *
      * @return
      */
     private InferenceResult mergeToResult(
-            Set<Slot> fixedBottom, Set<Slot> fixedTop,
-            Set<Slot> inferredTop, Set<Slot> inferredBottom) {
+            Set<Slot> fixedBottom,
+            Set<Slot> fixedTop,
+            Set<Slot> inferredTop,
+            Set<Slot> inferredBottom) {
 
         Map<Integer, AnnotationMirror> solutions = new HashMap<Integer, AnnotationMirror>();
         for (Slot slot : slots) {
@@ -225,16 +256,15 @@ public class PropagationSolver implements InferenceSolver {
     }
 
     /**
-     * Given starting fixed values, iterate on the propagation map
-     * to propagate the resulting values.
+     * Given starting fixed values, iterate on the propagation map to propagate the resulting
+     * values.
      *
      * @param fixed The starting values that will trigger propagation
-     * @param typePropagation Maps of value to list of other values that will be propagated when the key is triggered.
-     *
+     * @param typePropagation Maps of value to list of other values that will be propagated when the
+     *     key is triggered.
      * @return All values that were fixed flooded/propagated to.
      */
-    private Set<Slot> propagateValues(Set<Slot> fixed,
-            Map<Slot, List<Slot>> typePropagation) {
+    private Set<Slot> propagateValues(Set<Slot> fixed, Map<Slot, List<Slot>> typePropagation) {
 
         Set<Slot> results = new HashSet<Slot>();
 

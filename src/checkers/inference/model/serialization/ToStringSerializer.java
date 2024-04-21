@@ -1,15 +1,14 @@
 package checkers.inference.model.serialization;
 
+import org.checkerframework.framework.util.AnnotationFormatter;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
-import org.checkerframework.framework.util.AnnotationFormatter;
-import org.checkerframework.javacutil.SystemUtil;
+
 import checkers.inference.InferenceMain;
 import checkers.inference.model.ArithmeticConstraint;
 import checkers.inference.model.ArithmeticVariableSlot;
@@ -34,9 +33,7 @@ import checkers.inference.model.SourceVariableSlot;
 import checkers.inference.model.SubtypeConstraint;
 import checkers.inference.model.VariableSlot;
 
-/**
- * This Serializer converts constraints and variables to human readable strings.
- */
+/** This Serializer converts constraints and variables to human readable strings. */
 public class ToStringSerializer implements Serializer<String, String> {
     private final boolean showAstPaths;
     private boolean showVerboseVars;
@@ -95,8 +92,7 @@ public class ToStringSerializer implements Serializer<String, String> {
 
         for (Slot slot : slots) {
             // sort the slots by ID through insertion to TreeMap
-            serializedSlots.put(slot.getId(),
-                    getCurrentIndentString() + slot.serialize(this));
+            serializedSlots.put(slot.getId(), getCurrentIndentString() + slot.serialize(this));
         }
 
         return String.join(delimiter, serializedSlots.values());
@@ -124,9 +120,9 @@ public class ToStringSerializer implements Serializer<String, String> {
         showVerboseVars = false;
         final StringBuilder sb = new StringBuilder();
         sb.append(getCurrentIndentString())
-          .append(constraint.getSubtype().serialize(this))
-          .append(" <: ")
-          .append(constraint.getSupertype().serialize(this));
+                .append(constraint.getSubtype().serialize(this))
+                .append(" <: ")
+                .append(constraint.getSupertype().serialize(this));
         showVerboseVars = prevShowVerboseVars;
         return sb.toString();
     }
@@ -137,9 +133,9 @@ public class ToStringSerializer implements Serializer<String, String> {
         showVerboseVars = false;
         final StringBuilder sb = new StringBuilder();
         sb.append(getCurrentIndentString())
-          .append(constraint.getFirst().serialize(this))
-          .append(" == ")
-          .append(constraint.getSecond().serialize(this));
+                .append(constraint.getFirst().serialize(this))
+                .append(" == ")
+                .append(constraint.getSecond().serialize(this));
         showVerboseVars = prevShowVerboseVars;
         return sb.toString();
     }
@@ -150,23 +146,19 @@ public class ToStringSerializer implements Serializer<String, String> {
         showVerboseVars = false;
         final StringBuilder sb = new StringBuilder();
         sb.append(getCurrentIndentString())
-          .append("if ( ")
-          .append(constraint.getPotentialVariable().serialize(this))
-          .append(" exists ) {\n");
+                .append("if ( ")
+                .append(constraint.getPotentialVariable().serialize(this))
+                .append(" exists ) {\n");
         setIndentationLevel(indentationLevel + 1);
         sb.append(serializeConstraints(constraint.potentialConstraints(), "\n"));
         setIndentationLevel(indentationLevel - 1);
 
-        sb.append("\n")
-          .append(getCurrentIndentString())
-          .append("} else {\n");
+        sb.append("\n").append(getCurrentIndentString()).append("} else {\n");
         setIndentationLevel(indentationLevel + 1);
         sb.append(serializeConstraints(constraint.getAlternateConstraints(), "\n"));
         setIndentationLevel(indentationLevel - 1);
 
-        sb.append("\n")
-          .append(getCurrentIndentString())
-          .append("}");
+        sb.append("\n").append(getCurrentIndentString()).append("}");
         showVerboseVars = prevShowVerboseVars;
         return sb.toString();
     }
@@ -177,9 +169,9 @@ public class ToStringSerializer implements Serializer<String, String> {
         showVerboseVars = false;
         final StringBuilder sb = new StringBuilder();
         sb.append(getCurrentIndentString())
-          .append(constraint.getFirst().serialize(this))
-          .append(" != ")
-          .append(constraint.getSecond().serialize(this));
+                .append(constraint.getFirst().serialize(this))
+                .append(" != ")
+                .append(constraint.getSecond().serialize(this));
         showVerboseVars = prevShowVerboseVars;
         return sb.toString();
     }
@@ -190,28 +182,28 @@ public class ToStringSerializer implements Serializer<String, String> {
         showVerboseVars = false;
         final StringBuilder sb = new StringBuilder();
         sb.append(getCurrentIndentString())
-          .append(constraint.getFirst().serialize(this))
-          .append(" <~> ")
-          .append(constraint.getSecond().serialize(this));
+                .append(constraint.getFirst().serialize(this))
+                .append(" <~> ")
+                .append(constraint.getSecond().serialize(this));
         showVerboseVars = prevShowVerboseVars;
         return sb.toString();
     }
 
     @Override
     public String serialize(ComparisonConstraint constraint) {
-    	boolean prevShowVerboseVars = showVerboseVars;
+        boolean prevShowVerboseVars = showVerboseVars;
         showVerboseVars = false;
         // format: result <= ( left comp right )
         final StringBuilder sb = new StringBuilder();
         sb.append(getCurrentIndentString())
-          .append(constraint.getResult().serialize(this))
-          .append(" <= ( ")
-          .append(constraint.getLeft().serialize(this))
-          .append(" ")
-          .append(constraint.getOperation().getSymbol())
-          .append(" ")
-          .append(constraint.getRight().serialize(this))
-          .append(" )");
+                .append(constraint.getResult().serialize(this))
+                .append(" <= ( ")
+                .append(constraint.getLeft().serialize(this))
+                .append(" ")
+                .append(constraint.getOperation().getSymbol())
+                .append(" ")
+                .append(constraint.getRight().serialize(this))
+                .append(" )");
         optionallyFormatAstPath(constraint, sb);
         showVerboseVars = prevShowVerboseVars;
         return sb.toString();
@@ -224,12 +216,12 @@ public class ToStringSerializer implements Serializer<String, String> {
         // "\u25B7" is unicode representation of viewpoint adaptation sign |>
         final StringBuilder sb = new StringBuilder();
         sb.append(getCurrentIndentString())
-          .append(constraint.getResult().serialize(this))
-          .append(" = ( ")
-          .append(constraint.getTarget().serialize(this))
-          .append(" \u25B7 ")
-          .append(constraint.getDeclared().serialize(this))
-          .append(" )");
+                .append(constraint.getResult().serialize(this))
+                .append(" = ( ")
+                .append(constraint.getTarget().serialize(this))
+                .append(" \u25B7 ")
+                .append(constraint.getDeclared().serialize(this))
+                .append(" )");
         showVerboseVars = prevShowVerboseVars;
         return sb.toString();
     }
@@ -240,11 +232,11 @@ public class ToStringSerializer implements Serializer<String, String> {
         showVerboseVars = false;
         final StringBuilder sb = new StringBuilder();
         sb.append(getCurrentIndentString())
-          .append(constraint.getVariable().serialize(this))
-          .append(" == ")
-          .append(constraint.getGoal().serialize(this))
-          .append(" weight = ")
-          .append(constraint.getWeight());
+                .append(constraint.getVariable().serialize(this))
+                .append(" == ")
+                .append(constraint.getGoal().serialize(this))
+                .append(" weight = ")
+                .append(constraint.getWeight());
         showVerboseVars = prevShowVerboseVars;
         return sb.toString();
     }
@@ -253,8 +245,8 @@ public class ToStringSerializer implements Serializer<String, String> {
     public String serialize(ConstantSlot slot) {
         final StringBuilder sb = new StringBuilder();
         sb.append(slot.getId())
-          .append(" ")
-          .append(formatter.formatAnnotationMirror(slot.getValue()));
+                .append(" ")
+                .append(formatter.formatAnnotationMirror(slot.getValue()));
         return sb.toString();
     }
 
@@ -265,14 +257,14 @@ public class ToStringSerializer implements Serializer<String, String> {
         // format: result = ( leftOperand op rightOperand )
         final StringBuilder sb = new StringBuilder();
         sb.append(getCurrentIndentString())
-          .append(arithmeticConstraint.getResult().serialize(this))
-          .append(" = ( ")
-          .append(arithmeticConstraint.getLeftOperand().serialize(this))
-          .append(" ")
-          .append(arithmeticConstraint.getOperation().getSymbol())
-          .append(" ")
-          .append(arithmeticConstraint.getRightOperand().serialize(this))
-          .append(" )");
+                .append(arithmeticConstraint.getResult().serialize(this))
+                .append(" = ( ")
+                .append(arithmeticConstraint.getLeftOperand().serialize(this))
+                .append(" ")
+                .append(arithmeticConstraint.getOperation().getSymbol())
+                .append(" ")
+                .append(arithmeticConstraint.getRightOperand().serialize(this))
+                .append(" )");
         optionallyFormatAstPath(arithmeticConstraint, sb);
         showVerboseVars = prevShowVerboseVars;
         return sb.toString();
@@ -287,7 +279,8 @@ public class ToStringSerializer implements Serializer<String, String> {
         final StringBuilder sb = new StringBuilder();
         sb.append(getCurrentIndentString());
         int oldIndentationLevel = indentationLevel;
-        // This is to avoid indentation for each sub constraint that comprises the implicationConstraint
+        // This is to avoid indentation for each sub constraint that comprises the
+        // implicationConstraint
         indentationLevel = 0;
         String assumptions = getAssumptionsString(implicationConstraint);
         String conclusion = implicationConstraint.getConclusion().serialize(this);
@@ -324,7 +317,7 @@ public class ToStringSerializer implements Serializer<String, String> {
         final StringBuilder sb = new StringBuilder();
         sb.append(slot.getId());
         // \u21A7 is a downward arrow symbol
-        sb.append("[ \u21A7 "+ slot.getRefined().serialize(this) + " ]");
+        sb.append("[ \u21A7 " + slot.getRefined().serialize(this) + " ]");
         optionallyShowVerbose(slot, sb);
         return sb.toString();
     }
@@ -333,11 +326,11 @@ public class ToStringSerializer implements Serializer<String, String> {
     public String serialize(ExistentialVariableSlot slot) {
         final StringBuilder sb = new StringBuilder();
         sb.append(slot.getId())
-          .append(": ( ")
-          .append(slot.getPotentialSlot().getId())
-          .append(" | ")
-          .append(slot.getAlternativeSlot().getId())
-          .append(" ) ");
+                .append(": ( ")
+                .append(slot.getPotentialSlot().getId())
+                .append(" | ")
+                .append(slot.getAlternativeSlot().getId())
+                .append(" ) ");
         optionallyShowVerbose(slot, sb);
         return sb.toString();
     }
@@ -347,8 +340,7 @@ public class ToStringSerializer implements Serializer<String, String> {
         final StringBuilder sb = new StringBuilder();
         sb.append(slot.getId());
         if (showVerboseVars) {
-            sb.append(": combines ")
-              .append(Arrays.asList(slot.getFirst(), slot.getSecond()));
+            sb.append(": combines ").append(Arrays.asList(slot.getFirst(), slot.getSecond()));
             formatMerges(slot, sb);
             optionallyFormatAstPath(slot, sb);
         }
@@ -389,8 +381,8 @@ public class ToStringSerializer implements Serializer<String, String> {
     }
 
     /**
-     * @return the indent string for the current indentation level as stored in
-     *         {@link #indentationLevel}.
+     * @return the indent string for the current indentation level as stored in {@link
+     *     #indentationLevel}.
      */
     public String getCurrentIndentString() {
         return indentStrings.get(indentationLevel);
@@ -398,8 +390,7 @@ public class ToStringSerializer implements Serializer<String, String> {
 
     private void formatMerges(final Slot slot, final StringBuilder sb) {
         if (!slot.getMergedToSlots().isEmpty()) {
-            sb.append(": merged to -> ")
-              .append(slot.getMergedToSlots());
+            sb.append(": merged to -> ").append(slot.getMergedToSlots());
         }
     }
 
@@ -412,9 +403,7 @@ public class ToStringSerializer implements Serializer<String, String> {
 
     private void optionallyFormatAstPath(final VariableSlot varSlot, final StringBuilder sb) {
         if (showAstPaths && (varSlot.isInsertable() || (varSlot.getLocation() != null))) {
-            sb.append("\n")
-              .append(getCurrentIndentString())
-              .append("AstPath: ");
+            sb.append("\n").append(getCurrentIndentString()).append("AstPath: ");
             if (varSlot.getLocation() == null) {
                 sb.append("<NULL PATH>");
             } else {
@@ -425,9 +414,7 @@ public class ToStringSerializer implements Serializer<String, String> {
 
     private void optionallyFormatAstPath(final Constraint constraint, final StringBuilder sb) {
         if (showAstPaths) {
-            sb.append("\n")
-              .append(getCurrentIndentString())
-              .append("AstPath: ");
+            sb.append("\n").append(getCurrentIndentString()).append("AstPath: ");
             if (constraint.getLocation() == null) {
                 sb.append("<NULL PATH>");
             } else {

@@ -1,11 +1,15 @@
 package checkers.inference;
 
+import com.sun.source.tree.Tree;
+import com.sun.source.util.Trees;
+
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+
 import java.lang.annotation.Annotation;
 import java.util.Collections;
 import java.util.Set;
@@ -14,13 +18,7 @@ import checkers.inference.dataflow.InferenceAnalysis;
 import checkers.inference.dataflow.InferenceTransfer;
 import checkers.inference.model.ConstraintManager;
 
-import com.sun.source.tree.Tree;
-import com.sun.source.util.Trees;
-
-/**
- * Default implementation of InferrableChecker.
- *
- */
+/** Default implementation of InferrableChecker. */
 public abstract class BaseInferrableChecker extends InferenceChecker implements InferrableChecker {
 
     @Override
@@ -29,7 +27,7 @@ public abstract class BaseInferrableChecker extends InferenceChecker implements 
         // except for the last line assigning the visitor
         {
             Trees trees = Trees.instance(processingEnv);
-            assert( trees != null ); /*nninvariant*/
+            assert (trees != null); /*nninvariant*/
             this.trees = trees;
 
             this.messager = processingEnv.getMessager();
@@ -40,7 +38,8 @@ public abstract class BaseInferrableChecker extends InferenceChecker implements 
     }
 
     @Override
-    public InferenceVisitor<?, ?> createVisitor(InferenceChecker ichecker, BaseAnnotatedTypeFactory factory, boolean infer) {
+    public InferenceVisitor<?, ?> createVisitor(
+            InferenceChecker ichecker, BaseAnnotatedTypeFactory factory, boolean infer) {
         return new InferenceVisitor<>(this, ichecker, factory, infer);
     }
 
@@ -51,11 +50,11 @@ public abstract class BaseInferrableChecker extends InferenceChecker implements 
 
     @Override
     public CFAnalysis createInferenceAnalysis(
-                    InferenceChecker checker,
-                    GenericAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis> factory,
-                    SlotManager slotManager,
-                    ConstraintManager constraintManager,
-                    InferrableChecker realChecker) {
+            InferenceChecker checker,
+            GenericAnnotatedTypeFactory<CFValue, CFStore, CFTransfer, CFAnalysis> factory,
+            SlotManager slotManager,
+            ConstraintManager constraintManager,
+            InferrableChecker realChecker) {
 
         return new InferenceAnalysis(checker, factory, slotManager, constraintManager, realChecker);
     }
@@ -81,12 +80,20 @@ public abstract class BaseInferrableChecker extends InferenceChecker implements 
     }
 
     @Override
-    public InferenceAnnotatedTypeFactory createInferenceATF(InferenceChecker inferenceChecker,
-            InferrableChecker realChecker, BaseAnnotatedTypeFactory realTypeFactory,
-            SlotManager slotManager, ConstraintManager constraintManager) {
-        InferenceAnnotatedTypeFactory InferenceAFT = new InferenceAnnotatedTypeFactory(
-                inferenceChecker, realChecker.withCombineConstraints(), realTypeFactory, realChecker,
-                slotManager, constraintManager);
+    public InferenceAnnotatedTypeFactory createInferenceATF(
+            InferenceChecker inferenceChecker,
+            InferrableChecker realChecker,
+            BaseAnnotatedTypeFactory realTypeFactory,
+            SlotManager slotManager,
+            ConstraintManager constraintManager) {
+        InferenceAnnotatedTypeFactory InferenceAFT =
+                new InferenceAnnotatedTypeFactory(
+                        inferenceChecker,
+                        realChecker.withCombineConstraints(),
+                        realTypeFactory,
+                        realChecker,
+                        slotManager,
+                        constraintManager);
         return InferenceAFT;
     }
 

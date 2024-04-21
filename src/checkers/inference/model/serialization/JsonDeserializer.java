@@ -1,29 +1,8 @@
 package checkers.inference.model.serialization;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.lang.model.element.AnnotationMirror;
-
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
-import checkers.inference.InferenceMain;
-import checkers.inference.model.AnnotationLocation;
-import checkers.inference.model.Constraint;
-import checkers.inference.model.ConstraintManager;
-import checkers.inference.model.Slot;
-import checkers.inference.model.SourceVariableSlot;
 import static checkers.inference.model.serialization.JsonSerializer.COMPARABLE_CONSTRAINT_KEY;
-import static checkers.inference.model.serialization.JsonSerializer.COMPARISON_CONSTRAINT_KEY;
+import static checkers.inference.model.serialization.JsonSerializer.COMPARABLE_LHS;
+import static checkers.inference.model.serialization.JsonSerializer.COMPARABLE_RHS;
 import static checkers.inference.model.serialization.JsonSerializer.CONSTRAINTS_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.CONSTRAINT_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.EQUALITY_CONSTRAINT_KEY;
@@ -37,8 +16,6 @@ import static checkers.inference.model.serialization.JsonSerializer.EXISTENTIAL_
 import static checkers.inference.model.serialization.JsonSerializer.INEQUALITY_CONSTRAINT_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.INEQUALITY_LHS;
 import static checkers.inference.model.serialization.JsonSerializer.INEQUALITY_RHS;
-import static checkers.inference.model.serialization.JsonSerializer.COMPARABLE_LHS;
-import static checkers.inference.model.serialization.JsonSerializer.COMPARABLE_RHS;
 import static checkers.inference.model.serialization.JsonSerializer.SUBTYPE_CONSTRAINT_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.SUBTYPE_SUB_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.SUBTYPE_SUPER_KEY;
@@ -46,15 +23,38 @@ import static checkers.inference.model.serialization.JsonSerializer.VARIABLES_KE
 import static checkers.inference.model.serialization.JsonSerializer.VARIABLES_VALUE_KEY;
 import static checkers.inference.model.serialization.JsonSerializer.VAR_PREFIX;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.lang.model.element.AnnotationMirror;
+
+import checkers.inference.InferenceMain;
+import checkers.inference.model.AnnotationLocation;
+import checkers.inference.model.Constraint;
+import checkers.inference.model.ConstraintManager;
+import checkers.inference.model.Slot;
+import checkers.inference.model.SourceVariableSlot;
+
 /**
- * Class to convert a String (this is a formatted json constraint file) into a list of inference Constraints.
+ * Class to convert a String (this is a formatted json constraint file) into a list of inference
+ * Constraints.
  *
- * The format of the json constraint file is documented in JsonSerializer.java.
+ * <p>The format of the json constraint file is documented in JsonSerializer.java.
  *
- * TODO: Support nested constraints
+ * <p>TODO: Support nested constraints
  *
  * @author mcarthur
- *
  */
 public class JsonDeserializer {
 
@@ -66,7 +66,8 @@ public class JsonDeserializer {
 
     private ConstraintManager constraintManager;
 
-    public JsonDeserializer(AnnotationMirrorSerializer annotationSerializer, String json) throws ParseException {
+    public JsonDeserializer(AnnotationMirrorSerializer annotationSerializer, String json)
+            throws ParseException {
         this.annotationSerializer = annotationSerializer;
         JSONParser parser = new JSONParser();
         this.root = (JSONObject) parser.parse(json);
@@ -82,14 +83,16 @@ public class JsonDeserializer {
     public List<Constraint> jsonArrayToConstraints(final JSONArray jsonConstraints) {
         List<Constraint> results = new LinkedList<Constraint>();
 
-        for (Object obj: jsonConstraints) {
+        for (Object obj : jsonConstraints) {
             if (obj instanceof String) {
                 String constraintStr = (String) obj;
                 String[] parts = constraintStr.trim().split(" ");
                 if (parts.length != 3) {
-                    throw new IllegalArgumentException("Parse error: could not parse constraint: " + obj);
+                    throw new IllegalArgumentException(
+                            "Parse error: could not parse constraint: " + obj);
                 } else if (!SUBTYPE_STR.equals(parts[1])) {
-                    throw new IllegalArgumentException("Parse error: found unexpected constraint operation: " + obj);
+                    throw new IllegalArgumentException(
+                            "Parse error: found unexpected constraint operation: " + obj);
                 }
                 Slot sub = parseSlot(parts[0]);
                 Slot sup = parseSlot(parts[2]);
@@ -119,10 +122,12 @@ public class JsonDeserializer {
                             jsonArrayToConstraints((JSONArray) constraint.get(EXISTENTIAL_THEN));
                     List<Constraint> elseConstraints =
                             jsonArrayToConstraints((JSONArray) constraint.get(EXISTENTIAL_ELSE));
-                    results.add(constraintManager.createExistentialConstraint(potential,
-                            thenConstraints, elseConstraints));
-                }  else {
-                    throw new IllegalArgumentException("Parse error: unknown constraint type: " + obj);
+                    results.add(
+                            constraintManager.createExistentialConstraint(
+                                    potential, thenConstraints, elseConstraints));
+                } else {
+                    throw new IllegalArgumentException(
+                            "Parse error: unknown constraint type: " + obj);
                 }
                 // TODO: map.get, enabled_check, selection_check
             } else {
@@ -133,9 +138,10 @@ public class JsonDeserializer {
     }
 
     public List<String> getPotentialVariables() {
-        Set<String> potentialVars = findPotentialVars((JSONArray) root.get(CONSTRAINTS_KEY), new LinkedHashSet<String>());
+        Set<String> potentialVars =
+                findPotentialVars(
+                        (JSONArray) root.get(CONSTRAINTS_KEY), new LinkedHashSet<String>());
         return new ArrayList<>(potentialVars);
-
     }
 
     private Set<String> findPotentialVars(JSONArray constraints, Set<String> potentialVariableIds) {
@@ -189,7 +195,8 @@ public class JsonDeserializer {
         for (Map.Entry<?, ?> e : entries) {
             String variableId = (String) e.getKey();
 
-            // in the first results from v.12 the output solved JSON had two different formats in the Variables section
+            // in the first results from v.12 the output solved JSON had two different formats in
+            // the Variables section
             String variableType;
             if (e.getValue() instanceof JSONObject) {
                 variableType = (String) ((JSONObject) e.getValue()).get(VARIABLES_VALUE_KEY);
@@ -210,7 +217,8 @@ public class JsonDeserializer {
             int id = Integer.valueOf(slot.split(":")[1]);
             // TODO: Here we are creating a SourceVariableSlot without any detailed information.
             //  We should consider refactor this implementation.
-            return new SourceVariableSlot(id, AnnotationLocation.MISSING_LOCATION, null, null, true);
+            return new SourceVariableSlot(
+                    id, AnnotationLocation.MISSING_LOCATION, null, null, true);
         } else {
             // TODO: THIS NEEDS FIXING
             AnnotationMirror value = annotationSerializer.deserialize(slot);

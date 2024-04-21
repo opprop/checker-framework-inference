@@ -15,13 +15,16 @@ import checkers.inference.solver.backend.logiql.LogiQLFormatTranslator;
 import checkers.inference.solver.frontend.Lattice;
 
 /**
- * LogiQL implementation of {@link checkers.inference.solver.backend.encoder.ConstraintEncoderFactory}.
+ * LogiQL implementation of {@link
+ * checkers.inference.solver.backend.encoder.ConstraintEncoderFactory}.
  *
  * @see checkers.inference.solver.backend.encoder.ConstraintEncoderFactory
  */
-public class LogiQLConstraintEncoderFactory extends AbstractConstraintEncoderFactory<String, LogiQLFormatTranslator> {
+public class LogiQLConstraintEncoderFactory
+        extends AbstractConstraintEncoderFactory<String, LogiQLFormatTranslator> {
 
-    public LogiQLConstraintEncoderFactory(Lattice lattice, LogiQLFormatTranslator formatTranslator) {
+    public LogiQLConstraintEncoderFactory(
+            Lattice lattice, LogiQLFormatTranslator formatTranslator) {
         super(lattice, formatTranslator);
     }
 

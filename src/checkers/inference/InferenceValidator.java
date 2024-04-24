@@ -9,7 +9,6 @@ import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 
 import javax.lang.model.element.AnnotationMirror;
-import java.util.List;
 
 /** A visitor to validate the types in a tree. */
 public class InferenceValidator extends BaseTypeValidator {

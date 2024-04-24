@@ -25,6 +25,7 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.*;
+import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.ArraysPlume;
 
 import java.lang.annotation.Annotation;
@@ -51,17 +52,6 @@ import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
 import checkers.inference.qual.VarAnnot;
 import checkers.inference.util.InferenceUtil;
-
-import com.sun.source.tree.CatchTree;
-import com.sun.source.tree.ExpressionTree;
-import com.sun.source.tree.ThrowTree;
-import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
-import com.sun.source.tree.VariableTree;
-
-import org.checkerframework.javacutil.TreeUtils;
-import org.plumelib.util.ArraysPlume;
-
 
 /**
  * InferenceVisitor visits trees in each compilation unit both in typecheck/inference mode. In
@@ -91,7 +81,7 @@ public class InferenceVisitor<
     protected final boolean infer;
 
     protected final Checker realChecker;
-     /*
+    /*
      * Map from type-use location to a list of qualifiers which cannot be used on that location.
      * This is used to create the inequality constraint in inference.
      */
@@ -318,8 +308,12 @@ public class InferenceVisitor<
         }
     }
 
-    private void addDeepPreferenceImpl(AnnotatedTypeMirror ty, AnnotationMirror goal, int weight,
-                                       java.util.List<AnnotatedTypeMirror> visited, Tree node) {
+    private void addDeepPreferenceImpl(
+            AnnotatedTypeMirror ty,
+            AnnotationMirror goal,
+            int weight,
+            java.util.List<AnnotatedTypeMirror> visited,
+            Tree node) {
         if (infer) {
             if (visited.contains(ty)) {
                 return;
@@ -330,7 +324,8 @@ public class InferenceVisitor<
             Slot el = slotManager.getSlot(ty);
 
             if (el == null) {
-                logger.warning("InferenceVisitor::addDeepPreferenceImpl: no annotation in type: " + ty);
+                logger.warning(
+                        "InferenceVisitor::addDeepPreferenceImpl: no annotation in type: " + ty);
             } else {
                 addPreference(ty, goal, weight);
             }
@@ -352,7 +347,8 @@ public class InferenceVisitor<
         // Else, do nothing
     }
 
-    public void addDeepPreference(AnnotatedTypeMirror ty, AnnotationMirror goal, int weight, Tree node) {
+    public void addDeepPreference(
+            AnnotatedTypeMirror ty, AnnotationMirror goal, int weight, Tree node) {
         addDeepPreferenceImpl(ty, goal, weight, new LinkedList<>(), node);
     }
 
@@ -1035,10 +1031,12 @@ public class InferenceVisitor<
     protected Map<TypeUseLocation, AnnotationMirrorSet> createMapForIllegalQuals() {
         Map<TypeUseLocation, AnnotationMirrorSet> locationToIllegalQuals = new HashMap<>();
         // First, init each type-use location to contain all type qualifiers.
-        Set<Class<? extends Annotation>> supportQualifiers = atypeFactory.getSupportedTypeQualifiers();
+        Set<Class<? extends Annotation>> supportQualifiers =
+                atypeFactory.getSupportedTypeQualifiers();
         AnnotationMirrorSet supportedAnnos = new AnnotationMirrorSet();
-        for (Class<? extends Annotation> qual: supportQualifiers) {
-            supportedAnnos.add(new AnnotationBuilder(atypeFactory.getProcessingEnv(), qual).build());
+        for (Class<? extends Annotation> qual : supportQualifiers) {
+            supportedAnnos.add(
+                    new AnnotationBuilder(atypeFactory.getProcessingEnv(), qual).build());
         }
         for (TypeUseLocation location : TypeUseLocation.values()) {
             locationToIllegalQuals.put(location, new AnnotationMirrorSet(supportedAnnos));
@@ -1053,7 +1051,9 @@ public class InferenceVisitor<
             if (tls == null) {
                 for (TypeUseLocation location : TypeUseLocation.values()) {
                     AnnotationMirrorSet amSet = locationToIllegalQuals.get(location);
-                    amSet.remove(AnnotationUtils.getAnnotationByName(supportedAnnos, qual.getCanonicalName()));
+                    amSet.remove(
+                            AnnotationUtils.getAnnotationByName(
+                                    supportedAnnos, qual.getCanonicalName()));
                 }
                 continue;
             }
@@ -1061,12 +1061,16 @@ public class InferenceVisitor<
                 if (location == TypeUseLocation.ALL) {
                     for (TypeUseLocation val : TypeUseLocation.values()) {
                         AnnotationMirrorSet amSet = locationToIllegalQuals.get(val);
-                        amSet.remove(AnnotationUtils.getAnnotationByName(supportedAnnos, qual.getCanonicalName()));
+                        amSet.remove(
+                                AnnotationUtils.getAnnotationByName(
+                                        supportedAnnos, qual.getCanonicalName()));
                     }
                     break;
                 }
                 AnnotationMirrorSet amSet = locationToIllegalQuals.get(location);
-                amSet.remove(AnnotationUtils.getAnnotationByName(supportedAnnos, qual.getCanonicalName()));
+                amSet.remove(
+                        AnnotationUtils.getAnnotationByName(
+                                supportedAnnos, qual.getCanonicalName()));
             }
         }
         return locationToIllegalQuals;
@@ -1108,7 +1112,9 @@ public class InferenceVisitor<
                     break;
                 case ENUM_CONSTANT:
                     location = TypeUseLocation.CONSTRUCTOR_RESULT;
-                    // TODO: Add ? mainIsNoneOf(type, targetLocationToAnno.get(TypeUseLocation.FIELD).toArray(mirrors), "type.invalid.annotations.on.location", tree);
+                    // TODO: Add ? mainIsNoneOf(type,
+                    // targetLocationToAnno.get(TypeUseLocation.FIELD).toArray(mirrors),
+                    // "type.invalid.annotations.on.location", tree);
                     break;
                 default:
                     throw new BugInCF("Location not matched");

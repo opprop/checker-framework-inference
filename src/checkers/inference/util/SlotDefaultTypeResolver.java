@@ -3,7 +3,6 @@ package checkers.inference.util;
 import com.sun.source.tree.AnnotatedTypeTree;
 import com.sun.source.tree.ArrayTypeTree;
 import com.sun.source.tree.ClassTree;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.PrimitiveTypeTree;
@@ -190,10 +189,11 @@ public class SlotDefaultTypeResolver {
             if (InferenceUtil.isAnonymousClass(tree)) {
                 // don't associate the identifier with the defaultType if it's an anonymousclass
                 // should associate the identifier with the direct super type of the defaultType.
-                // choose the last one of the directSupertypes, which is either the direct super class
+                // choose the last one of the directSupertypes, which is either the direct super
+                // class
                 // or implemented interface
                 List<? extends AnnotatedTypeMirror> superTypes = defaultType.directSupertypes();
-                defaultTypes.put(tree.getIdentifier(), superTypes.get(superTypes.size()-1));
+                defaultTypes.put(tree.getIdentifier(), superTypes.get(superTypes.size() - 1));
             } else {
                 defaultTypes.put(tree.getIdentifier(), defaultType);
             }

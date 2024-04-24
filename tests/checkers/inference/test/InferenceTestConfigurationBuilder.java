@@ -18,8 +18,8 @@ public class InferenceTestConfigurationBuilder {
     private String solver = null;
     private boolean shouldUseHacks;
     private boolean makeDefaultsExplicit;
-    private String pathToAfuScripts="";
-    private String pathToInferenceScript="";
+    private String pathToAfuScripts = "";
+    private String pathToInferenceScript = "";
 
     private SimpleOptionMap inferenceJavacArgs = new SimpleOptionMap();
     private SimpleOptionMap solverArgs = new SimpleOptionMap();
@@ -202,7 +202,7 @@ public class InferenceTestConfigurationBuilder {
             String solverName,
             List<String> solverOptions,
             boolean shouldUseHacks,
-            boolean makeDefaultsExplicit
+            boolean makeDefaultsExplicit,
             boolean shouldEmitDebugInfo,
             String pathToAfuScripts,
             String pathToInferenceScript) {

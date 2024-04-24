@@ -36,7 +36,7 @@ public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
     public boolean makeDefaultsExplicit() {
         return false;
     }
-  
+
     public abstract IPair<String, List<String>> getSolverNameAndOptions();
 
     public List<String> getAdditionalInferenceOptions() {
@@ -59,10 +59,21 @@ public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
 
         final File testDataDir = new File("testdata");
 
-        InferenceTestConfiguration config = InferenceTestConfigurationBuilder.buildDefaultConfiguration(testDir,
-                testFile, testDataDir, checker, checkerOptions, getAdditionalInferenceOptions(), solverArgs.first,
-                solverArgs.second, useHacks(), makeDefaultsExplicit(), shouldEmitDebugInfo, getPathToAfuScripts(),
-                getPathToInferenceScript());
+        InferenceTestConfiguration config =
+                InferenceTestConfigurationBuilder.buildDefaultConfiguration(
+                        testDir,
+                        testFile,
+                        testDataDir,
+                        checker,
+                        checkerOptions,
+                        getAdditionalInferenceOptions(),
+                        solverArgs.first,
+                        solverArgs.second,
+                        useHacks(),
+                        makeDefaultsExplicit(),
+                        shouldEmitDebugInfo,
+                        getPathToAfuScripts(),
+                        getPathToInferenceScript());
 
         InferenceTestResult testResult = new InferenceTestExecutor().runTest(config);
         InferenceTestUtilities.assertResultsAreValid(testResult);

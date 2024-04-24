@@ -8,7 +8,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 
-public class ImmutableInferenceTestConfiguration implements InferenceTestConfiguration{
+public class ImmutableInferenceTestConfiguration implements InferenceTestConfiguration {
     private final File outputJaif;
     private final File testDataDir;
     private final File annotatedSourceDir;
@@ -21,11 +21,18 @@ public class ImmutableInferenceTestConfiguration implements InferenceTestConfigu
     private final String pathToInferenceScript;
     private final TestConfiguration initialConfig;
 
-    public ImmutableInferenceTestConfiguration(File outputJaif, File testDataDir, File annotatedSourceDir,
-                                               Map<String, String> inferenceJavacArgs, String solver,
-                                               Map<String, String> solverArgs, boolean shouldUseHacks,
-                                               boolean makeDefaultsExplicit, String pathToAfuScripts,
-                                               String pathToInferenceScript, TestConfiguration initialConfig) {
+    public ImmutableInferenceTestConfiguration(
+            File outputJaif,
+            File testDataDir,
+            File annotatedSourceDir,
+            Map<String, String> inferenceJavacArgs,
+            String solver,
+            Map<String, String> solverArgs,
+            boolean shouldUseHacks,
+            boolean makeDefaultsExplicit,
+            String pathToAfuScripts,
+            String pathToInferenceScript,
+            TestConfiguration initialConfig) {
         this.outputJaif = outputJaif;
         this.testDataDir = testDataDir;
         this.annotatedSourceDir = annotatedSourceDir;
@@ -102,11 +109,16 @@ public class ImmutableInferenceTestConfiguration implements InferenceTestConfigu
     @Override
     public TestConfiguration getFinalTypecheckConfig() {
         List<File> translatedDiagnostics =
-                InferenceTestUtilities.replaceParentDirs(annotatedSourceDir, initialConfig.getDiagnosticFiles());
+                InferenceTestUtilities.replaceParentDirs(
+                        annotatedSourceDir, initialConfig.getDiagnosticFiles());
         List<File> translatedFiles =
-                InferenceTestUtilities.replaceParentDirs(annotatedSourceDir, initialConfig.getTestSourceFiles());
-        return new ImmutableTestConfiguration(translatedDiagnostics, translatedFiles, initialConfig.getProcessors(),
-                                              initialConfig.getOptions(), initialConfig.shouldEmitDebugInfo());
+                InferenceTestUtilities.replaceParentDirs(
+                        annotatedSourceDir, initialConfig.getTestSourceFiles());
+        return new ImmutableTestConfiguration(
+                translatedDiagnostics,
+                translatedFiles,
+                initialConfig.getProcessors(),
+                initialConfig.getOptions(),
+                initialConfig.shouldEmitDebugInfo());
     }
-
 }

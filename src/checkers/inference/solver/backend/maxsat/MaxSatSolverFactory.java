@@ -12,8 +12,11 @@ import checkers.inference.solver.util.SolverEnvironment;
 public class MaxSatSolverFactory extends AbstractSolverFactory<MaxSatFormatTranslator> {
 
     @Override
-    public Solver<?> createSolver(SolverEnvironment solverEnvironment, Collection<Slot> slots,
-            Collection<Constraint> constraints, Lattice lattice) {
+    public Solver<?> createSolver(
+            SolverEnvironment solverEnvironment,
+            Collection<Slot> slots,
+            Collection<Constraint> constraints,
+            Lattice lattice) {
         MaxSatFormatTranslator formatTranslator = createFormatTranslator(lattice);
         return new MaxSatSolver(solverEnvironment, slots, constraints, formatTranslator, lattice);
     }
@@ -22,5 +25,4 @@ public class MaxSatSolverFactory extends AbstractSolverFactory<MaxSatFormatTrans
     public MaxSatFormatTranslator createFormatTranslator(Lattice lattice) {
         return new MaxSatFormatTranslator(lattice);
     }
-
 }

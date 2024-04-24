@@ -24,5 +24,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
 @SubtypeOf({MaybeHardcoded.class})
 @QualifierForLiterals(LiteralKind.NULL)
-@DefaultFor(typeKinds={ TypeKind.NULL })
+@DefaultFor(typeKinds = {TypeKind.NULL})
 public @interface NotHardcoded {}

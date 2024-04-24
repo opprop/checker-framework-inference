@@ -1,20 +1,19 @@
 package checkers.inference.model;
 
-import java.util.Arrays;
-import java.util.Objects;
+import com.sun.source.tree.Tree.Kind;
 
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.BugInCF;
 
-import com.sun.source.tree.Tree.Kind;
+import java.util.Arrays;
+import java.util.Objects;
 
 /**
- * Represents constraints created for:
- *  (1) numerical comparison ("==", "!=", ">", ">=", "<", "<=")
- *  (2) comparison between references/null ("==", "!=")
+ * Represents constraints created for: (1) numerical comparison ("==", "!=", ">", ">=", "<", "<=")
+ * (2) comparison between references/null ("==", "!=")
  *
- * In contrast, a {@link ComparableConstraint} describes two types are compatible,
- * i.e. one type can be cast to the other.
+ * <p>In contrast, a {@link ComparableConstraint} describes two types are compatible, i.e. one type
+ * can be cast to the other.
  */
 public class ComparisonConstraint extends Constraint {
 
@@ -22,7 +21,7 @@ public class ComparisonConstraint extends Constraint {
     private final Slot left;
     private final Slot right;
     private final ComparisonVariableSlot result;
-    
+
     public enum ComparisonOperationKind {
         EQUAL_TO("=="),
         NOT_EQUAL_TO("!="),
@@ -41,20 +40,22 @@ public class ComparisonConstraint extends Constraint {
         public static ComparisonOperationKind fromTreeKind(Kind kind) {
             switch (kind) {
                 case EQUAL_TO:
-                	return EQUAL_TO;
+                    return EQUAL_TO;
                 case NOT_EQUAL_TO:
-                	return NOT_EQUAL_TO;
+                    return NOT_EQUAL_TO;
                 case GREATER_THAN:
-                	return GREATER_THAN;
+                    return GREATER_THAN;
                 case GREATER_THAN_EQUAL:
-                	return GREATER_THAN_EQUAL;
+                    return GREATER_THAN_EQUAL;
                 case LESS_THAN:
-                	return LESS_THAN;
+                    return LESS_THAN;
                 case LESS_THAN_EQUAL:
-                	return LESS_THAN_EQUAL;
+                    return LESS_THAN_EQUAL;
                 default:
-                	throw new BugInCF("There are no defined ComparableOperationKind "
-                            + "for the given com.sun.source.tree.Tree.Kind: " + kind);
+                    throw new BugInCF(
+                            "There are no defined ComparableOperationKind "
+                                    + "for the given com.sun.source.tree.Tree.Kind: "
+                                    + kind);
             }
         }
 
@@ -63,8 +64,12 @@ public class ComparisonConstraint extends Constraint {
         }
     }
 
-    private ComparisonConstraint(ComparisonOperationKind operation, Slot left, Slot right,
-            ComparisonVariableSlot result, AnnotationLocation location) {
+    private ComparisonConstraint(
+            ComparisonOperationKind operation,
+            Slot left,
+            Slot right,
+            ComparisonVariableSlot result,
+            AnnotationLocation location) {
         super(Arrays.asList(left, right, result), location);
         this.left = left;
         this.right = right;
@@ -72,12 +77,22 @@ public class ComparisonConstraint extends Constraint {
         this.result = result;
     }
 
-    protected static Constraint create(ComparisonOperationKind operation, Slot left, Slot right,
-    		ComparisonVariableSlot result, AnnotationLocation location, QualifierHierarchy realQualHierarchy) {
+    protected static Constraint create(
+            ComparisonOperationKind operation,
+            Slot left,
+            Slot right,
+            ComparisonVariableSlot result,
+            AnnotationLocation location,
+            QualifierHierarchy realQualHierarchy) {
         if (operation == null || left == null || right == null) {
-            throw new BugInCF("Create comparable constraint with null argument. "
-                    + "Operation: " + operation + " Subtype: "
-                    + left + " Supertype: " + right);
+            throw new BugInCF(
+                    "Create comparable constraint with null argument. "
+                            + "Operation: "
+                            + operation
+                            + " Subtype: "
+                            + left
+                            + " Supertype: "
+                            + right);
         }
         if (location == null || location.getKind() == AnnotationLocation.Kind.MISSING) {
             throw new BugInCF(
@@ -103,7 +118,7 @@ public class ComparisonConstraint extends Constraint {
     public Slot getRight() {
         return right;
     }
-    
+
     public ComparisonVariableSlot getResult() {
         return result;
     }
@@ -125,7 +140,8 @@ public class ComparisonConstraint extends Constraint {
             return false;
         }
         ComparisonConstraint other = (ComparisonConstraint) obj;
-        return left.equals(other.left) && right.equals(other.right)
-        		&& operation.equals(other.operation);
+        return left.equals(other.left)
+                && right.equals(other.right)
+                && operation.equals(other.operation);
     }
 }

@@ -9,12 +9,13 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A Polymorphic qualifier for {@code Hardcoded}.<p/>
+ * A Polymorphic qualifier for {@code Hardcoded}.
  *
- * See {@link
+ * <p>See {@link
  * http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#qualifier-polymorphism}
- * for information on the semantics of polymorphic qualifiers in the checker
- * framework.<p/>
+ * for information on the semantics of polymorphic qualifiers in the checker framework.
+ *
+ * <p>
  *
  * @see NotHardcoded
  * @see MaybeHardcoded

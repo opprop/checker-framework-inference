@@ -1,5 +1,8 @@
 package checkers.inference.model.serialization;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -7,10 +10,6 @@ import java.util.Map;
 
 import javax.lang.model.element.AnnotationMirror;
 
-import checkers.inference.model.LubVariableSlot;
-import checkers.inference.model.ImplicationConstraint;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 import checkers.inference.model.ArithmeticConstraint;
 import checkers.inference.model.ArithmeticVariableSlot;
 import checkers.inference.model.CombVariableSlot;
@@ -23,7 +22,9 @@ import checkers.inference.model.Constraint;
 import checkers.inference.model.EqualityConstraint;
 import checkers.inference.model.ExistentialConstraint;
 import checkers.inference.model.ExistentialVariableSlot;
+import checkers.inference.model.ImplicationConstraint;
 import checkers.inference.model.InequalityConstraint;
+import checkers.inference.model.LubVariableSlot;
 import checkers.inference.model.PreferenceConstraint;
 import checkers.inference.model.RefinementVariableSlot;
 import checkers.inference.model.Serializer;
@@ -32,75 +33,36 @@ import checkers.inference.model.SourceVariableSlot;
 import checkers.inference.model.SubtypeConstraint;
 
 /**
+ * // Scores are numeric // Everything else is a string (including version and qualifier ids) //
+ * Game side ignores any key in a map prefixed with "system-" // Variables are prefixed with "var:"
+ * // Types are prefixed with "type:"
  *
-
-// Scores are numeric
-// Everything else is a string (including version and qualifier ids)
-// Game side ignores any key in a map prefixed with "system-"
-// Variables are prefixed with "var:"
-// Types are prefixed with "type:"
-
-// Variable values are set in the "variables": "var:ID": "type_value": key.
-
-{
-  "version": "1",
-
-  "scoring": {
-    "constraints": 1000,
-    "variables": { "type:0" : 0, "type:1": 100 }
-  },
-
-  // Extra configurations on variables
-  // Listing variables here is optional
-  "variables": {
-    "var:10" : {
-      "type_value": "type:0",
-      "keyfor_value" : [],'
-      "score": { "type:0" : 0, "type:1": 1000 },
-      "possible_keyfor": ["mymap1", "mymap2"]
-    }
-  },
-
-  "constraints": [
-    // Format 1
-    "var:10 <= type:0",
-
-    // Subtype
-    { "constraint" : "subtype", // subtype, equality, inequality
-      "lhs" : "var:1",
-      "rhs": "var:2"
-      "score": 100
-    },
-
-    // Map.get
-    { "constraint": "map.get",
-      "name": "mymap1",
-      "value_type": "var:1",
-      "key": "var:2",
-      "result": "var:3"
-    },
-
-    // If Node
-    { "constraint": "selection_check",
-      "id": "var:11",
-      "type": "type:0",
-      "then": [ ... ], // Nested list of constraints
-      "else": [ ... ],
-    },
-
-    // Generics
-    { "constraint": "enabled_check",
-      "id" : "var:12",
-      "then": [ ... ],
-      "else": [ ... ],
-    }
-  ]
-}
-
+ * <p>// Variable values are set in the "variables": "var:ID": "type_value": key.
+ *
+ * <p>{ "version": "1",
+ *
+ * <p>"scoring": { "constraints": 1000, "variables": { "type:0" : 0, "type:1": 100 } },
+ *
+ * <p>// Extra configurations on variables // Listing variables here is optional "variables": {
+ * "var:10" : { "type_value": "type:0", "keyfor_value" : [],' "score": { "type:0" : 0, "type:1":
+ * 1000 }, "possible_keyfor": ["mymap1", "mymap2"] } },
+ *
+ * <p>"constraints": [ // Format 1 "var:10 <= type:0",
+ *
+ * <p>// Subtype { "constraint" : "subtype", // subtype, equality, inequality "lhs" : "var:1",
+ * "rhs": "var:2" "score": 100 },
+ *
+ * <p>// Map.get { "constraint": "map.get", "name": "mymap1", "value_type": "var:1", "key": "var:2",
+ * "result": "var:3" },
+ *
+ * <p>// If Node { "constraint": "selection_check", "id": "var:11", "type": "type:0", "then": [ ...
+ * ], // Nested list of constraints "else": [ ... ], },
+ *
+ * <p>// Generics { "constraint": "enabled_check", "id" : "var:12", "then": [ ... ], "else": [ ...
+ * ], } ] }
+ *
  * @author mcarthur
- *
  */
-
 public class JsonSerializer implements Serializer<String, JSONObject> {
 
     // Version of this format
@@ -164,15 +126,17 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
 
     @SuppressWarnings("unused")
     private final Collection<Slot> slots;
+
     private final Collection<Constraint> constraints;
     private final Map<Integer, AnnotationMirror> solutions;
 
     private AnnotationMirrorSerializer annotationSerializer;
 
-    public JsonSerializer(Collection<Slot> slots,
-                          Collection<Constraint> constraints,
-                          Map<Integer, AnnotationMirror> solutions,
-                          AnnotationMirrorSerializer annotationSerializer) {
+    public JsonSerializer(
+            Collection<Slot> slots,
+            Collection<Constraint> constraints,
+            Map<Integer, AnnotationMirror> solutions,
+            AnnotationMirrorSerializer annotationSerializer) {
 
         this.slots = slots;
         this.constraints = constraints;
@@ -183,7 +147,7 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
     @SuppressWarnings("unchecked")
     public JSONObject generateConstraintFile() {
         JSONObject result = new JSONObject();
-        result.put(VERSION_KEY,  VERSION);
+        result.put(VERSION_KEY, VERSION);
 
         if (solutions != null && solutions.size() > 0) {
             result.put(VARIABLES_KEY, generateVariablesSection());
@@ -196,7 +160,7 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
     @SuppressWarnings("unchecked")
     protected JSONObject generateVariablesSection() {
         JSONObject variables = new JSONObject();
-        for (Map.Entry<Integer, AnnotationMirror> entry: solutions.entrySet()) {
+        for (Map.Entry<Integer, AnnotationMirror> entry : solutions.entrySet()) {
             JSONObject variable = new JSONObject();
             variable.put(VARIABLES_VALUE_KEY, getConstantString(entry.getValue()));
             variables.put(VAR_PREFIX + entry.getKey(), variable);
@@ -236,9 +200,9 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
 
     @Override
     public String serialize(ExistentialVariableSlot slot) {
-        throw new UnsupportedOperationException("Existential slots should be normalized away before serialization.");
+        throw new UnsupportedOperationException(
+                "Existential slots should be normalized away before serialization.");
     }
-
 
     @Override
     public String serialize(ConstantSlot slot) {
@@ -293,13 +257,12 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
         return obj;
     }
 
-
     @Override
     public JSONObject serialize(ExistentialConstraint constraint) {
 
         JSONObject obj = new JSONObject();
         obj.put(CONSTRAINT_KEY, EXISTENTIAL_CONSTRAINT_KEY);
-        obj.put(EXISTENTIAL_ID,   constraint.getPotentialVariable().serialize(this));
+        obj.put(EXISTENTIAL_ID, constraint.getPotentialVariable().serialize(this));
         obj.put(EXISTENTIAL_THEN, constraintsToJsonArray(constraint.potentialConstraints()));
         obj.put(EXISTENTIAL_ELSE, constraintsToJsonArray(constraint.getAlternateConstraints()));
         return obj;
@@ -351,7 +314,9 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
     @SuppressWarnings("unchecked")
     @Override
     public JSONObject serialize(CombineConstraint constraint) {
-        if (constraint.getTarget() == null || constraint.getDeclared() == null || constraint.getResult() == null) {
+        if (constraint.getTarget() == null
+                || constraint.getDeclared() == null
+                || constraint.getResult() == null) {
             return null;
         }
 

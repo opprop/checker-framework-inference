@@ -7,7 +7,11 @@ import checkers.inference.InferenceVisitor;
 
 public class TrustedVisitor extends InferenceVisitor<TrustedChecker, BaseAnnotatedTypeFactory> {
 
-    public TrustedVisitor(TrustedChecker checker, InferenceChecker ichecker, BaseAnnotatedTypeFactory factory, boolean infer) {
+    public TrustedVisitor(
+            TrustedChecker checker,
+            InferenceChecker ichecker,
+            BaseAnnotatedTypeFactory factory,
+            boolean infer) {
         super(checker, ichecker, factory, infer);
     }
 }

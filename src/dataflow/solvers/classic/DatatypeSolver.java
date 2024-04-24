@@ -1,14 +1,14 @@
 package dataflow.solvers.classic;
 
+import org.sat4j.core.VecInt;
+import org.sat4j.maxsat.WeightedMaxSatDecorator;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.sat4j.core.VecInt;
-import org.sat4j.maxsat.WeightedMaxSatDecorator;
 
 import checkers.inference.InferenceMain;
 import checkers.inference.SlotManager;
@@ -20,7 +20,8 @@ public class DatatypeSolver {
     private final DataflowSerializer serializer;
     private final List<VecInt> clauses;
 
-    public DatatypeSolver(String datatype, Collection<Constraint> constraints, DataflowSerializer serializer) {
+    public DatatypeSolver(
+            String datatype, Collection<Constraint> constraints, DataflowSerializer serializer) {
         this.datatype = datatype;
         this.serializer = serializer;
         this.slotManager = InferenceMain.getInstance().getSlotManager();
@@ -66,31 +67,34 @@ public class DatatypeSolver {
         final int totalClauses = clauses.size();
 
         try {
-            //**** Prep Solver ****
-            //org.sat4j.pb.SolverFactory.newBoth() Runs both of sat4j solves and uses the result of the first to finish
+            // **** Prep Solver ****
+            // org.sat4j.pb.SolverFactory.newBoth() Runs both of sat4j solves and uses the result of
+            // the first to finish
             // JLTODO: why is this a weighted max-sat solver? Isn't this only
             // creating sat constraints?
-            final WeightedMaxSatDecorator solver = new WeightedMaxSatDecorator(org.sat4j.pb.SolverFactory.newBoth());
+            final WeightedMaxSatDecorator solver =
+                    new WeightedMaxSatDecorator(org.sat4j.pb.SolverFactory.newBoth());
 
             solver.newVar(totalVars);
             solver.setExpectedNumberOfClauses(totalClauses);
-            //Arbitrary timeout
+            // Arbitrary timeout
             solver.setTimeoutMs(1000000);
             for (VecInt clause : clauses) {
                 solver.addSoftClause(clause);
             }
 
-            //**** Solve ****
+            // **** Solve ****
             boolean hasSolution = solver.isSatisfiable();
 
             if (hasSolution) {
 
                 // **** Remove exatential vars from solution
-                final Map<Integer, Integer> existentialToPotentialIds = serializer.getExistentialToPotentialVar();
+                final Map<Integer, Integer> existentialToPotentialIds =
+                        serializer.getExistentialToPotentialVar();
                 int[] solution = solver.model();
                 for (Integer var : solution) {
                     boolean varIsTrue = var > 0;
-                    //Need postive var
+                    // Need postive var
                     var = Math.abs(var);
                     Integer potential = existentialToPotentialIds.get(var);
                     if (potential == null) {

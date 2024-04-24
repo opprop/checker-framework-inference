@@ -33,5 +33,4 @@ public class DatatypeSolution {
     public boolean isRoot() {
         return this.isRoot;
     }
-
 }

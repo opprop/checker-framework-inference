@@ -1,14 +1,15 @@
 package checkers.inference.model;
 
-import java.util.Arrays;
-
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.BugInCF;
 
+import java.util.Arrays;
+
 /**
- * Represents a constraint that two slots must be comparable,  i.e. one type can be cast to the other.
+ * Represents a constraint that two slots must be comparable, i.e. one type can be cast to the
+ * other.
  *
- * In contrast, a {@link ComparisonConstraint} is created when two expressions are compared.
+ * <p>In contrast, a {@link ComparisonConstraint} is created when two expressions are compared.
  */
 public class ComparableConstraint extends Constraint implements BinaryConstraint {
 
@@ -27,11 +28,17 @@ public class ComparableConstraint extends Constraint implements BinaryConstraint
         this.second = second;
     }
 
-    protected static Constraint create(Slot first, Slot second, AnnotationLocation location,
+    protected static Constraint create(
+            Slot first,
+            Slot second,
+            AnnotationLocation location,
             QualifierHierarchy realQualHierarchy) {
         if (first == null || second == null) {
-            throw new BugInCF("Create comparable constraint with null argument. Subtype: "
-                    + first + " Supertype: " + second);
+            throw new BugInCF(
+                    "Create comparable constraint with null argument. Subtype: "
+                            + first
+                            + " Supertype: "
+                            + second);
         }
 
         // Normalization cases:
@@ -44,10 +51,12 @@ public class ComparableConstraint extends Constraint implements BinaryConstraint
             ConstantSlot firstConst = (ConstantSlot) first;
             ConstantSlot secondConst = (ConstantSlot) second;
 
-            return realQualHierarchy.isSubtypeQualifiersOnly(firstConst.getValue(), secondConst.getValue())
-                    || realQualHierarchy.isSubtypeQualifiersOnly(secondConst.getValue(), firstConst.getValue())
-                            ? AlwaysTrueConstraint.create()
-                            : AlwaysFalseConstraint.create();
+            return realQualHierarchy.isSubtypeQualifiersOnly(
+                                    firstConst.getValue(), secondConst.getValue())
+                            || realQualHierarchy.isSubtypeQualifiersOnly(
+                                    secondConst.getValue(), firstConst.getValue())
+                    ? AlwaysTrueConstraint.create()
+                    : AlwaysFalseConstraint.create();
         }
 
         // V <~> V => TRUE (every type is always comparable to itself)
@@ -89,12 +98,9 @@ public class ComparableConstraint extends Constraint implements BinaryConstraint
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
+        if (this == obj) return true;
+        if (obj == null) return false;
+        if (getClass() != obj.getClass()) return false;
         ComparableConstraint other = (ComparableConstraint) obj;
         if ((first.equals(other.first) && second.equals(other.second))
                 || (first.equals(other.second) && (second.equals(other.first)))) {

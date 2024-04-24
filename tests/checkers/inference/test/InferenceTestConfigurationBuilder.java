@@ -24,8 +24,7 @@ public class InferenceTestConfigurationBuilder {
     private SimpleOptionMap inferenceJavacArgs = new SimpleOptionMap();
     private SimpleOptionMap solverArgs = new SimpleOptionMap();
 
-    public InferenceTestConfigurationBuilder() {
-    }
+    public InferenceTestConfigurationBuilder() {}
 
     public InferenceTestConfigurationBuilder(TestConfiguration initialConfiguration) {
         this.initialConfiguration = initialConfiguration;
@@ -36,7 +35,8 @@ public class InferenceTestConfigurationBuilder {
         return this;
     }
 
-    public InferenceTestConfigurationBuilder setInitialConfiguration(TestConfiguration initialConfiguration) {
+    public InferenceTestConfigurationBuilder setInitialConfiguration(
+            TestConfiguration initialConfiguration) {
         this.initialConfiguration = initialConfiguration;
         return this;
     }
@@ -71,7 +71,8 @@ public class InferenceTestConfigurationBuilder {
         return this;
     }
 
-    public InferenceTestConfigurationBuilder setPathToInferenceScript(String pathToInferenceScript) {
+    public InferenceTestConfigurationBuilder setPathToInferenceScript(
+            String pathToInferenceScript) {
         this.pathToInferenceScript = pathToInferenceScript;
         return this;
     }
@@ -79,7 +80,8 @@ public class InferenceTestConfigurationBuilder {
     // ---------------------------------
     // Infernece Javac Options Delegation Methods
 
-    public InferenceTestConfigurationBuilder addToInferenceJavacPathOption(String key, String toAppend) {
+    public InferenceTestConfigurationBuilder addToInferenceJavacPathOption(
+            String key, String toAppend) {
         inferenceJavacArgs.addOption(key, toAppend);
         return this;
     }
@@ -94,8 +96,8 @@ public class InferenceTestConfigurationBuilder {
         return this;
     }
 
-
-    public InferenceTestConfigurationBuilder addInferenceJavacOptionIfValueNonEmpty(String option, String value) {
+    public InferenceTestConfigurationBuilder addInferenceJavacOptionIfValueNonEmpty(
+            String option, String value) {
         inferenceJavacArgs.addOptionIfValueNonEmpty(option, value);
         return this;
     }
@@ -128,7 +130,8 @@ public class InferenceTestConfigurationBuilder {
         return this;
     }
 
-    public InferenceTestConfigurationBuilder addSolverOptionIfValueNonEmpty(String option, String value) {
+    public InferenceTestConfigurationBuilder addSolverOptionIfValueNonEmpty(
+            String option, String value) {
         solverArgs.addOptionIfValueNonEmpty(option, value);
         return this;
     }
@@ -151,57 +154,78 @@ public class InferenceTestConfigurationBuilder {
 
     public List<String> validate() {
         List<String> errors = new ArrayList<>();
-        //Note: The initial config should be validated before being passed to InferenceTestConfigurationBuilder
+        // Note: The initial config should be validated before being passed to
+        // InferenceTestConfigurationBuilder
         ensureNotNull(initialConfiguration, "initialConfiguration", errors);
-        ensureNotNull(outputJaif,  "outputJaif", errors);
+        ensureNotNull(outputJaif, "outputJaif", errors);
         ensureNotNull(testDataDir, "testDataDir", errors);
         ensureNotNull(annotatedSourceDir, "annotatedSourceDir", errors);
         return errors;
     }
 
     public InferenceTestConfiguration build() {
-        return new ImmutableInferenceTestConfiguration(outputJaif, testDataDir,
-                annotatedSourceDir, new LinkedHashMap<>(inferenceJavacArgs.getOptions()),
-                solver, new LinkedHashMap<>(solverArgs.getOptions()), shouldUseHacks, makeDefaultsExplicit,
-                pathToAfuScripts, pathToInferenceScript, initialConfiguration);
+        return new ImmutableInferenceTestConfiguration(
+                outputJaif,
+                testDataDir,
+                annotatedSourceDir,
+                new LinkedHashMap<>(inferenceJavacArgs.getOptions()),
+                solver,
+                new LinkedHashMap<>(solverArgs.getOptions()),
+                shouldUseHacks,
+                pathToAfuScripts,
+                pathToInferenceScript,
+                initialConfiguration);
     }
 
     public InferenceTestConfiguration validateThenBuild() {
-        List<String> errors = validate() ;
+        List<String> errors = validate();
         if (errors.isEmpty()) {
             return build();
         }
 
-        throw new RuntimeException("Attempted to build invalid inference test configuration:\n"
-                + "Errors:\n"
-                + String.join("\n", errors) + "\n"
-                + this.toString() + "\n");
+        throw new RuntimeException(
+                "Attempted to build invalid inference test configuration:\n"
+                        + "Errors:\n"
+                        + String.join("\n", errors)
+                        + "\n"
+                        + this.toString()
+                        + "\n");
     }
 
     public static InferenceTestConfiguration buildDefaultConfiguration(
-            String testSourcePath, File testFile, File testDataRoot, Class<?> checker, List<String> typecheckOptions,
-            List<String> inferenceOptions,  String solverName, List<String> solverOptions,
-            boolean shouldUseHacks, boolean makeDefaultsExplicit, boolean shouldEmitDebugInfo, String pathToAfuScripts,
+            String testSourcePath,
+            File testFile,
+            File testDataRoot,
+            Class<?> checker,
+            List<String> typecheckOptions,
+            List<String> inferenceOptions,
+            String solverName,
+            List<String> solverOptions,
+            boolean shouldUseHacks,
+            boolean makeDefaultsExplicit
+            boolean shouldEmitDebugInfo,
+            String pathToAfuScripts,
             String pathToInferenceScript) {
 
         final File defaultInferenceOutDir = new File("testdata/tmp");
         final File defaultOutputJaif = new File(defaultInferenceOutDir, "default.jaif");
         final File defaultAnnotatedSourceDir = new File(defaultInferenceOutDir, "annotated-source");
 
-        TestConfiguration initialConfig = TestConfigurationBuilder.buildDefaultConfiguration(
-                testSourcePath, testFile, checker, typecheckOptions, shouldEmitDebugInfo);
+        TestConfiguration initialConfig =
+                TestConfigurationBuilder.buildDefaultConfiguration(
+                        testSourcePath, testFile, checker, typecheckOptions, shouldEmitDebugInfo);
 
         InferenceTestConfigurationBuilder configBuilder =
-            new InferenceTestConfigurationBuilder()
-                .setInitialConfiguration(initialConfig)
-                .setOutputJaif(defaultOutputJaif)
-                .setTestDataDir(testDataRoot)
-                .setAnnotatedSourceDir(defaultAnnotatedSourceDir)
-                .setSolver(solverName)
-                .setShouldUseHacks(shouldUseHacks)
-                .setMakeDefaultsExplicit(makeDefaultsExplicit)
-                .setPathToAfuScripts(pathToAfuScripts)
-                .setPathToInferenceScript(pathToInferenceScript);
+                new InferenceTestConfigurationBuilder()
+                        .setInitialConfiguration(initialConfig)
+                        .setOutputJaif(defaultOutputJaif)
+                        .setTestDataDir(testDataRoot)
+                        .setAnnotatedSourceDir(defaultAnnotatedSourceDir)
+                        .setSolver(solverName)
+                        .setShouldUseHacks(shouldUseHacks)
+                        .setMakeDefaultsExplicit(makeDefaultsExplicit)
+                        .setPathToAfuScripts(pathToAfuScripts)
+                        .setPathToInferenceScript(pathToInferenceScript);
 
         if (inferenceOptions != null) {
             configBuilder.addInferenceJavacOptions(inferenceOptions);

@@ -11,6 +11,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.WildcardTree;
 import com.sun.source.util.TreeScanner;
+
 import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.javacutil.TreeUtils;
@@ -20,28 +21,22 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A utility class to help SlotManager to find the real default type of
- * each slot.
+ * A utility class to help SlotManager to find the real default type of each slot.
  *
- * Slot manager tries to create a slot for each type declaration or type
- * use in the class, so the associated tree is usually a type tree.
- * Currently, AnnotatedTypeFactory cannot properly determine the annotated
- * type of the type tree because it's unaware of the tree's location.
+ * <p>Slot manager tries to create a slot for each type declaration or type use in the class, so the
+ * associated tree is usually a type tree. Currently, AnnotatedTypeFactory cannot properly determine
+ * the annotated type of the type tree because it's unaware of the tree's location.
  *
- * For example, AnnotatedTypeFactory returns the same annotated type for
- * "Object" in the following two cases:
- * 1. Object s = "123";
- * 2. List<? extends Object> l = new ArrayList<>();
- * But it's possible to have a different default type for the upperbound.
+ * <p>For example, AnnotatedTypeFactory returns the same annotated type for "Object" in the
+ * following two cases: 1. Object s = "123"; 2. List<? extends Object> l = new ArrayList<>(); But
+ * it's possible to have a different default type for the upperbound.
  *
- * This class aims to properly find the real default type for type trees.
+ * <p>This class aims to properly find the real default type for type trees.
  */
 public class SlotDefaultTypeResolver {
 
     public static Map<Tree, AnnotatedTypeMirror> resolve(
-            ClassTree classTree,
-            BaseAnnotatedTypeFactory realTypeFactory
-    ) {
+            ClassTree classTree, BaseAnnotatedTypeFactory realTypeFactory) {
         DefaultTypeFinder finder = new DefaultTypeFinder(realTypeFactory);
         finder.scan(classTree, null);
 
@@ -49,13 +44,12 @@ public class SlotDefaultTypeResolver {
     }
 
     /**
-     * A tree visitor that focuses on collecting the real default types for
-     * type trees under this tree.
+     * A tree visitor that focuses on collecting the real default types for type trees under this
+     * tree.
      *
-     * The results may contain information for trees that are not a type
-     * tree. For example, the implements clause of a class can either be
-     * an IdentifierTree or a ParameterizedTypeTree, but we always store
-     * its type for simplicity.
+     * <p>The results may contain information for trees that are not a type tree. For example, the
+     * implements clause of a class can either be an IdentifierTree or a ParameterizedTypeTree, but
+     * we always store its type for simplicity.
      */
     private static class DefaultTypeFinder extends TreeScanner<Void, Void> {
 
@@ -138,12 +132,14 @@ public class SlotDefaultTypeResolver {
             In the tree of `ArrayList<>`, we have no type arguments, but its type does have "String"
             as its type argument.
              */
-            assert typeArgumentTrees.size() == 0 || typeArgumentTrees.size() == typeArgumentTypes.size();
+            assert typeArgumentTrees.size() == 0
+                    || typeArgumentTrees.size() == typeArgumentTypes.size();
             for (int i = 0; i < typeArgumentTrees.size(); ++i) {
                 defaultTypes.put(typeArgumentTrees.get(i), typeArgumentTypes.get(i));
             }
 
-            // Sometimes, the slot manager annotates the underlying type tree instead of this ParameterizedTypeTree
+            // Sometimes, the slot manager annotates the underlying type tree instead of this
+            // ParameterizedTypeTree
             defaultTypes.put(tree.getType(), defaultType.getErased());
 
             return super.visitParameterizedType(tree, unused);

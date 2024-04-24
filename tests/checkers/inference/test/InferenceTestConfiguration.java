@@ -9,21 +9,30 @@ import java.util.Map;
 public interface InferenceTestConfiguration {
 
     File getOutputJaif();
+
     File getAnnotatedSourceDir();
+
     File getTestDataDir();
 
     Map<String, String> getInferenceJavacArgs();
+
     List<String> getFlatInferenceJavacArgs();
 
     String getSolver();
+
     Map<String, String> getSolverArgs();
+
     List<String> getFlatSolverArgs();
 
     boolean shouldUseHacks();
+  
     boolean makeDefaultsExplicit();
+  
     String getPathToAfuScripts();
+
     String getPathToInferenceScript();
 
     TestConfiguration getInitialTypecheckConfig();
+
     TestConfiguration getFinalTypecheckConfig();
 }

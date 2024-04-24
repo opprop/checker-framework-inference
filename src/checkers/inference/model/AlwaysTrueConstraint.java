@@ -1,7 +1,8 @@
 package checkers.inference.model;
 
-import java.util.Collections;
 import org.checkerframework.javacutil.BugInCF;
+
+import java.util.Collections;
 
 /**
  * This "constraint" is the result of normalizing another constraint, where that constraint is
@@ -28,7 +29,8 @@ public class AlwaysTrueConstraint extends Constraint {
     @Override
     public <S, T> T serialize(Serializer<S, T> serializer) {
         throw new BugInCF(
-                "Attempting to serialize an " + AlwaysTrueConstraint.class.getCanonicalName()
+                "Attempting to serialize an "
+                        + AlwaysTrueConstraint.class.getCanonicalName()
                         + ". This constraint should never be serialized.");
     }
 }

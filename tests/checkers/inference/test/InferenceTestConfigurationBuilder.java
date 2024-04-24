@@ -172,6 +172,7 @@ public class InferenceTestConfigurationBuilder {
                 solver,
                 new LinkedHashMap<>(solverArgs.getOptions()),
                 shouldUseHacks,
+                makeDefaultsExplicit,
                 pathToAfuScripts,
                 pathToInferenceScript,
                 initialConfiguration);

@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ aosen-master ]
   pull_request:
-    branches: [ master ]
+    branches: [ aosen-master ]
 
   workflow_dispatch:
 

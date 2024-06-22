@@ -112,7 +112,7 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
     protected InferenceResult mergeInferenceResults(
             List<Pair<Map<Integer, AnnotationMirror>, Collection<Constraint>>> inferenceResults) {
         Map<Integer, AnnotationMirror> solutions = new HashMap<>();
-        Map<Integer, Set<AnnotationMirror>> dataflowResults = new HashMap<>();
+        Map<Integer, AnnotationMirrorSet> dataflowResults = new HashMap<>();
 
         for (Pair<Map<Integer, AnnotationMirror>, Collection<Constraint>> inferenceResult :
                 inferenceResults) {
@@ -122,7 +122,7 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
                     Integer id = entry.getKey();
                     AnnotationMirror dataflowAnno = entry.getValue();
                     if (AnnotationUtils.areSameByName(dataflowAnno, DATAFLOW_NAME)) {
-                        Set<AnnotationMirror> datas = dataflowResults.get(id);
+                        AnnotationMirrorSet datas = dataflowResults.get(id);
                         if (datas == null) {
                             datas = new AnnotationMirrorSet();
                             dataflowResults.put(id, datas);
@@ -136,7 +136,7 @@ public class DataflowGraphSolvingStrategy extends GraphSolvingStrategy {
             }
         }
 
-        for (Map.Entry<Integer, Set<AnnotationMirror>> entry : dataflowResults.entrySet()) {
+        for (Map.Entry<Integer, AnnotationMirrorSet> entry : dataflowResults.entrySet()) {
             Set<String> dataTypes = new HashSet<String>();
             Set<String> dataRoots = new HashSet<String>();
             for (AnnotationMirror anno : entry.getValue()) {

@@ -1,5 +1,6 @@
 package checkers.inference.solver.backend.maxsat.encoder;
 
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.sat4j.core.VecInt;
 
@@ -34,7 +35,7 @@ public class MaxSATSubtypeConstraintEncoder extends MaxSATAbstractConstraintEnco
      * type of supertype, same for subtype
      */
     protected VecInt[] getMustNotBe(
-            Set<AnnotationMirror> mustNotBe, Slot vSlot, ConstantSlot cSlot) {
+            AnnotationMirrorSet mustNotBe, Slot vSlot, ConstantSlot cSlot) {
 
         List<Integer> resultList = new ArrayList<Integer>();
 
@@ -114,7 +115,7 @@ public class MaxSATSubtypeConstraintEncoder extends MaxSATAbstractConstraintEnco
 
     @Override
     public VecInt[] encodeVariable_Constant(VariableSlot subtype, ConstantSlot supertype) {
-        final Set<AnnotationMirror> mustNotBe = new HashSet<>();
+        final AnnotationMirrorSet mustNotBe = new AnnotationMirrorSet();
         if (AnnotationUtils.areSame(supertype.getValue(), lattice.bottom)) {
             return VectorUtils.asVecArray(
                     MathUtils.mapIdToMatrixEntry(
@@ -132,7 +133,7 @@ public class MaxSATSubtypeConstraintEncoder extends MaxSATAbstractConstraintEnco
 
     @Override
     public VecInt[] encodeConstant_Variable(ConstantSlot subtype, VariableSlot supertype) {
-        final Set<AnnotationMirror> mustNotBe = new HashSet<>();
+        final AnnotationMirrorSet mustNotBe = new AnnotationMirrorSet();
         if (AnnotationUtils.areSame(subtype.getValue(), lattice.top)) {
             return VectorUtils.asVecArray(
                     MathUtils.mapIdToMatrixEntry(

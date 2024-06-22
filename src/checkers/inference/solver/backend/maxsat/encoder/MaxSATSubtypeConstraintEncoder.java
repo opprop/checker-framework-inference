@@ -6,11 +6,9 @@ import org.sat4j.core.VecInt;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
@@ -34,8 +32,7 @@ public class MaxSATSubtypeConstraintEncoder extends MaxSATAbstractConstraintEnco
      * For subtype constraint, if supertype is constant slot, then the subtype cannot be the super
      * type of supertype, same for subtype
      */
-    protected VecInt[] getMustNotBe(
-            AnnotationMirrorSet mustNotBe, Slot vSlot, ConstantSlot cSlot) {
+    protected VecInt[] getMustNotBe(AnnotationMirrorSet mustNotBe, Slot vSlot, ConstantSlot cSlot) {
 
         List<Integer> resultList = new ArrayList<Integer>();
 

@@ -149,7 +149,7 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
                                         .constructorFromUse(node)
                                         .executableType
                                         .getReturnType();
-                        Set<AnnotationMirror> defaultedSet = defaulted.getAnnotations();
+                        AnnotationMirrorSet defaultedSet = defaulted.getAnnotations();
                         // The default of OTHERWISE locations such as constructor results
                         // is {}{}, but for constructor results we really want bottom.
                         // So if the result is {}{}, then change it to {}->ANY (bottom)

@@ -221,7 +221,7 @@ public class InferenceQualifierHierarchy extends ElementQualifierHierarchy {
             Collection<? extends AnnotationMirror> annos2,
             TypeMirror tm2) {
         if (InferenceMain.isHackMode(annos1.size() != annos2.size())) {
-            Set<AnnotationMirror> result = new AnnotationMirrorSet();
+            AnnotationMirrorSet result = new AnnotationMirrorSet();
             for (AnnotationMirror a1 : annos1) {
                 for (AnnotationMirror a2 : annos2) {
                     AnnotationMirror lub = leastUpperBoundQualifiersOnly(a1, a2);

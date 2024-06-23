@@ -16,7 +16,7 @@ fi
 if [ -d "/tmp/plume-scripts" ] ; then
   git -C /tmp/plume-scripts pull -q
 else
-  git -C /tmp clone --depth 1 -q https://github.com/plume-lib/plume-scripts.git
+  git -C /tmp clone --depth 1 -q https://github.com/eisop-plume-lib/plume-scripts.git
 fi
 
 export AFU="${AFU:-../annotation-tools/annotation-file-utilities}"

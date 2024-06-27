@@ -793,7 +793,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void, Tree> {
         return null;
     }
 
-    private boolean handleWasRawDeclaredTypes(AnnotatedDeclaredType adt) {
+    protected boolean handleWasRawDeclaredTypes(AnnotatedDeclaredType adt) {
         if (adt.isUnderlyingTypeRaw() && adt.getTypeArguments().size() != 0) {
             // the type arguments should be wildcards AND if I get the real type of "tree"
             // it corresponds to the declaration of adt.getUnderlyingType
@@ -1855,7 +1855,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void, Tree> {
         return null;
     }
 
-    private void addDeclarationConstraints(Slot declSlot, Slot instanceSlot) {
+    protected void addDeclarationConstraints(Slot declSlot, Slot instanceSlot) {
         constraintManager.addSubtypeConstraint(instanceSlot, declSlot);
     }
 

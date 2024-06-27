@@ -33,6 +33,10 @@ public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
         return SystemPlume.getBooleanSystemProperty("use.hacks");
     }
 
+    public boolean makeDefaultsExplicit() {
+        return false;
+    }
+
     public abstract IPair<String, List<String>> getSolverNameAndOptions();
 
     public List<String> getAdditionalInferenceOptions() {
@@ -66,6 +70,7 @@ public abstract class CFInferenceTest extends CheckerFrameworkPerFileTest {
                         solverArgs.first,
                         solverArgs.second,
                         useHacks(),
+                        makeDefaultsExplicit(),
                         shouldEmitDebugInfo,
                         getPathToAfuScripts(),
                         getPathToInferenceScript());

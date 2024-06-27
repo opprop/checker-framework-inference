@@ -25,12 +25,14 @@ import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedWildcard
 import org.checkerframework.framework.type.AnnotatedTypeParameterBounds;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.javacutil.*;
+import org.checkerframework.javacutil.TreeUtils;
 import org.plumelib.util.ArraysPlume;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -79,12 +81,11 @@ public class InferenceVisitor<
     protected final boolean infer;
 
     protected final Checker realChecker;
-
-    /**
+    /*
      * Map from type-use location to a list of qualifiers which cannot be used on that location.
      * This is used to create the inequality constraint in inference.
      */
-    protected final Map<TypeUseLocation, Set<AnnotationMirror>> locationToIllegalQuals;
+    protected final Map<TypeUseLocation, AnnotationMirrorSet> locationToIllegalQuals;
 
     public InferenceVisitor(
             Checker checker, InferenceChecker ichecker, Factory factory, boolean infer) {
@@ -305,6 +306,50 @@ public class InferenceVisitor<
                 }
             }
         }
+    }
+
+    private void addDeepPreferenceImpl(
+            AnnotatedTypeMirror ty,
+            AnnotationMirror goal,
+            int weight,
+            java.util.List<AnnotatedTypeMirror> visited,
+            Tree node) {
+        if (infer) {
+            if (visited.contains(ty)) {
+                return;
+            }
+            visited.add(ty);
+
+            final SlotManager slotManager = InferenceMain.getInstance().getSlotManager();
+            Slot el = slotManager.getSlot(ty);
+
+            if (el == null) {
+                logger.warning(
+                        "InferenceVisitor::addDeepPreferenceImpl: no annotation in type: " + ty);
+            } else {
+                addPreference(ty, goal, weight);
+            }
+
+            if (ty.getKind() == TypeKind.DECLARED) {
+                AnnotatedDeclaredType declaredType = (AnnotatedDeclaredType) ty;
+                for (AnnotatedTypeMirror typearg : declaredType.getTypeArguments()) {
+                    addDeepPreferenceImpl(typearg, goal, weight, visited, node);
+                }
+            } else if (ty.getKind() == TypeKind.ARRAY) {
+                AnnotatedArrayType arrayType = (AnnotatedArrayType) ty;
+                addDeepPreferenceImpl(arrayType.getComponentType(), goal, weight, visited, node);
+            } else if (ty.getKind() == TypeKind.TYPEVAR) {
+                AnnotatedTypeVariable atv = (AnnotatedTypeVariable) ty;
+                addDeepPreferenceImpl(atv.getUpperBound(), goal, weight, visited, node);
+                addDeepPreferenceImpl(atv.getLowerBound(), goal, weight, visited, node);
+            }
+        }
+        // Else, do nothing
+    }
+
+    public void addDeepPreference(
+            AnnotatedTypeMirror ty, AnnotationMirror goal, int weight, Tree node) {
+        addDeepPreferenceImpl(ty, goal, weight, new LinkedList<>(), node);
     }
 
     public void addPreference(AnnotatedTypeMirror type, AnnotationMirror anno, int weight) {
@@ -983,18 +1028,18 @@ public class InferenceVisitor<
      * @return a mapping from type-use locations to a set of qualifiers which cannot be applied to
      *     that location
      */
-    protected Map<TypeUseLocation, Set<AnnotationMirror>> createMapForIllegalQuals() {
-        Map<TypeUseLocation, Set<AnnotationMirror>> locationToIllegalQuals = new HashMap<>();
+    protected Map<TypeUseLocation, AnnotationMirrorSet> createMapForIllegalQuals() {
+        Map<TypeUseLocation, AnnotationMirrorSet> locationToIllegalQuals = new HashMap<>();
         // First, init each type-use location to contain all type qualifiers.
         Set<Class<? extends Annotation>> supportQualifiers =
                 atypeFactory.getSupportedTypeQualifiers();
-        Set<AnnotationMirror> supportedAnnos = new AnnotationMirrorSet();
+        AnnotationMirrorSet supportedAnnos = new AnnotationMirrorSet();
         for (Class<? extends Annotation> qual : supportQualifiers) {
             supportedAnnos.add(
                     new AnnotationBuilder(atypeFactory.getProcessingEnv(), qual).build());
         }
         for (TypeUseLocation location : TypeUseLocation.values()) {
-            locationToIllegalQuals.put(location, new HashSet<>(supportedAnnos));
+            locationToIllegalQuals.put(location, new AnnotationMirrorSet(supportedAnnos));
         }
         // Then, delete some qualifiers which can be applied to that type-use location.
         // this leaves only qualifiers not allowed on that location.
@@ -1005,7 +1050,7 @@ public class InferenceVisitor<
             // the qualifier can be written on any type use.
             if (tls == null) {
                 for (TypeUseLocation location : TypeUseLocation.values()) {
-                    Set<AnnotationMirror> amSet = locationToIllegalQuals.get(location);
+                    AnnotationMirrorSet amSet = locationToIllegalQuals.get(location);
                     amSet.remove(
                             AnnotationUtils.getAnnotationByName(
                                     supportedAnnos, qual.getCanonicalName()));
@@ -1015,14 +1060,14 @@ public class InferenceVisitor<
             for (TypeUseLocation location : tls.value()) {
                 if (location == TypeUseLocation.ALL) {
                     for (TypeUseLocation val : TypeUseLocation.values()) {
-                        Set<AnnotationMirror> amSet = locationToIllegalQuals.get(val);
+                        AnnotationMirrorSet amSet = locationToIllegalQuals.get(val);
                         amSet.remove(
                                 AnnotationUtils.getAnnotationByName(
                                         supportedAnnos, qual.getCanonicalName()));
                     }
                     break;
                 }
-                Set<AnnotationMirror> amSet = locationToIllegalQuals.get(location);
+                AnnotationMirrorSet amSet = locationToIllegalQuals.get(location);
                 amSet.remove(
                         AnnotationUtils.getAnnotationByName(
                                 supportedAnnos, qual.getCanonicalName()));
@@ -1037,7 +1082,6 @@ public class InferenceVisitor<
             super.validateVariablesTargetLocation(tree, type);
             return;
         }
-
         if (ignoreTargetLocations) {
             return;
         }
@@ -1068,6 +1112,9 @@ public class InferenceVisitor<
                     break;
                 case ENUM_CONSTANT:
                     location = TypeUseLocation.CONSTRUCTOR_RESULT;
+                    // TODO: Add ? mainIsNoneOf(type,
+                    // targetLocationToAnno.get(TypeUseLocation.FIELD).toArray(mirrors),
+                    // "type.invalid.annotations.on.location", tree);
                     break;
                 default:
                     throw new BugInCF("Location not matched");

@@ -17,6 +17,7 @@ public class InferenceTestConfigurationBuilder {
     private File testDataDir = null;
     private String solver = null;
     private boolean shouldUseHacks;
+    private boolean makeDefaultsExplicit;
     private String pathToAfuScripts = "";
     private String pathToInferenceScript = "";
 
@@ -57,6 +58,11 @@ public class InferenceTestConfigurationBuilder {
 
     public InferenceTestConfigurationBuilder setShouldUseHacks(boolean shouldUseHacks) {
         this.shouldUseHacks = shouldUseHacks;
+        return this;
+    }
+
+    public InferenceTestConfigurationBuilder setMakeDefaultsExplicit(boolean makeDefaultsExplicit) {
+        this.makeDefaultsExplicit = makeDefaultsExplicit;
         return this;
     }
 
@@ -166,6 +172,7 @@ public class InferenceTestConfigurationBuilder {
                 solver,
                 new LinkedHashMap<>(solverArgs.getOptions()),
                 shouldUseHacks,
+                makeDefaultsExplicit,
                 pathToAfuScripts,
                 pathToInferenceScript,
                 initialConfiguration);
@@ -196,6 +203,7 @@ public class InferenceTestConfigurationBuilder {
             String solverName,
             List<String> solverOptions,
             boolean shouldUseHacks,
+            boolean makeDefaultsExplicit,
             boolean shouldEmitDebugInfo,
             String pathToAfuScripts,
             String pathToInferenceScript) {
@@ -216,6 +224,7 @@ public class InferenceTestConfigurationBuilder {
                         .setAnnotatedSourceDir(defaultAnnotatedSourceDir)
                         .setSolver(solverName)
                         .setShouldUseHacks(shouldUseHacks)
+                        .setMakeDefaultsExplicit(makeDefaultsExplicit)
                         .setPathToAfuScripts(pathToAfuScripts)
                         .setPathToInferenceScript(pathToInferenceScript);
 

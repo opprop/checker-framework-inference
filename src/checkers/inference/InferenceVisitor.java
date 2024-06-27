@@ -30,7 +30,6 @@ import org.plumelib.util.ArraysPlume;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -84,7 +83,7 @@ public class InferenceVisitor<
      * Map from type-use location to a list of qualifiers which cannot be used on that location.
      * This is used to create the inequality constraint in inference.
      */
-    protected final Map<TypeUseLocation, Set<AnnotationMirror>> locationToIllegalQuals;
+    protected final Map<TypeUseLocation, AnnotationMirrorSet> locationToIllegalQuals;
 
     public InferenceVisitor(
             Checker checker, InferenceChecker ichecker, Factory factory, boolean infer) {
@@ -820,9 +819,9 @@ public class InferenceVisitor<
         return inferenceRefinementVariable;
     }
 
-    protected Set<AnnotationMirror> filterThrowCatchBounds(
+    protected AnnotationMirrorSet filterThrowCatchBounds(
             Set<? extends AnnotationMirror> originals) {
-        Set<AnnotationMirror> throwBounds = new HashSet<>();
+        AnnotationMirrorSet throwBounds = new AnnotationMirrorSet();
 
         for (AnnotationMirror throwBound : originals) {
             if (atypeFactory.areSameByClass(throwBound, VarAnnot.class)) {
@@ -847,7 +846,7 @@ public class InferenceVisitor<
         if (infer) {
             // TODO: We probably want to unify this code with BaseTypeVisitor
             AnnotatedTypeMirror throwType = atypeFactory.getAnnotatedType(node.getExpression());
-            Set<AnnotationMirror> throwBounds =
+            AnnotationMirrorSet throwBounds =
                     filterThrowCatchBounds(getThrowUpperBoundAnnotations());
 
             final AnnotationMirror varAnnot =
@@ -915,7 +914,7 @@ public class InferenceVisitor<
 
         if (infer) {
             // TODO: Unify with BaseTypeVisitor implementation
-            Set<AnnotationMirror> requiredAnnotations =
+            AnnotationMirrorSet requiredAnnotations =
                     filterThrowCatchBounds(getExceptionParameterLowerBoundAnnotations());
             AnnotatedTypeMirror exPar = atypeFactory.getAnnotatedType(node.getParameter());
 
@@ -983,18 +982,18 @@ public class InferenceVisitor<
      * @return a mapping from type-use locations to a set of qualifiers which cannot be applied to
      *     that location
      */
-    protected Map<TypeUseLocation, Set<AnnotationMirror>> createMapForIllegalQuals() {
-        Map<TypeUseLocation, Set<AnnotationMirror>> locationToIllegalQuals = new HashMap<>();
+    protected Map<TypeUseLocation, AnnotationMirrorSet> createMapForIllegalQuals() {
+        Map<TypeUseLocation, AnnotationMirrorSet> locationToIllegalQuals = new HashMap<>();
         // First, init each type-use location to contain all type qualifiers.
         Set<Class<? extends Annotation>> supportQualifiers =
                 atypeFactory.getSupportedTypeQualifiers();
-        Set<AnnotationMirror> supportedAnnos = new AnnotationMirrorSet();
+        AnnotationMirrorSet supportedAnnos = new AnnotationMirrorSet();
         for (Class<? extends Annotation> qual : supportQualifiers) {
             supportedAnnos.add(
                     new AnnotationBuilder(atypeFactory.getProcessingEnv(), qual).build());
         }
         for (TypeUseLocation location : TypeUseLocation.values()) {
-            locationToIllegalQuals.put(location, new HashSet<>(supportedAnnos));
+            locationToIllegalQuals.put(location, new AnnotationMirrorSet(supportedAnnos));
         }
         // Then, delete some qualifiers which can be applied to that type-use location.
         // this leaves only qualifiers not allowed on that location.
@@ -1005,7 +1004,7 @@ public class InferenceVisitor<
             // the qualifier can be written on any type use.
             if (tls == null) {
                 for (TypeUseLocation location : TypeUseLocation.values()) {
-                    Set<AnnotationMirror> amSet = locationToIllegalQuals.get(location);
+                    AnnotationMirrorSet amSet = locationToIllegalQuals.get(location);
                     amSet.remove(
                             AnnotationUtils.getAnnotationByName(
                                     supportedAnnos, qual.getCanonicalName()));
@@ -1015,14 +1014,14 @@ public class InferenceVisitor<
             for (TypeUseLocation location : tls.value()) {
                 if (location == TypeUseLocation.ALL) {
                     for (TypeUseLocation val : TypeUseLocation.values()) {
-                        Set<AnnotationMirror> amSet = locationToIllegalQuals.get(val);
+                        AnnotationMirrorSet amSet = locationToIllegalQuals.get(val);
                         amSet.remove(
                                 AnnotationUtils.getAnnotationByName(
                                         supportedAnnos, qual.getCanonicalName()));
                     }
                     break;
                 }
-                Set<AnnotationMirror> amSet = locationToIllegalQuals.get(location);
+                AnnotationMirrorSet amSet = locationToIllegalQuals.get(location);
                 amSet.remove(
                         AnnotationUtils.getAnnotationByName(
                                 supportedAnnos, qual.getCanonicalName()));

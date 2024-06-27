@@ -1,16 +1,15 @@
 package nninf.qual;
 
-import java.lang.annotation.Target;
-
 import org.checkerframework.framework.qual.DefaultQualifierInHierarchy;
 import org.checkerframework.framework.qual.InvisibleQualifier;
 import org.checkerframework.framework.qual.SubtypeOf;
 
+import java.lang.annotation.Target;
+
 /**
  * A reference for which we don't know whether it's a key for a map or not.
  *
- * <p>
- * Programmers cannot write this in source code.
+ * <p>Programmers cannot write this in source code.
  */
 @InvisibleQualifier
 @SubtypeOf({})

@@ -12,8 +12,6 @@ import java.lang.annotation.Target;
 @DefaultQualifierInHierarchy
 @InvisibleQualifier
 @SubtypeOf({})
-@Target({ ElementType.TYPE_USE })
-@TargetLocations({ TypeUseLocation.EXPLICIT_UPPER_BOUND })
-public @interface DataFlowTop {
-
-}
+@Target({ElementType.TYPE_USE})
+@TargetLocations({TypeUseLocation.ALL})
+public @interface DataFlowTop {}

@@ -1,17 +1,16 @@
 package sparta.checkers;
 
-import org.checkerframework.common.basetype.BaseAnnotatedTypeFactory;
-import org.checkerframework.framework.qual.StubFiles;
-
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.Tree;
+
+import org.checkerframework.framework.qual.StubFiles;
 
 import checkers.inference.BaseInferrableChecker;
 
 /**
  * Checker for inferring @Sink annotations for SPARTA.
  *
- * Only standard subtyping rules are needed so no methods are overridden.
+ * <p>Only standard subtyping rules are needed so no methods are overridden.
  */
 @StubFiles("information_flow.astub")
 public class IFlowSinkChecker extends BaseInferrableChecker {

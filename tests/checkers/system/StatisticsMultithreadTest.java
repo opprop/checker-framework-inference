@@ -1,5 +1,7 @@
 package checkers.system;
 
+import org.junit.Test;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -7,8 +9,6 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import org.junit.Test;
 
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Serializer;
@@ -41,7 +41,8 @@ public class StatisticsMultithreadTest extends TestCase {
     /**
      * Functional interface for creating threads.
      *
-     * Each thread is given a unique threadID and the return object must implement {@link Runnable}.
+     * <p>Each thread is given a unique threadID and the return object must implement {@link
+     * Runnable}.
      */
     @FunctionalInterface
     private interface ThreadMaker {
@@ -52,8 +53,7 @@ public class StatisticsMultithreadTest extends TestCase {
      * Helper which runs a number of threads, using the given lambda to create threads, and waits
      * until all threads have completed.
      *
-     * @param threadMaker
-     *            lambda parameter which should return newly created threads
+     * @param threadMaker lambda parameter which should return newly created threads
      */
     private void runThreads(ThreadMaker threadMaker) {
         // create and execute 100 threads, each trying to add or update an entry to the statistics
@@ -163,7 +163,6 @@ public class StatisticsMultithreadTest extends TestCase {
         public boolean isInsertable() {
             return false;
         }
-
     }
 
     private class DummyTwoSlot extends Slot {
@@ -185,7 +184,6 @@ public class StatisticsMultithreadTest extends TestCase {
         public boolean isInsertable() {
             return false;
         }
-
     }
 
     // =======================================
@@ -204,7 +202,8 @@ public class StatisticsMultithreadTest extends TestCase {
 
         Map<String, Long> finalStatistics = Statistics.getStatistics();
         checkEqual(finalStatistics, classStatsKeyName(DummyOneTestConstraint.class), numOfThreads);
-        checkEqual(finalStatistics, classStatsKeyName(DummyTwoTestConstraint.class), 2 * numOfThreads);
+        checkEqual(
+                finalStatistics, classStatsKeyName(DummyTwoTestConstraint.class), 2 * numOfThreads);
     }
 
     private class RecordConstraintsTestThread implements Runnable {
@@ -237,4 +236,3 @@ public class StatisticsMultithreadTest extends TestCase {
         }
     }
 }
-

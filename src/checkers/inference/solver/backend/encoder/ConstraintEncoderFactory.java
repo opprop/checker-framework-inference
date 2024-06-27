@@ -12,22 +12,22 @@ import checkers.inference.solver.backend.encoder.preference.PreferenceConstraint
 /**
  * Factory that creates constraint encoders.
  *
- * <p>
- * Right now, {@link ConstraintEncoderFactory} interface supports creation of these encoders:
+ * <p>Right now, {@link ConstraintEncoderFactory} interface supports creation of these encoders:
+ *
  * <ul>
- *     <li>{@link SubtypeConstraintEncoder}</li>
- *     <li>{@link EqualityConstraintEncoder}</li>
- *     <li>{@link InequalityConstraintEncoder}</li>
- *     <li>{@link ComparableConstraintEncoder}</li>
- *     <li>{@link ComparisonConstraintEncoder}</li>
- *     <li>{@link PreferenceConstraintEncoder}</li>
- *     <li>{@link CombineConstraintEncoder}</li>
- *     <li>{@link ExistentialConstraintEncoder}</li>
- *     <li>{@link ImplicationConstraintEncoder}</li>
- *     <li>{@link ArithmeticConstraintEncoder}</li>
+ *   <li>{@link SubtypeConstraintEncoder}
+ *   <li>{@link EqualityConstraintEncoder}
+ *   <li>{@link InequalityConstraintEncoder}
+ *   <li>{@link ComparableConstraintEncoder}
+ *   <li>{@link ComparisonConstraintEncoder}
+ *   <li>{@link PreferenceConstraintEncoder}
+ *   <li>{@link CombineConstraintEncoder}
+ *   <li>{@link ExistentialConstraintEncoder}
+ *   <li>{@link ImplicationConstraintEncoder}
+ *   <li>{@link ArithmeticConstraintEncoder}
  * </ul>
- * <p>
- * User of this interface is {@link checkers.inference.solver.backend.AbstractFormatTranslator}
+ *
+ * <p>User of this interface is {@link checkers.inference.solver.backend.AbstractFormatTranslator}
  * and its subclasses.
  *
  * @see checkers.inference.solver.backend.AbstractFormatTranslator

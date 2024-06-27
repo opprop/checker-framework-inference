@@ -1,47 +1,42 @@
 package checkers.inference.dataflow;
 
-import java.util.List;
-import java.util.Set;
-import java.util.logging.Logger;
-
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.VariableElement;
-import javax.lang.model.type.TypeKind;
-import javax.lang.model.type.TypeMirror;
-
 import org.checkerframework.framework.flow.CFAbstractAnalysis;
 import org.checkerframework.framework.flow.CFAnalysis;
 import org.checkerframework.framework.flow.CFStore;
 import org.checkerframework.framework.flow.CFTransfer;
 import org.checkerframework.framework.flow.CFValue;
 import org.checkerframework.framework.type.GenericAnnotatedTypeFactory;
+import org.checkerframework.javacutil.AnnotationMirrorSet;
 import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.Pair;
+import org.plumelib.util.StringsPlume;
+
+import java.util.logging.Logger;
+
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 
 import checkers.inference.InferenceChecker;
 import checkers.inference.InferrableChecker;
 import checkers.inference.SlotManager;
 import checkers.inference.model.ConstraintManager;
-import org.plumelib.util.StringsPlume;
 
 /**
  * InferenceAnalysis tweaks dataflow for Checker-Framework-Inference.
  *
- * Checker-Framework-Inference's dataflow is primarily concerned with the creation
- * and maintenance of RefinementVariableSlots. (See RefinementVariableSlots).
+ * <p>Checker-Framework-Inference's dataflow is primarily concerned with the creation and
+ * maintenance of RefinementVariableSlots. (See RefinementVariableSlots).
  *
- * InferenceAnalysis returns InferenceStore for createEmptyStore and createCopiedStore.
- * This is what makes the InferenceStore be the store used when the dataflow algorithm is
- * executed by the type factory.
+ * <p>InferenceAnalysis returns InferenceStore for createEmptyStore and createCopiedStore. This is
+ * what makes the InferenceStore be the store used when the dataflow algorithm is executed by the
+ * type factory.
  *
- * InferenceAnalysis also holds references to other inference components (SlotManager, ConstraintManager, etc.)
- * to make them available to other inference dataflow components.
+ * <p>InferenceAnalysis also holds references to other inference components (SlotManager,
+ * ConstraintManager, etc.) to make them available to other inference dataflow components.
  *
- * Finally, InferenceAnalysis make analysis' nodeValues field available outside of the class. InferenceTransfer
- * uses nodeValue to override values for nodes.
+ * <p>Finally, InferenceAnalysis make analysis' nodeValues field available outside of the class.
+ * InferenceTransfer uses nodeValue to override values for nodes.
  *
  * @author mcarthur
- *
  */
 public class InferenceAnalysis extends CFAnalysis {
 
@@ -66,26 +61,29 @@ public class InferenceAnalysis extends CFAnalysis {
     /**
      * Validate that a type has at most 1 annotation.
      *
-     * Null types will be returned when a type has no annotations. This happens currently when getting
-     * the declaration of a class.
+     * <p>Null types will be returned when a type has no annotations. This happens currently when
+     * getting the declaration of a class.
      */
     @Override
-    public CFValue defaultCreateAbstractValue(CFAbstractAnalysis<CFValue, ?, ?> analysis,
-                                              Set<AnnotationMirror> annos,
-                                              TypeMirror underlyingType) {
+    public CFValue defaultCreateAbstractValue(
+            CFAbstractAnalysis<CFValue, ?, ?> analysis,
+            AnnotationMirrorSet annos,
+            TypeMirror underlyingType) {
 
         if (annos.size() == 0 && underlyingType.getKind() != TypeKind.TYPEVAR) {
             // This happens for currently for class declarations.
-            logger.fine("Found type with no inferenceAnnotations. Returning null. Type found: "
-                    + underlyingType.toString());
+            logger.fine(
+                    "Found type with no inferenceAnnotations. Returning null. Type found: "
+                            + underlyingType.toString());
             return null;
         } else if (annos.size() > 2) {
             // Canary for bugs with VarAnnots
             // Note: You can have 1 annotation if a primary annotation in the real type system is
             // present for a type variable use or wildcard
-            throw new BugInCF("Found type in inference with the wrong number of "
-                    + "annotations. Should always have 0, 1, or 2: " + StringsPlume.join(", ",
-                    annos));
+            throw new BugInCF(
+                    "Found type in inference with the wrong number of "
+                            + "annotations. Should always have 0, 1, or 2: "
+                            + StringsPlume.join(", ", annos));
         } else {
             return new InferenceValue((InferenceAnalysis) analysis, annos, underlyingType);
         }

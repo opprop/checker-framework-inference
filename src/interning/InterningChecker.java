@@ -14,17 +14,13 @@ import checkers.inference.InferenceChecker;
 import interning.qual.Interned;
 
 /**
- * A type-checker plug-in for the {@link Interned} qualifier that
- * finds (and verifies the absence of) equality-testing and interning errors.
+ * A type-checker plug-in for the {@link Interned} qualifier that finds (and verifies the absence
+ * of) equality-testing and interning errors.
  *
- * <p>
- *
- * The {@link Interned} annotation indicates that a variable
- * refers to the canonical instance of an object, meaning that it is safe to
- * compare that object using the "==" operator. This plugin warns whenever
- * "==" is used in cases where one or both operands are not
- * {@link Interned}.  Optionally, it suggests using "=="
- * instead of ".equals" where possible.
+ * <p>The {@link Interned} annotation indicates that a variable refers to the canonical instance of
+ * an object, meaning that it is safe to compare that object using the "==" operator. This plugin
+ * warns whenever "==" is used in cases where one or both operands are not {@link Interned}.
+ * Optionally, it suggests using "==" instead of ".equals" where possible.
  *
  * @checker_framework.manual #interning-checker Interning Checker
  */
@@ -43,7 +39,8 @@ public final class InterningChecker extends BaseInferrableChecker {
     }
 
     @Override
-    public InterningVisitor createVisitor(InferenceChecker ichecker, BaseAnnotatedTypeFactory factory, boolean infer)  {
+    public InterningVisitor createVisitor(
+            InferenceChecker ichecker, BaseAnnotatedTypeFactory factory, boolean infer) {
         return new InterningVisitor(this, ichecker, factory, infer);
     }
 
@@ -51,5 +48,4 @@ public final class InterningChecker extends BaseInferrableChecker {
     public InterningAnnotatedTypeFactory createRealTypeFactory(boolean infer) {
         return new InterningAnnotatedTypeFactory(this, infer);
     }
-
 }

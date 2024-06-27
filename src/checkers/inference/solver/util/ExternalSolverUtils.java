@@ -1,5 +1,8 @@
 package checkers.inference.solver.util;
 
+import org.checkerframework.javacutil.BugInCF;
+import org.checkerframework.javacutil.UserError;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,12 +11,9 @@ import java.io.PrintStream;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
-import org.checkerframework.javacutil.BugInCF;
-import org.checkerframework.javacutil.UserError;
-
 /**
  * Utility class with methods to run an external solver program.
- * 
+ *
  * @see FileUtils
  */
 public class ExternalSolverUtils {
@@ -21,21 +21,20 @@ public class ExternalSolverUtils {
     public static final Logger logger = Logger.getLogger(ExternalSolverUtils.class.getName());
 
     /**
-     * Runs the external solver as given by command and uses the given
-     * stdOutHandler and stdErrHandler lambdas to process stdOut and stdErr.
+     * Runs the external solver as given by command and uses the given stdOutHandler and
+     * stdErrHandler lambdas to process stdOut and stdErr.
      *
-     * @param command
-     *            an external solver command to be executed, each string in the
-     *            array is space-concatenated to form the final command.
-     * @param stdOutHandler
-     *            a lambda which takes a {@link BufferedReader} providing the
-     *            stdOut of the external solver and handles the stdOut.
-     * @param stdErrHandler
-     *            a lambda which takes a {@link BufferedReader} providing the
-     *            stdErr of the external solver and handles the stdErr.
+     * @param command an external solver command to be executed, each string in the array is
+     *     space-concatenated to form the final command.
+     * @param stdOutHandler a lambda which takes a {@link BufferedReader} providing the stdOut of
+     *     the external solver and handles the stdOut.
+     * @param stdErrHandler a lambda which takes a {@link BufferedReader} providing the stdErr of
+     *     the external solver and handles the stdErr.
      * @return the exit status code of the external command.
      */
-    public static int runExternalSolver(String[] command, Consumer<BufferedReader> stdOutHandler,
+    public static int runExternalSolver(
+            String[] command,
+            Consumer<BufferedReader> stdOutHandler,
             Consumer<BufferedReader> stdErrHandler) {
 
         logger.info("Running external solver command \"" + String.join(" ", command) + "\".");
@@ -49,10 +48,10 @@ public class ExternalSolverUtils {
         }
 
         // Create threads to handle stdOut and stdErr
-        StdHandlerThread stdOutHandlerThread = new StdHandlerThread(process.getInputStream(),
-                stdOutHandler);
-        StdHandlerThread stdErrHandlerThread = new StdHandlerThread(process.getErrorStream(),
-                stdErrHandler);
+        StdHandlerThread stdOutHandlerThread =
+                new StdHandlerThread(process.getInputStream(), stdOutHandler);
+        StdHandlerThread stdErrHandlerThread =
+                new StdHandlerThread(process.getErrorStream(), stdErrHandler);
         stdOutHandlerThread.start();
         stdErrHandlerThread.start();
 
@@ -84,8 +83,8 @@ public class ExternalSolverUtils {
     }
 
     /**
-     * A thread which wraps an InputStream in a BufferedReader and tasks the
-     * lambda function to handle the outputs.
+     * A thread which wraps an InputStream in a BufferedReader and tasks the lambda function to
+     * handle the outputs.
      */
     private static class StdHandlerThread extends Thread {
         private InputStream stream;
@@ -103,14 +102,12 @@ public class ExternalSolverUtils {
     }
 
     /**
-     * A default implementation of a handler which prints any content from the
-     * given {@link BufferedReader} to the given stream.
+     * A default implementation of a handler which prints any content from the given {@link
+     * BufferedReader} to the given stream.
      *
-     * @param stream
-     *            an output stream to print the contents of the reader to.
-     * @param stdReader
-     *            a BufferedReader containing the contents of an external
-     *            process's std output stream.
+     * @param stream an output stream to print the contents of the reader to.
+     * @param stdReader a BufferedReader containing the contents of an external process's std output
+     *     stream.
      */
     public static void printStdStream(PrintStream stream, BufferedReader stdReader) {
         String line;

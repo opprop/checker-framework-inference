@@ -1,30 +1,31 @@
 package checkers.inference.solver.backend.maxsat.encoder;
 
-import checkers.inference.model.Constraint;
-import checkers.inference.model.ImplicationConstraint;
-import checkers.inference.solver.backend.encoder.implication.ImplicationConstraintEncoder;
-import checkers.inference.solver.backend.maxsat.MaxSatFormatTranslator;
-import checkers.inference.solver.frontend.Lattice;
 import org.sat4j.core.VecInt;
 
-import javax.lang.model.element.AnnotationMirror;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
-public class MaxSATImplicationConstraintEncoder
-        extends MaxSATAbstractConstraintEncoder
+import javax.lang.model.element.AnnotationMirror;
+
+import checkers.inference.model.Constraint;
+import checkers.inference.model.ImplicationConstraint;
+import checkers.inference.solver.backend.encoder.implication.ImplicationConstraintEncoder;
+import checkers.inference.solver.backend.maxsat.MaxSatFormatTranslator;
+import checkers.inference.solver.frontend.Lattice;
+
+public class MaxSATImplicationConstraintEncoder extends MaxSATAbstractConstraintEncoder
         implements ImplicationConstraintEncoder<VecInt[]> {
 
     /**
-     * {@link MaxSatFormatTranslator} instance to delegate format translating
-     * base {@link Constraint}s ({@code Constraint}s that are not
-     * {@link ImplicationConstraint}).
+     * {@link MaxSatFormatTranslator} instance to delegate format translating base {@link
+     * Constraint}s ({@code Constraint}s that are not {@link ImplicationConstraint}).
      */
     private final MaxSatFormatTranslator formatTranslator;
 
-    public MaxSATImplicationConstraintEncoder(Lattice lattice,
+    public MaxSATImplicationConstraintEncoder(
+            Lattice lattice,
             Map<AnnotationMirror, Integer> typeToInt,
             MaxSatFormatTranslator formatTranslator) {
         super(lattice, typeToInt);
@@ -87,8 +88,7 @@ public class MaxSATImplicationConstraintEncoder
         List<List<Integer>> cartesian = cartesianProduct(l);
 
         // Concatenate with every pair at the end
-        VecInt[] conclusionClauses = constraint.getConclusion()
-                .serialize(formatTranslator);
+        VecInt[] conclusionClauses = constraint.getConclusion().serialize(formatTranslator);
 
         int expectedSize = cartesian.size() * conclusionClauses.length;
 
@@ -120,13 +120,11 @@ public class MaxSATImplicationConstraintEncoder
     /**
      * Method to get cartesian set of input set.
      *
-     * For example, if the input is [[1,2], [3,4,5]], this method returns
+     * <p>For example, if the input is [[1,2], [3,4,5]], this method returns
      * [[1,3],[1,4],[1,5],[2,3],[2,4],[2,5]]
      *
-     * @param lists
-     *            a set of set of elements
-     * @param <T>
-     *            type of element
+     * @param lists a set of set of elements
+     * @param <T> type of element
      * @return cartesian set of elements
      */
     protected <T> List<List<T>> cartesianProduct(List<List<T>> lists) {
@@ -136,8 +134,7 @@ public class MaxSATImplicationConstraintEncoder
             return resultLists;
         } else {
             List<T> firstList = lists.get(0);
-            List<List<T>> remainingLists = cartesianProduct(
-                    lists.subList(1, lists.size()));
+            List<List<T>> remainingLists = cartesianProduct(lists.subList(1, lists.size()));
             for (T condition : firstList) {
                 for (List<T> remainingList : remainingLists) {
                     ArrayList<T> resultList = new ArrayList<T>();

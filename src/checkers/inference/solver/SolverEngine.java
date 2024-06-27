@@ -1,12 +1,12 @@
 package checkers.inference.solver;
 
+import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.BugInCF;
+
 import java.util.Collection;
 import java.util.Map;
 
 import javax.annotation.processing.ProcessingEnvironment;
-
-import org.checkerframework.framework.type.QualifierHierarchy;
-import org.checkerframework.javacutil.BugInCF;
 
 import checkers.inference.InferenceResult;
 import checkers.inference.InferenceSolver;
@@ -25,18 +25,14 @@ import checkers.inference.solver.util.SolverEnvironment;
 import checkers.inference.solver.util.Statistics;
 
 /**
- * SolverEngine is the entry point of general solver framework, and it is also
- * the front end of whole solver system. SolverEngine configures command line
- * arguments, creates corresponding solving strategy and solver factory, invokes
- * strategy and returns the solution.
+ * SolverEngine is the entry point of general solver framework, and it is also the front end of
+ * whole solver system. SolverEngine configures command line arguments, creates corresponding
+ * solving strategy and solver factory, invokes strategy and returns the solution.
  *
  * @see SolverFactory
  * @see SolvingStrategy
- *
  * @author jianchu
- *
  */
-
 public class SolverEngine implements InferenceSolver {
     protected boolean collectStatistics;
     protected boolean writeSolutions;
@@ -45,29 +41,19 @@ public class SolverEngine implements InferenceSolver {
     protected String solverName;
 
     public enum SolverEngineArg implements SolverArg {
-        /**
-         * solving strategy to use
-         */
+        /** solving strategy to use */
         solvingStrategy,
 
-        /**
-         * solver to use
-         */
+        /** solver to use */
         solver,
 
-        /**
-         * whether to collect and then print & write statistics
-         */
+        /** whether to collect and then print & write statistics */
         collectStatistics,
 
-        /**
-         * whether to write solutions (or unsolvable) to file output or not
-         */
+        /** whether to write solutions (or unsolvable) to file output or not */
         writeSolutions,
 
-        /**
-         * whether to write statistics & solutions in append mode or not
-         */
+        /** whether to write statistics & solutions in append mode or not */
         noAppend;
     }
 
@@ -79,10 +65,12 @@ public class SolverEngine implements InferenceSolver {
         final String solverFactoryClassName = solverName + "SolverFactory";
 
         try {
-            Class<?> SolverFactoryClass = Class.forName(solverPackageName + "." + solverFactoryClassName);
+            Class<?> SolverFactoryClass =
+                    Class.forName(solverPackageName + "." + solverFactoryClassName);
             return (SolverFactory) SolverFactoryClass.getConstructor().newInstance();
         } catch (Exception e) {
-            throw new BugInCF("Exceptions happen when creating the solver factory for " + solverName, e);
+            throw new BugInCF(
+                    "Exceptions happen when creating the solver factory for " + solverName, e);
         }
     }
 
@@ -95,26 +83,40 @@ public class SolverEngine implements InferenceSolver {
         final String strategyClassName = strategyName + "SolvingStrategy";
 
         try {
-            Class<?> solverStrategyClass = Class.forName(STRATEGY_PACKAGE_NAME + "." + strategyClassName);
-            return (SolvingStrategy) solverStrategyClass.getConstructor(SolverFactory.class).newInstance(solverFactory);
+            Class<?> solverStrategyClass =
+                    Class.forName(STRATEGY_PACKAGE_NAME + "." + strategyClassName);
+            return (SolvingStrategy)
+                    solverStrategyClass
+                            .getConstructor(SolverFactory.class)
+                            .newInstance(solverFactory);
         } catch (Exception e) {
-            throw new BugInCF(e.getClass().getSimpleName() + " happens when creating [" + strategyName + "] solving strategy!", e);
+            throw new BugInCF(
+                    e.getClass().getSimpleName()
+                            + " happens when creating ["
+                            + strategyName
+                            + "] solving strategy!",
+                    e);
         }
     }
 
     @Override
-    public final InferenceResult solve(Map<String, String> configuration, Collection<Slot> slots,
-                                       Collection<Constraint> constraints, QualifierHierarchy qualHierarchy,
-                                       ProcessingEnvironment processingEnvironment) {
+    public final InferenceResult solve(
+            Map<String, String> configuration,
+            Collection<Slot> slots,
+            Collection<Constraint> constraints,
+            QualifierHierarchy qualHierarchy,
+            ProcessingEnvironment processingEnvironment) {
 
-        SolverEnvironment solverEnvironment = new SolverEnvironment(configuration, processingEnvironment);
+        SolverEnvironment solverEnvironment =
+                new SolverEnvironment(configuration, processingEnvironment);
 
         configureSolverEngineArgs(solverEnvironment);
 
-        //TODO: Add solve timing statistic.
+        // TODO: Add solve timing statistic.
         Lattice lattice = new LatticeBuilder().buildLattice(qualHierarchy, slots);
         SolvingStrategy solvingStrategy = createSolvingStrategy();
-        InferenceResult inferenceResult = solvingStrategy.solve(solverEnvironment, slots, constraints, lattice);
+        InferenceResult inferenceResult =
+                solvingStrategy.solve(solverEnvironment, slots, constraints, lattice);
 
         if (inferenceResult == null) {
             throw new BugInCF("InferenceResult should never be null, but null result detected!");
@@ -128,7 +130,8 @@ public class SolverEngine implements InferenceSolver {
         } else {
             PrintUtils.printUnsatConstraints(inferenceResult.getUnsatisfiableConstraints());
             if (writeSolutions) {
-                PrintUtils.writeUnsatConstraints(inferenceResult.getUnsatisfiableConstraints(), noAppend);
+                PrintUtils.writeUnsatConstraints(
+                        inferenceResult.getUnsatisfiableConstraints(), noAppend);
             }
         }
 
@@ -150,14 +153,14 @@ public class SolverEngine implements InferenceSolver {
      */
     private void configureSolverEngineArgs(SolverEnvironment solverEnvironment) {
         String strategyName = solverEnvironment.getArg(SolverEngineArg.solvingStrategy);
-        this.strategyName = strategyName == null ?
-                NameUtils.getStrategyName(PlainSolvingStrategy.class)
-                : strategyName;
+        this.strategyName =
+                strategyName == null
+                        ? NameUtils.getStrategyName(PlainSolvingStrategy.class)
+                        : strategyName;
 
         String solverName = solverEnvironment.getArg(SolverEngineArg.solver);
-        this.solverName = solverName == null ?
-                NameUtils.getSolverName(MaxSatSolver.class)
-                : solverName;
+        this.solverName =
+                solverName == null ? NameUtils.getSolverName(MaxSatSolver.class) : solverName;
 
         this.collectStatistics = solverEnvironment.getBoolArg(SolverEngineArg.collectStatistics);
         this.writeSolutions = solverEnvironment.getBoolArg(SolverEngineArg.writeSolutions);
@@ -168,12 +171,11 @@ public class SolverEngine implements InferenceSolver {
     }
 
     /**
-     * Sanitize and apply check of the configuration of solver based on a
-     * specific type system. Sub-class solver of a specific type system may
-     * override this method to sanitize the configuration of solver in the
-     * context of that type system.
+     * Sanitize and apply check of the configuration of solver based on a specific type system.
+     * Sub-class solver of a specific type system may override this method to sanitize the
+     * configuration of solver in the context of that type system.
      */
     protected void sanitizeSolverEngineArgs() {
-        //Intentionally empty.
+        // Intentionally empty.
     }
 }

@@ -518,6 +518,9 @@ public class InferenceMain {
 
         @Override
         public void handleCompilerResult(boolean success, String javacOutStr) {
+            if (!javacOutStr.isEmpty()) {
+                logger.severe(javacOutStr);
+            }
             if (!success) {
                 logger.severe("Error return code from javac! Quitting.");
                 logger.info(javacOutStr);

@@ -56,7 +56,8 @@ public class LogicBloxRunner {
      */
     private void getOutPut_Error(String command, final int i)
             throws IOException, InterruptedException {
-        final Process p = Runtime.getRuntime().exec(command);
+        ProcessBuilder processBuilder = new ProcessBuilder(command.split(" "));
+        final Process p = processBuilder.start();
         Thread getOutPut =
                 new Thread() {
                     @Override

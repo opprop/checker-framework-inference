@@ -3,7 +3,7 @@ import ostrusted.qual.OsUntrusted;
 
 import java.io.File;
 import java.io.IOException;
-
+@SuppressWarnings("deprecation")
 class RuntimeExec {
 
     @OsTrusted String trustedField = "";

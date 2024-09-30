@@ -233,11 +233,10 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
     }
 
     @Override
-    protected void addComputedTypeAnnotations(
-            Tree tree, AnnotatedTypeMirror type, boolean useFlow) {
+    protected void addComputedTypeAnnotations(Tree tree, AnnotatedTypeMirror type) {
         Element element = TreeUtils.elementFromTree(tree);
         handleDefaulting(element, type);
-        super.addComputedTypeAnnotations(tree, type, useFlow);
+        super.addComputedTypeAnnotations(tree, type);
     }
 
     @Override

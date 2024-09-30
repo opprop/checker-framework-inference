@@ -50,6 +50,7 @@ jobs:
       - name: Install Python dependencies
         run: |
           python3 -m pip install --upgrade pip
+          pip install --upgrade setuptools wheel
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
       - name: Spotless Check
         if: matrix.jdk == 11 || matrix.jdk == 17

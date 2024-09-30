@@ -74,9 +74,8 @@ public class InferenceQualifierDefaults extends QualifierDefaults {
         }
 
         @Override
-        protected boolean shouldBeAnnotated(AnnotatedTypeMirror type, boolean applyToTypeVar) {
-            return super.shouldBeAnnotated(type, applyToTypeVar)
-                    && !type.hasAnnotation(VarAnnot.class);
+        protected boolean shouldBeAnnotated(AnnotatedTypeMirror type) {
+            return super.shouldBeAnnotated(type) && !type.hasAnnotation(VarAnnot.class);
         }
     }
 }

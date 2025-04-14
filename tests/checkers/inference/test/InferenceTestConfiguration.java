@@ -26,6 +26,8 @@ public interface InferenceTestConfiguration {
 
     boolean shouldUseHacks();
 
+    boolean makeDefaultsExplicit();
+
     String getPathToAfuScripts();
 
     String getPathToInferenceScript();

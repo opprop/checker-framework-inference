@@ -34,6 +34,12 @@ jobs:
       - name: Push Checkout
         uses: actions/checkout@v3
         if: github.head_ref == ''
+      - name: Fetch Pull Request Merge Ref
+        if: github.head_ref != ''
+        run: |
+          git fetch --no-tags --depth=1 \
+            https://github.com/${{ github.event.pull_request.base.repo.full_name }}.git \
+            +refs/pull/${{ github.event.pull_request.number }}/merge:refs/remotes/pull/${{ github.event.pull_request.number }}/merge
       - name: Set up Python 3
         uses: actions/setup-python@v4
         with:

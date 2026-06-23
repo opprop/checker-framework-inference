@@ -38,10 +38,8 @@ public class InferenceOptions {
     // ------------------------------------------------------
 
     @OptionGroup("General Options")
-
-    // TODO: The mode variable should be an enum rather than a string.
     @Option(value = "-m Modes of operation: TYPECHECK, INFER, ROUNDTRIP, ROUNDTRIP_TYPECHECK")
-    public static String mode;
+    public static Mode mode;
 
     @Option("Should we log certain exceptions rather than crash")
     public static boolean hacks;
@@ -185,21 +183,7 @@ public class InferenceOptions {
             }
 
         } else {
-            mode = mode.toUpperCase();
-
-            Mode modeEnum = null;
-            try {
-                modeEnum = Mode.valueOf(InferenceOptions.mode);
-
-            } catch (IllegalArgumentException iexc) {
-                System.out.println(
-                        "Could not recognize mode: "
-                                + InferenceOptions.mode
-                                + "\n"
-                                + "valid modes: "
-                                + StringsPlume.join(", ", Mode.values()));
-                System.exit(1);
-            }
+            Mode modeEnum = InferenceOptions.mode;
 
             if (modeEnum != Mode.TYPECHECK) {
                 if (solver == null) {

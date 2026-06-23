@@ -53,19 +53,7 @@ public class InferenceLauncher {
     public void launch(String[] args) {
         initInferenceOptions(args);
 
-        Mode mode = null;
-        try {
-            mode = Mode.valueOf(InferenceOptions.mode);
-
-        } catch (IllegalArgumentException iexc) {
-            outStream.println(
-                    "Could not recognize mode: "
-                            + InferenceOptions.mode
-                            + "\n"
-                            + "valid modes: "
-                            + StringsPlume.join(", ", Mode.values()));
-            System.exit(1);
-        }
+        Mode mode = InferenceOptions.mode;
 
         switch (mode) {
             case TYPECHECK:
@@ -221,7 +209,7 @@ public class InferenceLauncher {
 
         addIfTrue("--hacks", InferenceOptions.hacks, argList);
 
-        Mode mode = Mode.valueOf(InferenceOptions.mode);
+        Mode mode = InferenceOptions.mode;
         if (InferenceOptions.makeDefaultsExplicit
                 && (mode == Mode.ROUNDTRIP || mode == Mode.ROUNDTRIP_TYPECHECK)) {
             // Two conditions have to be met to make defaults explicit:

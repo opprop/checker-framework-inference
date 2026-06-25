@@ -8,11 +8,7 @@ import javax.lang.model.element.ExecutableElement;
 import checkers.inference.InferenceChecker;
 import checkers.inference.InferenceVisitor;
 
-/**
- * Don't generate any special constraint for Dataflow type system.
- *
- * @author jianchu
- */
+/** Don't generate any special constraint for Dataflow type system. */
 public class DataflowVisitor extends InferenceVisitor<DataflowChecker, BaseAnnotatedTypeFactory> {
 
     public DataflowVisitor(

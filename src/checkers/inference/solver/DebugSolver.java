@@ -21,11 +21,7 @@ import checkers.inference.model.Slot;
 import checkers.inference.model.serialization.ToStringSerializer;
 import checkers.inference.util.InferenceUtil;
 
-/**
- * Debug solver prints out variables and constraints.
- *
- * @author mcarthur
- */
+/** Debug solver prints out variables and constraints. */
 public class DebugSolver implements InferenceSolver {
 
     private static final boolean showAstPaths =

@@ -14,11 +14,7 @@ import checkers.inference.model.ConstraintManager;
 import dataflow.qual.DataFlow;
 import dataflow.qual.DataFlowTop;
 
-/**
- * Checker for Dataflow type system.
- *
- * @author jianchu
- */
+/** Checker for Dataflow type system. */
 public class DataflowChecker extends BaseInferrableChecker {
     public AnnotationMirror DATAFLOW, DATAFLOWTOP;
 

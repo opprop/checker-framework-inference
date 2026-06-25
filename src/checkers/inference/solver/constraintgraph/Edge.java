@@ -4,11 +4,7 @@ import java.util.Objects;
 
 import checkers.inference.model.Constraint;
 
-/**
- * Edge represents a constraint. Edge is undirected.
- *
- * @author jianchu
- */
+/** Edge represents a constraint. Edge is undirected. */
 public class Edge {
 
     protected Vertex from;

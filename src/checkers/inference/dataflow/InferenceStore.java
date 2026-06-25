@@ -8,8 +8,6 @@ import org.checkerframework.framework.flow.CFValue;
  * InferenceStore extends CFStore for inference.
  *
  * <p>Currently it does not change the behaviour of CFStore.
- *
- * @author mcarthur
  */
 public class InferenceStore extends CFStore {
 

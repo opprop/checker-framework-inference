@@ -31,11 +31,7 @@ import checkers.inference.model.ConstantSlot;
 import checkers.inference.qual.VarAnnot;
 import dataflow.util.DataflowUtils;
 
-/**
- * DataflowInferenceTreeAnnotator creates constant slot for base cases.
- *
- * @author jianchu
- */
+/** DataflowInferenceTreeAnnotator creates constant slot for base cases. */
 public class DataflowInferenceTreeAnnotator extends InferenceTreeAnnotator {
 
     private final VariableAnnotator variableAnnotator;

@@ -8,11 +8,7 @@ import checkers.inference.solver.backend.encoder.ConstraintEncoderFactory;
 import checkers.inference.solver.backend.logiql.encoder.LogiQLConstraintEncoderFactory;
 import checkers.inference.solver.frontend.Lattice;
 
-/**
- * LogiQLFormatTranslator converts constraint into string as logiQL data.
- *
- * @author jianchu
- */
+/** LogiQLFormatTranslator converts constraint into string as logiQL data. */
 public class LogiQLFormatTranslator extends AbstractFormatTranslator<String, String, String> {
 
     public LogiQLFormatTranslator(Lattice lattice) {

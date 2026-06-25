@@ -28,8 +28,6 @@ import dataflow.DataflowVisitor;
 /**
  * GraphBuilder builds the constraint graph and runs graph traversal algorithms to separate the
  * graph in different components.
- *
- * @author jianchu
  */
 public class GraphBuilder {
     private final Collection<Constraint> constraints;

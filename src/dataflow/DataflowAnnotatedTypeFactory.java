@@ -49,8 +49,6 @@ import dataflow.util.DataflowUtils;
  * DataflowAnnotatedTypeFactory is the type factory for Dataflow type system. It defines the subtype
  * relationship of Dataflow type system, annotate the base cases, and implements simplification
  * algorithm.
- *
- * @author jianchu
  */
 public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
 

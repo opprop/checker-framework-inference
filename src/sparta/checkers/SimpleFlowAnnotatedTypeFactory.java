@@ -49,7 +49,6 @@ import sparta.checkers.qual.PolySource;
 import sparta.checkers.qual.Sink;
 import sparta.checkers.qual.Source;
 
-/** Created by mcarthur on 4/3/14. */
 public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
 
     static AnnotationMirror ANYSOURCE, NOSOURCE, ANYSINK, NOSINK;

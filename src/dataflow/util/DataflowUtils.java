@@ -20,11 +20,7 @@ import javax.lang.model.type.TypeMirror;
 
 import dataflow.qual.DataFlow;
 
-/**
- * Utility class for Dataflow type system.
- *
- * @author jianchu
- */
+/** Utility class for Dataflow type system. */
 public class DataflowUtils {
 
     /** The DataFlow.typeNames element/field. */

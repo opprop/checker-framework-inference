@@ -14,7 +14,6 @@ import checkers.inference.DefaultInferenceResult;
 import checkers.inference.InferenceMain;
 import sparta.checkers.iflow.util.PFPermission;
 
-/** Created by smillst on 9/21/15. */
 public abstract class IFlowResult extends DefaultInferenceResult {
     protected final Map<Integer, Set<PFPermission>> tempResults;
     protected final Map<Integer, Boolean> idToExistance;

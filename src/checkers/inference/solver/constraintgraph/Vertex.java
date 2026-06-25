@@ -8,11 +8,7 @@ import javax.lang.model.element.AnnotationMirror;
 import checkers.inference.model.ConstantSlot;
 import checkers.inference.model.Slot;
 
-/**
- * Vertex represents a slot. Two vertices are same if they have same slot id.
- *
- * @author jianchu
- */
+/** Vertex represents a slot. Two vertices are same if they have same slot id. */
 public class Vertex {
 
     private Set<Edge> edges;

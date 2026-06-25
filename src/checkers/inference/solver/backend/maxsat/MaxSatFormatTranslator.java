@@ -17,11 +17,7 @@ import checkers.inference.solver.backend.encoder.ConstraintEncoderFactory;
 import checkers.inference.solver.backend.maxsat.encoder.MaxSATConstraintEncoderFactory;
 import checkers.inference.solver.frontend.Lattice;
 
-/**
- * MaxSatFormatTranslator converts constraint into array of VecInt as clauses.
- *
- * @author jianchu
- */
+/** MaxSatFormatTranslator converts constraint into array of VecInt as clauses. */
 public class MaxSatFormatTranslator extends AbstractFormatTranslator<VecInt[], VecInt[], Integer> {
 
     /**

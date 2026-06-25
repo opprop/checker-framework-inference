@@ -35,8 +35,6 @@ import checkers.inference.model.ConstraintManager;
  *
  * <p>Finally, InferenceAnalysis make analysis' nodeValues field available outside of the class.
  * InferenceTransfer uses nodeValue to override values for nodes.
- *
- * @author mcarthur
  */
 public class InferenceAnalysis extends CFAnalysis {
 

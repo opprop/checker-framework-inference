@@ -9,11 +9,7 @@ import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
-/**
- * Special Lattice class for two qualifier type system.
- *
- * @author jianchu
- */
+/** Special Lattice class for two qualifier type system. */
 public class TwoQualifiersLattice extends Lattice {
 
     public TwoQualifiersLattice(

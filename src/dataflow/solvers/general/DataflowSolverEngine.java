@@ -10,8 +10,6 @@ import checkers.inference.solver.util.NameUtils;
 /**
  * DataflowGeneralSolver is the solver for dataflow type system. It encode dataflow type hierarchy
  * as two qualifiers type system.
- *
- * @author jianchu
  */
 public class DataflowSolverEngine extends SolverEngine {
 

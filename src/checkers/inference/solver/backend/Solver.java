@@ -29,7 +29,6 @@ import checkers.inference.solver.util.SolverEnvironment;
  * checkers.inference.solver.SolverEngine#solveInparall()} and {@link
  * checkers.inference.solver.SolverEngine#solveInSequential()}.
  *
- * @author jianchu
  * @param <T> type of FormatTranslator required by this Solver
  */
 public abstract class Solver<T extends FormatTranslator<?, ?, ?>> {

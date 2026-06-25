@@ -8,7 +8,6 @@ import javax.lang.model.element.AnnotationMirror;
 import sparta.checkers.iflow.util.IFlowUtils;
 import sparta.checkers.iflow.util.PFPermission;
 
-/** Created by smillst on 9/21/15. */
 public class SourceResult extends IFlowResult {
 
     public SourceResult(

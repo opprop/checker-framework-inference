@@ -52,8 +52,6 @@ import sparta.checkers.qual.Source;
  * <p>The algorithm processes list of constraints, adding the Strings to the inferredValues map as
  * needed. The entire list of constraints is processed repeatedly until the inferredValues map no
  * longer changes.
- *
- * @author mcarthur
  */
 public abstract class IFlowSolver implements InferenceSolver {
 

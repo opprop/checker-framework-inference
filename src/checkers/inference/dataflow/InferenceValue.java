@@ -28,8 +28,6 @@ import checkers.inference.util.InferenceUtil;
  * InferenceValue extends CFValue for inference.
  *
  * <p>leastUpperBound, creates CombVariables to represent the join of two VarAnnots.
- *
- * @author mcarthur
  */
 public class InferenceValue extends CFValue {
 

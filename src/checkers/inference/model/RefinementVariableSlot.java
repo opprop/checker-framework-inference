@@ -6,7 +6,7 @@ package checkers.inference.model;
  * following subtype relationship: R <: V
  *
  * <p>Refinement variables are used to model the semantics of flow-sensitive type refinement
- * (http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#type-refinement).
+ * (https://eisop.github.io/cf/manual/manual.html#type-refinement).
  *
  * <p>Within methods, the values of fields, parameters, and local variables are all refined downward
  * when possible ( e.g. after an assignment ). To model this behavior, every time a variable could

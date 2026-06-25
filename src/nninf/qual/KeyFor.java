@@ -36,7 +36,7 @@ public @interface KeyFor {
      * Java expression(s) that evaluate to a map for which the annotated type is a key.
      *
      * @see <a
-     *     href="http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#java-expressions-as-arguments">Syntax
+     *     href="https://eisop.github.io/cf/manual/manual.html#java-expressions-as-arguments">Syntax
      *     of Java expressions</a>
      */
     public String[] value();

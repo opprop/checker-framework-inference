@@ -11,9 +11,8 @@ import java.lang.annotation.Target;
 /**
  * A Polymorphic qualifier for {@code Hardcoded}.
  *
- * <p>See {@link
- * http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#qualifier-polymorphism}
- * for information on the semantics of polymorphic qualifiers in the checker framework.
+ * <p>See https://eisop.github.io/cf/manual/manual.html#method-qualifier-polymorphism for
+ * information on the semantics of polymorphic qualifiers in the checker framework.
  *
  * <p>
  *

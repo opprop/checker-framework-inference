@@ -16,8 +16,8 @@ plugins {
 apply plugin: 'java'
 
 // Note:  For this setup to work you must follow the instructions outlined in the
-//       checker manual Section 25.3 "Building from Source"
-// http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#build-source
+//       checker manual Section 40.3 "Building from source"
+// https://eisop.github.io/cf/manual/manual.html#build-source
 
 ext {
     jsr308 = System.getenv('JSR308') ?: file(new File("..")).absolutePath

@@ -84,8 +84,8 @@ public final class InterningVisitor
 
     /**
      * @return true if interning should be verified for the input expression. By default, all
-     *     classes are checked for interning unless -Acheckclass is specified. {@see
-     *     http://types.cs.washington.edu/checker-framework/current/checker-framework-manual.html#interning-checks}.
+     *     classes are checked for interning unless -Acheckclass is specified. See
+     *     https://eisop.github.io/cf/manual/manual.html#interning-checks.
      */
     private boolean shouldCheckExpression(ExpressionTree tree) {
         if (typeToCheck == null) return true;

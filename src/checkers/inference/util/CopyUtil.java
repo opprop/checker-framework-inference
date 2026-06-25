@@ -46,7 +46,6 @@ public class CopyUtil {
          *
          * @param from AnnotatedTypeMirror to copy
          * @param to AnnotatedTypeMirror to clear then add to
-         * @return The original set of annotations on Mod
          */
         @Override
         public void copy(AnnotatedTypeMirror from, AnnotatedTypeMirror to) {

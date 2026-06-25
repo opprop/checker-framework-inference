@@ -17,7 +17,7 @@ public abstract class Z3SmtAbstractConstraintEncoder<SlotEncodingT, SlotSolution
      * {@link Z3SmtFormatTranslator} instance that concrete subclass of {@link
      * AbstractConstraintEncoder} might need. For example, {@link
      * checkers.inference.solver.backend.z3.encoder.Z3SmtSubtypeConstraintEncoder} needs it to
-     * format translate {@SubtypeConstraint}. {@link
+     * format translate {@code SubtypeConstraint}. {@link
      * checkers.inference.solver.backend.maxsat.encoder.MaxSATImplicationConstraintEncoder} needs it
      * to delegate format translation task of non-{@code ImplicationConstraint}s.
      */

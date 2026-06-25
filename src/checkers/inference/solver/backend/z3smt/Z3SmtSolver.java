@@ -19,8 +19,6 @@ import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 
 import checkers.inference.InferenceMain;
-import checkers.inference.model.ArithmeticConstraint;
-import checkers.inference.model.ArithmeticConstraint.ArithmeticOperationKind;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
 import checkers.inference.model.VariableSlot;
@@ -424,29 +422,6 @@ public class Z3SmtSolver<SlotEncodingT, SlotSolutionT>
         } catch (IOException e) {
             e.printStackTrace();
             return null;
-        }
-    }
-
-    /** Prints arithmetic constraints for debugging */
-    private void printArithmeticConstraints() {
-        logger.fine("=== Arithmetic Constraints Printout ===");
-        Map<ArithmeticOperationKind, Integer> arithmeticConstraintCounters = new HashMap<>();
-        for (ArithmeticOperationKind kind : ArithmeticOperationKind.values()) {
-            arithmeticConstraintCounters.put(kind, 0);
-        }
-        for (Constraint constraint : constraints) {
-            if (constraint instanceof ArithmeticConstraint) {
-                ArithmeticConstraint arithmeticConstraint = (ArithmeticConstraint) constraint;
-                ArithmeticOperationKind kind = arithmeticConstraint.getOperation();
-                arithmeticConstraintCounters.put(kind, arithmeticConstraintCounters.get(kind) + 1);
-            }
-        }
-        for (ArithmeticOperationKind kind : ArithmeticOperationKind.values()) {
-            logger.fine(
-                    " Made arithmetic "
-                            + kind.getSymbol()
-                            + " constraint: "
-                            + arithmeticConstraintCounters.get(kind));
         }
     }
 }

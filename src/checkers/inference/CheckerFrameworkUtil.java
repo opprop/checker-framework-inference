@@ -4,7 +4,6 @@ import com.sun.tools.javac.file.JavacFileManager;
 import com.sun.tools.javac.main.Main;
 import com.sun.tools.javac.main.Main.Result;
 import com.sun.tools.javac.util.Context;
-import com.sun.tools.javac.util.Context.Factory;
 
 import java.io.PrintWriter;
 import java.nio.charset.Charset;
@@ -39,7 +38,8 @@ public class CheckerFrameworkUtil {
         public static void preRegister(Context context) {
             context.put(
                     JavaFileManager.class,
-                    (Factory<JavaFileManager>) c -> new DummyJavacFileManager(c, true, null));
+                    (Context.Factory<JavaFileManager>)
+                            c -> new DummyJavacFileManager(c, true, null));
         }
     }
 }

@@ -6,10 +6,12 @@ import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 import org.checkerframework.javacutil.SystemUtil;
 
-import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.annotation.Annotation;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -224,7 +226,9 @@ public class InferenceMain {
      */
     private void writeJaif() {
         try (PrintWriter writer =
-                new PrintWriter(new FileOutputStream(InferenceOptions.jaifFile))) {
+                new PrintWriter(
+                        Files.newBufferedWriter(
+                                Paths.get(InferenceOptions.jaifFile), StandardCharsets.UTF_8))) {
 
             List<VariableSlot> varSlots = slotManager.getVariableSlots();
             Map<AnnotationLocation, String> values = new HashMap<>();
@@ -330,13 +334,13 @@ public class InferenceMain {
         if (realChecker == null) {
             try {
                 realChecker =
-                        (InferrableChecker)
-                                Class.forName(
-                                                InferenceOptions.checker,
-                                                true,
-                                                ClassLoader.getSystemClassLoader())
-                                        .getDeclaredConstructor()
-                                        .newInstance();
+                        Class.forName(
+                                        InferenceOptions.checker,
+                                        true,
+                                        ClassLoader.getSystemClassLoader())
+                                .asSubclass(InferrableChecker.class)
+                                .getDeclaredConstructor()
+                                .newInstance();
                 realChecker.init(inferenceChecker.getProcessingEnvironment());
                 realChecker.initChecker();
                 logger.finer(String.format("Created real checker: %s", realChecker));
@@ -404,13 +408,10 @@ public class InferenceMain {
     protected InferenceSolver getSolver() {
         try {
             InferenceSolver solver =
-                    (InferenceSolver)
-                            Class.forName(
-                                            InferenceOptions.solver,
-                                            true,
-                                            ClassLoader.getSystemClassLoader())
-                                    .getDeclaredConstructor()
-                                    .newInstance();
+                    Class.forName(InferenceOptions.solver, true, ClassLoader.getSystemClassLoader())
+                            .asSubclass(InferenceSolver.class)
+                            .getDeclaredConstructor()
+                            .newInstance();
             logger.finer("Created solver: " + solver);
             return solver;
         } catch (Throwable e) {

@@ -28,6 +28,7 @@ import org.checkerframework.javacutil.*;
 import org.plumelib.util.ArraysPlume;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -88,7 +89,7 @@ public class InferenceVisitor<
 
     public InferenceVisitor(
             Checker checker, InferenceChecker ichecker, Factory factory, boolean infer) {
-        super((infer) ? ichecker : checker, factory);
+        super(infer ? ichecker : checker, factory);
         this.realChecker = checker;
         this.infer = infer;
         ((InferenceValidator) typeValidator).setInfer(infer);
@@ -134,7 +135,7 @@ public class InferenceVisitor<
     }
 
     private void doesNotContainInfer(AnnotatedTypeMirror ty, AnnotationMirror[] mods, Tree node) {
-        doesNotContainInferImpl(ty, mods, new java.util.LinkedList<AnnotatedTypeMirror>(), node);
+        doesNotContainInferImpl(ty, mods, new ArrayList<AnnotatedTypeMirror>(), node);
     }
 
     private void doesNotContainInferImpl(
@@ -899,15 +900,6 @@ public class InferenceVisitor<
         } else {
             super.checkThrownExpression(node);
         }
-    }
-
-    // TODO: TEMPORARY HACK UNTIL WE SUPPORT UNIONS
-    private boolean isUnion(Tree tree) {
-        if (tree.getKind() == Kind.VARIABLE) {
-            return ((VariableTree) tree).getType().getKind() == Kind.UNION_TYPE;
-        }
-
-        return tree.getKind() == Kind.UNION_TYPE;
     }
 
     @Override

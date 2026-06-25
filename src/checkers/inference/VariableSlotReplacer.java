@@ -123,7 +123,6 @@ public class VariableSlotReplacer {
         protected Slot constructExistentialReplacement(
                 Replacement replacement, ExistentialVariableSlot variable) {
             Slot potential = variable.getPotentialSlot();
-            AnnotationMirror potentialAnno = null;
 
             // alternative may itself be another existential
             Slot alternative = variable.getAlternativeSlot();

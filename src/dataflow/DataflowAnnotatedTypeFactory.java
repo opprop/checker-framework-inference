@@ -121,7 +121,7 @@ public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
         /** Qualifier kind for the @{@link DataFlow} annotation. */
         private final QualifierKind DATAFLOW_KIND;
 
-        public DataFlowQualifierHierarchy(
+        DataFlowQualifierHierarchy(
                 Collection<Class<? extends Annotation>> qualifierClasses, Elements elements) {
             super(qualifierClasses, elements, DataflowAnnotatedTypeFactory.this);
             DATAFLOW_KIND = getQualifierKind(DATAFLOW);
@@ -159,21 +159,6 @@ public class DataflowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
             } else {
                 return false;
             }
-        }
-
-        /**
-         * This method checks whether rhs is subtype of lhs. rhs and lhs are both Dataflow types
-         * without typeNameRoots argument. Currently this method is not used, but we can use it for
-         * a lightweight dataflow type system. (One without typeNameRoots argument).
-         *
-         * @param rhs
-         * @param lhs
-         * @return true is rhs is subtype of lhs, otherwise return false.
-         */
-        private boolean isSubtypeWithoutRoots(AnnotationMirror rhs, AnnotationMirror lhs) {
-            Set<String> rTypeNamesSet = new HashSet<>(dataflowUtils.getTypeNames(rhs));
-            Set<String> lTypeNamesSet = new HashSet<>(dataflowUtils.getTypeNames(lhs));
-            return lTypeNamesSet.containsAll(rTypeNamesSet);
         }
 
         @Override

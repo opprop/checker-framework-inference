@@ -4,10 +4,13 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.BugInCF;
 
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Map;
 
@@ -56,10 +59,12 @@ public class JsonSerializerSolver implements InferenceSolver {
 
         String outFile =
                 configuration.containsKey(FILE_KEY) ? configuration.get(FILE_KEY) : DEFAULT_FILE;
-        try (PrintWriter writer = new PrintWriter(new FileOutputStream(outFile))) {
+        try (PrintWriter writer =
+                new PrintWriter(
+                        Files.newBufferedWriter(Paths.get(outFile), StandardCharsets.UTF_8))) {
             writer.print(json);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            throw new BugInCF("Failed to write JSON constraints.", e);
         }
     }
 }

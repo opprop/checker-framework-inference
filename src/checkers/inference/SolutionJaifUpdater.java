@@ -4,11 +4,10 @@ import org.json.simple.parser.ParseException;
 import org.plumelib.options.Option;
 import org.plumelib.options.Options;
 
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.HashMap;
@@ -81,21 +80,26 @@ public class SolutionJaifUpdater {
      * @param values Map<String, Boolean> where the integer is the variable id and the boolean is
      *     the value to replace the variable id with.
      * @param existentialValues
-     * @throws FileNotFoundException thrown if the file inference.jaif is not found in the current
-     *     directory.
+     * @throws IOException thrown if an input or output file cannot be read or written.
      */
     private static void updateJaif(
             Map<String, String> values,
             Map<String, Boolean> existentialValues,
             String jaifPath,
             String outputFile)
-            throws FileNotFoundException {
+            throws IOException {
         if (values == null) {
             throw new IllegalArgumentException("Map passed must not be null");
         }
 
-        try (Scanner in = new Scanner(new File(jaifPath));
-                PrintStream out = new PrintStream(new File(outputFile))) {
+        try (Scanner in =
+                        new Scanner(
+                                Files.newBufferedReader(
+                                        Paths.get(jaifPath), StandardCharsets.UTF_8));
+                PrintWriter out =
+                        new PrintWriter(
+                                Files.newBufferedWriter(
+                                        Paths.get(outputFile), StandardCharsets.UTF_8))) {
 
             while (in.hasNextLine()) {
                 String line = in.nextLine();

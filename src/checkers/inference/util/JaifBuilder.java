@@ -276,17 +276,6 @@ public class JaifBuilder {
         builder.append("\n");
     }
 
-    /** Change the Enum name to a String in the format required by AFU */
-    private String treeKindToTitleCase(Tree.Kind kind) {
-        String[] parts = kind.toString().toUpperCase().split("_");
-        String result = "";
-        for (String part : parts) {
-            result += String.valueOf(part.charAt(0)) + part.substring(1).toLowerCase();
-        }
-
-        return result;
-    }
-
     /** Iterate through each variable and add it to the appropriate Class and Member list. */
     private void buildClassEntries() {
         for (Entry<AnnotationLocation, String> entry : locationToAnno.entrySet()) {
@@ -334,7 +323,7 @@ public class JaifBuilder {
     }
 
     /**
-     * @param astRecord
+     * @param astPath the AST path to check
      * @return true if the given AST path represents a main modifier of a local variable An AST Path
      *     represents a main modifier of a local variable should have pattern like 1) ...,
      *     Block.statement #, ..., Variable.type 2) ..., Block.statement #, ..., Variable.type,
@@ -424,16 +413,6 @@ public class JaifBuilder {
             this.classesMap.put(fullyQualified, classEntry);
         }
         return classEntry;
-    }
-
-    /**
-     * Lookup or create, for a given class, a map of Members of that class to a list of
-     * VariableSlots for those members.
-     *
-     * @param record a record identifying a unique class
-     */
-    private ClassEntry getClassMembers(ASTRecord record) {
-        return getClassEntry(record.className);
     }
 
     private static String getMemberString(String methodName, String variableName) {

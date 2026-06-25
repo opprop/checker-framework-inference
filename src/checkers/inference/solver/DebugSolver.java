@@ -1,10 +1,13 @@
 package checkers.inference.solver;
 
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.BugInCF;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -73,11 +76,12 @@ public class DebugSolver implements InferenceSolver {
 
         if (configuration.containsKey(constraintFile)) {
             String filename = configuration.get(constraintFile);
-            try (FileWriter file = new FileWriter(new File(filename))) {
+            try (Writer file =
+                    Files.newBufferedWriter(Paths.get(filename), StandardCharsets.UTF_8)) {
                 for (String out : output) file.write(out);
                 file.flush();
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new BugInCF("Failed to write debug solver output.", e);
             }
         }
         return null;

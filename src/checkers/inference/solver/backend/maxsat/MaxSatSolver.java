@@ -12,11 +12,11 @@ import org.sat4j.tools.xplain.DeletionStrategy;
 import org.sat4j.tools.xplain.Xplain;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,9 +49,9 @@ public class MaxSatSolver extends Solver<MaxSatFormatTranslator> {
     }
 
     protected final SlotManager slotManager;
-    protected final List<VecInt> hardClauses = new LinkedList<>();
-    private List<VecInt> wellFormednessClauses = new LinkedList<>();
-    protected final List<IPair<VecInt, Integer>> softClauses = new LinkedList<>();
+    protected final List<VecInt> hardClauses = new ArrayList<>();
+    private List<VecInt> wellFormednessClauses = new ArrayList<>();
+    protected final List<IPair<VecInt, Integer>> softClauses = new ArrayList<>();
     private MaxSATUnsatisfiableConstraintExplainer unsatisfiableConstraintExplainer;
     protected final File CNFData = new File(new File("").getAbsolutePath() + "/cnfData");
     protected StringBuilder CNFInput = new StringBuilder();

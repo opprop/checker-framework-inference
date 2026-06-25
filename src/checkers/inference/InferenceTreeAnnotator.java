@@ -16,7 +16,6 @@ import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.Tree;
-import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.UnaryTree;
@@ -171,7 +170,7 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
                 final TreePath parentPath = path.getParentPath();
                 final Tree parentNode = parentPath.getLeaf();
 
-                if (parentNode.getKind() == Kind.METHOD_INVOCATION) {
+                if (parentNode instanceof MethodInvocationTree) {
 
                     if (((MethodInvocationTree) parentNode).getTypeArguments().contains(node)) {
                         // Note: This can happen when the explicit type argument to a method is
@@ -182,11 +181,11 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
                         // provide)
                         variableAnnotator.visit(identifierType, node);
                     }
-                } else if (parentNode.getKind() == Kind.ANNOTATED_TYPE) {
+                } else if (parentNode instanceof AnnotatedTypeTree) {
 
                     // This case can indicate the identifier is wrapped in an annotation tree
                     final Tree grandParent = parentPath.getParentPath().getLeaf();
-                    if (grandParent.getKind() == Kind.METHOD_INVOCATION) {
+                    if (grandParent instanceof MethodInvocationTree) {
                         if (((MethodInvocationTree) grandParent)
                                 .getTypeArguments()
                                 .contains(parentNode)) {
@@ -194,12 +193,12 @@ public class InferenceTreeAnnotator extends TreeAnnotator {
                         }
                     }
 
-                } else if (parentNode.getKind() == Kind.CLASS) {
+                } else if (parentNode instanceof ClassTree) {
                     // This happens when a class explicitly extends another class or implements
                     // another interface
                     variableAnnotator.visit(identifierType, node);
 
-                } else if (parentNode.getKind() == Kind.NEW_CLASS
+                } else if (parentNode instanceof NewClassTree
                         && ((NewClassTree) parentNode).getIdentifier() == node) {
                     // This can happen in two cases related to NewClassTrees:
                     // (1) The type identifier of non-anonymous class instantiations, without

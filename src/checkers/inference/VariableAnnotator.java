@@ -170,9 +170,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void, Tree> {
         this.realTop =
                 realTypeFactory.getQualifierHierarchy().getTopAnnotations().iterator().next();
 
-        this.existentialInserter =
-                new ExistentialVariableInserter(
-                        slotManager, constraintManager, this.realTop, varAnnot, this);
+        this.existentialInserter = new ExistentialVariableInserter(slotManager, varAnnot, this);
 
         this.impliedTypeAnnotator =
                 new ImpliedTypeAnnotator(inferenceTypeFactory, slotManager, existentialInserter);
@@ -840,7 +838,7 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void, Tree> {
             SourceVariableSlot extendsSlot;
             if (!extendsMissingTrees.containsKey(classElement)) {
                 // TODO: SEE COMMENT ON createImpliedExtendsLocation
-                AnnotationLocation location = createImpliedExtendsLocation(classTree);
+                AnnotationLocation location = createImpliedExtendsLocation();
                 extendsSlot = createVariable(location, classType.getUnderlyingType());
                 extendsMissingTrees.put(classElement, extendsSlot);
                 logger.fine(
@@ -885,13 +883,12 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void, Tree> {
      * <p>Note, if we have on on the extends bound, you can also have one on every implemented
      * interface. Which are other locations we don't have sematnics for.
      */
-    private AnnotationLocation createImpliedExtendsLocation(ClassTree classTree) {
+    private AnnotationLocation createImpliedExtendsLocation() {
         // TODO: THIS CAN BE CREATED ONCE THIS IS FIXED:
         // https://github.com/typetools/annotation-tools/issues/100
         InferenceMain.getInstance()
                 .logger
-                .warning(
-                        "Hack:VariableAnnotator::createImpliedExtendsLocation(classTree) not implemented");
+                .warning("Hack:VariableAnnotator::createImpliedExtendsLocation() not implemented");
         return AnnotationLocation.MISSING_LOCATION;
     }
 
@@ -1679,11 +1676,6 @@ public class VariableAnnotator extends AnnotatedTypeScanner<Void, Tree> {
         visitTogether(methodType.getParameterTypes(), paramTrees); // TODO: STORE THESE TYPES?
 
         storeElementType(methodElem, methodType);
-    }
-
-    private ASTRecord recreateImpliedReceiverASTRecord(MethodTree methodTree) {
-        // TODO:
-        return null;
     }
 
     /**

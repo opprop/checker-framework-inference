@@ -23,7 +23,7 @@ public abstract class AbstractConstraintEncoderFactory<
      * {@link FormatTranslator} instance that concrete subclass of {@link AbstractConstraintEncoder}
      * might need. For example, {@link
      * checkers.inference.solver.backend.z3.encoder.Z3BitVectorSubtypeConstraintEncoder} needs it to
-     * format translate {@SubtypeConstraint}. {@link
+     * format translate {@code SubtypeConstraint}. {@link
      * checkers.inference.solver.backend.maxsat.encoder.MaxSATImplicationConstraintEncoder} needs it
      * to delegate format translation task of non-{@code ImplicationConstraint}s.
      */

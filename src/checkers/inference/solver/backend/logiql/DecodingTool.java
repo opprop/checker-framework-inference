@@ -1,11 +1,12 @@
 package checkers.inference.solver.backend.logiql;
 
+import org.checkerframework.javacutil.BugInCF;
+
 import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -40,8 +41,8 @@ public class DecodingTool {
         setDefault();
         try {
             decodeLogicBloxOutput();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+        } catch (IOException e) {
+            throw new BugInCF("Failed to decode LogicBlox output.", e);
         }
         return result;
     }
@@ -49,23 +50,20 @@ public class DecodingTool {
     /**
      * DecodeLogicBloxOutput decodes the LogicBloxOutput, and put it in HashMap result.
      *
-     * @throws FileNotFoundException
+     * @throws IOException if the LogicBlox output cannot be read
      */
-    private void decodeLogicBloxOutput() throws FileNotFoundException {
+    private void decodeLogicBloxOutput() throws IOException {
         Map<String, AnnotationMirror> nameMap = mapStringToAnnoMirror();
         String readPath = path + "/logicbloxOutput" + nth + ".txt";
-        InputStream in = new FileInputStream(readPath);
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-        String line = null;
-        try {
+        try (BufferedReader reader =
+                Files.newBufferedReader(Paths.get(readPath), StandardCharsets.UTF_8)) {
+            String line = null;
             while ((line = reader.readLine()) != null) {
                 String[] s = line.replaceAll("\"", "").split(" ");
                 int slotID = Integer.parseInt(s[0]);
                 AnnotationMirror annotation = nameMap.get(s[s.length - 1]);
                 result.put(slotID, annotation);
             }
-        } catch (IOException e) {
-            e.printStackTrace();
         }
     }
 

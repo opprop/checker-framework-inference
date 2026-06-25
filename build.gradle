@@ -11,6 +11,7 @@ buildscript {
 
 plugins {
     id 'com.github.johnrengelman.shadow' version '7.1.2'
+    id 'net.ltgt.errorprone' version '5.1.0'
 }
 
 apply plugin: 'java'
@@ -31,6 +32,9 @@ ext {
     // On a Java 9+ JVM, use the host javac, default source/target, and required module flags.
     isJava8 = JavaVersion.current() == JavaVersion.VERSION_1_8
     isJava11plus = JavaVersion.current() >= JavaVersion.VERSION_11
+    currentRuntimeJavaVersion = Integer.valueOf(JavaVersion.current().getMajorVersion())
+    enableErrorProne = currentRuntimeJavaVersion >= 21 && currentRuntimeJavaVersion <= 26
+    errorproneVersion = '2.50.0'
     errorproneJavacVersion = '9+181-r4173-1'
 
     // Keep in sync with checker-framework/build.gradle.
@@ -95,11 +99,15 @@ repositories {
 
 configurations {
     javacJar
+    errorProneAnnotationProcessor.extendsFrom(errorprone)
 }
 
 dependencies {
     if (isJava8) {
         javacJar group: 'com.google.errorprone', name: 'javac', version: "$errorproneJavacVersion"
+    }
+    if (enableErrorProne) {
+        errorprone group: 'com.google.errorprone', name: 'error_prone_core', version: "$errorproneVersion"
     }
 
     implementation files("${checkerJar}")
@@ -217,6 +225,48 @@ test {
 compileJava {
     dependsOn(buildLingeling)
     dependsOn(buildDLJC)
+    options.fork = true
+    options.annotationProcessorPath = configurations.errorProneAnnotationProcessor
+    options.errorprone.enabled = enableErrorProne
+    options.errorprone.disableWarningsInGeneratedCode = true
+    options.errorprone.errorproneArgs = [
+        '-Xep:ReferenceEquality:OFF',
+        '-Xep:StringSplitter:OFF',
+        '-Xep:EqualsGetClass:OFF',
+        '-Xep:MixedMutabilityReturnType:OFF',
+        '-Xep:AnnotateFormatMethod:OFF',
+        '-Xep:InvalidBlockTag:OFF',
+        '-Xep:InlineMeSuggester:OFF',
+        '-Xep:CanIgnoreReturnValueSuggester:OFF',
+        '-Xep:ExtendsObject:OFF',
+        '-Xep:VoidUsed:OFF',
+        '-Xep:PatternMatchingInstanceof:OFF',
+        '-Xep:StatementSwitchToExpressionSwitch:OFF',
+        '-Xep:PreferInstanceofOverGetKind:OFF',
+        '-Xep:EmptyBlockTag:OFF',
+        '-Xep:MissingSummary:OFF',
+        '-Xep:TypeEquals:OFF',
+        '-Xep:EffectivelyPrivate:OFF',
+        '-Xep:NonApiType:OFF',
+        '-Xep:NotJavadoc:OFF',
+        '-Xep:UnrecognisedJavadocTag:OFF',
+        '-Xep:UnnecessaryParentheses:OFF',
+        '-Xep:IdentityHashMapUsage:OFF',
+    ]
+    if (!isJava8) {
+        options.forkOptions.jvmArgs += [
+            '--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED',
+            '--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+            '--add-exports=jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+            '--add-exports=jdk.compiler/com.sun.tools.javac.model=ALL-UNNAMED',
+            '--add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED',
+            '--add-exports=jdk.compiler/com.sun.tools.javac.processing=ALL-UNNAMED',
+            '--add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+            '--add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+            '--add-opens=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED',
+            '--add-opens=jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+        ]
+    }
     options.compilerArgs = [
         '-implicit:class',
         '-Awarns',

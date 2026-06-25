@@ -25,18 +25,15 @@ public class InferenceQualifierPolymorphism {
     private final VariableAnnotator variableAnnotator;
     private final AnnotationMirror varAnnot;
     private final SlotManager slotManager;
-    private final InferenceAnnotatedTypeFactory atypeFactory;
     private final BaseAnnotatedTypeFactory realTypeFactory;
 
     public InferenceQualifierPolymorphism(
             final SlotManager slotManager,
             final VariableAnnotator variableAnnotator,
-            final InferenceAnnotatedTypeFactory atypeFactory,
             final BaseAnnotatedTypeFactory realTypeFactory,
             final AnnotationMirror varAnnot) {
         this.slotManager = slotManager;
         this.variableAnnotator = variableAnnotator;
-        this.atypeFactory = atypeFactory;
         this.realTypeFactory = realTypeFactory;
         this.varAnnot = varAnnot;
     }

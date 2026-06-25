@@ -3,12 +3,11 @@ package checkers.inference.solver.constraintgraph;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.checkerframework.javacutil.BugInCF;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -47,9 +46,7 @@ public class GraphBuilder {
         for (Constraint constraint : constraints) {
             if (constraint instanceof SubtypeConstraint) {
                 addSubtypeEdge((SubtypeConstraint) constraint);
-            } else if (constraint instanceof ExistentialConstraint) {
-                continue;
-            } else {
+            } else if (!(constraint instanceof ExistentialConstraint)) {
                 ArrayList<Slot> slots = new ArrayList<Slot>();
                 slots.addAll(constraint.getSlots());
                 addEdges(slots, constraint);
@@ -78,7 +75,7 @@ public class GraphBuilder {
         for (Vertex vertex : this.graph.getVerticies()) {
             if (!visited.contains(vertex)) {
                 Set<Constraint> independentPath = new HashSet<Constraint>();
-                Queue<Vertex> queue = new LinkedList<Vertex>();
+                Queue<Vertex> queue = new ArrayDeque<Vertex>();
                 queue.add(vertex);
                 while (!queue.isEmpty()) {
                     Vertex current = queue.remove();
@@ -112,7 +109,7 @@ public class GraphBuilder {
 
     private Set<Constraint> BFSSearch(Vertex vertex) {
         Set<Constraint> constantPathConstraints = new HashSet<Constraint>();
-        Queue<Vertex> queue = new LinkedList<Vertex>();
+        Queue<Vertex> queue = new ArrayDeque<Vertex>();
         queue.add(vertex);
         Set<Vertex> visited = new HashSet<Vertex>();
         while (!queue.isEmpty()) {
@@ -193,26 +190,5 @@ public class GraphBuilder {
 
     public ConstraintGraph getGraph() {
         return this.graph;
-    }
-
-    private void printEdges() {
-        System.out.println("new graph!");
-        for (Map.Entry<Vertex, Set<Constraint>> entry : this.graph.getConstantPath().entrySet()) {
-            System.out.println(entry.getKey().getSlot());
-            for (Constraint constraint : entry.getValue()) {
-                System.out.println(constraint);
-            }
-            System.out.println("**************");
-        }
-    }
-
-    private void printGraph() {
-        for (Edge edge : this.graph.getEdges()) {
-            System.out.println(edge);
-        }
-
-        for (Vertex vertex : this.graph.getVerticies()) {
-            System.out.println(vertex.getId());
-        }
     }
 }

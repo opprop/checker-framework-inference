@@ -3,12 +3,12 @@ package checkers.inference.solver.strategy;
 import com.sun.tools.javac.util.Pair;
 
 import org.checkerframework.framework.type.QualifierHierarchy;
+import org.checkerframework.javacutil.BugInCF;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -82,14 +82,14 @@ public class GraphSolvingStrategy extends AbstractSolvingStrategy {
 
         // Solving.
         List<Pair<Map<Integer, AnnotationMirror>, Collection<Constraint>>> inferenceResults =
-                new LinkedList<>();
+                new ArrayList<>();
 
         if (separatedGraphSolvers.size() > 0) {
             if (solveInParallel) {
                 try {
                     inferenceResults = solveInparallel(separatedGraphSolvers);
                 } catch (InterruptedException | ExecutionException e) {
-                    e.printStackTrace();
+                    throw new BugInCF("Failed to solve separated constraint graphs.", e);
                 }
             } else {
                 inferenceResults = solveInSequential(separatedGraphSolvers);

@@ -7,10 +7,10 @@ import org.sat4j.maxsat.WeightedMaxSatDecorator;
 import org.sat4j.specs.ContradictionException;
 import org.sat4j.specs.TimeoutException;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -74,8 +74,8 @@ public class MaxSat2TypeSolver implements InferenceSolver {
 
     public InferenceResult solve() {
 
-        final List<VecInt> softClauses = new LinkedList<>();
-        final List<VecInt> hardClauses = new LinkedList<>();
+        final List<VecInt> softClauses = new ArrayList<>();
+        final List<VecInt> hardClauses = new ArrayList<>();
         serializer.convertAll(constraints, hardClauses, softClauses);
 
         // nextId describes the LARGEST id that might be found in a variable

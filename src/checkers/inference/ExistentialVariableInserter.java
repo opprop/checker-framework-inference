@@ -16,8 +16,6 @@ import java.util.Iterator;
 
 import javax.lang.model.element.AnnotationMirror;
 
-import checkers.inference.model.ConstraintManager;
-import checkers.inference.model.ExistentialVariableSlot;
 import checkers.inference.model.Slot;
 import checkers.inference.util.InferenceUtil;
 
@@ -77,17 +75,14 @@ import checkers.inference.util.InferenceUtil;
 public class ExistentialVariableInserter {
     private final SlotManager slotManager;
     private final VariableAnnotator varAnnotator;
-    private final ConstraintManager constraintMangaer;
-    private final AnnotationMirror realTop;
     private final AnnotationMirror varAnnot;
 
-    public ExistentialVariableInserter(final SlotManager slotManager, final ConstraintManager constraintManager,
-                                       final AnnotationMirror realTop, final AnnotationMirror varAnnot,
-                                       final VariableAnnotator varAnnotator) {
+    public ExistentialVariableInserter(
+            final SlotManager slotManager,
+            final AnnotationMirror varAnnot,
+            final VariableAnnotator varAnnotator) {
         // bottom is used to force an annotation to exist in a non-defaultable location if it was written explicitly
         this.slotManager = slotManager;
-        this.constraintMangaer = constraintManager;
-        this.realTop = realTop;
         this.varAnnot = varAnnot;
         this.varAnnotator = varAnnotator;
     }
@@ -97,14 +92,6 @@ public class ExistentialVariableInserter {
      */
     public void insert(final Slot potentialVariable, final AnnotatedTypeMirror typeUse,
                        final AnnotatedTypeMirror declaration) {
-         insert(potentialVariable, typeUse, declaration, false);
-    }
-
-    /**
-     * See class comments for information on insert
-     */
-    public void insert(final Slot potentialVariable, final AnnotatedTypeMirror typeUse,
-                       final AnnotatedTypeMirror declaration,  boolean mustExist) {
         if (potentialVariable == null) {
             throw new BugInCF("Bad type variable slot: slot is null");
         }
@@ -117,7 +104,7 @@ public class ExistentialVariableInserter {
         InferenceUtil.removePrimaryTypeVariableAnnotation((AnnotatedTypeVariable) typeUse, potentialVarAnno);
 
 
-        final InsertionVisitor insertionVisitor = new InsertionVisitor(potentialVariable, potentialVarAnno, mustExist);
+        final InsertionVisitor insertionVisitor = new InsertionVisitor(potentialVariable, potentialVarAnno);
         insertionVisitor.visit(typeUse, declaration, null);
     }
 
@@ -125,14 +112,13 @@ public class ExistentialVariableInserter {
         private Slot potentialVariable;
         private AnnotationMirror potentialVarAnno;
 
-        public InsertionVisitor(final Slot potentialVariable,
-                                final AnnotationMirror potentialVarAnno,
-                                final boolean mustExist) {
+        InsertionVisitor(final Slot potentialVariable,
+                                final AnnotationMirror potentialVarAnno) {
             this.potentialVariable = potentialVariable;
             this.potentialVarAnno = potentialVarAnno;
         }
 
-        public void matchAndReplacePrimary(final AnnotatedTypeMirror typeUse, final AnnotatedTypeMirror declaration) {
+        void matchAndReplacePrimary(final AnnotatedTypeMirror typeUse, final AnnotatedTypeMirror declaration) {
             if (InferenceMain.isHackMode(slotManager.getSlot(typeUse) == null)) {
                 return;
             }
@@ -149,8 +135,7 @@ public class ExistentialVariableInserter {
                 }
 
                 if (declSlot instanceof VariableSlot) {
-                    final ExistentialVariableSlot existVar =
-                            varAnnotator.getOrCreateExistentialVariable(typeUse, potentialVariable, declSlot);
+                    varAnnotator.getOrCreateExistentialVariable(typeUse, potentialVariable, declSlot);
 
                 } else if (!InferenceMain.isHackMode()) {
                         throw new BugInCF("Unexpected constant slot in:" + declaration);

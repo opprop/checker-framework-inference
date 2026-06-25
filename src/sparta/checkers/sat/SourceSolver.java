@@ -29,6 +29,7 @@ public class SourceSolver extends IFlowSolver {
         return super.solve(configuration, slots, constraints, qualHierarchy, processingEnvironment);
     }
 
+    @Override
     protected Set<PFPermission> getPermissionList(AnnotationMirror anno) {
         if (IFlowUtils.isPolySource(anno)) {
             return new HashSet<>();
@@ -41,6 +42,7 @@ public class SourceSolver extends IFlowSolver {
         return new SourceSerializer(permission);
     }
 
+    @Override
     protected InferenceResult getMergedResultFromSolutions(
             ProcessingEnvironment processingEnvironment, List<PermissionSolution> solutions) {
         return new SourceResult(solutions, processingEnvironment);

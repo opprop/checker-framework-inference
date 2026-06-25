@@ -69,6 +69,7 @@ public abstract class AnnotationLocation {
             return true;
         }
 
+        @Override
         public boolean equals(Object otherObj) {
             if (otherObj == this) {
                 return true;
@@ -82,6 +83,7 @@ public abstract class AnnotationLocation {
             return astRecord.equals(other.astRecord);
         }
 
+        @Override
         public int hashCode() {
             return 3299 * astRecord.hashCode();
         }
@@ -118,6 +120,7 @@ public abstract class AnnotationLocation {
             return true;
         }
 
+        @Override
         public boolean equals(Object otherObj) {
             if (otherObj == this) {
                 return true;
@@ -131,8 +134,9 @@ public abstract class AnnotationLocation {
             return fullyQualifiedClassName.equals(other.fullyQualifiedClassName);
         }
 
+        @Override
         public int hashCode() {
-            return 3343 * (fullyQualifiedClassName.hashCode());
+            return 3343 * fullyQualifiedClassName.hashCode();
         }
 
         @Override
@@ -149,7 +153,7 @@ public abstract class AnnotationLocation {
      */
     private static class MissingLocation extends AnnotationLocation {
 
-        public MissingLocation() {
+        private MissingLocation() {
             super(AnnotationLocation.Kind.MISSING);
         }
 
@@ -158,18 +162,21 @@ public abstract class AnnotationLocation {
             return false;
         }
 
+        @Override
         public boolean equals(Object otherObj) {
             if (otherObj == this || otherObj == MISSING_LOCATION) {
                 return true;
             }
 
-            return otherObj.getClass().equals(MissingLocation.class);
+            return otherObj != null && otherObj.getClass().equals(MissingLocation.class);
         }
 
+        @Override
         public int hashCode() {
             return 6427 * MissingLocation.class.hashCode();
         }
 
+        @Override
         public String toString() {
             return MissingLocation.class.getSimpleName();
         }

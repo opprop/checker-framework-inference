@@ -89,7 +89,7 @@ public class InequalityConstraint extends Constraint implements BinaryConstraint
         if (getClass() != obj.getClass()) return false;
         InequalityConstraint other = (InequalityConstraint) obj;
         if ((first.equals(other.first) && second.equals(other.second))
-                || (first.equals(other.second) && (second.equals(other.first)))) {
+                || (first.equals(other.second) && second.equals(other.first))) {
             return true;
         } else {
             return false;

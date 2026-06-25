@@ -32,7 +32,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -81,7 +80,7 @@ public class JsonDeserializer {
     }
 
     public List<Constraint> jsonArrayToConstraints(final JSONArray jsonConstraints) {
-        List<Constraint> results = new LinkedList<Constraint>();
+        List<Constraint> results = new ArrayList<Constraint>();
 
         for (Object obj : jsonConstraints) {
             if (obj instanceof String) {

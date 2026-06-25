@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
@@ -42,7 +43,7 @@ public class ExternalSolverUtils {
         // Start the external solver process
         Process process;
         try {
-            process = Runtime.getRuntime().exec(command);
+            process = new ProcessBuilder(command).start();
         } catch (IOException e) {
             throw new UserError("Could not run external solver.");
         }
@@ -97,7 +98,8 @@ public class ExternalSolverUtils {
 
         @Override
         public void run() {
-            handler.accept(new BufferedReader(new InputStreamReader(stream)));
+            handler.accept(
+                    new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8)));
         }
     }
 
@@ -116,7 +118,7 @@ public class ExternalSolverUtils {
                 stream.println(line);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new BugInCF("Error reading external solver output.", e);
         }
     }
 }

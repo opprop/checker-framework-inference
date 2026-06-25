@@ -4,6 +4,7 @@ import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.BugInCF;
 
 import java.util.Collection;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -61,7 +62,8 @@ public class SolverEngine implements InferenceSolver {
     private final String STRATEGY_PACKAGE_NAME = SolvingStrategy.class.getPackage().getName();
 
     protected SolverFactory createSolverFactory() {
-        final String solverPackageName = BACKEND_PACKAGE_PATH + "." + solverName.toLowerCase();
+        final String solverPackageName =
+                BACKEND_PACKAGE_PATH + "." + solverName.toLowerCase(Locale.ROOT);
         final String solverFactoryClassName = solverName + "SolverFactory";
 
         try {
@@ -149,7 +151,7 @@ public class SolverEngine implements InferenceSolver {
     /**
      * This method configures following arguments: solving strategy, and collectStatistics.
      *
-     * @param configuration
+     * @param solverEnvironment solver configuration
      */
     private void configureSolverEngineArgs(SolverEnvironment solverEnvironment) {
         String strategyName = solverEnvironment.getArg(SolverEngineArg.solvingStrategy);

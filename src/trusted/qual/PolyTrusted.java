@@ -11,8 +11,8 @@ import java.lang.annotation.Target;
 /**
  * A Polymorphic qualifier for {@code Trusted}.
  *
- * <p>See {@link
- * http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#qualifier-polymorphism}
+ * <p>See
+ * http://types.cs.washington.edu/checker-framework/current/checkers-manual.html#qualifier-polymorphism
  * for information on the semantics of polymorphic qualifiers in the checker framework.
  *
  * <p>

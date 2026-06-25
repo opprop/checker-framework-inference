@@ -3,6 +3,7 @@ package dataflow.solvers.classic;
 import org.checkerframework.framework.type.QualifierHierarchy;
 import org.checkerframework.javacutil.AnnotationBuilder;
 import org.checkerframework.javacutil.AnnotationUtils;
+import org.checkerframework.javacutil.BugInCF;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -87,7 +88,7 @@ public class DataflowSolver implements InferenceSolver {
                 solutions = solveInparallel(dataflowSolvers);
             }
         } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
+            throw new BugInCF("Failed to solve dataflow datatype constraints.", e);
         }
 
         return getMergedResultFromSolutions(processingEnvironment, solutions);

@@ -89,7 +89,7 @@ public class DataflowInferenceTreeAnnotator extends InferenceTreeAnnotator {
         if (path != null) {
             final TreePath parentPath = path.getParentPath();
             final Tree parentNode = parentPath.getLeaf();
-            if (!parentNode.getKind().equals(Kind.NEW_CLASS)) {
+            if (!(parentNode instanceof NewClassTree)) {
                 variableAnnotator.visit(atm, param);
             }
         }

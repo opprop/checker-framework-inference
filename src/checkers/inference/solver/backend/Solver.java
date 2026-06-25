@@ -24,10 +24,8 @@ import checkers.inference.solver.util.SolverEnvironment;
  *
  * <p>Method {@link #solve()} is responsible for coordinating above steps.
  *
- * <p>{@link #solve()} method is the entry point of the solver adapter, and it is got called in
- * class {@link checkers.inference.solver.SolverEngine}}. See {@link
- * checkers.inference.solver.SolverEngine#solveInparall()} and {@link
- * checkers.inference.solver.SolverEngine#solveInSequential()}.
+ * <p>{@link #solve()} method is the entry point of the solver adapter, and is called by solving
+ * strategies.
  *
  * @author jianchu
  * @param <T> type of FormatTranslator required by this Solver

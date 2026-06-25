@@ -17,6 +17,7 @@ import sparta.checkers.iflow.util.PFPermission;
 /** Created by smillst on 9/17/15. */
 public abstract class IFlowSolver implements InferenceSolver {
 
+    @Override
     public InferenceResult solve(
             Map<String, String> configuration,
             Collection<Slot> slots,

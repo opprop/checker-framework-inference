@@ -1,6 +1,7 @@
 package checkers.inference.solver.util;
 
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.processing.ProcessingEnvironment;
@@ -28,7 +29,7 @@ public class SolverEnvironment {
     /**
      * Get the value for a given argument name.
      *
-     * @param argName the name of the given argument.
+     * @param arg the given argument.
      * @return the string value for a given argument name.
      */
     public String getArg(SolverArg arg) {
@@ -38,12 +39,12 @@ public class SolverEnvironment {
     /**
      * Get the boolean value for a given argument name.
      *
-     * @param argName the name of the given argument.
+     * @param arg the given argument.
      * @return true if the lower case of the string value of this argument equals to "true",
      *     otherwise return false.
      */
     public boolean getBoolArg(SolverArg arg) {
         String argValue = options.get(arg.name());
-        return argValue != null && argValue.toLowerCase().equals("true");
+        return argValue != null && argValue.toLowerCase(Locale.ROOT).equals("true");
     }
 }

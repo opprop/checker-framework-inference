@@ -1,16 +1,13 @@
 package nninf;
 
-import com.sun.source.tree.BinaryTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.MethodInvocationTree;
-import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 
 import org.checkerframework.framework.type.AnnotatedTypeFactory;
 import org.checkerframework.framework.type.AnnotatedTypeMirror;
 import org.checkerframework.framework.type.AnnotatedTypeMirror.AnnotatedExecutableType;
 import org.checkerframework.javacutil.AnnotationUtils;
-import org.checkerframework.javacutil.ElementUtils;
 import org.checkerframework.javacutil.TreeUtils;
 
 import java.util.List;
@@ -72,11 +69,11 @@ import nninf.qual.KeyFor;
         MethodInvocationTree tree = (MethodInvocationTree) path.getLeaf();
         if (TreeUtils.isMethodInvocation(tree, mapGet, env)) {
             AnnotatedTypeMirror type = method.getReturnType();
-            type.removeAnnotationInHierarchy(factory.checker.NULLABLE);
+            type.removeAnnotationInHierarchy(factory.nninfChecker.NULLABLE);
             if (!isSuppressable(path)) {
-                type.addAnnotation(factory.checker.NULLABLE);
+                type.addAnnotation(factory.nninfChecker.NULLABLE);
             } else {
-                type.addAnnotation(factory.checker.NONNULL);
+                type.addAnnotation(factory.nninfChecker.NONNULL);
             }
         }
     }
@@ -92,8 +89,7 @@ import nninf.qual.KeyFor;
 
         if (elt instanceof VariableElement) {
             ExpressionTree arg = tree.getArguments().get(0);
-            return keyForInMap(arg, elt, path)
-                    || keyForInMap(arg, ((VariableElement) elt).getSimpleName().toString())
+            return keyForInMap(arg, ((VariableElement) elt).getSimpleName().toString())
                     || keyForInMap(arg, String.valueOf(TreeUtils.getReceiverTree(tree)));
         }
 
@@ -114,60 +110,8 @@ import nninf.qual.KeyFor;
         return maps.contains(mapName);
     }
 
-    private boolean keyForInMap(ExpressionTree key, Element mapElement, TreePath path) {
-        AnnotatedTypeMirror keyForType = keyForFactory.getAnnotatedType(key);
-
-        AnnotationMirror anno = keyForType.getAnnotation(KeyFor.class);
-        if (anno == null) return false;
-
-        List<String> maps =
-                AnnotationUtils.getElementValueArray(
-                        anno, factory.keyForValueElement, String.class);
-        for (String map : maps) {
-            // TODO: this whole class should be re-implemented
-            Element elt = null; // resolver.findVariable(map, path);
-            if (elt != null
-                    && elt.equals(mapElement)
-                    && !isSiteRequired(
-                            TreeUtils.getReceiverTree((ExpressionTree) path.getLeaf()), elt)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Helper function to determine if the passed element is sufficient to resolve a reference at
-     * compile time, without needing to represent the call/dereference site.
-     */
-    private boolean isSiteRequired(ExpressionTree node, Element elt) {
-        boolean r =
-                ElementUtils.isStatic(elt)
-                        || !elt.getKind().isField()
-                        || factory.isMostEnclosingThisDeref(node);
-        return !r;
-    }
-
     private Element getSite(MethodInvocationTree tree) {
         // TODO: Check this behavior for implicit receivers/outer receivers
         return TreeUtils.elementFromUse(TreeUtils.getReceiverTree(tree));
-    }
-
-    private boolean isCheckOfGet(Element key, VariableElement map, ExpressionTree tree) {
-        tree = TreeUtils.withoutParens(tree);
-        if (tree.getKind() != Tree.Kind.NOT_EQUAL_TO
-                || ((BinaryTree) tree).getRightOperand().getKind() != Tree.Kind.NULL_LITERAL)
-            return false;
-
-        Tree right = TreeUtils.withoutParens(((BinaryTree) tree).getLeftOperand());
-        if (right instanceof MethodInvocationTree) {
-            MethodInvocationTree invok = (MethodInvocationTree) right;
-            if (TreeUtils.isMethodInvocation(invok, mapGet, env)) {
-                Element containsArgument = TreeUtils.elementFromTree(invok.getArguments().get(0));
-                if (key.equals(containsArgument) && map.equals(getSite(invok))) return true;
-            }
-        }
-        return false;
     }
 }

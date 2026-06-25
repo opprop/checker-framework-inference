@@ -16,7 +16,7 @@ import checkers.inference.model.Constraint;
  * is null Has solution == empty {@link #varIdToAnnotation solution} or non-empty {@link
  * #varIdToAnnotation solution}
  *
- * @see {@link #hasSolution()}
+ * @see #hasSolution()
  */
 public class DefaultInferenceResult implements InferenceResult {
 

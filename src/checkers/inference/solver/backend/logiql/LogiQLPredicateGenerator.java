@@ -1,6 +1,11 @@
 package checkers.inference.solver.backend.logiql;
 
+import org.checkerframework.javacutil.BugInCF;
+
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Map;
 
@@ -242,13 +247,14 @@ public class LogiQLPredicateGenerator {
     private void writeFile(String output) {
         String[] lines = output.split("\r\n|\r|\n");
         Statistics.addOrIncrementEntry("logiql_predicate_size", lines.length);
-        try {
-            String writePath = path + "/logiqlEncoding" + nth + ".logic";
-            PrintWriter pw = new PrintWriter(writePath);
+        try (PrintWriter pw =
+                new PrintWriter(
+                        Files.newBufferedWriter(
+                                Paths.get(path, "logiqlEncoding" + nth + ".logic"),
+                                StandardCharsets.UTF_8))) {
             pw.write(output);
-            pw.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new BugInCF("Failed to write LogiQL encoding.", e);
         }
     }
 }

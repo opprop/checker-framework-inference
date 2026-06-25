@@ -17,6 +17,7 @@ public class SinkResult extends IFlowResult {
         super(solutions, processingEnv);
     }
 
+    @Override
     protected boolean shouldContainPermission(Map.Entry<Integer, Boolean> entry) {
         // If the solution is false, that means top was infered
         // for sinks, that means that the annotation should NOT have the permission

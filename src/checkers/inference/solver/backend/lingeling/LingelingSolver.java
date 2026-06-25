@@ -1,5 +1,6 @@
 package checkers.inference.solver.backend.lingeling;
 
+import org.checkerframework.javacutil.BugInCF;
 import org.sat4j.core.VecInt;
 
 import java.io.BufferedReader;
@@ -53,8 +54,6 @@ public class LingelingSolver extends MaxSatSolver {
 
     @Override
     public Map<Integer, AnnotationMirror> solve() {
-        Map<Integer, AnnotationMirror> solutions = null;
-
         this.serializationStart = System.currentTimeMillis();
         encodeAllConstraints();
         encodeWellFormednessRestriction();
@@ -71,7 +70,7 @@ public class LingelingSolver extends MaxSatSolver {
         // TODO What's the value of resultArray if there is no solution? Need to adapt this to
         // changes in the PR: https://github.com/opprop/checker-framework-inference/pull/128
         // , i.e. set solutions to null if there is no solution
-        solutions = decode(resultArray);
+        Map<Integer, AnnotationMirror> solutions = decode(resultArray);
         this.solvingEnd = System.currentTimeMillis();
 
         long solvingTime = solvingEnd - solvingStart;
@@ -122,7 +121,7 @@ public class LingelingSolver extends MaxSatSolver {
                 }
             }
         } catch (NumberFormatException | IOException e) {
-            e.printStackTrace();
+            throw new BugInCF("Failed to parse Lingeling output.", e);
         }
     }
 

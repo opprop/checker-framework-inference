@@ -3,9 +3,7 @@ package dataflow.solvers.classic;
 import org.checkerframework.javacutil.AnnotationUtils;
 import org.sat4j.core.VecInt;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 
@@ -21,7 +19,6 @@ public class DataflowSerializer extends CnfVecIntSerializer {
     private static final String DATAFLOWTOP_NAME = DataFlowTop.class.getCanonicalName();
 
     protected final String datatype;
-    private final Set<Integer> touchedSlots = new HashSet<Integer>();
     private boolean isRoot = false;
 
     protected final DataflowUtils dataflowUtils;

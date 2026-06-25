@@ -27,7 +27,6 @@ import org.checkerframework.framework.type.treeannotator.LiteralTreeAnnotator;
 import org.checkerframework.framework.type.treeannotator.TreeAnnotator;
 import org.checkerframework.framework.type.typeannotator.ListTypeAnnotator;
 import org.checkerframework.framework.type.typeannotator.TypeAnnotator;
-import org.checkerframework.framework.type.visitor.AnnotatedTypeScanner;
 import org.checkerframework.framework.util.AnnotatedTypes;
 import org.checkerframework.framework.util.defaults.QualifierDefaults;
 import org.checkerframework.javacutil.AnnotationBuilder;
@@ -39,7 +38,6 @@ import org.checkerframework.javacutil.TreeUtils;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -145,12 +143,11 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         varAnnot = new AnnotationBuilder(processingEnv, VarAnnot.class).build();
         realTop = realTypeFactory.getQualifierHierarchy().getTopAnnotations().iterator().next();
         existentialInserter =
-                new ExistentialVariableInserter(
-                        slotManager, constraintManager, realTop, varAnnot, variableAnnotator);
+                new ExistentialVariableInserter(slotManager, varAnnot, variableAnnotator);
 
         inferencePoly =
                 new InferenceQualifierPolymorphism(
-                        slotManager, variableAnnotator, this, realTypeFactory, varAnnot);
+                        slotManager, variableAnnotator, realTypeFactory, varAnnot);
 
         constantToVariableAnnotator = new ConstantToVariableAnnotator(realTop, varAnnot);
         // Every subclass must call postInit!
@@ -326,7 +323,7 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         // TODO: Used in comb constraints, going to leave it in to ensure the element has been
         // visited
-        final AnnotatedExecutableType methodType = getAnnotatedType(methodElem);
+        getAnnotatedType(methodElem);
 
         final ExpressionTree methodSelectExpression = methodInvocationTree.getMethodSelect();
         final AnnotatedTypeMirror receiverType;
@@ -379,17 +376,6 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
         }
         return mType;
     }
-
-    private final AnnotatedTypeScanner<Boolean, Void> fullyQualifiedVisitor =
-            new AnnotatedTypeScanner<Boolean, Void>() {
-                @Override
-                public Boolean visitDeclared(AnnotatedDeclaredType type, Void p) {
-                    if (type.getAnnotations().size() != qualHierarchy.getWidth()) {
-                        return false;
-                    }
-                    return super.visitDeclared(type, p);
-                }
-            };
 
     /**
      * This method is similar to the one in its superclass AnnotatedTypeFactory, but it has
@@ -449,13 +435,13 @@ public class InferenceAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
         if (typeVarMapping.isEmpty()) {
             return new ParameterizedExecutableType(
-                    methodType, new LinkedList<AnnotatedTypeMirror>());
+                    methodType, new ArrayList<AnnotatedTypeMirror>());
         } // else
 
         // We take the type variables from the method element, not from the annotated method.
         // For some reason, this way works, the other one doesn't.  // TODO: IS THAT TRUE?
-        final List<TypeVariable> foundTypeVars = new LinkedList<>();
-        final List<TypeVariable> missingTypeVars = new LinkedList<>();
+        final List<TypeVariable> foundTypeVars = new ArrayList<>();
+        final List<TypeVariable> missingTypeVars = new ArrayList<>();
 
         for (final TypeParameterElement typeParamElem : methodElement.getTypeParameters()) {
             final TypeVariable typeParam = (TypeVariable) typeParamElem.asType();

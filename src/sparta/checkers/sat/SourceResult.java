@@ -16,6 +16,7 @@ public class SourceResult extends IFlowResult {
         super(solutions, processingEnv);
     }
 
+    @Override
     protected boolean shouldContainPermission(Map.Entry<Integer, Boolean> entry) {
         // If the solution is false, that means top was infered
         // for sources, that means that the annotation should have the permission

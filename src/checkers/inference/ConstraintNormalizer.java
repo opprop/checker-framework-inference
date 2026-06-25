@@ -337,7 +337,7 @@ public class ConstraintNormalizer {
         }
     }
 
-    private class NullSlotNormalizer implements Normalizer {
+    private static class NullSlotNormalizer implements Normalizer {
 
         @Override
         public boolean accept(Constraint constraint) {

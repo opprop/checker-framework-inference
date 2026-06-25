@@ -52,7 +52,10 @@ import sparta.checkers.qual.Source;
 /** Created by mcarthur on 4/3/14. */
 public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory {
 
-    static AnnotationMirror ANYSOURCE, NOSOURCE, ANYSINK, NOSINK;
+    private final AnnotationMirror ANYSOURCE;
+    private final AnnotationMirror NOSOURCE;
+    private final AnnotationMirror ANYSINK;
+    private final AnnotationMirror NOSINK;
     private final AnnotationMirror POLYSOURCE;
     private final AnnotationMirror POLYSINK;
 
@@ -100,6 +103,7 @@ public class SimpleFlowAnnotatedTypeFactory extends BaseInferenceRealTypeFactory
         initQualifierDefaults();
     }
 
+    @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         Set<Class<? extends Annotation>> res = new HashSet<>();
         if (checker instanceof IFlowSinkChecker) {

@@ -1,9 +1,13 @@
 package checkers.inference.solver.backend.logiql;
 
+import org.checkerframework.javacutil.BugInCF;
+
 import java.io.File;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -50,7 +54,6 @@ public class LogiQLSolver extends Solver<LogiQLFormatTranslator> {
     public Map<Integer, AnnotationMirror> solve() {
         int localNth = nth.incrementAndGet();
         String logiqldataPath = logiqldata.getAbsolutePath();
-        Map<Integer, AnnotationMirror> result = new HashMap<>();
         /**
          * creating a instance of LogiqlConstraintGenerator and running GenerateLogiqlEncoding
          * method, in order to generate the logiql fixed encoding part of current type system.
@@ -76,8 +79,7 @@ public class LogiQLSolver extends Solver<LogiQLFormatTranslator> {
 
         // TODO: Refactor this to let Translator take the responsiblity of decoding.
         DecodingTool DecodeTool = new DecodingTool(varSlotIds, logiqldataPath, lattice, localNth);
-        result = DecodeTool.decodeResult();
-        return result;
+        return DecodeTool.decodeResult();
     }
 
     @Override
@@ -112,14 +114,14 @@ public class LogiQLSolver extends Solver<LogiQLFormatTranslator> {
     private void writeLogiQLData(String path, int nth) {
         String[] lines = logiQLText.toString().split("\r\n|\r|\n");
         Statistics.addOrIncrementEntry("logiql_data_size", lines.length);
-        try {
-            String writePath = path + "/data" + nth + ".logic";
-            File f = new File(writePath);
-            PrintWriter pw = new PrintWriter(f);
+        try (PrintWriter pw =
+                new PrintWriter(
+                        Files.newBufferedWriter(
+                                Paths.get(path, "data" + nth + ".logic"),
+                                StandardCharsets.UTF_8))) {
             pw.write(logiQLText.toString());
-            pw.close();
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new BugInCF("Failed to write LogiQL data.", e);
         }
     }
 }

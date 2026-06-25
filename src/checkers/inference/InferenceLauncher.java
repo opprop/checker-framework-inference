@@ -11,10 +11,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -161,7 +161,7 @@ public class InferenceLauncher {
     public void infer() {
         printStep("Inferring", outStream);
         final String java = getJavaCommand(System.getProperty("java.home"), outStream);
-        List<String> argList = new LinkedList<>();
+        List<String> argList = new ArrayList<>();
         argList.add(java);
         argList.addAll(getMemoryArgs());
 
@@ -337,9 +337,10 @@ public class InferenceLauncher {
             result =
                     ExecUtil.execute(
                             options.toArray(new String[options.size()]), insertOut, errStream);
-            outStream.println(insertOut.toString());
+            String insertOutput = new String(insertOut.toByteArray(), StandardCharsets.UTF_8);
+            outStream.println(insertOutput);
 
-            List<File> newJavaFiles = findWrittenFiles(insertOut.toString());
+            List<File> newJavaFiles = findWrittenFiles(insertOutput);
             for (File newJavaFile : newJavaFiles) {
                 outputJavaFiles.add(newJavaFile.getAbsolutePath());
             }

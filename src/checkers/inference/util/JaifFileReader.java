@@ -2,8 +2,9 @@ package checkers.inference.util;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -36,7 +37,7 @@ public class JaifFileReader implements Iterable<JaifPackage> {
         }
     }
 
-    public class Block {
+    public static class Block {
         public final List<String> lines;
 
         Block(List<String> lines) {
@@ -49,7 +50,7 @@ public class JaifFileReader implements Iterable<JaifPackage> {
         }
     }
 
-    public class JaifPackage {
+    public static class JaifPackage {
         public final String name;
         public final List<Block> entries;
 
@@ -89,7 +90,7 @@ public class JaifFileReader implements Iterable<JaifPackage> {
         private JaifPackage nextPackage;
 
         public JaifFileIterator(File file) throws IOException {
-            bufferedReader = new BufferedReader(new FileReader(file));
+            bufferedReader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8);
             nextPackage = readNext();
         }
 

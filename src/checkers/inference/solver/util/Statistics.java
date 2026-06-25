@@ -3,6 +3,7 @@ package checkers.inference.solver.util;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -25,7 +26,7 @@ public class Statistics {
     public static void addOrIncrementEntry(String key, long value) {
         synchronized (statistics) {
             // always use the lower-case version of the given key
-            key = key.toLowerCase();
+            key = key.toLowerCase(Locale.ROOT);
 
             if (statistics.get(key) == null) {
                 statistics.put(key, value);

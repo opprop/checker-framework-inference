@@ -29,7 +29,7 @@ import nninf.qual.Nullable;
 import nninf.qual.PolyNull;
 
 public class NninfAnnotatedTypeFactory extends GameAnnotatedTypeFactory {
-    NninfChecker checker;
+    NninfChecker nninfChecker;
     MapGetHeuristics mapGetHeuristics;
 
     /** The KeyFor.value element/field. */
@@ -39,7 +39,7 @@ public class NninfAnnotatedTypeFactory extends GameAnnotatedTypeFactory {
     public NninfAnnotatedTypeFactory(NninfChecker checker, boolean isInfer) {
         super(checker, isInfer);
 
-        this.checker = checker;
+        this.nninfChecker = checker;
 
         KeyForAnnotatedTypeFactory mapGetFactory = new KeyForAnnotatedTypeFactory(checker);
         mapGetHeuristics = new MapGetHeuristics(processingEnv, this, mapGetFactory);
@@ -60,6 +60,7 @@ public class NninfAnnotatedTypeFactory extends GameAnnotatedTypeFactory {
         defaults.addCheckedCodeDefault(checker.NULLABLE, TypeUseLocation.LOCAL_VARIABLE);
     }
 
+    @Override
     protected Set<Class<? extends Annotation>> createSupportedTypeQualifiers() {
         Set<Class<? extends Annotation>> res = new HashSet<>();
         res.add(NonNull.class);

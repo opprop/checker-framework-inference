@@ -3,8 +3,8 @@ package checkers.inference.model.serialization;
 import org.checkerframework.javacutil.BugInCF;
 import org.sat4j.core.VecInt;
 
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -174,7 +174,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
                     Integer.valueOf(constraint.getPotentialVariable().getId()));
         }
 
-        /**
+        /*
          * if we have an existential constraint of the form: if (a exists) { a <: b } else { c <: b
          * }
          *
@@ -316,7 +316,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
      * @return the output clauses for the given constraints
      */
     public List<VecInt> convertAll(Iterable<Constraint> constraints) {
-        return convertAll(constraints, new LinkedList<VecInt>());
+        return convertAll(constraints, new ArrayList<VecInt>());
     }
 
     /**
@@ -391,7 +391,7 @@ public abstract class CnfVecIntSerializer implements Serializer<VecInt[], VecInt
      * Takes 2 slots and constraints, down casts them to the right VariableSlot or ConstantSlot and
      * passes them to the corresponding method.
      */
-    class VariableCombos<T extends Constraint> {
+    static class VariableCombos<T extends Constraint> {
 
         protected VecInt[] variable_variable(VariableSlot slot1, VariableSlot slot2, T constraint) {
             return defaultAction(slot1, slot2, constraint);

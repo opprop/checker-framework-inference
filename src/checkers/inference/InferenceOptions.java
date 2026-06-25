@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import checkers.inference.InferenceLauncher.Mode;
@@ -185,7 +186,7 @@ public class InferenceOptions {
             }
 
         } else {
-            mode = mode.toUpperCase();
+            mode = mode.toUpperCase(Locale.ROOT);
 
             Mode modeEnum = null;
             try {
@@ -223,7 +224,7 @@ public class InferenceOptions {
                 }
             }
 
-            if (modeEnum.ordinal() >= Mode.ROUNDTRIP.ordinal()) {
+            if (modeEnum.compareTo(Mode.ROUNDTRIP) >= 0) {
                 if (afuOutputDir == null) {
                     if (!inPlace) {
                         errors.add(
@@ -308,7 +309,7 @@ public class InferenceOptions {
     }
 
     /** Specifies the defaults a particular type system would use to run typechecking/inference. */
-    private static class TypeSystemSpec {
+    public static class TypeSystemSpec {
         public final Class<? extends InferenceChecker> qualifiedChecker;
         public final Class<? extends InferenceSolver> defaultSolver;
         public final File defaultStubs;

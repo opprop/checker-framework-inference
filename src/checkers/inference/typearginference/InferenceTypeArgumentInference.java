@@ -21,12 +21,13 @@ import org.checkerframework.framework.util.typeinference.constraint.TSubU;
 import org.checkerframework.framework.util.typeinference.constraint.TSuperU;
 import org.checkerframework.framework.util.typeinference.constraint.TUConstraint;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -153,7 +154,7 @@ public class InferenceTypeArgumentInference extends DefaultTypeArgumentInference
             Map<TypeVariable, AnnotatedTypeMirror> targetToTypes,
             AnnotatedTypeFactory typeFactory) {
 
-        final LinkedList<AFConstraint> boundAndAssignmentAfs = new LinkedList<>();
+        final Queue<AFConstraint> boundAndAssignmentAfs = new ArrayDeque<>();
         for (AnnotatedTypeVariable typeParam : methodType.getTypeVariables()) {
             final TypeVariable target = typeParam.getUnderlyingType();
             final AnnotatedTypeMirror inferredType = targetToTypes.get(target);

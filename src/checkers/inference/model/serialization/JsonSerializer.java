@@ -6,6 +6,7 @@ import org.json.simple.JSONObject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.lang.model.element.AnnotationMirror;
@@ -363,7 +364,7 @@ public class JsonSerializer implements Serializer<String, JSONObject> {
     @Override
     public JSONObject serialize(ArithmeticConstraint constraint) {
         JSONObject obj = new JSONObject();
-        obj.put(CONSTRAINT_KEY, constraint.getOperation().name().toLowerCase());
+        obj.put(CONSTRAINT_KEY, constraint.getOperation().name().toLowerCase(Locale.ROOT));
         obj.put(ARITH_LEFT_OPERAND, constraint.getLeftOperand().serialize(this));
         obj.put(ARITH_RIGHT_OPERAND, constraint.getRightOperand().serialize(this));
         obj.put(ARITH_RESULT, constraint.getResult().serialize(this));

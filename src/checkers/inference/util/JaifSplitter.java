@@ -2,7 +2,9 @@ package checkers.inference.util;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -218,15 +220,24 @@ public class JaifSplitter {
      * @param lines the lines to write
      */
     private static void writeLines(File file, boolean append, Iterable<? extends Object> lines) {
-        try {
-            BufferedWriter writer = new BufferedWriter(new FileWriter(file, append));
+        try (BufferedWriter writer =
+                append
+                        ? Files.newBufferedWriter(
+                                file.toPath(),
+                                StandardCharsets.UTF_8,
+                                StandardOpenOption.CREATE,
+                                StandardOpenOption.APPEND)
+                        : Files.newBufferedWriter(
+                                file.toPath(),
+                                StandardCharsets.UTF_8,
+                                StandardOpenOption.CREATE,
+                                StandardOpenOption.TRUNCATE_EXISTING)) {
             for (Object line : lines) {
                 writer.write(line.toString());
                 writer.newLine();
             }
 
             writer.flush();
-            writer.close();
 
         } catch (Throwable throwable) {
             throw new RuntimeException(throwable);
@@ -261,7 +272,7 @@ public class JaifSplitter {
      * @return
      */
     public static String makeHeader(List<String> fullyQualifiedAnnotations) {
-        StringBuffer header = new StringBuffer();
+        StringBuilder header = new StringBuilder();
         for (String fullyQualifiedAnnotation : fullyQualifiedAnnotations) {
             AnnotationDescription description = parseAnnotation(fullyQualifiedAnnotation);
             header.append("package ");

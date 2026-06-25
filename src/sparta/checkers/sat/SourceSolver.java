@@ -13,7 +13,6 @@ import checkers.inference.model.Slot;
 import sparta.checkers.iflow.util.IFlowUtils;
 import sparta.checkers.iflow.util.PFPermission;
 
-/** Created by smillst on 9/17/15. */
 public class SourceSolver extends IFlowSolver {
 
     protected IFlowUtils flowUtils;

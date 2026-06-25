@@ -9,7 +9,6 @@ import checkers.inference.model.ConstantSlot;
 import sparta.checkers.iflow.util.IFlowUtils;
 import sparta.checkers.iflow.util.PFPermission;
 
-/** Created by smillst on 9/21/15. */
 public class SourceSerializer extends IFlowSerializer {
 
     protected final IFlowUtils flowUtils;

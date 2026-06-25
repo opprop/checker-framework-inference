@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-/** Created by jburke on 7/7/15. */
 public class InferenceTestUtilities {
 
     public static List<File> replaceParentDirs(File newParent, List<File> testSourceFiles) {

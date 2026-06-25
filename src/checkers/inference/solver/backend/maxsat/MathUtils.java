@@ -2,11 +2,7 @@ package checkers.inference.solver.backend.maxsat;
 
 import checkers.inference.solver.frontend.Lattice;
 
-/**
- * Methods convert between slot id and Max-SAT id.
- *
- * @author jianchu
- */
+/** Methods convert between slot id and Max-SAT id. */
 public class MathUtils {
 
     /**

@@ -68,8 +68,6 @@ import checkers.inference.util.JaifBuilder;
  *
  * <p>In the future, Checker-Framework-Inference might be able to use the inferred annotations for
  * type-checking without first inserting the annotations into the input program.
- *
- * @author mcarthur
  */
 public class InferenceMain {
 

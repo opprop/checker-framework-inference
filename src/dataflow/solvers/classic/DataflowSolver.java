@@ -30,11 +30,7 @@ import dataflow.qual.DataFlow;
 import dataflow.qual.DataFlowTop;
 import dataflow.util.DataflowUtils;
 
-/**
- * A solver for dataflow type system that is independent from GeneralSolver.
- *
- * @author jianchu
- */
+/** A solver for dataflow type system that is independent from GeneralSolver. */
 public class DataflowSolver implements InferenceSolver {
 
     protected AnnotationMirror DATAFLOW;

@@ -38,8 +38,6 @@ import checkers.inference.solver.util.Statistics;
 /**
  * MaxSatSolver calls MaxSatFormatTranslator that converts constraint into a list of VecInt, then
  * invoke Sat4j lib to solve the clauses, and decode the result.
- *
- * @author jianchu
  */
 public class MaxSatSolver extends Solver<MaxSatFormatTranslator> {
 

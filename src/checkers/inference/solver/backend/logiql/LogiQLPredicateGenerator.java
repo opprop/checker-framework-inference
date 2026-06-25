@@ -13,8 +13,6 @@ import checkers.inference.solver.util.Statistics;
 /**
  * LogiqlConstraintGenerator take QualifierHierarchy of current type system as input, and generate
  * the logiql encoding of all constraint, and write the result in a .logic file.
- *
- * @author Jianchu Li
  */
 public class LogiQLPredicateGenerator {
 

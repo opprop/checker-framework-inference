@@ -31,7 +31,6 @@ import checkers.inference.solver.util.Statistics;
  *
  * @see SolverFactory
  * @see SolvingStrategy
- * @author jianchu
  */
 public class SolverEngine implements InferenceSolver {
     protected boolean collectStatistics;

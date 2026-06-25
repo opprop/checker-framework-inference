@@ -19,8 +19,6 @@ import java.util.List;
  * <p>TODO: We need to think how to enable {@code InferenceDevelLauncher} to find all necessary
  * locations by itself, so that we could remove the dependency of a shell script. After achieving
  * this, we could also apply the similar solution to {@code CheckerDevelMain}.
- *
- * @author charleszhuochen
  */
 public class InferenceDevelLauncher extends InferenceLauncher {
 

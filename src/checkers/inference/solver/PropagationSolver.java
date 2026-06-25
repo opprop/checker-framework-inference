@@ -30,8 +30,6 @@ import checkers.inference.model.VariableSlot;
  * InferenceSolver FloodSolver implementation
  *
  * <p>TODO: Parameters to configure where to push conflicts?
- *
- * @author mcarthur
  */
 public class PropagationSolver implements InferenceSolver {
 

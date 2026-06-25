@@ -24,8 +24,6 @@ import checkers.inference.model.serialization.JsonDeserializer;
  * SolutionJaifUpdater takes in a solved json constraints file and a JAIF that contains
  * {@link @VarAnnot} annotations and creates a new JAIF by replacing the @VarAnnots with the
  * annotation for that @VarAnnot's id in the solution.
- *
- * @author mcarthur
  */
 public class SolutionJaifUpdater {
 

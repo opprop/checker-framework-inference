@@ -9,8 +9,6 @@ import javax.lang.model.element.AnnotationMirror;
  * other).
  *
  * <p>The serialized format is what the game expects: "type:0" and "type:1"
- *
- * @author mcarthur
  */
 public class SimpleAnnotationMirrorSerializer implements AnnotationMirrorSerializer {
 

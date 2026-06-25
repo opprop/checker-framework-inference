@@ -8,11 +8,7 @@ import org.checkerframework.framework.qual.TypeUseLocation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
 
-/**
- * Annotation for inferring dataflow type system.
- *
- * @author jianchu
- */
+/** Annotation for inferring dataflow type system. */
 @InvisibleQualifier
 @SubtypeOf({DataFlow.class})
 @Target({ElementType.TYPE_USE})

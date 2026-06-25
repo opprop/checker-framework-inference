@@ -13,8 +13,6 @@ import java.util.logging.Logger;
  * Command line launcher for Checker-Framework-Inference.
  *
  * <p>Parses command line options and creates InferenceMain instance to start inference system.
- *
- * @author mcarthur
  */
 public class InferenceCli {
 

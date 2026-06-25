@@ -15,8 +15,6 @@ import javax.lang.model.element.AnnotationMirror;
  *
  * <p>It is convenient to get all subtypes and supertypes of a specific type qualifier, all type
  * qualifier, and bottom and top qualifiers from an instance of this class.
- *
- * @author jianchu
  */
 public class Lattice {
 

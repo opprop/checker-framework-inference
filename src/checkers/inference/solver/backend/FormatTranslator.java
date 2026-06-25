@@ -11,7 +11,6 @@ import checkers.inference.model.Serializer;
  * <p>It encode Slot and Constraint to specific types needed by underlying solver, and decode solver
  * solution to AnnotationMirror.
  *
- * @author charleszhuochen
  * @param <SlotEncodingT> encoding type for slot.
  * @param <ConstraintEncodingT> encoding type for constraint.
  * @param <SlotSolutionT> type for underlying solver's solution of a Slot

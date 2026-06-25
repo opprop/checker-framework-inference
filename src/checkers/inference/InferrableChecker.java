@@ -24,8 +24,6 @@ import checkers.inference.model.ConstraintManager;
  *
  * <p>Some methods are from BaseTypeChecker as convenience to Inference classes so they do not need
  * to have multiple references to the same class.
- *
- * @author mcarthur
  */
 public interface InferrableChecker {
 

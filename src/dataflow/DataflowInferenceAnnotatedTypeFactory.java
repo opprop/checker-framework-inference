@@ -24,8 +24,6 @@ import dataflow.util.DataflowUtils;
 /**
  * DataflowInferenceAnnotatedTypeFactory handles boxing and unboxing for primitive types. The
  * Dataflow type should always same as declared type for both cases.
- *
- * @author jianchu
  */
 public class DataflowInferenceAnnotatedTypeFactory extends InferenceAnnotatedTypeFactory {
 

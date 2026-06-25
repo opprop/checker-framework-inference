@@ -23,8 +23,6 @@ import checkers.inference.solver.util.Statistics;
  * constraint into LogiQL data. With both predicate and data created, it calls LogicBloxRunner that
  * runs logicblox to solve the LogiQL, and reads the output. Finally the output will be sent to
  * DecodingTool and get decoded.
- *
- * @author jianchu
  */
 public class LogiQLSolver extends Solver<LogiQLFormatTranslator> {
 

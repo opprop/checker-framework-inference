@@ -26,8 +26,6 @@ import checkers.inference.solver.util.Statistics;
 /**
  * LingelingSolver is also a MaxSatSolver but it calls Lingeling SAT solver to solve the clauses. It
  * doesn't support soft constraint.
- *
- * @author jianchu
  */
 public class LingelingSolver extends MaxSatSolver {
 

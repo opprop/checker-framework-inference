@@ -53,8 +53,6 @@ import checkers.inference.model.SourceVariableSlot;
  * <p>The format of the json constraint file is documented in JsonSerializer.java.
  *
  * <p>TODO: Support nested constraints
- *
- * @author mcarthur
  */
 public class JsonDeserializer {
 

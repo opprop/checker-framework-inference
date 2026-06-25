@@ -18,8 +18,6 @@ import checkers.inference.model.SubtypeConstraint;
  * is a vertex. ConstraintGraph is used for separating constraint into different components by
  * running graph traversal algorithm on it. Normal edges in this graph are bi-directional edges,
  * except SubtypeEdge is single-directed from subtype vertex to supertype vertex.
- *
- * @author jianchu
  */
 public class ConstraintGraph {
 

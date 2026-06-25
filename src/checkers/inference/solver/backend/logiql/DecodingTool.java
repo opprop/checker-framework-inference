@@ -18,8 +18,6 @@ import checkers.inference.solver.util.NameUtils;
 /**
  * DecodingTool decodes the result from LogicBlox, change the form to human readable form and put
  * the result to HashMap result and return it to LogicSolver.
- *
- * @author Jianchu Li
  */
 public class DecodingTool {
 

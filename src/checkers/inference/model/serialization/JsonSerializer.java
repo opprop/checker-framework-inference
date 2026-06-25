@@ -60,8 +60,6 @@ import checkers.inference.model.SubtypeConstraint;
  *
  * <p>// Generics { "constraint": "enabled_check", "id" : "var:12", "then": [ ... ], "else": [ ...
  * ], } ] }
- *
- * @author mcarthur
  */
 public class JsonSerializer implements Serializer<String, JSONObject> {
 

@@ -19,11 +19,7 @@ import checkers.inference.InferenceSolver;
 import checkers.inference.model.Constraint;
 import checkers.inference.model.Slot;
 
-/**
- * InferenceSolver that serializes constraints to a file in JSON format.
- *
- * @author mcarthur
- */
+/** InferenceSolver that serializes constraints to a file in JSON format. */
 public class JsonSerializerSolver implements InferenceSolver {
 
     private static final String FILE_KEY = "constraint-file";

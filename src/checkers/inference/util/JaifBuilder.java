@@ -28,8 +28,6 @@ import checkers.inference.model.AnnotationLocation.ClassDeclLocation;
  *
  * <p>JaifBuilder first organizes ASTRecords by class and top level member, and then builds a Jaif
  * string.
- *
- * @author mcarthur
  */
 public class JaifBuilder {
 

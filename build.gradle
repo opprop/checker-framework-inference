@@ -126,6 +126,11 @@ dependencies {
 
     implementation 'tools.aqua:z3-turnkey:4.11.2'
 
+    if (isJava11plus) {
+        implementation 'org.sosy-lab:java-smt:6.0.0'
+        implementation 'org.sosy-lab:javasmt-solver-z3:4.15.4'
+    }
+
     testImplementation fileTree(dir: "${checkerFrameworkPath}/framework-test/build/libs", include: "framework-test-*.jar")
     // Mocking library. Used in a couple tests
     testImplementation 'org.mockito:mockito-all:2.0.2-beta'
@@ -147,6 +152,24 @@ sourceSets {
     test {
         java {
             srcDirs = ["tests"]
+        }
+    }
+
+    if (isJava11plus) {
+        java11 {
+            java {
+                srcDirs = ["srcJava11"]
+            }
+            compileClasspath += files(compileJava.destinationDirectory) + configurations.compileClasspath
+            runtimeClasspath += output + compileClasspath
+        }
+
+        test {
+            java {
+                srcDirs += ["testsJava11"]
+            }
+            compileClasspath += sourceSets.java11.output
+            runtimeClasspath += sourceSets.java11.output
         }
     }
 }
@@ -229,6 +252,21 @@ compileJava {
     ]
 }
 
+if (isJava11plus) {
+    compileJava11Java {
+        dependsOn(compileJava)
+        options.compilerArgs = compileJava.options.compilerArgs
+    }
+
+    compileTestJava {
+        dependsOn(compileJava11Java)
+    }
+
+    classes {
+        dependsOn(sourceSets.java11.classesTaskName)
+    }
+}
+
 // Exclude parts of the build directory that don't include classes from being packaged in
 // the jar file.
 // IMPORTANT: If "libs" is packaged in the JAR file you end up with an infinitely
@@ -248,6 +286,16 @@ shadowJar {
     description 'Creates the "fat" checker.jar in dist'
     destinationDirectory = file("${projectDir}/dist")
     archiveFileName = "checker-framework-inference.jar"
+}
+
+if (isJava11plus) {
+    jar {
+        from sourceSets.java11.output
+    }
+
+    shadowJar {
+        from sourceSets.java11.output
+    }
 }
 
 task dist(dependsOn: shadowJar, type: Copy) {

@@ -165,6 +165,16 @@ task buildDLJC(type: Exec) {
     commandLine './buildDLJC'
 }
 
+def configureTestJvmArgs = { Test testTask ->
+    if (isJava8) {
+        testTask.jvmArgs += [
+            "-Xbootclasspath/p:${configurations.javacJar.asPath}"
+        ]
+    } else {
+        testTask.jvmArgs += compilerArgsForRunningCF
+    }
+}
+
 test {
     dependsOn(shadowJar)
     dependsOn('dist')
@@ -176,17 +186,6 @@ test {
 
     if (project.hasProperty('emit.test.debug')) {
         systemProperties += ["emit.test.debug": 'true']
-    }
-
-    if (isJava8) {
-        jvmArgs += [
-            "-Xbootclasspath/p:${configurations.javacJar.asPath}"
-        ]
-    } else {
-        // Without this, the test throw "java.lang.OutOfMemoryError: Java heap space"
-        // Corresponding pull request: https://github.com/opprop/checker-framework-inference/pull/263
-        forkEvery(1)
-        jvmArgs += compilerArgsForRunningCF
     }
 
     testLogging {
@@ -373,11 +372,7 @@ afterEvaluate {
             systemProperties += ["emit.test.debug": 'true']
         }
 
-        if (isJava8) {
-            jvmArgs += [
-                "-Xbootclasspath/p:${configurations.javacJar.asPath}"
-            ]
-        }
+        configureTestJvmArgs(delegate)
 
         testLogging {
             // Always run the tests
